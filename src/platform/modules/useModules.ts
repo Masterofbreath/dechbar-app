@@ -7,7 +7,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../api/supabase';
-import type { Module } from './types';
+import type { Module, UserModule } from './types';
 
 /**
  * Fetch all active modules
@@ -97,5 +97,3 @@ export function useUserModules(userId?: string) {
     staleTime: 1 * 60 * 1000, // 1 minute (user purchases change less often)
   });
 }
-
-export type { Module, UserModule } from './types';
