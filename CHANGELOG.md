@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication flow
 - Payment integration
 
+### Added
+- **WORKFLOW.md** - Complete Git workflow documentation (LOCAL → PREVIEW → PROD)
+- Git security rules in `.cursorrules` (AI agents must ask before pushing)
+- Updated `PROJECT_GUIDE.md` with workflow references
+
 ## [0.1.0] - 2026-01-09
 
 ### Added

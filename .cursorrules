@@ -25,10 +25,11 @@ PROJECT_GUIDE.md is the master navigation file that explains:
 
 ## 📚 MANDATORY READING (Priority Order):
 1. `PROJECT_GUIDE.md` - Master navigation (START HERE!)
-2. `docs/design-system/01_PHILOSOPHY.md` - UX philosophy (4 Temperaments - ALWAYS!)
-3. `docs/architecture/00_OVERVIEW.md` - System architecture
-4. `docs/api/PLATFORM_API.md` - Platform API reference
-5. This file - React-specific coding rules
+2. `WORKFLOW.md` ⭐ - **Git workflow (LOCAL → PREVIEW → PROD) - CRITICAL!**
+3. `docs/design-system/01_PHILOSOPHY.md` - UX philosophy (4 Temperaments - ALWAYS!)
+4. `docs/architecture/00_OVERVIEW.md` - System architecture
+5. `docs/api/PLATFORM_API.md` - Platform API reference
+6. This file - React-specific coding rules
 
 ## 🎯 PROJECT OVERVIEW
 - **Platform:** React 18 + TypeScript (Vite)
@@ -157,6 +158,38 @@ Every feature MUST satisfy ALL 4 personality types:
 - **Flegmatik:** Simple, calm, no pressure, peaceful
 
 ## 💻 CODING STANDARDS
+
+### 🔒 GIT WORKFLOW SECURITY (CRITICAL!)
+
+**⚠️ MANDATORY RULES FOR AI AGENTS:**
+
+```bash
+# ✅ DEFAULT BRANCH: Always work on 'test'
+git checkout test
+
+# ⚠️ BEFORE ANY GIT PUSH: ASK USER!
+# "Kam chceš poslat změny? (test/main)"
+
+# ❌ NEVER push to 'main' without explicit approval!
+# If user says "main" → WARN: "POZOR! Toto jde na PROD (dechbar.cz)!"
+# → Wait for confirmation
+
+# 🚨 PRODUCTION PUSH = ASK 2-3 TIMES!
+# "Opravdu chceš nasadit na PROD? (ano/ne)"
+# "Otestoval jsi to na PREVIEW? (ano/ne)"
+# "POSLEDNÍ KONTROLA: Jde to LIVE! Pokračovat? (ano/ne)"
+```
+
+**WHY:** Prevent accidental production deployments!
+
+**Process:**
+1. **LOCAL:** Develop (`npm run dev`)
+2. **PREVIEW:** Push to `test` branch (`git push origin test`)
+3. **PROD:** Merge to `main` ONLY after approval (`git push origin main`)
+
+**See:** [WORKFLOW.md](WORKFLOW.md) for complete guide.
+
+---
 
 ### TypeScript:
 ```typescript
@@ -415,6 +448,8 @@ Before implementing ANY feature:
 
 ## 🚫 NEVER DO
 
+- Don't push to `main` branch without asking 2-3 times! ⚠️
+- Don't skip PREVIEW testing before PROD
 - Don't use WordPress patterns (PHP, WP hooks, shortcodes)
 - Don't reference wp-content/ or WordPress plugins
 - Don't use jQuery (use vanilla JS or React)
@@ -429,6 +464,10 @@ Before implementing ANY feature:
 
 ## ✅ ALWAYS DO
 
+- **ASK before any git push!** (test vs main?) ⚠️
+- Work on `test` branch by default
+- Confirm 2-3 times before pushing to `main` (PROD)
+- Read [WORKFLOW.md](WORKFLOW.md) if unsure about Git
 - Use TypeScript strictly (no `any`)
 - Follow modular architecture (platform + modules)
 - Design for all 4 temperaments

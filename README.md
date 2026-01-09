@@ -133,13 +133,15 @@ VITE_ENV=development
 **Start here:** [PROJECT_GUIDE.md](PROJECT_GUIDE.md) - Complete project navigation
 
 ### For Developers:
+- **[WORKFLOW.md](WORKFLOW.md)** ⭐ - **Git workflow (LOCAL → PREVIEW → PROD) - READ FIRST!**
 - **[Quick Start](docs/development/00_QUICK_START.md)** - Setup guide
-- **[Development Workflow](docs/development/01_WORKFLOW.md)** - How to work
+- **[Development Guide](docs/development/01_WORKFLOW.md)** - How to work
 - **[Database Management](docs/development/02_SUPABASE.md)** - Supabase CLI
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 
 ### For AI Agents:
 - **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)** - Master navigation (START HERE!)
+- **[WORKFLOW.md](WORKFLOW.md)** ⭐ - **Git workflow (MANDATORY!)**
 - **`.cursorrules`** - AI coding standards
 - **[Platform API](docs/api/PLATFORM_API.md)** - Available platform services
 - **[Module System](src/modules/README.md)** - How to create modules

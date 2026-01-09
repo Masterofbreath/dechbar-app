@@ -23,9 +23,10 @@
 
 1. **[README.md](README.md)** - Project overview
 2. **[Quick Start](docs/development/00_QUICK_START.md)** - Setup instructions
-3. **[Development Workflow](docs/development/01_WORKFLOW.md)** - How to work
-4. **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
-5. **Start developing!** 🛠️
+3. **[WORKFLOW.md](WORKFLOW.md)** ⭐ - **Git workflow (LOCAL → PREVIEW → PROD)**
+4. **[Development Guide](docs/development/01_WORKFLOW.md)** - How to work
+5. **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+6. **Start developing!** 🛠️
 
 ---
 
@@ -162,6 +163,7 @@ dechbar-app/
 | What I Need | Where to Look |
 |-------------|---------------|
 | **Project overview** | [README.md](README.md) |
+| **Git workflow (LOCAL→TEST→PROD)** | [WORKFLOW.md](WORKFLOW.md) ⭐ |
 | **Architecture docs** | [docs/architecture/](docs/architecture/) |
 | **Design system** | [docs/design-system/](docs/design-system/) |
 | **Dev guides** | [docs/development/](docs/development/) |
@@ -180,6 +182,7 @@ dechbar-app/
 
 | Task | Location | Reference |
 |------|----------|-----------|
+| **Work with Git (LOCAL→TEST→PROD)** | See [WORKFLOW.md](WORKFLOW.md) ⭐ | Git workflow |
 | **Add new feature** | See [01_WORKFLOW.md](docs/development/01_WORKFLOW.md) | Dev guide |
 | **Add new module** | See [src/modules/README.md](src/modules/README.md) | Module guide |
 | **Add database table** | See [supabase/migrations/README.md](supabase/migrations/README.md) | Migration guide |
@@ -267,6 +270,29 @@ Every feature designed for ALL personality types:
 ---
 
 ## 🔄 Common Workflows
+
+### Git Workflow (LOCAL → PREVIEW → PROD)
+
+**⭐ CRITICAL: Read [WORKFLOW.md](WORKFLOW.md) first!**
+
+```
+LOCAL (Cursor)           PREVIEW (Vercel)        PROD (dechbar.cz)
+npm run dev       →      test branch      →      main branch
+Fast development         Team testing            Live users
+```
+
+**Quick Guide:**
+
+1. **LOCAL:** Develop fast (Cmd+S → see change in 1s)
+2. **PREVIEW:** `git push origin test` → Team reviews
+3. **PROD:** `git merge test → main` → Live deployment
+
+**⚠️ SECURITY RULES:**
+- ✅ ALWAYS work on `test` branch by default
+- ❌ NEVER push to `main` without approval
+- ⚠️ AI Agents: ASK before pushing to `main`!
+
+---
 
 ### Creating a New Feature
 
@@ -554,10 +580,11 @@ supabase inspect db table-stats
 
 ### For Developers (Must Read):
 
-1. **[Quick Start](docs/development/00_QUICK_START.md)** - Setup guide
-2. **[Workflow](docs/development/01_WORKFLOW.md)** - How to develop
-3. **[Supabase CLI](docs/development/02_SUPABASE.md)** - DB management
-4. **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute
+1. **[WORKFLOW.md](WORKFLOW.md)** ⭐ - **Git workflow (LOCAL → PREVIEW → PROD)**
+2. **[Quick Start](docs/development/00_QUICK_START.md)** - Setup guide
+3. **[Development Guide](docs/development/01_WORKFLOW.md)** - How to develop
+4. **[Supabase CLI](docs/development/02_SUPABASE.md)** - DB management
+5. **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute
 
 ---
 
