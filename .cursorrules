@@ -1,0 +1,552 @@
+# 🚀 DechBar App - React Native Mobile App
+# Version: 1.0
+# Last Updated: 2026-01-09
+# Purpose: AI Agent rules for React + TypeScript + Supabase + Capacitor
+
+## ⭐ FIRST TIME HERE? READ PROJECT_GUIDE.md!
+
+**Before reading this file, read:** [PROJECT_GUIDE.md](PROJECT_GUIDE.md)
+
+PROJECT_GUIDE.md is the master navigation file that explains:
+- Complete folder structure
+- Where to find everything
+- Where to add new code
+- How to use this project
+
+**This file (.cursorrules)** contains coding standards and best practices.
+
+---
+
+## ⚠️ CRITICAL: THIS IS NOT A WORDPRESS PROJECT!
+- This is a **standalone React app**
+- Do NOT use WordPress patterns, PHP, or WP-specific logic
+- Do NOT reference wp-content/ or WordPress plugins
+- This app communicates with Supabase, NOT WordPress
+
+## 📚 MANDATORY READING (Priority Order):
+1. `PROJECT_GUIDE.md` - Master navigation (START HERE!)
+2. `docs/design-system/01_PHILOSOPHY.md` - UX philosophy (4 Temperaments - ALWAYS!)
+3. `docs/architecture/00_OVERVIEW.md` - System architecture
+4. `docs/api/PLATFORM_API.md` - Platform API reference
+5. This file - React-specific coding rules
+
+## 🎯 PROJECT OVERVIEW
+- **Platform:** React 18 + TypeScript (Vite)
+- **Backend:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+- **Styling:** Tailwind CSS + CSS Variables (from FOUNDATION)
+- **State:** Zustand
+- **Routing:** React Router v6
+- **Native:** Capacitor 6 (iOS + Android)
+- **Purpose:** Breathing exercises mobile app with modular architecture
+- **Philosophy:** Design for 4 temperaments (Sangvinik, Cholerik, Melancholik, Flegmatik)
+- **Language:** Czech (UI) + English (code/comments)
+
+## 🏗️ ARCHITECTURE: PLATFORM + MODULES
+
+### Concept:
+```
+PLATFORMA (Foundation Layer)
+  ├── Auth (login, registration)
+  ├── Membership (module ownership tracking)
+  ├── Design System (shared components)
+  └── Payments (GoPay, Stripe)
+
+MODULY (Feature Modules - independent products)
+  ├── Studio (exercise builder) - 990 Kč lifetime
+  ├── Challenges (21-day programs) - 490 Kč/pack lifetime
+  ├── Akademie (courses) - 1490 Kč lifetime
+  ├── Game (gamification) - 149 Kč/month subscription
+  └── AI Coach (chatbot) - 490 Kč/month subscription
+```
+
+### Module Communication:
+- Modules are **loosely coupled**
+- Communicate via **API calls** (not direct imports when possible)
+- Each module = **separate product** (can be sold independently)
+- User **purchases modules individually**
+
+## 🛠️ TECH STACK
+
+### Frontend:
+- **Framework:** React 18 + TypeScript
+- **Build Tool:** Vite
+- **Styling:** Tailwind CSS + CSS Variables (from FOUNDATION)
+- **State Management:** Zustand
+- **Routing:** React Router v6
+- **UI Components:** Custom (based on internal design system)
+
+### Backend:
+- **Database:** Supabase PostgreSQL
+- **Auth:** Supabase Auth (email, Google, Apple)
+- **Storage:** Supabase Storage (audio files, images) - HAS CDN!
+- **API:** Auto-generated REST + GraphQL
+- **Realtime:** Supabase Realtime subscriptions
+- **Functions:** Edge Functions (serverless)
+
+### Native:
+- **Wrapper:** Capacitor 6
+- **Platforms:** iOS + Android
+- **Bluetooth:** @capacitor-community/bluetooth-le (planned)
+- **Haptics:** @capacitor/haptics
+
+### Hosting & Services:
+- **App Hosting:** Vercel (FREE, auto-deploy from GitHub)
+- **Domain:** dechbar.cz (Wedos - DNS only!)
+- **CDN:** Supabase Storage (built-in CDN)
+- **Payments:** GoPay (CZ/SK, cheaper) + Stripe (international)
+- **Email:** Ecomail.cz
+- **Invoicing:** Vyfakturuj.cz
+
+## 🎨 DESIGN SYSTEM (Standalone)
+
+### Breakpoints (Mobile-First):
+```css
+320px  (xs) - Narrow Mobile (iPhone SE)
+480px  (sm) - Mobile
+768px  (md) - Tablet
+1024px (lg) - Desktop
+1440px (xl) - Wide Desktop
+```
+
+### Colors (CSS Variables):
+```css
+/* Brand Gold */
+--color-gold: #F8CA00
+
+/* 4 Temperaments */
+--color-sangvinik: #ff6b6b (fun, energy)
+--color-cholerik: #2d3561 (power, efficiency)
+--color-melancholik: #6c5ce7 (depth, quality)
+--color-flegmatik: #74b9ff (calm, harmony)
+
+/* Semantic */
+--color-success: #28a745
+--color-info: #17a2b8
+--color-warning: #ffc107
+--color-danger: #dc3545
+```
+
+### Modern Effects (from modern-effects.css):
+```css
+/* Glassmorphism */
+.glass-card - iOS-style frosted glass
+.glass-card--subtle - Light glass
+.glass-card--strong - Strong blur
+
+/* Shadows */
+--shadow-sm, --shadow-md, --shadow-lg, --shadow-xl
+--shadow-gold (gold glow for premium)
+--shadow-sangvinik, --shadow-cholerik, etc.
+
+/* Animations */
+--spring-bounce (button press)
+--apple-ease (iOS-like)
+```
+
+### Icons:
+- **ALWAYS custom SVG** (NEVER emoji 🎮 or Font Awesome)
+- Outline style, 2px stroke, currentColor
+- ViewBox: 24x24
+- Sizes: 16px, 20px, 24px (default), 32px, 48px
+
+### 4 Temperaments (MANDATORY):
+Every feature MUST satisfy ALL 4 personality types:
+- **Sangvinik:** Fun, playful, colorful, social features
+- **Cholerik:** Fast, efficient, goal-oriented, minimal clicks
+- **Melancholik:** Detailed info, depth, quality, reflection
+- **Flegmatik:** Simple, calm, no pressure, peaceful
+
+## 💻 CODING STANDARDS
+
+### TypeScript:
+```typescript
+// ✅ DO:
+- Use `const` for everything (except let when needed)
+- Strict mode enabled
+- Explicit return types for functions
+- Interface for objects, Type for unions/primitives
+- No `any` (use `unknown` if needed)
+- Use optional chaining: user?.name
+- Use nullish coalescing: value ?? defaultValue
+
+// ❌ DON'T:
+- Never use `var`
+- Never use `any` type
+- Don't skip type definitions
+- Don't use `as` casting unless absolutely necessary
+```
+
+### React:
+```typescript
+// ✅ DO:
+- Functional components ONLY
+- Custom hooks for logic reuse (useAuth, useMembership)
+- Props validation with TypeScript interfaces
+- Export named exports (not default)
+
+// Example:
+export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary' }) => {
+  return <button className={`btn btn--${variant}`}>{children}</button>;
+};
+
+// ❌ DON'T:
+- No class components
+- No inline styles (use Tailwind)
+- No prop drilling (use Context/Zustand)
+- Don't mutate state directly
+```
+
+### File Naming:
+```
+Components:     PascalCase (Button.tsx, AudioPlayer.tsx)
+Hooks:          camelCase (useAuth.ts, useMembership.ts)
+Utils:          camelCase (formatDate.ts, validateEmail.ts)
+Types:          PascalCase (User.ts, Membership.ts)
+Constants:      UPPER_SNAKE_CASE (API_ENDPOINTS.ts)
+Pages:          PascalCase (LoginPage.tsx, Dashboard.tsx)
+```
+
+### Folder Structure (MANDATORY):
+```
+src/
+├── platform/              ← Shared infrastructure
+│   ├── auth/
+│   │   ├── AuthProvider.tsx
+│   │   ├── LoginPage.tsx
+│   │   ├── RegisterPage.tsx
+│   │   └── useAuth.ts
+│   │
+│   ├── components/        ← Design System components
+│   │   ├── Button.tsx
+│   │   ├── Card.tsx
+│   │   ├── Input.tsx
+│   │   ├── Modal.tsx
+│   │   ├── AudioPlayer.tsx
+│   │   └── index.ts
+│   │
+│   ├── layouts/
+│   │   ├── AppLayout.tsx
+│   │   ├── Header.tsx
+│   │   └── Sidebar.tsx
+│   │
+│   ├── membership/        ← Module ownership & access control
+│   │   ├── MembershipProvider.tsx
+│   │   ├── useMembership.ts
+│   │   ├── ModuleGuard.tsx
+│   │   └── types.ts
+│   │
+│   ├── payments/
+│   │   ├── CheckoutPage.tsx
+│   │   ├── gopay.ts
+│   │   └── stripe.ts
+│   │
+│   ├── api/
+│   │   ├── supabase.ts
+│   │   ├── profiles.ts
+│   │   └── memberships.ts
+│   │
+│   └── types/
+│       ├── index.ts
+│       ├── user.ts
+│       └── membership.ts
+│
+├── modules/               ← Feature modules (independent products)
+│   ├── studio/
+│   │   ├── module.config.ts    ← Module definition
+│   │   ├── routes.tsx
+│   │   ├── pages/
+│   │   ├── components/
+│   │   └── api/
+│   │
+│   ├── challenges/
+│   │   ├── module.config.ts
+│   │   └── ...
+│   │
+│   └── (other modules...)
+│
+├── app/                   ← App entry point
+│   ├── App.tsx
+│   ├── router.tsx         ← Dynamic routing
+│   └── moduleRegistry.ts  ← Module registration
+│
+├── styles/
+│   ├── globals.css        ← Tailwind imports + design tokens
+│   └── design-tokens/     ← All design tokens (standalone)
+│       ├── colors.css
+│       ├── typography.css
+│       ├── spacing.css
+│       ├── breakpoints.css
+│       ├── shadows.css
+│       └── effects.css
+│
+└── main.tsx
+```
+
+## 🔐 SECURITY
+
+### Supabase RLS (Row Level Security):
+```sql
+-- ALWAYS enable RLS on tables
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Example: User can only see own data
+CREATE POLICY "Users see own profile"
+ON profiles FOR SELECT
+USING (auth.uid() = user_id);
+```
+
+### Input Validation:
+```typescript
+// ✅ DO:
+- Validate all user input (Zod, Yup)
+- Sanitize before display
+- Use type-safe forms (React Hook Form + Zod)
+
+// Example with Zod:
+import { z } from 'zod';
+
+const LoginSchema = z.object({
+  email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Min 8 characters'),
+});
+
+type LoginFormData = z.infer<typeof LoginSchema>;
+```
+
+### Environment Variables:
+```bash
+# ✅ DO:
+- Use .env.local (NEVER commit!)
+- Prefix with VITE_ for client-side access
+- Store in 1Password/secure vault
+
+# Example .env.local:
+VITE_SUPABASE_URL=https://xyz.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_ENV=development
+```
+
+## 🗄️ DATABASE MIGRATIONS (Supabase CLI)
+
+### IMPORTANT: All DB changes go through migrations!
+
+**DO NOT run SQL directly in Supabase Dashboard** (only for debugging).
+
+### Creating a Migration:
+
+1. **Agent creates SQL file in `supabase/migrations/`:**
+   ```
+   supabase/migrations/YYYYMMDDHHMMSS_description.sql
+   ```
+
+2. **File format:**
+   ```sql
+   -- Migration: Add exercises table
+   -- Date: 2026-01-09
+   
+   CREATE TABLE IF NOT EXISTS public.exercises (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+     name TEXT NOT NULL,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+   );
+   
+   ALTER TABLE public.exercises ENABLE ROW LEVEL SECURITY;
+   
+   CREATE POLICY "Users can view own exercises"
+     ON public.exercises FOR SELECT
+     USING (auth.uid() = user_id);
+   
+   CREATE INDEX exercises_user_idx ON public.exercises(user_id);
+   
+   COMMENT ON TABLE public.exercises IS 'User-created breathing exercises';
+   ```
+
+3. **Developer applies:**
+   ```bash
+   cd /Users/DechBar/dechbar-app
+   supabase db push
+   ```
+
+### Migration Checklist (MANDATORY):
+- [ ] Table in `public.` schema
+- [ ] UUID primary key with `gen_random_uuid()`
+- [ ] Foreign keys with `ON DELETE CASCADE`
+- [ ] `IF NOT EXISTS` for idempotence
+- [ ] RLS enabled: `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
+- [ ] RLS policies (at minimum SELECT policy)
+- [ ] Indexes for foreign keys
+- [ ] Timestamps: `created_at`, `updated_at`
+- [ ] Comments: `COMMENT ON TABLE/COLUMN`
+
+### Reference:
+- **Full guide:** `supabase/migrations/README.md`
+- **DB schema:** `docs/DATABASE_SCHEMA.md`
+- **CLI guide:** `docs/SUPABASE_CLI.md`
+
+### Existing Tables:
+- `profiles` - User profiles
+- `modules` - Available products (5 seeded)
+- `user_modules` - User purchases
+- `memberships` - Membership plans (3 plans)
+- `roles` - User roles (6 seeded)
+- `user_roles` - User-role junction
+
+---
+
+## 📚 DOCUMENTATION
+
+Before implementing ANY feature:
+1. Create `docs/features/FEATURE_NAME.md`
+2. Define: PURPOSE, AUDIENCE, 4 TEMPERAMENTS, DEPENDENCIES
+3. Update module README.md
+4. THEN code
+
+## 🧪 TESTING
+
+- [ ] TypeScript compiles (`npm run build`)
+- [ ] ESLint passes (`npm run lint`)
+- [ ] Works on mobile (375px viewport)
+- [ ] Works on tablet (768px viewport)
+- [ ] Works on desktop (1280px viewport)
+- [ ] No console errors/warnings
+- [ ] Satisfies all 4 temperaments
+- [ ] Tested on real device (iOS/Android via Capacitor)
+
+## 🚫 NEVER DO
+
+- Don't use WordPress patterns (PHP, WP hooks, shortcodes)
+- Don't reference wp-content/ or WordPress plugins
+- Don't use jQuery (use vanilla JS or React)
+- Don't skip TypeScript types
+- Don't use `any` type
+- Don't ignore 4 temperaments in design
+- Don't hardcode values (use constants or .env)
+- Don't create inline styles (use Tailwind classes)
+- Don't use !important (except critical cases)
+- Don't skip RLS policies in Supabase
+- Don't commit .env.local or secrets
+
+## ✅ ALWAYS DO
+
+- Use TypeScript strictly (no `any`)
+- Follow modular architecture (platform + modules)
+- Design for all 4 temperaments
+- Write semantic HTML
+- Use Tailwind CSS classes
+- Use CSS variables from design tokens (src/styles/design-tokens/)
+- Document complex logic with comments
+- Use Supabase RLS for security
+- Test on mobile devices first (mobile-first!)
+- Keep modules loosely coupled
+- Export named exports (not default)
+
+## 💡 MODULE DEVELOPMENT PATTERN
+
+When creating a new module:
+
+```typescript
+// 1. Create module.config.ts
+export const studioModuleConfig = {
+  id: 'studio',
+  name: 'DechBar STUDIO',
+  description: 'Vytvoř si vlastní dechová cvičení',
+  price: { czk: 990, type: 'lifetime' },
+  access: { requiresPurchase: true },
+  navigation: { 
+    title: 'Studio', 
+    icon: 'icon-studio',
+    path: '/studio' 
+  },
+};
+
+// 2. Create routes.tsx
+export const StudioRoutes = () => (
+  <Routes>
+    <Route path="/" element={<StudioDashboard />} />
+    <Route path="/exercise/:id" element={<ExerciseBuilder />} />
+  </Routes>
+);
+
+// 3. Register in app/moduleRegistry.ts
+import { studioModuleConfig } from '@/modules/studio/module.config';
+export const modules = [studioModuleConfig];
+
+// 4. Protect with ModuleGuard
+<ModuleGuard moduleId="studio">
+  <StudioRoutes />
+</ModuleGuard>
+```
+
+## 🎯 CURRENT FOCUS (MVP)
+
+**Phase 1: Foundation (NOW)**
+- [ ] Tailwind CSS setup
+- [ ] Folder structure
+- [ ] Supabase connection
+- [ ] Basic routing
+
+**Phase 2: Platform Core**
+- [ ] Auth (login, register)
+- [ ] Membership system
+- [ ] Supabase schema (4 tables: profiles, memberships, modules, user_modules)
+- [ ] Design system components
+
+**Phase 3: First Module - Studio**
+- [ ] Exercise builder
+- [ ] Audio player
+- [ ] Supabase tables (exercises, exercise_sessions)
+- [ ] Payment integration
+
+**Phase 4: Native**
+- [ ] Capacitor setup
+- [ ] iOS build
+- [ ] Android build
+
+## 📞 COMMUNICATION PROTOCOL
+
+- **Ask BEFORE destructive operations**
+- Use emoji for visual navigation (🎯 ✅ ❌ 🔧 💡 ⚠️)
+- Structure responses clearly (headings, bullet points)
+- Document WHY, not just HOW (explain reasoning)
+- Communicate in Czech (for user understanding)
+- Code comments in English (standard practice)
+- Suggest improvements proactively
+- Warn about risks and breaking changes
+
+## 🎓 BEST PRACTICES
+
+1. **Mobile-First** - Design for smallest screen first (375px)
+2. **Progressive Enhancement** - Basic functionality works everywhere
+3. **Accessibility** - ARIA labels, keyboard navigation, contrast
+4. **Performance** - Lazy load modules, optimize images, code splitting
+5. **Security** - RLS policies, input validation, secure storage
+6. **DRY** - Don't Repeat Yourself (reusable components/hooks)
+7. **KISS** - Keep It Simple, Stupid (simplest solution first)
+8. **4 Temperaments** - Every feature satisfies all 4 types
+
+## 💬 LANGUAGE
+
+- **UI text:** Czech (user-facing)
+- **Code:** English (variables, functions, comments)
+- **Documentation:** Czech (for team/stakeholders)
+- **Git commits:** English (standard practice)
+
+---
+
+**Remember:** You're building a NATIVE MOBILE APP, not a WordPress plugin!
+
+- React + TypeScript + Supabase (modern stack)
+- Modules communicate loosely (API-first)
+- Each module = independent product
+- Design for 4 temperaments ALWAYS
+- Mobile-first, native-ready (Capacitor)
+- Supabase Storage has CDN built-in!
+
+**Quality > Speed. Clean architecture now = faster features later!** 🚀
+
+---
+
+*Last updated: 2025-01-09*
+*Version: 1.0*
+*For parent workspace rules, see `../.cursorrules` (WordPress-specific, IGNORE for this project)*

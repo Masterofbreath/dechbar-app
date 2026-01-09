@@ -1,0 +1,69 @@
+/**
+ * Design Tokens: Shadows
+ * 
+ * Multi-layer shadow system for depth and elevation
+ */
+
+:root {
+  /* ===================================== */
+  /* STANDARD SHADOWS */
+  /* ===================================== */
+  
+  /* Extra Small Shadow */
+  --shadow-xs: 
+    0 1px 2px rgba(0, 0, 0, 0.05);
+  
+  /* Small Shadow */
+  --shadow-sm: 
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+  
+  /* Medium Shadow */
+  --shadow-md: 
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.08);
+  
+  /* Large Shadow */
+  --shadow-lg: 
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    0 12px 24px rgba(0, 0, 0, 0.12);
+  
+  /* Extra Large Shadow */
+  --shadow-xl: 
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    0 12px 24px rgba(0, 0, 0, 0.12),
+    0 24px 48px rgba(0, 0, 0, 0.15);
+  
+  /* 2XL Shadow (for modals) */
+  --shadow-2xl: 
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    0 12px 24px rgba(0, 0, 0, 0.12),
+    0 24px 48px rgba(0, 0, 0, 0.15),
+    0 48px 96px rgba(0, 0, 0, 0.2);
+  
+  /* Inner Shadow (for pressed states) */
+  --shadow-inner: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* ===================================== */
+  /* BRAND SHADOWS (Gold Glow) */
+  /* ===================================== */
+  
+  /* Gold glow (subtle) */
+  --shadow-gold-subtle: 
+    0 4px 12px rgba(248, 202, 0, 0.2);
+  
+  /* Gold glow (medium) */
+  --shadow-gold: 
+    0 4px 16px rgba(248, 202, 0, 0.3),
+    0 8px 32px rgba(248, 202, 0, 0.2);
+  
+  /* Gold glow (strong) */
+  --shadow-gold-strong: 
+    0 4px 16px rgba(248, 202, 0, 0.4),
+    0 8px 32px rgba(248, 202, 0, 0.3),
+    0 16px 64px rgba(248, 202, 0, 0.2);
+}

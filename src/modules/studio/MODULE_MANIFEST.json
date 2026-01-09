@@ -1,0 +1,43 @@
+{
+  "id": "studio",
+  "name": "DechBar STUDIO",
+  "version": "1.0.0",
+  "description": "Build and customize your own breathing exercises",
+  "pricing": {
+    "source": "database",
+    "table": "modules",
+    "id": "studio"
+  },
+  "dependencies": {
+    "platform": [
+      "auth",
+      "membership"
+    ],
+    "modules": []
+  },
+  "api": {
+    "routes": [
+      "/studio",
+      "/studio/exercises",
+      "/studio/exercises/:id",
+      "/studio/builder"
+    ],
+    "tables": [
+      "exercises",
+      "exercise_sessions"
+    ]
+  },
+  "permissions": [
+    "create_exercise",
+    "edit_exercise",
+    "delete_exercise",
+    "view_exercise_stats"
+  ],
+  "features": [
+    "Exercise Builder",
+    "Custom Breathing Patterns",
+    "Audio Playback",
+    "Session History",
+    "Statistics & Analytics"
+  ]
+}

@@ -1,0 +1,590 @@
+/**
+ * FOUNDATION Modern Effects (2025)
+ * 
+ * Version: 1.0.0
+ * Purpose: Moderní vizuální efekty pro native apps
+ * Features: Glassmorphism, Advanced Shadows, Gradients, Spring Animations
+ * 
+ * Usage: Import do tvého projektu
+ * @import url('/path/to/FOUNDATION/config/modern-effects.css');
+ */
+
+:root {
+    /* ===================================== */
+    /* GLASSMORPHISM */
+    /* ===================================== */
+    
+    /* Light mode glass */
+    --glass-bg-light: rgba(255, 255, 255, 0.7);
+    --glass-bg-light-strong: rgba(255, 255, 255, 0.9);
+    --glass-bg-light-subtle: rgba(255, 255, 255, 0.5);
+    
+    /* Dark mode glass */
+    --glass-bg-dark: rgba(0, 0, 0, 0.5);
+    --glass-bg-dark-strong: rgba(0, 0, 0, 0.7);
+    --glass-bg-dark-subtle: rgba(0, 0, 0, 0.3);
+    
+    /* Glass borders */
+    --glass-border-light: rgba(255, 255, 255, 0.18);
+    --glass-border-dark: rgba(0, 0, 0, 0.18);
+    
+    /* Glass blur filters */
+    --glass-blur-subtle: blur(10px) saturate(150%);
+    --glass-blur-medium: blur(20px) saturate(180%);
+    --glass-blur-strong: blur(30px) saturate(200%);
+    
+    
+    /* ===================================== */
+    /* ADVANCED SHADOWS (Multi-layer) */
+    /* ===================================== */
+    
+    /* Extra Small Shadow */
+    --shadow-xs: 
+        0 1px 2px rgba(0, 0, 0, 0.05);
+    
+    /* Small Shadow */
+    --shadow-sm: 
+        0 1px 2px rgba(0, 0, 0, 0.05),
+        0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    /* Medium Shadow */
+    --shadow-md: 
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 4px 8px rgba(0, 0, 0, 0.08);
+    
+    /* Large Shadow */
+    --shadow-lg: 
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 4px 8px rgba(0, 0, 0, 0.08),
+        0 12px 24px rgba(0, 0, 0, 0.12);
+    
+    /* Extra Large Shadow */
+    --shadow-xl: 
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 4px 8px rgba(0, 0, 0, 0.08),
+        0 12px 24px rgba(0, 0, 0, 0.12),
+        0 24px 48px rgba(0, 0, 0, 0.15);
+    
+    /* 2XL Shadow (for modals) */
+    --shadow-2xl: 
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 4px 8px rgba(0, 0, 0, 0.08),
+        0 12px 24px rgba(0, 0, 0, 0.12),
+        0 24px 48px rgba(0, 0, 0, 0.15),
+        0 48px 96px rgba(0, 0, 0, 0.2);
+    
+    /* Inner Shadow (for pressed states) */
+    --shadow-inner: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    
+    /* ===================================== */
+    /* BRAND-SPECIFIC SHADOWS (DechBar Gold) */
+    /* ===================================== */
+    
+    /* Gold glow (subtle) */
+    --shadow-gold-subtle: 
+        0 4px 12px rgba(248, 202, 0, 0.2);
+    
+    /* Gold glow (medium) */
+    --shadow-gold: 
+        0 4px 16px rgba(248, 202, 0, 0.3),
+        0 8px 32px rgba(248, 202, 0, 0.2);
+    
+    /* Gold glow (strong) */
+    --shadow-gold-strong: 
+        0 4px 16px rgba(248, 202, 0, 0.4),
+        0 8px 32px rgba(248, 202, 0, 0.3),
+        0 16px 64px rgba(248, 202, 0, 0.2);
+    
+    /* Gold inner highlight (for premium feel) */
+    --shadow-gold-inner: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    
+    
+    /* ===================================== */
+    /* 4 TEMPERAMENTS GLOWS */
+    /* ===================================== */
+    
+    /* Sangvinik (Fun, Energy) - Red/Yellow */
+    --shadow-sangvinik: 
+        0 4px 16px rgba(255, 107, 107, 0.3),
+        0 8px 32px rgba(255, 217, 61, 0.2);
+    
+    /* Cholerik (Power, Efficiency) - Blue/Teal */
+    --shadow-cholerik: 
+        0 4px 16px rgba(45, 53, 97, 0.3),
+        0 8px 32px rgba(0, 201, 167, 0.2);
+    
+    /* Melancholik (Depth, Quality) - Purple */
+    --shadow-melancholik: 
+        0 4px 16px rgba(108, 92, 231, 0.3),
+        0 8px 32px rgba(162, 155, 254, 0.2);
+    
+    /* Flegmatik (Calm, Harmony) - Blue/Aqua */
+    --shadow-flegmatik: 
+        0 4px 16px rgba(116, 185, 255, 0.3),
+        0 8px 32px rgba(129, 236, 236, 0.2);
+    
+    
+    /* ===================================== */
+    /* SPRING ANIMATIONS (Apple-like) */
+    /* ===================================== */
+    
+    /* Spring bounce (button press) */
+    --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    /* Spring smooth (card entrance) */
+    --spring-smooth: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Apple ease (standard iOS) */
+    --apple-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+    
+    /* Elastic bounce (playful, Sangvinik) */
+    --elastic-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Smooth in-out (Flegmatik) */
+    --smooth-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    
+    /* ===================================== */
+    /* GRADIENT DEFINITIONS */
+    /* ===================================== */
+    
+    /* Gold gradient (luxusní) */
+    --gradient-gold: linear-gradient(
+        135deg,
+        #F8CA00 0%,
+        #FFD700 50%,
+        #F8CA00 100%
+    );
+    
+    /* Gold gradient (radial, pro spotlight) */
+    --gradient-gold-radial: radial-gradient(
+        circle at center,
+        #FFD700 0%,
+        #F8CA00 50%,
+        #E5B800 100%
+    );
+    
+    /* Temperament mesh gradient (all 4 colors) */
+    --gradient-temperament-mesh: 
+        radial-gradient(at 20% 30%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
+        radial-gradient(at 80% 20%, rgba(0, 201, 167, 0.15) 0%, transparent 50%),
+        radial-gradient(at 60% 70%, rgba(108, 92, 231, 0.15) 0%, transparent 50%),
+        radial-gradient(at 30% 80%, rgba(116, 185, 255, 0.15) 0%, transparent 50%);
+    
+    /* Glassmorphism gradient backgrounds */
+    --gradient-glass-light: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    
+    --gradient-glass-dark: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(0, 0, 0, 0.1) 100%
+    );
+}
+
+
+/* ===================================== */
+/* UTILITY CLASSES */
+/* ===================================== */
+
+/* Glass Card (iOS style) */
+.glass-card {
+    background: var(--glass-bg-light);
+    backdrop-filter: var(--glass-blur-medium);
+    -webkit-backdrop-filter: var(--glass-blur-medium);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border-light);
+    box-shadow: var(--shadow-lg), var(--shadow-gold-inner);
+}
+
+.glass-card--subtle {
+    background: var(--glass-bg-light-subtle);
+    backdrop-filter: var(--glass-blur-subtle);
+    -webkit-backdrop-filter: var(--glass-blur-subtle);
+}
+
+.glass-card--strong {
+    background: var(--glass-bg-light-strong);
+    backdrop-filter: var(--glass-blur-strong);
+    -webkit-backdrop-filter: var(--glass-blur-strong);
+}
+
+/* Dark mode glass */
+@media (prefers-color-scheme: dark) {
+    .glass-card {
+        background: var(--glass-bg-dark);
+        border: 1px solid var(--glass-border-dark);
+    }
+    
+    .glass-card--subtle {
+        background: var(--glass-bg-dark-subtle);
+    }
+    
+    .glass-card--strong {
+        background: var(--glass-bg-dark-strong);
+    }
+}
+
+
+/* Gold Button (gradient + glow) */
+.button--gold {
+    background: var(--gradient-gold);
+    background-size: 200% 200%;
+    box-shadow: var(--shadow-gold);
+    border: none;
+    color: #1a1a1a;
+    font-weight: 600;
+    transition: all 0.3s var(--spring-bounce);
+    position: relative;
+    overflow: hidden;
+}
+
+.button--gold:hover {
+    box-shadow: var(--shadow-gold-strong);
+    transform: translateY(-2px);
+}
+
+.button--gold:active {
+    transform: scale(0.97);
+    box-shadow: var(--shadow-gold-subtle);
+}
+
+/* Gold shimmer animation */
+.button--gold::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    animation: goldShimmer 3s infinite;
+}
+
+@keyframes goldShimmer {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+
+/* Elevated Card (multi-layer shadow) */
+.card--elevated {
+    box-shadow: var(--shadow-xl);
+    transition: all 0.3s var(--apple-ease);
+}
+
+.card--elevated:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-2xl);
+}
+
+
+/* Temperament Cards */
+.card--sangvinik {
+    border: 2px solid rgba(255, 107, 107, 0.3);
+    box-shadow: var(--shadow-sangvinik);
+}
+
+.card--cholerik {
+    border: 2px solid rgba(0, 201, 167, 0.3);
+    box-shadow: var(--shadow-cholerik);
+}
+
+.card--melancholik {
+    border: 2px solid rgba(108, 92, 231, 0.3);
+    box-shadow: var(--shadow-melancholik);
+}
+
+.card--flegmatik {
+    border: 2px solid rgba(116, 185, 255, 0.3);
+    box-shadow: var(--shadow-flegmatik);
+}
+
+
+/* Gold Text (gradient text) */
+.text--gold {
+    background: var(--gradient-gold);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: goldShimmerText 2s linear infinite;
+}
+
+@keyframes goldShimmerText {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+
+/* Mesh Background (for hero sections) */
+.mesh-background {
+    position: relative;
+    background: #ffffff;
+}
+
+.mesh-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-temperament-mesh);
+    pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .mesh-background {
+        background: #1a1a1a;
+    }
+}
+
+
+/* Skeleton Loader (shimmer effect) */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(200, 200, 200, 0.1) 0%,
+        rgba(200, 200, 200, 0.3) 50%,
+        rgba(200, 200, 200, 0.1) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@media (prefers-color-scheme: dark) {
+    .skeleton {
+        background: linear-gradient(
+            90deg,
+            rgba(50, 50, 50, 0.1) 0%,
+            rgba(50, 50, 50, 0.3) 50%,
+            rgba(50, 50, 50, 0.1) 100%
+        );
+        background-size: 200% 100%;
+    }
+}
+
+
+/* Ripple Effect (Material Design inspired) */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s, opacity 0.6s;
+    opacity: 0;
+}
+
+.ripple:active::after {
+    width: 300px;
+    height: 300px;
+    opacity: 1;
+    transition: 0s;
+}
+
+
+/* Floating Animation (for cards, badges) */
+.floating {
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+
+/* Pulse Animation (for notifications, new badges) */
+.pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+
+/* Scale Spring (button press) */
+.scale-spring {
+    transition: transform 0.3s var(--spring-bounce);
+}
+
+.scale-spring:active {
+    transform: scale(0.97);
+}
+
+
+/* Glow on Hover */
+.glow-on-hover {
+    transition: all 0.3s ease;
+}
+
+.glow-on-hover:hover {
+    box-shadow: var(--shadow-gold-strong);
+}
+
+
+/* ===================================== */
+/* USAGE EXAMPLES */
+/* ===================================== */
+
+/*
+Example 1: Glass Modal
+----------------------
+<div class="glass-card" style="padding: 2rem;">
+    <h2>Glassmorphism Modal</h2>
+    <p>iOS-style frosted glass effect</p>
+</div>
+
+
+Example 2: Gold CTA Button
+--------------------------
+<button class="button--gold ripple scale-spring">
+    Koupit nyní
+</button>
+
+
+Example 3: Elevated Card with Hover
+-----------------------------------
+<div class="card--elevated" style="padding: 1.5rem;">
+    <h3>Premium Feature</h3>
+    <p>Hover me for lift effect</p>
+</div>
+
+
+Example 4: Temperament Card (Sangvinik)
+---------------------------------------
+<div class="card--sangvinik glass-card" style="padding: 1.5rem;">
+    <h3>🎉 Fun Challenge!</h3>
+    <p>For playful personalities</p>
+</div>
+
+
+Example 5: Gold Gradient Text
+-----------------------------
+<h1 class="text--gold">
+    DechBar Premium
+</h1>
+
+
+Example 6: Hero with Mesh Background
+------------------------------------
+<section class="mesh-background" style="padding: 4rem;">
+    <h1>Welcome to DechBar</h1>
+    <p>Subtle 4-temperament gradient mesh</p>
+</section>
+
+
+Example 7: Skeleton Loading
+---------------------------
+<div class="skeleton" style="width: 100%; height: 20px; margin-bottom: 1rem;"></div>
+<div class="skeleton" style="width: 80%; height: 20px;"></div>
+
+
+Example 8: Floating Badge
+-------------------------
+<div class="floating" style="display: inline-block;">
+    <span class="badge">New!</span>
+</div>
+*/
+
+
+/* ===================================== */
+/* ACCESSIBILITY */
+/* ===================================== */
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .floating,
+    .pulse,
+    .button--gold::before,
+    .text--gold,
+    .skeleton {
+        animation: none !important;
+    }
+    
+    .scale-spring,
+    .glow-on-hover,
+    .card--elevated {
+        transition: none !important;
+    }
+}
+
+
+/* ===================================== */
+/* NOTES */
+/* ===================================== */
+
+/*
+Performance Tips:
+-----------------
+1. backdrop-filter je náročný na performance
+   → Použij pouze na small areas (modals, navbars)
+   → NE na celé stránky
+
+2. Gradient animace jsou GPU-accelerated
+   → Používej transform místo left/top
+   → Používej opacity místo visibility
+
+3. Multi-layer shadows
+   → Modern browsers handle well
+   → Fallback: jednotlivý shadow pro starší prohlížeče
+
+Browser Support:
+---------------
+✅ backdrop-filter: iOS 9+, Chrome 76+, Safari 9+
+✅ gradient-mesh: All modern browsers
+✅ cubic-bezier animations: All browsers
+⚠️ -webkit-backdrop-filter: Safari requirement
+
+Capacitor/Native:
+----------------
+✅ All effects work in WebView
+✅ Hardware acceleration enabled by default
+✅ Pair with Haptic Feedback for native feel
+
+Combining with Tailwind:
+------------------------
+Import this CSS, then use with Tailwind classes:
+
+<div class="glass-card p-6 rounded-2xl">
+    <h2 class="text--gold text-2xl font-bold">
+        Premium
+    </h2>
+</div>
+*/
