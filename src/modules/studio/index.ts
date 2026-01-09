@@ -7,14 +7,12 @@
 // Module will be implemented here
 // For now, export placeholder
 
-export function StudioModule() {
-  return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold text-gold">DechBar STUDIO</h1>
-      <p className="mt-4 text-gray-600">Coming soon...</p>
-    </div>
-  );
-}
+// Placeholder export - module not yet implemented
+export const StudioModule = {
+  name: 'studio',
+  version: '0.1.0',
+  status: 'planned'
+};
 
 // TODO: Export actual components, hooks, types when implemented
 // export { ExerciseBuilder } from './components/ExerciseBuilder';
