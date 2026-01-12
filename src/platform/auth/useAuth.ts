@@ -82,11 +82,7 @@ export function useAuth(): UseAuthReturn {
       setIsLoading(true);
       setError(null);
 
-      // Configure storage based on "Remember Me"
-      const storage = remember ? window.localStorage : window.sessionStorage;
-      
-      // Update supabase auth storage dynamically
-      // Note: This affects the current session's persistence
+      // Sign in with password
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,

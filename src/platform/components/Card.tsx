@@ -8,7 +8,7 @@
  * @subpackage Platform/Components
  */
 
-import { ReactNode, HTMLAttributes } from 'react';
+import type { ReactNode, HTMLAttributes } from 'react';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'glass' | 'solid' | 'elevated';

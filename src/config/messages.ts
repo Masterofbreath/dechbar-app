@@ -207,6 +207,7 @@ export const MESSAGES = {
     registerTitle: "Začni svou cestu!",
     forgotPasswordTitle: "Zapomenuté heslo?",
     resetPasswordTitle: "Nastav si nové heslo",
+    passwordResetSuccessTitle: "Heslo bylo změněno!",
     
     // Subtitles
     loginSubtitle: "Přihlaš se a pokračuj ve svém dechování",

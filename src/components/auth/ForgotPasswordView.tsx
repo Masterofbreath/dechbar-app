@@ -8,7 +8,8 @@
  * @subpackage Components/Auth
  */
 
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { useAuth } from '@/platform/auth';
 import { Button, Input, TextLink } from '@/platform/components';
 import { ErrorMessage } from '@/components/shared';

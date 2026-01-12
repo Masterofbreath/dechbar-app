@@ -8,7 +8,8 @@
  * @subpackage Components/Auth
  */
 
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/platform/auth';
 import { Button, Input, TextLink, Checkbox } from '@/platform/components';
@@ -128,7 +129,7 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
 
         {/* Error Message */}
         {(formError || authError) && (
-          <ErrorMessage message={formError || authError.message} />
+          <ErrorMessage message={formError || authError?.message || ''} />
         )}
 
         {/* Submit Button */}

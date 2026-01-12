@@ -8,7 +8,8 @@
  * @subpackage Components
  */
 
-import { ReactNode, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useAuth } from '@/platform/auth';
 import { AuthModal } from './auth/AuthModal';
 

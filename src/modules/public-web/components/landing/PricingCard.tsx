@@ -8,7 +8,7 @@
  * @subpackage Modules/PublicWeb
  */
 
-import { Button, Card } from '@/platform';
+import { Button } from '@/platform';
 
 export interface PricingCardProps {
   title: string;

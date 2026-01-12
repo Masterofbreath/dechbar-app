@@ -8,7 +8,8 @@
  * @subpackage Platform/Components
  */
 
-import { InputHTMLAttributes, useState, ChangeEvent } from 'react';
+import { useState } from 'react';
+import type { InputHTMLAttributes, ChangeEvent } from 'react';
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'onFocus'> {
   label: string;

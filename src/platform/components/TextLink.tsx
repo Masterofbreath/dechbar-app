@@ -8,7 +8,7 @@
  * @subpackage Platform/Components
  */
 
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 export interface TextLinkProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   muted?: boolean;
