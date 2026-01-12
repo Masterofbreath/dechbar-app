@@ -1,0 +1,350 @@
+/**
+ * Modals - Base Styles (Brand Book 2.0 - Dark-First)
+ * 
+ * Shared styles for ALL modal components in DechBar App.
+ * Dark mode elevated surfaces with subtle glassmorphism.
+ * All colors reference design tokens for single source of truth.
+ * 
+ * @see /docs/brand/VISUAL_BRAND_BOOK.md - Modal guidelines
+ * @package DechBar_App
+ * @subpackage Styles/Modals
+ * @version 2.0.0
+ */
+
+/* ===================================
+   MODAL VARIABLES (reference tokens)
+   =================================== */
+
+:root {
+  /* Modal-specific colors */
+  --modal-overlay-bg: rgba(0, 0, 0, 0.85);      /* Dark overlay */
+  --modal-card-bg: var(--color-surface-elevated); /* #2A2A2A */
+  --modal-border: rgba(255, 255, 255, 0.05);    /* Subtle border */
+  
+  /* Modal spacing */
+  --modal-padding: 2rem;
+  --modal-padding-mobile: 1.5rem;
+  --modal-max-width: 440px;
+  
+  /* Modal animations */
+  --modal-transition-duration: 0.3s;
+  --modal-transition-timing: cubic-bezier(0.25, 0.1, 0.25, 1); /* Apple timing */
+}
+
+/* ===================================
+   MODAL OVERLAY - Dark background with blur
+   =================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;  /* Matches tailwind config modal z-index */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--modal-overlay-bg);  /* Dark semi-transparent */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: modal-fade-in var(--modal-transition-duration) var(--modal-transition-timing);
+}
+
+/* Subtle ambient particles (premium touch) */
+.modal-overlay::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(44, 190, 198, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(214, 162, 58, 0.03) 0%, transparent 50%);
+  animation: particles-float 20s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes particles-float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, -30px); }
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===================================
+   MODAL CARD - Dark elevated surface
+   =================================== */
+
+.modal-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--modal-max-width);
+  background: var(--modal-card-bg);  /* Dark elevated #2A2A2A */
+  backdrop-filter: blur(20px);       /* Subtle glassmorphism */
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--modal-border);
+  border-radius: 1.5rem;
+  padding: var(--modal-padding);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.5),   /* Prominent shadow for dark mode */
+    0 8px 16px rgba(0, 0, 0, 0.3);
+  animation: 
+    modal-slide-up var(--modal-transition-duration) var(--modal-transition-timing),
+    modal-breathe 4s ease-in-out infinite 0.5s;  /* Breathing starts after slide-up */
+  overflow: hidden;
+  
+  /* Text color */
+  color: var(--color-text-primary);  /* Off-white #E0E0E0 */
+}
+
+@keyframes modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Breathing animation - very subtle "living" effect */
+@keyframes modal-breathe {
+  0%, 100% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(1.005);  /* 0.5% - very subtle */
+  }
+}
+
+/* ===================================
+   MODAL HEADER
+   =================================== */
+
+.modal-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: clamp(24px, 5vw, 28px);  /* Responsive: 24px mobile, 28px desktop */
+  font-weight: var(--font-weight-bold); /* 700 */
+  font-family: var(--font-family-base); /* Inter */
+  color: var(--color-text-primary);     /* #E0E0E0 */
+  letter-spacing: -0.03em;  /* Tighter for premium feel */
+  line-height: 1.2;  /* Tighter line-height */
+  margin: 0 0 0.5rem 0;
+}
+
+.modal-subtitle {
+  font-size: var(--font-size-sm);       /* 14px */
+  font-weight: var(--font-weight-regular); /* 400 */
+  color: var(--color-text-secondary);   /* #A0A0A0 */
+  line-height: var(--line-height-normal);  /* 1.5 */
+  margin: 0;
+}
+
+/* ===================================
+   MODAL FOOTER
+   =================================== */
+
+.modal-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);  /* #2A2A2A */
+  text-align: center;
+}
+
+.modal-footer-text {
+  font-size: var(--font-size-sm);       /* 14px */
+  color: var(--color-text-secondary);   /* #A0A0A0 */
+  margin: 0;
+}
+
+/* ===================================
+   MODAL CLOSE BUTTON
+   =================================== */
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-text-secondary);  /* #A0A0A0 */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);  /* #E0E0E0 */
+  transform: scale(1.05);
+}
+
+.modal-close:active {
+  transform: scale(0.95);
+}
+
+.modal-close:focus-visible {
+  outline: 2px solid var(--color-primary);  /* Teal focus */
+  outline-offset: 2px;
+}
+
+.modal-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===================================
+   RESPONSIVE - Mobile
+   =================================== */
+
+@media (max-width: 390px) {
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+  
+  .modal-card {
+    padding: var(--modal-padding-mobile);
+    border-radius: 1.25rem;
+    max-width: none;
+  }
+  
+  .modal-title {
+    font-size: var(--font-size-xl);  /* 20px on mobile */
+  }
+  
+  .modal-header {
+    margin-bottom: 1.25rem;
+  }
+  
+  .modal-footer {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) {
+  .modal-card {
+    min-width: 400px;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-card,
+  .modal-close {
+    animation: none;
+    transition: none;
+  }
+  
+  .modal-overlay::before {
+    animation: none;
+  }
+}
+
+/* High contrast */
+@media (prefers-contrast: high) {
+  .modal-card {
+    border: 2px solid var(--color-text-tertiary);
+  }
+  
+  .modal-footer {
+    border-top-width: 2px;
+  }
+}
+
+/* Focus trap (prevent background scroll when modal open) */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* ===================================
+   MODAL VARIANTS (optional)
+   =================================== */
+
+/* Success modal (with teal accent) */
+.modal-card--success .modal-title {
+  color: var(--color-success);  /* Green */
+}
+
+/* Error modal (with red accent) */
+.modal-card--error .modal-title {
+  color: var(--color-error);  /* Red */
+}
+
+/* Premium modal (with gold accent) */
+.modal-card--premium {
+  border-color: rgba(214, 162, 58, 0.2);  /* Gold border */
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(214, 162, 58, 0.1);  /* Gold glow */
+}
+
+/* ===================================
+   USAGE EXAMPLES
+   =================================== */
+
+/*
+Basic Modal:
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close">
+        <svg>...</svg>
+      </button>
+      
+      <div class="modal-header">
+        <h2 class="modal-title">Welcome</h2>
+        <p class="modal-subtitle">Sign in to continue</p>
+      </div>
+      
+      <div class="modal-content">
+        <!-- Form content -->
+      </div>
+      
+      <div class="modal-footer">
+        <p class="modal-footer-text">
+          Don't have an account? <a href="#">Sign up</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+Success Modal:
+  <div class="modal-card modal-card--success">
+    <div class="modal-header">
+      <h2 class="modal-title">Success!</h2>
+      <p class="modal-subtitle">Your account has been created</p>
+    </div>
+  </div>
+
+Premium Modal (with gold accent):
+  <div class="modal-card modal-card--premium">
+    <div class="modal-header">
+      <h2 class="modal-title">Premium Feature</h2>
+      <p class="modal-subtitle">Unlock advanced breathing exercises</p>
+    </div>
+  </div>
+*/

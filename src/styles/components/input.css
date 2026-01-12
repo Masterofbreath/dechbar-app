@@ -1,0 +1,373 @@
+/**
+ * Input Component - Brand Book 2.0 (Dark-First)
+ * 
+ * Premium dark mode inputs with teal focus states and off-white text.
+ * All colors reference design tokens for single source of truth.
+ * 
+ * @see /docs/brand/VISUAL_BRAND_BOOK.md - Input guidelines
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+/* ===================================
+   INPUT VARIABLES (reference tokens)
+   =================================== */
+
+:root {
+  /* Input colors (dark mode) */
+  --input-bg: var(--color-surface);           /* #1E1E1E */
+  --input-bg-hover: rgba(42, 42, 42, 0.5);    /* Slightly lighter */
+  --input-border: var(--color-border);        /* #2A2A2A */
+  --input-border-hover: rgba(44, 190, 198, 0.3);  /* Teal 30% */
+  --input-border-focus: var(--color-primary); /* Teal #2CBEC6 */
+  --input-text: var(--color-text-primary);    /* #E0E0E0 */
+  --input-placeholder: var(--color-text-tertiary);  /* #707070 */
+  --input-error: var(--color-error);          /* #EF4444 */
+  --input-disabled-bg: rgba(30, 30, 30, 0.5);
+  
+  /* Input sizing */
+  --input-padding-x: 16px;
+  --input-padding-y: 12px;
+  --input-font-size: 16px;
+  --input-border-radius: 12px;  /* Modern rounded (Brand Book) */
+  
+  /* Input transitions */
+  --input-transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1); /* Apple timing */
+}
+
+/* ===================================
+   INPUT CONTAINER
+   =================================== */
+
+.input-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* Full width utility */
+.input-container.w-full {
+  width: 100%;
+}
+
+/* ===================================
+   FLOATING LABEL (Modern pattern)
+   =================================== */
+
+.input-label {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-size: 16px;
+  font-weight: var(--font-weight-semibold);  /* 600 */
+  color: var(--input-placeholder);           /* #707070 */
+  pointer-events: none;
+  transition: var(--input-transition);
+  background: transparent;                  /* Transparent for inline label */
+  padding: 0 4px;
+  z-index: 1;
+}
+
+/* Active state - label moves up */
+.input-label--active {
+  top: -10px;
+  left: 12px;
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);    /* 700 */
+  color: var(--input-border-focus);        /* Teal */
+  letter-spacing: var(--letter-spacing-wide);  /* 0.02em */
+  background: var(--color-background);     /* Dark background when label is on top */
+  padding: 0 6px;                          /* Better readability */
+  border-radius: 4px;                      /* Premium feel */
+}
+
+/* Error state label */
+.input-label--error {
+  color: var(--input-error);  /* Red */
+}
+
+/* ===================================
+   INPUT WRAPPER
+   =================================== */
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ===================================
+   INPUT FIELD - DARK MODE PREMIUM
+   =================================== */
+
+.input-field {
+  /* Layout */
+  width: 100%;
+  padding: var(--input-padding-y) var(--input-padding-x);
+  
+  /* Typography */
+  font-size: var(--input-font-size);
+  font-family: var(--font-family-base);    /* Inter */
+  font-weight: var(--font-weight-regular); /* 400 */
+  line-height: 1.5;
+  color: var(--input-text);                /* Off-white #E0E0E0 */
+  
+  /* Appearance */
+  background: var(--input-bg);             /* Dark surface #1E1E1E */
+  border: 1px solid var(--input-border);   /* #2A2A2A */
+  border-radius: var(--input-border-radius);
+  outline: none;
+  
+  /* Interaction */
+  transition: var(--input-transition);
+  cursor: text;
+  
+  /* Accessibility */
+  min-height: 44px;  /* Minimum touch target */
+}
+
+/* Placeholder */
+.input-field::placeholder {
+  color: var(--input-placeholder);  /* #707070 */
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.input-field:focus::placeholder {
+  opacity: 1;
+}
+
+/* Subtle hover effect - ONLY border, NO background change */
+.input-field:hover:not(:focus):not(:disabled) {
+  border-color: var(--input-border-hover);  /* Teal 30% */
+  /* Background change removed to prevent floating label visual issues */
+}
+
+/* Focus State - Teal glow effect (PREMIUM!) */
+.input-wrapper--focused .input-field,
+.input-field:focus {
+  border-color: var(--input-border-focus);  /* Teal #2CBEC6 */
+  box-shadow: 
+    0 0 0 2px rgba(44, 190, 198, 0.15),     /* Teal outer glow */
+    0 1px 2px rgba(0, 0, 0, 0.4);           /* Subtle elevation */
+}
+
+/* Error State */
+.input-wrapper--error .input-field {
+  border-color: var(--input-error);  /* Red */
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+}
+
+/* Disabled State */
+.input-field:disabled {
+  background: var(--input-disabled-bg);
+  color: var(--color-text-tertiary);  /* #707070 */
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-color: transparent;
+}
+
+/* Password field - extra padding for toggle button */
+.input-field--has-icon {
+  padding-right: 48px;
+}
+
+/* ===================================
+   PASSWORD TOGGLE BUTTON (IconButton)
+   =================================== */
+
+.input-icon-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-text-tertiary);  /* #707070 */
+  cursor: pointer;
+  transition: var(--input-transition);
+  flex-shrink: 0;
+}
+
+.input-icon-btn:hover {
+  background: rgba(44, 190, 198, 0.1);  /* Teal 10% */
+  color: var(--color-primary);          /* Teal */
+}
+
+.input-icon-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.input-icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.input-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===================================
+   HELPER TEXT & ERROR MESSAGE
+   =================================== */
+
+.input-message {
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);  /* 500 */
+  color: var(--color-text-secondary);      /* #A0A0A0 */
+  margin: 8px 0 0 4px;
+  line-height: 1.4;
+}
+
+.input-message--error {
+  color: var(--input-error);               /* Red */
+  font-weight: var(--font-weight-semibold); /* 600 */
+}
+
+/* ===================================
+   PREMIUM MICROINTERACTIONS
+   =================================== */
+
+/* Smooth transition on value change */
+.input-field {
+  will-change: border-color, box-shadow;
+}
+
+/* Label animation */
+.input-label {
+  will-change: top, font-size, color;
+}
+
+/* Subtle pulse on error */
+@keyframes error-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+}
+
+.input-wrapper--error .input-field {
+  animation: error-pulse 0.3s ease;
+}
+
+/* ===================================
+   RESPONSIVE - Mobile Optimization
+   =================================== */
+
+@media (max-width: 390px) {
+  :root {
+    --input-padding-y: 10px;
+    --input-padding-x: 14px;
+    --input-font-size: 16px; /* Prevent iOS zoom */
+    --input-border-radius: 10px;
+  }
+  
+  .input-label {
+    font-size: 15px;
+    top: 12px;
+  }
+  
+  .input-label--active {
+    font-size: 11px;
+    top: -9px;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .input-field {
+    border-width: 2px;
+  }
+  
+  .input-field:focus {
+    border-width: 3px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .input-field,
+  .input-label,
+  .input-icon-btn {
+    transition: none;
+  }
+  
+  .input-wrapper--error .input-field {
+    animation: none;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.input-field:focus-visible {
+  outline: 2px solid var(--input-border-focus);
+  outline-offset: 2px;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===================================
+   USAGE EXAMPLES
+   =================================== */
+
+/*
+Standard Input:
+  <div class="input-container">
+    <label class="input-label">Email</label>
+    <div class="input-wrapper">
+      <input 
+        type="email" 
+        class="input-field"
+        placeholder="your@email.com"
+      />
+    </div>
+  </div>
+
+Password Input with Toggle:
+  <div class="input-container">
+    <label class="input-label">Password</label>
+    <div class="input-wrapper">
+      <input 
+        type="password" 
+        class="input-field input-field--has-icon"
+        placeholder="Enter password"
+      />
+      <button class="input-icon-btn">
+        <svg>...</svg>
+      </button>
+    </div>
+  </div>
+
+Input with Error:
+  <div class="input-container">
+    <label class="input-label input-label--error">Email</label>
+    <div class="input-wrapper input-wrapper--error">
+      <input 
+        type="email" 
+        class="input-field"
+        value="invalid"
+      />
+    </div>
+    <p class="input-message input-message--error">
+      Please enter a valid email
+    </p>
+  </div>
+*/

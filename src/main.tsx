@@ -3,6 +3,12 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { validateEnv } from './config'
 import './styles/globals.css'
+import './styles/components/input.css'      // Premium Input component styles
+import './styles/components/button.css'     // Premium Button component styles
+import './styles/components/icon-button.css' // Premium IconButton component styles
+import './styles/components/checkbox.css'   // Premium Checkbox component styles
+import './styles/modals.css'  // Base modal styles (shared)
+import './styles/auth.css'    // Auth-specific styles
 import App from './App.tsx'
 
 // Validate environment variables before app starts

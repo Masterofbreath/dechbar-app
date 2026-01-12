@@ -25,11 +25,60 @@ PROJECT_GUIDE.md is the master navigation file that explains:
 
 ## 📚 MANDATORY READING (Priority Order):
 1. `PROJECT_GUIDE.md` - Master navigation (START HERE!)
-2. `WORKFLOW.md` ⭐ - **Git workflow (LOCAL → PREVIEW → PROD) - CRITICAL!**
-3. `docs/design-system/01_PHILOSOPHY.md` - UX philosophy (4 Temperaments - ALWAYS!)
-4. `docs/architecture/00_OVERVIEW.md` - System architecture
-5. `docs/api/PLATFORM_API.md` - Platform API reference
-6. This file - React-specific coding rules
+2. **🤖 Agent Qualification System** ⭐ - **FOLLOW DECISION TREE IN PROJECT_GUIDE.md!**
+   - Find Study Guide for your task type
+   - Read relevant documentation
+   - Give feedback BEFORE implementing
+   - Wait for approval
+3. `WORKFLOW.md` ⭐ - **Git workflow (LOCAL → PREVIEW → PROD) - CRITICAL!**
+4. `docs/design-system/01_PHILOSOPHY.md` - UX philosophy (4 Temperaments - ALWAYS!)
+5. `docs/architecture/00_OVERVIEW.md` - System architecture
+6. `docs/api/PLATFORM_API.md` - Platform API reference
+7. This file - React-specific coding rules
+
+---
+
+## 🤖 AGENT QUALIFICATION SYSTEM
+
+**⚠️ MANDATORY FOR ALL NEW AGENTS!**
+
+### **Process:**
+```
+1. User gives you task
+2. Open PROJECT_GUIDE.md
+3. Find "🤖 FOR NEW AI AGENTS" section
+4. Use decision tree → find your Study Guide
+5. Read Study Guide
+6. Give feedback (návrh, plán)
+7. WAIT for approval
+8. THEN implement
+```
+
+### **Decision Tree (Quick Reference):**
+- `button`, `input`, `form` → UI_COMPONENTS.md
+- `card`, `modal`, `dialog` → LAYOUT_COMPONENTS.md
+- `table`, `list`, `chart` → DATA_DISPLAY.md
+- `audio`, `player`, `video` → MEDIA_COMPONENTS.md
+- `animation`, `transition` → ANIMATIONS.md
+- `navigation`, `menu`, `tabs` → NAVIGATION.md
+- `notification`, `toast`, `alert` → FEEDBACK.md
+- `heading`, `text`, `paragraph` → TYPOGRAPHY.md
+- `module`, `studio`, `challenges` → 03_MODULE_CREATION.md
+- `login`, `register`, `page` → 02_FEATURE_IMPLEMENTATION.md
+- `bug`, `fix`, `refactor` → 05_BUG_FIX_REFACTOR.md
+- **Not sure?** → 01_GENERAL_ONBOARDING.md
+
+### **Full docs:**
+- [Agent Tests README](docs/development/agent-tests/README.md)
+- [All Study Guides](docs/development/agent-tests/components/)
+
+### **⚠️ RULES:**
+```
+❌ NEVER implement before Study Guide
+❌ NEVER implement before user approval
+✅ ALWAYS give feedback first
+✅ ALWAYS wait for approval
+```
 
 ## 🎯 PROJECT OVERVIEW
 - **Platform:** React 18 + TypeScript (Vite)

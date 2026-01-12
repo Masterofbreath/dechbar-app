@@ -1,0 +1,163 @@
+/**
+ * Error Message Component - Brand Book 2.0 (Dark-First)
+ * 
+ * Global standardized error messages for forms, auth, and validation.
+ * All colors reference design tokens for single source of truth.
+ * 
+ * @see /docs/brand/VISUAL_BRAND_BOOK.md - Error states
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+/* ============================================================
+   ERROR MESSAGE VARIABLES (reference tokens)
+   ============================================================ */
+
+:root {
+  /* Error message colors - all reference design tokens */
+  --error-message-bg: rgba(239, 68, 68, 0.1);     /* Error 10% opacity */
+  --error-message-border: rgba(239, 68, 68, 0.3); /* Error 30% opacity */
+  --error-message-text: var(--color-text-primary); /* Off-white #E0E0E0 */
+  --error-message-icon: var(--color-error);        /* Red #EF4444 */
+  
+  /* Warning variant */
+  --warning-message-bg: rgba(245, 158, 11, 0.1);
+  --warning-message-border: rgba(245, 158, 11, 0.3);
+  --warning-message-icon: var(--color-warning);    /* Orange #F59E0B */
+  
+  /* Info variant */
+  --info-message-bg: rgba(44, 190, 198, 0.1);      /* Teal 10% */
+  --info-message-border: rgba(44, 190, 198, 0.3);  /* Teal 30% */
+  --info-message-icon: var(--color-primary);       /* Teal #2CBEC6 */
+  
+  /* Success variant */
+  --success-message-bg: rgba(16, 185, 129, 0.1);
+  --success-message-border: rgba(16, 185, 129, 0.3);
+  --success-message-icon: var(--color-success);    /* Green #10B981 */
+}
+
+/* ============================================================
+   BASE ERROR MESSAGE STYLES
+   ============================================================ */
+
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--error-message-bg);
+  border: 1px solid var(--error-message-border);
+  border-radius: 12px;  /* Brand Book radius */
+  margin-bottom: 1rem;
+  animation: error-message-slide-in 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Icon */
+.error-message__icon {
+  width: 20px;
+  height: 20px;
+  color: var(--error-message-icon);
+  flex-shrink: 0;
+  margin-top: 2px;  /* Align with text baseline */
+}
+
+/* Text */
+.error-message__text {
+  font-size: var(--font-size-sm);       /* 14px */
+  font-weight: var(--font-weight-medium); /* 500 */
+  color: var(--error-message-text);     /* Off-white */
+  line-height: var(--line-height-normal); /* 1.5 */
+  margin: 0;
+}
+
+/* ============================================================
+   VARIANTS
+   ============================================================ */
+
+/* Warning variant */
+.error-message--warning {
+  background: var(--warning-message-bg);
+  border-color: var(--warning-message-border);
+}
+
+.error-message--warning .error-message__icon {
+  color: var(--warning-message-icon);
+}
+
+/* Info variant */
+.error-message--info {
+  background: var(--info-message-bg);
+  border-color: var(--info-message-border);
+}
+
+.error-message--info .error-message__icon {
+  color: var(--info-message-icon);
+}
+
+/* Success variant */
+.error-message--success {
+  background: var(--success-message-bg);
+  border-color: var(--success-message-border);
+}
+
+.error-message--success .error-message__icon {
+  color: var(--success-message-icon);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes error-message-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 390px) {
+  .error-message {
+    padding: 0.875rem;
+    gap: 0.625rem;
+  }
+  
+  .error-message__icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .error-message__text {
+    font-size: 13px;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .error-message {
+    animation: none;
+  }
+}
+
+/* High contrast */
+@media (prefers-contrast: high) {
+  .error-message {
+    border-width: 2px;
+  }
+}
+
+/* Screen reader announcement */
+.error-message[role="alert"] {
+  /* Automatic ARIA live region */
+}

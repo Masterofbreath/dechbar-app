@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../api/supabase';
 import type { User, SignInCredentials, SignUpCredentials } from './types';
+import { getVocative } from '@/utils/inflection';
 
 interface UseAuthReturn {
   user: User | null;
@@ -36,6 +37,7 @@ export function useAuth(): UseAuthReturn {
           id: session.user.id,
           email: session.user.email!,
           full_name: session.user.user_metadata.full_name,
+          vocative_name: session.user.user_metadata.vocative_name,
           avatar_url: session.user.user_metadata.avatar_url,
         });
       } else {
@@ -63,6 +65,7 @@ export function useAuth(): UseAuthReturn {
           id: session.user.id,
           email: session.user.email!,
           full_name: session.user.user_metadata.full_name,
+          vocative_name: session.user.user_metadata.vocative_name,
           avatar_url: session.user.user_metadata.avatar_url,
         });
       }
@@ -74,17 +77,33 @@ export function useAuth(): UseAuthReturn {
     }
   }
 
-  async function signIn({ email, password }: SignInCredentials) {
+  async function signIn({ email, password, remember = true }: SignInCredentials) {
     try {
       setIsLoading(true);
       setError(null);
 
+      // Configure storage based on "Remember Me"
+      const storage = remember ? window.localStorage : window.sessionStorage;
+      
+      // Update supabase auth storage dynamically
+      // Note: This affects the current session's persistence
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+      
+      // If remember=false, we need to move the session to sessionStorage
+      if (!remember) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // Remove from localStorage
+          localStorage.removeItem('dechbar-auth');
+          // Store in sessionStorage
+          sessionStorage.setItem('dechbar-auth', JSON.stringify(session));
+        }
+      }
     } catch (err) {
       console.error('Error signing in:', err);
       setError(err as Error);
@@ -94,10 +113,13 @@ export function useAuth(): UseAuthReturn {
     }
   }
 
-  async function signUp({ email, password, full_name }: SignUpCredentials) {
+  async function signUp({ email, password, full_name, gdpr_consent, gdpr_consent_date }: SignUpCredentials) {
     try {
       setIsLoading(true);
       setError(null);
+
+      // Auto-generate vocative for personalized greetings
+      const vocative_name = full_name ? getVocative(full_name) : undefined;
 
       const { error } = await supabase.auth.signUp({
         email,
@@ -105,6 +127,9 @@ export function useAuth(): UseAuthReturn {
         options: {
           data: {
             full_name,
+            vocative_name, // Auto-generated vocative (5th case)
+            gdpr_consent,
+            gdpr_consent_date,
           },
         },
       });

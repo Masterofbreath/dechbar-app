@@ -17,7 +17,28 @@ export { useModules, useModule, useUserModules } from './modules';
 export type { Module, UserModule, ModuleManifest } from './modules';
 
 // API
-export { supabase } from './api/supabase';
+export { supabase, usePublicStats } from './api';
+export type { PublicStats } from './api';
+
+// Components
+export { 
+  Button, 
+  IconButton, 
+  TextLink, 
+  Input, 
+  Checkbox, 
+  Card,
+  Logo 
+} from './components';
+export type { 
+  ButtonProps, 
+  IconButtonProps, 
+  TextLinkProps, 
+  InputProps, 
+  CheckboxProps, 
+  CardProps,
+  LogoProps 
+} from './components';
 
 // Types (re-export from types folder)
 export type * from './types';

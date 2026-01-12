@@ -1,0 +1,347 @@
+/**
+ * Checkbox Component - Brand Book 2.0 (Dark-First)
+ * 
+ * Teal checked state, dark surface, premium microinteractions.
+ * All colors reference design tokens for single source of truth.
+ * 
+ * @see /docs/brand/VISUAL_BRAND_BOOK.md - Checkbox guidelines
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+/* ===================================
+   CHECKBOX VARIABLES (reference tokens)
+   =================================== */
+
+:root {
+  /* Checkbox colors (dark mode) */
+  --checkbox-bg: var(--color-surface);          /* #1E1E1E */
+  --checkbox-border: var(--color-border);       /* #2A2A2A */
+  --checkbox-border-hover: var(--color-primary); /* Teal */
+  --checkbox-checked-bg: var(--color-primary);   /* Teal #2CBEC6 */
+  --checkbox-checked-border: var(--color-primary);
+  --checkbox-checkmark: var(--color-background); /* Dark #121212 */
+  --checkbox-focus: var(--color-primary);        /* Teal */
+  --checkbox-disabled: rgba(30, 30, 30, 0.5);
+  --checkbox-label-color: var(--color-text-primary);  /* #E0E0E0 */
+  --checkbox-label-color-hover: var(--color-text-primary);
+  
+  /* Checkbox sizing */
+  --checkbox-size: 20px;
+  --checkbox-border-width: 2px;
+  --checkbox-border-radius: 6px;  /* Soft-square (Brand Book) */
+  
+  /* Checkbox transitions */
+  --checkbox-transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1); /* Apple timing */
+}
+
+/* ===================================
+   CHECKBOX CONTAINER
+   =================================== */
+
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;  /* Minimum touch target */
+}
+
+.checkbox-container:has(.checkbox-input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ===================================
+   CUSTOM CHECKBOX (Hidden native)
+   =================================== */
+
+.checkbox-input {
+  /* Hide native checkbox */
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ===================================
+   CUSTOM CHECKBOX BOX
+   =================================== */
+
+.checkbox-box {
+  /* Layout */
+  position: relative;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  flex-shrink: 0;
+  
+  /* Appearance */
+  background: var(--checkbox-bg);          /* Dark surface #1E1E1E */
+  border: var(--checkbox-border-width) solid var(--checkbox-border);
+  border-radius: var(--checkbox-border-radius);
+  
+  /* Interaction */
+  transition: var(--checkbox-transition);
+  cursor: pointer;
+  
+  /* Checkmark setup */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hover state */
+.checkbox-container:hover .checkbox-box {
+  border-color: var(--checkbox-border-hover);  /* Teal */
+  transform: scale(1.05);
+  box-shadow: 0 0 0 4px rgba(44, 190, 198, 0.1);  /* Teal glow */
+}
+
+/* Focus state (keyboard navigation) */
+.checkbox-input:focus-visible + .checkbox-box {
+  outline: 2px solid var(--checkbox-focus);  /* Teal */
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(44, 190, 198, 0.15);
+}
+
+/* Checked state - Teal background */
+.checkbox-input:checked + .checkbox-box {
+  background: var(--checkbox-checked-bg);       /* Teal #2CBEC6 */
+  border-color: var(--checkbox-checked-border); /* Teal */
+  transform: scale(1);
+}
+
+/* Checked + Hover */
+.checkbox-container:hover .checkbox-input:checked + .checkbox-box {
+  background: var(--color-primary-light);  /* Lighter teal #6ADBE0 */
+  transform: scale(1.05);
+}
+
+/* Disabled state */
+.checkbox-input:disabled + .checkbox-box {
+  background: var(--checkbox-disabled);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+/* ===================================
+   CHECKMARK (SVG)
+   =================================== */
+
+.checkbox-checkmark {
+  /* SVG positioning */
+  width: 12px;
+  height: 12px;
+  stroke: var(--checkbox-checkmark);  /* Dark #121212 on teal */
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  
+  /* Animation */
+  opacity: 0;
+  transform: scale(0);
+  transition: var(--checkbox-transition);
+}
+
+/* Show checkmark when checked */
+.checkbox-input:checked + .checkbox-box .checkbox-checkmark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Checkmark path animation */
+.checkbox-checkmark-path {
+  stroke-dasharray: 16;
+  stroke-dashoffset: 16;
+  transition: stroke-dashoffset 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.checkbox-input:checked + .checkbox-box .checkbox-checkmark-path {
+  stroke-dashoffset: 0;
+}
+
+/* ===================================
+   CHECKBOX LABEL
+   =================================== */
+
+.checkbox-label {
+  /* Typography */
+  font-size: 14px;
+  font-weight: var(--font-weight-regular);  /* 400 */
+  font-family: var(--font-family-base);     /* Inter */
+  line-height: 1.5;
+  color: var(--checkbox-label-color);       /* Off-white #E0E0E0 */
+  
+  /* Layout */
+  flex: 1;
+  cursor: pointer;
+  
+  /* Interaction */
+  transition: color 0.2s ease;
+}
+
+/* Hover label */
+.checkbox-container:hover .checkbox-label {
+  color: var(--checkbox-label-color-hover);
+}
+
+/* Label with links (GDPR, terms) */
+.checkbox-label a {
+  color: var(--color-primary);  /* Teal links */
+  text-decoration: underline;
+  font-weight: var(--font-weight-semibold);  /* 600 */
+  transition: color 0.2s ease;
+}
+
+.checkbox-label a:hover {
+  color: var(--color-primary-light);  /* Lighter teal */
+}
+
+/* Required asterisk */
+.checkbox-label .text-required {
+  color: var(--color-error);  /* Red */
+  margin-left: 2px;
+}
+
+/* ===================================
+   PREMIUM MICROINTERACTIONS
+   =================================== */
+
+/* Checkbox click animation */
+@keyframes checkbox-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.checkbox-input:checked + .checkbox-box {
+  animation: checkbox-bounce 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Ripple effect on click */
+.checkbox-box::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(44, 190, 198, 0.2);  /* Teal ripple */
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+  pointer-events: none;
+}
+
+.checkbox-container:active .checkbox-box::before {
+  width: 40px;
+  height: 40px;
+}
+
+/* ===================================
+   RESPONSIVE - Mobile
+   =================================== */
+
+@media (max-width: 390px) {
+  :root {
+    --checkbox-size: 22px;  /* Slightly larger for easier tapping */
+  }
+  
+  .checkbox-label {
+    font-size: 15px;  /* Prevent iOS zoom */
+  }
+  
+  .checkbox-container {
+    gap: 10px;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .checkbox-box {
+    border-width: 3px;
+  }
+  
+  .checkbox-input:checked + .checkbox-box {
+    border: 3px solid var(--color-background);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .checkbox-box,
+  .checkbox-checkmark,
+  .checkbox-checkmark-path,
+  .checkbox-label {
+    transition: none;
+    animation: none;
+  }
+  
+  .checkbox-box::before {
+    transition: none;
+  }
+}
+
+/* Focus visible indicator */
+.checkbox-input:focus-visible + .checkbox-box {
+  outline: 2px solid var(--checkbox-focus);
+  outline-offset: 2px;
+}
+
+/* ===================================
+   USAGE EXAMPLES
+   =================================== */
+
+/*
+Basic Checkbox:
+  <label class="checkbox-container">
+    <input type="checkbox" class="checkbox-input" />
+    <span class="checkbox-box">
+      <svg class="checkbox-checkmark">
+        <path class="checkbox-checkmark-path" d="M4 10 L8 14 L16 6" />
+      </svg>
+    </span>
+    <span class="checkbox-label">
+      I agree to the terms
+    </span>
+  </label>
+
+Checkbox with Links (GDPR):
+  <label class="checkbox-container">
+    <input type="checkbox" class="checkbox-input" required />
+    <span class="checkbox-box">
+      <svg class="checkbox-checkmark">
+        <path class="checkbox-checkmark-path" d="M4 10 L8 14 L16 6" />
+      </svg>
+    </span>
+    <span class="checkbox-label">
+      I agree to 
+      <a href="/gdpr" target="_blank">GDPR</a>
+      and
+      <a href="/terms" target="_blank">terms</a>
+      <span class="text-required">*</span>
+    </span>
+  </label>
+
+Disabled Checkbox:
+  <label class="checkbox-container">
+    <input type="checkbox" class="checkbox-input" disabled />
+    <span class="checkbox-box">
+      <svg class="checkbox-checkmark">
+        <path class="checkbox-checkmark-path" d="M4 10 L8 14 L16 6" />
+      </svg>
+    </span>
+    <span class="checkbox-label">
+      Unavailable option
+    </span>
+  </label>
+*/
