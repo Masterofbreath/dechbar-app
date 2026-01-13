@@ -1,16 +1,4 @@
-# Design System Overview - Brand Book 2.0
-
-## Brand Book 2.0: Dark-First Premium Tech-Wellbeing
-
-DechBar's design system follows the **Visual Brand Book 2.0** principles:
-
-- **Dark-First:** Premium dark mode (#121212) as default
-- **Calm by Default:** Minimal UI, slow animations, soothing colors
-- **One Strong CTA:** Gold (#D6A23A) for primary actions only
-- **Teal Identity:** Primary brand color (#2CBEC6) for focus, links, brand elements
-- **Premium Feel:** Inter font, tight letter-spacing (-0.02em), glassmorphism
-
-**See:** [Complete Visual Brand Book](../brand/VISUAL_BRAND_BOOK.md)
+# Design System Overview
 
 ## Philosophy
 
@@ -18,69 +6,37 @@ DechBar's design system is built on the principle of **designing for all 4 tempe
 
 See [01_PHILOSOPHY.md](01_PHILOSOPHY.md) for detailed explanation.
 
-## Design Tokens (Single Source of Truth)
+## Design Tokens
 
 All design values are centralized in `src/styles/design-tokens/`:
 
-- **[Colors](02_COLORS.md)** - Teal primary, Gold accent, dark backgrounds
-- **[Typography](03_TYPOGRAPHY.md)** - Inter font, sizes, weights, letter-spacing
+- **[Colors](02_COLORS.md)** - Brand gold, neutrals, semantic colors
+- **[Typography](03_TYPOGRAPHY.md)** - Font scales, weights, line heights
 - **[Spacing](04_SPACING.md)** - 4px base unit system
-- **[Breakpoints](05_BREAKPOINTS.md)** - Simplified 4-level mobile-first system
+- **[Breakpoints](05_BREAKPOINTS.md)** - Mobile-first responsive system
 - **[Components](06_COMPONENTS.md)** - Reusable UI components
 - **[Icons](07_ICONS.md)** - Custom SVG icon system
 - **[Animations](08_ANIMATIONS.md)** - Motion and transitions
 
-## Component Development
-
-For detailed guide on creating and documenting Platform components:
-
-📚 **[Component Architecture Guide](../development/AI_AGENT_COMPONENT_GUIDE.md)** - Complete step-by-step process
-
-📁 **[Component Library Reference](./components/README.md)** - API documentation for all components
-
-📝 **[Implementation Logs](../development/implementation-logs/README.md)** - History of component implementations
-
-## Quick Reference (Brand Book 2.0)
+## Quick Reference
 
 ### Colors
 
 ```css
-/* PRIMARY: Teal (brand identity, focus, links) */
---color-primary: #2CBEC6        /* Main teal */
---color-primary-light: #6ADBE0  /* Lighter variant */
---color-primary-dark: #15939A   /* Darker variant */
-
-/* ACCENT: Gold (CTAs, achievements, highlights) */
---color-accent: #D6A23A         /* Main gold */
---color-accent-light: #F0C76A   /* Lighter variant */
---color-accent-dark: #B8892F    /* Darker variant */
-
-/* BACKGROUNDS (dark mode default) */
---color-background: #121212      /* Main app background */
---color-surface: #1E1E1E         /* Cards, panels */
---color-surface-elevated: #2A2A2A /* Modals, popovers */
-
-/* TEXT (off-white hierarchy) */
---color-text-primary: #E0E0E0    /* 87% white - main text */
---color-text-secondary: #A0A0A0  /* 60% white - secondary */
---color-text-tertiary: #707070   /* 38% white - hints */
+--color-gold: #F8CA00        /* Primary brand */
+--color-black: #1a1a1a       /* Text */
+--color-white: #ffffff       /* Background */
+--color-gray-*: ...          /* Neutrals (50-900) */
 ```
 
-### Typography
+### Breakpoints
 
 ```css
---font-family-base: 'Inter', -apple-system, sans-serif;
---letter-spacing-tight: -0.02em;  /* Premium headings */
-```
-
-### Breakpoints (Simplified)
-
-```css
-sm: 390px   /* iPhone 14 Pro / Mobile */
-md: 768px   /* iPad Portrait / Tablet */
+xs: 320px   /* Narrow mobile */
+sm: 480px   /* Mobile */
+md: 768px   /* Tablet */
 lg: 1024px  /* Desktop */
-xl: 1280px  /* Wide Desktop */
-/* REMOVED: xs (320px), 2xl (1920px) */
+xl: 1440px  /* Wide desktop */
 ```
 
 ### Spacing Scale (4px base)

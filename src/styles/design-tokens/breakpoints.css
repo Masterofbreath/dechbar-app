@@ -1,182 +1,43 @@
 /**
  * Design Tokens: Breakpoints
  * 
- * Simplified mobile-first responsive system (4 levels)
- * Based on actual device usage and "Less is More" Brand Book principle
- * 
- * @see /docs/brand/VISUAL_BRAND_BOOK.md - Breakpoint guidelines
+ * Responsive breakpoints for mobile-first design
  */
 
 :root {
   /* ===================================== */
-  /* MOBILE-FIRST BREAKPOINTS (4 levels) */
+  /* BREAKPOINTS */
   /* ===================================== */
   
-  /* Mobile - iPhone 14 Pro */
-  --breakpoint-sm: 390px;
-  
-  /* Tablet - iPad Portrait */
-  --breakpoint-md: 768px;
-  
-  /* Desktop - iPad Landscape / Desktop */
-  --breakpoint-lg: 1024px;
-  
-  /* Wide Desktop */
-  --breakpoint-xl: 1280px;
+  --breakpoint-xs: 320px;   /* Narrow mobile (iPhone SE) */
+  --breakpoint-sm: 480px;   /* Mobile */
+  --breakpoint-md: 768px;   /* Tablet */
+  --breakpoint-lg: 1024px;  /* Desktop */
+  --breakpoint-xl: 1440px;  /* Wide desktop */
+  --breakpoint-2xl: 1920px; /* Ultra-wide */
 }
 
 /* ===================================== */
-/* MEDIA QUERY HELPERS (CSS Custom Media) */
-/* ===================================== */
-
-/* Note: Custom media queries require PostCSS plugin */
-/* These are for documentation - use Tailwind classes in practice */
-
-@custom-media --sm (min-width: 390px);
-@custom-media --md (min-width: 768px);
-@custom-media --lg (min-width: 1024px);
-@custom-media --xl (min-width: 1280px);
-
-/* ===================================== */
-/* BREAKPOINT USAGE GUIDELINES */
+/* MEDIA QUERY MIXINS (for reference) */
 /* ===================================== */
 
 /*
-MOBILE FIRST APPROACH:
-- Default styles target smallest screen (< 390px)
-- Use min-width media queries to progressively enhance
-- Don't use max-width unless absolutely necessary
+Usage in Tailwind:
 
-TAILWIND USAGE:
-<div class="text-sm md:text-base lg:text-lg">
-  // Small text by default
-  // Base (16px) on tablet (md)
-  // Large (18px) on desktop (lg)
+<div className="
+  text-base      // Mobile: 16px
+  md:text-lg     // Tablet: 18px
+  lg:text-xl     // Desktop: 20px
+">
+  Responsive text
 </div>
 
-CSS USAGE:
-.component {
-  padding: 16px;  // Default (all screens)
-}
-
-@media (min-width: 768px) {  // md
-  .component {
-    padding: 24px;
-  }
-}
-
-@media (min-width: 1024px) {  // lg
-  .component {
-    padding: 32px;
-  }
-}
-*/
-
-/* ===================================== */
-/* REMOVED BREAKPOINTS (from old system) */
-/* ===================================== */
-
-/*
-REMOVED xs (320px):
-- Modern phones are 390px+ (iPhone 14 mini is 375px)
-- 320px is outdated (iPhone 5S era)
-- Creates unnecessary complexity
-
-REMOVED 2xl (1920px):
-- Limited real-world usage (ultra-wide monitors)
-- Adds complexity for minimal benefit
-- 1280px covers 99% of desktop users
-*/
-
-/* ===================================== */
-/* BREAKPOINT DECISION MATRIX */
-/* ===================================== */
-
-/*
-390px (sm) - iPhone 14 Pro, most modern phones
-  - Stack vertical layouts
-  - Single column
-  - Full-width buttons
-  - Compressed spacing
-
-768px (md) - iPad Portrait, small tablets
-  - Two-column layouts possible
-  - Larger touch targets
-  - More generous spacing
-  - Side-by-side forms
-
-1024px (lg) - iPad Landscape, desktop
-  - Multi-column layouts
-  - Desktop navigation
-  - Hover states active
-  - Full feature set
-
-1280px (xl) - Wide desktop
-  - Max-width containers
-  - Wide images/videos
-  - Spacious layouts
-  - Premium user experience
-*/
-
-/* ===================================== */
-/* RESPONSIVE TYPOGRAPHY SCALE */
-/* ===================================== */
-
-/*
-Recommended font size adjustments per breakpoint:
-
-Mobile (< 390px):
-  - Headings: Slightly smaller
-  - Body: 16px (never below for readability)
-  - Touch targets: Min 44x44px
-
-Tablet (768px+):
-  - Headings: Standard scale
-  - Body: 16px
-  - Buttons: Slightly larger
-
-Desktop (1024px+):
-  - Headings: Full scale
-  - Body: 16px (comfortable reading)
-  - UI elements: Spacious
-
-Wide Desktop (1280px+):
-  - Headings: Can go larger
-  - Body: 16-18px
-  - Max-width containers: 1200px
-*/
-
-/* ===================================== */
-/* ACCESSIBILITY CONSIDERATIONS */
-/* ===================================== */
-
-/*
-1. Never use max-width: 767px (creates gap at 768px)
-2. Always test touch targets at 390px (min 44x44px)
-3. Font sizes should never go below 14px (preferably 16px)
-4. Ensure adequate spacing at all breakpoints
-5. Test orientation changes (portrait/landscape)
-*/
-
-/* ===================================== */
-/* TAILWIND INTEGRATION */
-/* ===================================== */
-
-/*
-These breakpoints are automatically available in Tailwind:
-
-screens: {
-  'sm': '390px',
-  'md': '768px',
-  'lg': '1024px',
-  'xl': '1280px',
-}
-
-Use as: sm:, md:, lg:, xl: prefixes
-
-Examples:
-- sm:text-base      (16px on mobile)
-- md:flex-row       (row layout on tablet)
-- lg:grid-cols-3    (3 columns on desktop)
-- xl:max-w-7xl      (max width on wide desktop)
+<div className="
+  grid 
+  grid-cols-1     // Mobile: 1 column
+  md:grid-cols-2  // Tablet: 2 columns
+  lg:grid-cols-3  // Desktop: 3 columns
+">
+  Responsive grid
+</div>
 */

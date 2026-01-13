@@ -1,167 +1,60 @@
 /**
- * Design Tokens: Colors - DechBar Brand Book 2.0
- * Dark-First Premium Tech-Wellbeing
+ * Design Tokens: Colors
  * 
- * Single source of truth for all color values.
- * All components must reference these variables, never hardcode colors.
- * 
- * @see /docs/brand/BRAND_COLORS.md - Complete color specifications
- * @see /docs/brand/VISUAL_BRAND_BOOK.md - Usage guidelines
+ * All color definitions for DechBar App
+ * Single source of truth for color values
  */
 
-/* ===================================== */
-/* LIGHT MODE (fallback for future) */
-/* ===================================== */
 :root {
-  /* Primary: Teal (main brand color - breathing, clarity) */
-  --color-primary: #2CBEC6;
-  --color-primary-light: #6ADBE0;
-  --color-primary-dark: #15939A;
+  /* ===================================== */
+  /* BRAND COLORS */
+  /* ===================================== */
   
-  /* Accent: Gold (highlights, CTAs, achievements) */
-  --color-accent: #D6A23A;
-  --color-accent-light: #F0C76A;
-  --color-accent-dark: #B8892F;
+  /* Gold (Primary Brand Color) */
+  --color-gold: #F8CA00;
+  --color-gold-dark: #E5B800;
+  --color-gold-light: #FFD700;
   
-  /* Backgrounds (light mode fallback - not used yet) */
-  --color-background: #FFFFFF;
-  --color-surface: #F5F5F5;
-  --color-surface-elevated: #FFFFFF;
+  /* Black & White */
+  --color-black: #1a1a1a;
+  --color-white: #ffffff;
   
-  /* Text (light mode fallback - not used yet) */
-  --color-text-primary: #1A1A1A;
-  --color-text-secondary: #6B7280;
-  --color-text-tertiary: #9CA3AF;
+  /* ===================================== */
+  /* NEUTRAL GRAYS */
+  /* ===================================== */
   
-  /* Borders */
-  --color-border: #E5E7EB;
-  --color-border-focus: var(--color-primary);
-}
-
-/* ===================================== */
-/* DARK MODE (default per Brand Book) */
-/* ===================================== */
-:root,
-[data-theme="dark"] {
-  /* Backgrounds (dark mode - Material Design #121212) */
-  --color-background: #121212;        /* Main app background */
-  --color-surface: #1E1E1E;           /* Cards, panels, input backgrounds */
-  --color-surface-elevated: #2A2A2A;  /* Modals, popovers, dropdowns */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
   
-  /* Text (off-white per Material Design guidelines) */
-  --color-text-primary: #E0E0E0;      /* 87% white - main text, headings */
-  --color-text-secondary: #A0A0A0;    /* 60% white - secondary text, timestamps */
-  --color-text-tertiary: #707070;     /* 38% white - hints, placeholders, captions */
+  /* ===================================== */
+  /* SEMANTIC COLORS */
+  /* ===================================== */
   
-  /* Borders (subtle in dark mode) */
-  --color-border: #2A2A2A;                    /* Subtle borders, dividers */
-  --color-border-focus: var(--color-primary); /* Teal focus rings */
-  
-  /* Primary & Accent colors stay the same in both modes */
-  /* They're designed to work on both light and dark backgrounds */
-}
-
-/* ===================================== */
-/* SEMANTIC COLORS (work in both modes) */
-/* ===================================== */
-:root {
   /* Success (Green) */
-  --color-success: #10B981;
+  --color-success: #10b981;
   --color-success-dark: #059669;
-  --color-success-light: #34D399;
+  --color-success-light: #34d399;
   
   /* Error (Red) */
-  --color-error: #EF4444;
-  --color-error-dark: #DC2626;
-  --color-error-light: #F87171;
+  --color-error: #ef4444;
+  --color-error-dark: #dc2626;
+  --color-error-light: #f87171;
   
-  /* Warning (Orange) */
-  --color-warning: #F59E0B;
-  --color-warning-dark: #D97706;
-  --color-warning-light: #FBBF24;
+  /* Warning (Yellow) */
+  --color-warning: #f59e0b;
+  --color-warning-dark: #d97706;
+  --color-warning-light: #fbbf24;
   
-  /* Info (Teal - same as primary) */
-  --color-info: var(--color-primary);
-  --color-info-dark: var(--color-primary-dark);
-  --color-info-light: var(--color-primary-light);
+  /* Info (Blue) */
+  --color-info: #3b82f6;
+  --color-info-dark: #2563eb;
+  --color-info-light: #60a5fa;
 }
-
-/* ===================================== */
-/* NEUTRAL GRAYS (Material Design dark palette) */
-/* ===================================== */
-:root {
-  --color-gray-50: #FAFAFA;   /* Lightest - rare use in dark mode */
-  --color-gray-100: #F5F5F5;
-  --color-gray-200: #EEEEEE;
-  --color-gray-300: #E0E0E0;  /* Same as text-primary */
-  --color-gray-400: #BDBDBD;
-  --color-gray-500: #9E9E9E;  /* Middle gray */
-  --color-gray-600: #757575;
-  --color-gray-700: #616161;
-  --color-gray-800: #424242;
-  --color-gray-900: #212121;  /* Darkest usable gray */
-}
-
-/* ===================================== */
-/* LEGACY COLOR COMPATIBILITY */
-/* Temporary: Map old gold to new accent for backward compatibility */
-/* TODO: Remove after all components updated to use accent */
-/* ===================================== */
-:root {
-  --color-gold: var(--color-accent);        /* OLD: #F8CA00 → NEW: #D6A23A */
-  --color-gold-dark: var(--color-accent-dark);
-  --color-gold-light: var(--color-accent-light);
-  
-  --color-black: #1A1A1A;  /* Kept for potential use in light mode */
-  --color-white: #FFFFFF;  /* Kept for potential use */
-}
-
-/* ===================================== */
-/* USAGE EXAMPLES (for reference) */
-/* ===================================== */
-
-/*
-Primary CTA Button:
-  background: var(--color-accent);      // Gold #D6A23A
-  color: var(--color-background);       // Dark text #121212
-
-Secondary Button:
-  background: var(--color-surface);     // #1E1E1E
-  color: var(--color-text-primary);     // #E0E0E0
-  border: 1px solid var(--color-border);
-
-Input:
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-  
-Input Focus:
-  border-color: var(--color-primary);   // Teal focus
-  outline: 2px solid var(--color-primary);
-
-Modal:
-  background: var(--color-surface-elevated);  // #2A2A2A
-  color: var(--color-text-primary);
-
-Card:
-  background: var(--color-surface);           // #1E1E1E
-  color: var(--color-text-primary);
-*/
-
-/* ===================================== */
-/* ACCESSIBILITY NOTES */
-/* ===================================== */
-
-/*
-WCAG AA Contrast Ratios (minimum 4.5:1 for normal text):
-
-✓ Text primary (#E0E0E0) on background (#121212) = 11.6:1 (AAA)
-✓ Text secondary (#A0A0A0) on background (#121212) = 7.2:1 (AA)
-✓ Text tertiary (#707070) on background (#121212) = 4.6:1 (AA)
-✓ Primary teal (#2CBEC6) on background (#121212) = 7.2:1 (AA)
-✓ Gold button text (#121212) on gold (#D6A23A) = 6.8:1 (AA)
-✓ Success (#10B981) on background (#121212) = 5.2:1 (AA)
-✓ Error (#EF4444) on background (#121212) = 5.8:1 (AA)
-
-All combinations meet WCAG AA standards.
-*/

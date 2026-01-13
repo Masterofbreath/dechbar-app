@@ -7,7 +7,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../api/supabase';
 import type { User, SignInCredentials, SignUpCredentials } from './types';
-import { getVocative } from '@/utils/inflection';
 
 interface UseAuthReturn {
   user: User | null;
@@ -15,7 +14,6 @@ interface UseAuthReturn {
   error: Error | null;
   signIn: (credentials: SignInCredentials) => Promise<void>;
   signUp: (credentials: SignUpCredentials) => Promise<void>;
-  signUpWithMagicLink: (email: string, options?: { gdprConsent?: boolean; emailRedirectTo?: string }) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
@@ -38,7 +36,6 @@ export function useAuth(): UseAuthReturn {
           id: session.user.id,
           email: session.user.email!,
           full_name: session.user.user_metadata.full_name,
-          vocative_name: session.user.user_metadata.vocative_name,
           avatar_url: session.user.user_metadata.avatar_url,
         });
       } else {
@@ -66,7 +63,6 @@ export function useAuth(): UseAuthReturn {
           id: session.user.id,
           email: session.user.email!,
           full_name: session.user.user_metadata.full_name,
-          vocative_name: session.user.user_metadata.vocative_name,
           avatar_url: session.user.user_metadata.avatar_url,
         });
       }
@@ -78,29 +74,17 @@ export function useAuth(): UseAuthReturn {
     }
   }
 
-  async function signIn({ email, password, remember = true }: SignInCredentials) {
+  async function signIn({ email, password }: SignInCredentials) {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Sign in with password
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-      
-      // If remember=false, we need to move the session to sessionStorage
-      if (!remember) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // Remove from localStorage
-          localStorage.removeItem('dechbar-auth');
-          // Store in sessionStorage
-          sessionStorage.setItem('dechbar-auth', JSON.stringify(session));
-        }
-      }
     } catch (err) {
       console.error('Error signing in:', err);
       setError(err as Error);
@@ -110,13 +94,10 @@ export function useAuth(): UseAuthReturn {
     }
   }
 
-  async function signUp({ email, password, full_name, gdpr_consent, gdpr_consent_date }: SignUpCredentials) {
+  async function signUp({ email, password, full_name }: SignUpCredentials) {
     try {
       setIsLoading(true);
       setError(null);
-
-      // Auto-generate vocative for personalized greetings
-      const vocative_name = full_name ? getVocative(full_name) : undefined;
 
       const { error } = await supabase.auth.signUp({
         email,
@@ -124,9 +105,6 @@ export function useAuth(): UseAuthReturn {
         options: {
           data: {
             full_name,
-            vocative_name, // Auto-generated vocative (5th case)
-            gdpr_consent,
-            gdpr_consent_date,
           },
         },
       });
@@ -176,41 +154,12 @@ export function useAuth(): UseAuthReturn {
     }
   }
 
-  async function signUpWithMagicLink(
-    email: string, 
-    options?: { gdprConsent?: boolean; emailRedirectTo?: string }
-  ) {
-    try {
-      setError(null);
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: options?.emailRedirectTo || `${window.location.origin}/dashboard`,
-          data: {
-            gdpr_consent: options?.gdprConsent || false,
-            signed_up_at: new Date().toISOString(),
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      console.log('✅ Magic link sent successfully to:', email);
-    } catch (err) {
-      console.error('Error sending magic link:', err);
-      setError(err as Error);
-      throw err;
-    }
-  }
-
   return {
     user,
     isLoading,
     error,
     signIn,
     signUp,
-    signUpWithMagicLink,
     signOut,
     resetPassword,
   };
