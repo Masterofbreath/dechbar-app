@@ -13,10 +13,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // Persist auth session in localStorage
+    // Persist auth session in localStorage (default)
     persistSession: true,
-    // Auto refresh token
+    // Storage key for auth session
+    storageKey: 'dechbar-auth',
+    // Storage provider (default: localStorage)
+    storage: window.localStorage,
+    // Auto refresh token before expiration
     autoRefreshToken: true,
+    // Detect session in URL (for OAuth callbacks)
+    detectSessionInUrl: true,
+    // Flow type for auth
+    flowType: 'pkce',
   },
 });
 
