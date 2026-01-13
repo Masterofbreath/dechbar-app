@@ -15,6 +15,7 @@ interface UseAuthReturn {
   error: Error | null;
   signIn: (credentials: SignInCredentials) => Promise<void>;
   signUp: (credentials: SignUpCredentials) => Promise<void>;
+  signUpWithMagicLink: (email: string, options?: { gdprConsent?: boolean; emailRedirectTo?: string }) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
@@ -175,12 +176,41 @@ export function useAuth(): UseAuthReturn {
     }
   }
 
+  async function signUpWithMagicLink(
+    email: string, 
+    options?: { gdprConsent?: boolean; emailRedirectTo?: string }
+  ) {
+    try {
+      setError(null);
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: options?.emailRedirectTo || `${window.location.origin}/dashboard`,
+          data: {
+            gdpr_consent: options?.gdprConsent || false,
+            signed_up_at: new Date().toISOString(),
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      console.log('✅ Magic link sent successfully to:', email);
+    } catch (err) {
+      console.error('Error sending magic link:', err);
+      setError(err as Error);
+      throw err;
+    }
+  }
+
   return {
     user,
     isLoading,
     error,
     signIn,
     signUp,
+    signUpWithMagicLink,
     signOut,
     resetPassword,
   };

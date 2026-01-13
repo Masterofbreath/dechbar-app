@@ -13,6 +13,7 @@ import type { FormEvent } from 'react';
 import { Button, Input, TextLink, Checkbox } from '@/platform/components';
 import { ErrorMessage } from '@/components/shared';
 import { MESSAGES } from '@/config/messages';
+import { useAuth } from '@/platform/auth';
 
 interface RegisterViewProps {
   onSwitchToLogin: () => void;
@@ -20,6 +21,7 @@ interface RegisterViewProps {
 }
 
 export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) {
+  const { signUpWithMagicLink } = useAuth();
   const [email, setEmail] = useState('');
   const [gdprConsent, setGdprConsent] = useState(false);
   const [formError, setFormError] = useState('');
@@ -49,15 +51,13 @@ export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) 
     try {
       setIsLoading(true);
       
-      // TODO: Implementovat magic link v další fázi
-      // await signUpWithMagicLink(email, gdprConsent);
+      // ✅ IMPLEMENTOVÁNO: Magic Link registrace
+      await signUpWithMagicLink(email, {
+        gdprConsent,
+        emailRedirectTo: `${window.location.origin}/dashboard`
+      });
       
-      // Pro teď zobrazíme success zprávu (mock)
-      console.log('📧 Magic link would be sent to:', email);
-      console.log('✅ GDPR consent:', gdprConsent, new Date().toISOString());
-      
-      // Simulace odeslání (pro testování UI)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('✅ Magic link sent to:', email);
       
       setEmailSent(true);
       
