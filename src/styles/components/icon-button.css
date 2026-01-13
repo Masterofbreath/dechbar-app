@@ -1,0 +1,215 @@
+/**
+ * IconButton Component - Transparent Icon-Only Button
+ * 
+ * Global style pro všechny icon-only buttons v aplikaci
+ * Use cases: Password toggle, Audio controls (PLAY/PAUSE, MUTE), Quick actions
+ * Design: Always transparent background, gold hover on icon only
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+/* ===================================
+   ICON BUTTON VARIABLES
+   =================================== */
+
+:root {
+  /* Icon button colors */
+  --icon-btn-color: #6b7280; /* Gray default */
+  --icon-btn-color-hover: #F8CA00; /* DechBar gold */
+  --icon-btn-color-active: #F8CA00; /* Gold when active/selected */
+  --icon-btn-color-disabled: #d1d5db; /* Light gray */
+  
+  /* Icon button sizing */
+  --icon-btn-size-sm: 32px;
+  --icon-btn-size-md: 40px;
+  --icon-btn-size-lg: 48px;
+  --icon-btn-border-radius: 8px;
+  
+  /* Icon button transitions */
+  --icon-btn-transition: color 0.2s ease, transform 0.1s ease;
+}
+
+/* ===================================
+   BASE ICON BUTTON
+   =================================== */
+
+.icon-btn {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-btn-size-md);
+  height: var(--icon-btn-size-md);
+  padding: 0;
+  
+  /* Appearance */
+  background: transparent; /* ✨ Always transparent! */
+  border: none;
+  border-radius: var(--icon-btn-border-radius);
+  color: var(--icon-btn-color);
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: var(--icon-btn-transition);
+  flex-shrink: 0;
+  
+  /* Accessibility */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* ===================================
+   ICON BUTTON STATES
+   =================================== */
+
+/* Hover - Only icon color changes to GOLD */
+.icon-btn:hover:not(:disabled) {
+  color: var(--icon-btn-color-hover);
+  background: transparent; /* ✨ Stay transparent! */
+}
+
+/* Active - Subtle scale effect */
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Focus - Gold outline */
+.icon-btn:focus-visible {
+  outline: 2px solid var(--icon-btn-color-hover);
+  outline-offset: 2px;
+  border-radius: var(--icon-btn-border-radius);
+}
+
+/* Disabled */
+.icon-btn:disabled {
+  color: var(--icon-btn-color-disabled);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ===================================
+   ICON BUTTON SIZES
+   =================================== */
+
+/* Small variant (32px) - for compact layouts */
+.icon-btn--sm {
+  width: var(--icon-btn-size-sm);
+  height: var(--icon-btn-size-sm);
+  border-radius: 6px;
+}
+
+.icon-btn--sm svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Medium variant (40px) - default */
+.icon-btn--md {
+  width: var(--icon-btn-size-md);
+  height: var(--icon-btn-size-md);
+}
+
+.icon-btn--md svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Large variant (48px) - for emphasis */
+.icon-btn--lg {
+  width: var(--icon-btn-size-lg);
+  height: var(--icon-btn-size-lg);
+  border-radius: 10px;
+}
+
+.icon-btn--lg svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ===================================
+   ICON BUTTON VARIANTS
+   =================================== */
+
+/* Active/Selected state (for toggle buttons like PLAY/PAUSE, MUTE/UNMUTE) */
+.icon-btn--active {
+  color: var(--icon-btn-color-active); /* Gold when active */
+}
+
+.icon-btn--active:hover:not(:disabled) {
+  color: #FFD633; /* Lighter gold on hover */
+}
+
+/* Icon size override (default if not specified by variant) */
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ===================================
+   RESPONSIVE - Mobile
+   =================================== */
+
+@media (max-width: 480px) {
+  :root {
+    /* Slightly larger on mobile for better touch */
+    --icon-btn-size-md: 44px;
+    --icon-btn-size-lg: 52px;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .icon-btn:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn {
+    transition: none;
+  }
+  
+  .icon-btn:active {
+    transform: none;
+  }
+}
+
+/* ===================================
+   SPECIAL CONTEXTS
+   =================================== */
+
+/* Within Input field (password toggle) */
+.input-wrapper .icon-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.input-wrapper .icon-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* Within Audio player controls */
+.audio-player .icon-btn {
+  /* Specific styles for audio player if needed */
+}
+
+/* ===================================
+   DARK MODE (prepared for future)
+   =================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --icon-btn-color: #9ca3af;
+    --icon-btn-color-hover: #FFD633;
+    --icon-btn-color-disabled: #4b5563;
+  }
+}

@@ -1,0 +1,225 @@
+/**
+ * Authentication Styles - Brand Book 2.0 (Dark-First)
+ * DechBar App - Login/Register Modal
+ * 
+ * AUTH-SPECIFIC styles only (form layouts, password strength, etc.)
+ * Base modal styles are in modals.css
+ * All colors reference design tokens for single source of truth.
+ * 
+ * @see /docs/brand/VISUAL_BRAND_BOOK.md - Auth component guidelines
+ * @package DechBar_App
+ * @subpackage Styles/Auth
+ * @see styles/modals.css
+ */
+
+/* ===================================
+   AUTH FORM VARIABLES (reference tokens)
+   =================================== */
+
+:root {
+  /* Password strength colors (semantic) */
+  --password-strength-weak: var(--color-error);     /* Red #EF4444 */
+  --password-strength-medium: var(--color-warning); /* Orange #F59E0B */
+  --password-strength-strong: var(--color-success); /* Green #10B981 */
+  
+  /* Auth-specific spacing */
+  --auth-form-gap: 1.25rem;
+}
+
+/* ===================================
+   MODAL LOGO (using design tokens)
+   =================================== */
+
+.modal-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: var(--logo-spacing-bottom);
+  padding-top: var(--logo-spacing-top);
+}
+
+.modal-logo .logo {
+  max-width: var(--logo-max-width-desktop);
+}
+
+@media (max-width: 768px) {
+  .modal-logo .logo {
+    max-width: var(--logo-max-width-mobile);
+  }
+}
+
+/* ===================================
+   AUTH FORM LAYOUT
+   =================================== */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--auth-form-gap);
+  width: 100%;
+}
+
+/* ===================================
+   PASSWORD STRENGTH INDICATOR
+   =================================== */
+
+.password-strength {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.password-strength-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);  /* Subtle on dark */
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.password-strength-fill {
+  height: 100%;
+  transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+              background-color 0.3s ease;
+  border-radius: 2px;
+}
+
+.password-strength-fill.weak {
+  background-color: var(--password-strength-weak);    /* Red */
+}
+
+.password-strength-fill.medium {
+  background-color: var(--password-strength-medium);  /* Orange */
+}
+
+.password-strength-fill.strong {
+  background-color: var(--password-strength-strong);  /* Green */
+}
+
+.password-strength-text {
+  font-size: 0.75rem;  /* 12px */
+  font-weight: var(--font-weight-semibold);  /* 600 */
+  white-space: nowrap;
+}
+
+.password-strength-text.weak {
+  color: var(--password-strength-weak);
+}
+
+.password-strength-text.medium {
+  color: var(--password-strength-medium);
+}
+
+.password-strength-text.strong {
+  color: var(--password-strength-strong);
+}
+
+/* ===================================
+   AUTH VIEW SWITCHING (smooth transitions)
+   =================================== */
+
+.auth-view {
+  width: 100%;
+  animation: auth-view-fade-in 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+@keyframes auth-view-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===================================
+   AUTH DIVIDER ("or" separator)
+   =================================== */
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  color: var(--color-text-secondary);  /* #A0A0A0 */
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);  /* 500 */
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);  /* #2A2A2A */
+}
+
+/* ===================================
+   AUTH CHECKBOX (GDPR, Remember Me)
+   Note: Use the Checkbox component instead
+   These styles are for backward compatibility
+   =================================== */
+
+.auth-checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.auth-checkbox {
+  margin-top: 0.125rem;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--color-border);  /* #2A2A2A */
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.auth-checkbox:checked {
+  background: var(--color-primary);  /* Teal #2CBEC6 */
+  border-color: var(--color-primary);
+}
+
+/* ===================================
+   RESPONSIVE - Mobile
+   =================================== */
+
+@media (max-width: 390px) {
+  :root {
+    --auth-form-gap: 1rem;
+  }
+  
+  .password-strength {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .password-strength-bar {
+    width: 100%;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .auth-view {
+    animation: none;
+  }
+  
+  .password-strength-fill {
+    transition: none;
+  }
+}
+
+/* High contrast */
+@media (prefers-contrast: high) {
+  .password-strength-bar {
+    border: 1px solid var(--color-text-tertiary);
+  }
+}

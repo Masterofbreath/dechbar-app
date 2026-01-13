@@ -19,23 +19,49 @@ Dechová cvičení jako native mobile app (iOS + Android) s modulární architek
 src/
 ├── platform/        # Shared infrastructure
 │   ├── auth/        # Authentication
-│   ├── components/  # Design system components
+│   ├── components/  # Design system components (Button, Input, Checkbox, etc.)
 │   ├── membership/  # Module ownership
 │   └── payments/    # GoPay, Stripe
 ├── modules/         # Feature modules (products)
 │   ├── studio/      # Exercise builder
 │   ├── challenges/  # 21-day challenges
 │   └── ...
+├── styles/          # Global styles and component CSS
+│   ├── components/  # Dedicated CSS per component (button.css, input.css, etc.)
+│   ├── globals.css  # Tailwind + base styles
+│   └── modals.css   # Modal-specific shared styles
 └── app/             # App entry point
+
+docs/
+├── design-system/
+│   ├── components/  # API documentation for Platform components
+│   └── ...
+└── development/
+    ├── implementation-logs/  # History of implementations and refactorings
+    └── AI_AGENT_COMPONENT_GUIDE.md  # Complete guide for creating components
 ```
 
 ## 🎨 Design Philosophy
+
+**Brand Book 2.0:** Dark-first premium tech-wellbeing aesthetic
+
+- **Colors:** Teal primary (#2CBEC6), Gold accent (#D6A23A)
+- **Typography:** Inter font family
+- **Theme:** Dark mode default (#121212 background)
+- **Principles:** Calm by Default, One Strong CTA, Less is More
 
 **4 Temperaments:** Every feature designed for all personality types
 - 🎉 Sangvinik (fun, playful)
 - ⚡ Cholerik (fast, efficient)
 - 📚 Melancholik (detailed, quality)
 - 🕊️ Flegmatik (calm, simple)
+
+### Design Documentation
+
+- **Complete guidelines:** [Visual Brand Book](/docs/brand/VISUAL_BRAND_BOOK.md)
+- **Color specifications:** [Brand Colors](/docs/brand/BRAND_COLORS.md)
+- **Migration history:** [Old vs. New Comparison](/docs/brand/COMPARISON.md)
+- **Design system:** [Design System Overview](/docs/design-system/00_OVERVIEW.md)
 
 ## 🏗️ Architecture
 
@@ -136,6 +162,11 @@ VITE_ENV=development
 - **[WORKFLOW.md](WORKFLOW.md)** ⭐ - **Git workflow (LOCAL → PREVIEW → PROD) - READ FIRST!**
 - **[Quick Start](docs/development/00_QUICK_START.md)** - Setup guide
 - **[Development Guide](docs/development/01_WORKFLOW.md)** - How to work
+
+### For AI Agents:
+- **[AI Agent Component Guide](docs/development/AI_AGENT_COMPONENT_GUIDE.md)** ⭐ **NEW!** - Complete guide for creating Platform components
+- **[Component Library Reference](docs/design-system/components/README.md)** - API documentation for all components
+- **[Implementation Logs](docs/development/implementation-logs/README.md)** - History of implementations and design decisions
 - **[Database Management](docs/development/02_SUPABASE.md)** - Supabase CLI
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 

@@ -7,15 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-12
+
+### Added
+- **Landing Page Module** - Complete public-facing landing page
+  - Premium dark-first design per Visual Brand Book 2.0
+  - Hero section with animated teal waves background
+  - Trust signals (1,150+ members, 100+ tracks, certification)
+  - Pricing section with 3 tiers (ZDARMA, DechBar HRA, AI Průvodce)
+  - Annual discount badges (50% savings)
+  - Responsive 4-column footer
+  - Sticky header with glassmorphism effect on scroll
+- **Platform API Extension**
+  - `usePublicStats()` hook for dynamic landing page stats
+  - API resilience with fallback data
+- **Routing Updates**
+  - `/` → Landing page (public)
+  - `/app` → Dashboard (auth required, Bluetooth-safe)
+  - Smart redirect: logged-in users auto-redirect to /app
+  - Legacy `/dashboard` → `/app` redirect
+- **Module Architecture**
+  - `public-web` module with proper manifest
+  - Error boundary isolation (landing crash ≠ app crash)
+  - Centralized design token usage
+- **Animations**
+  - CSS radial gradient waves (3 layers, 19s/14s/10s breathing cycles)
+  - Hero fade-in with staggered delays
+  - Pricing card hover lift effects
+  - Scroll indicator bounce animation
+  - Accessibility: prefers-reduced-motion support
+
+### Changed
+- **App.tsx** - Updated routing structure for landing page
+- **Platform exports** - Added `usePublicStats` to public API
+- **Globals CSS** - Import landing and animation styles
+
+### Technical Details
+- No linter errors
+- No console errors
+- WCAG AA compliant (all contrast ratios verified)
+- Mobile-first responsive (390px, 768px, 1280px tested)
+- Bluetooth-safe architecture (/app/* routes use client-side navigation only)
+
+### Design Compliance
+- ✓ Visual Brand Book 2.0 (dark-first, teal+gold, Inter font)
+- ✓ 4 Temperaments design principles
+- ✓ Logo without slogan (premium, clean)
+- ✓ Centralized design tokens (single source of truth)
+
 ### Planned
 - Studio module implementation
 - Authentication flow
 - Payment integration
 
 ### Added
+- **🤖 Agent Qualification System** - Comprehensive onboarding for AI agents
+  - Decision tree in `PROJECT_GUIDE.md` (50+ keywords)
+  - 8 Study Guides for different component types
+  - Automatic agent navigation based on task type
+  - Template responses for structured feedback
+  - "Refresh Mode" for experienced agents
 - **WORKFLOW.md** - Complete Git workflow documentation (LOCAL → PREVIEW → PROD)
 - Git security rules in `.cursorrules` (AI agents must ask before pushing)
-- Updated `PROJECT_GUIDE.md` with workflow references
+- Updated `PROJECT_GUIDE.md` with workflow references and agent onboarding
+- `docs/development/agent-tests/` structure:
+  - `README.md` - Agent qualification overview
+  - `components/UI_COMPONENTS.md` - Buttons, inputs, forms
+  - `components/LAYOUT_COMPONENTS.md` - Cards, modals, layouts
+  - `components/DATA_DISPLAY.md` - Tables, lists, charts
+  - `components/MEDIA_COMPONENTS.md` - Audio/video players
+  - `components/ANIMATIONS.md` - Transitions, effects
+  - `components/NAVIGATION.md` - Menus, tabs, pagination
+  - `components/FEEDBACK.md` - Toasts, alerts, notifications
+  - `components/TYPOGRAPHY.md` - Text, headings, paragraphs
 
 ## [0.1.0] - 2026-01-09
 

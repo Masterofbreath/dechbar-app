@@ -1,0 +1,69 @@
+/**
+ * Logo Design Tokens
+ * 
+ * All logo-related CSS custom properties linked to existing design tokens.
+ * This ensures scalability and single source of truth for logo parameters.
+ * 
+ * @see docs/brand/LOGO_MANUAL.md
+ */
+
+:root {
+  /* ===================================
+     Logo Dimensions (4px grid aligned)
+     =================================== */
+  --logo-width-desktop: 200px;
+  --logo-height-desktop: 63px;
+  --logo-width-mobile: 150px;
+  --logo-height-mobile: 47px;
+  --logo-aspect-ratio: 3.175;
+  
+  /* ===================================
+     Spacing (using existing tokens)
+     =================================== */
+  --logo-spacing-top: var(--spacing-4);
+  --logo-spacing-bottom: var(--spacing-8);
+  --logo-spacing-left: var(--spacing-4);
+  --logo-spacing-right: var(--spacing-4);
+  --logo-clear-space: var(--spacing-6);
+  
+  /* ===================================
+     Size Constraints
+     =================================== */
+  --logo-min-width-desktop: 150px;
+  --logo-min-width-mobile: 100px;
+  --logo-max-width-desktop: 300px;
+  --logo-max-width-mobile: 200px;
+  
+  /* ===================================
+     Color Variants (link to colors.css)
+     =================================== */
+  --logo-color-off-white: var(--color-text-primary);
+  --logo-color-warm-black: var(--color-background);
+  --logo-color-white: #FFFFFF;
+  --logo-color-black: #000000;
+  
+  /* ===================================
+     Breakpoints (link to breakpoints.css)
+     =================================== */
+  --logo-breakpoint-mobile: var(--breakpoint-md);
+}
+
+/* ===================================
+   Responsive Logo Sizing
+   =================================== */
+
+.logo {
+  width: var(--logo-width-mobile);
+  height: var(--logo-height-mobile);
+  min-width: var(--logo-min-width-mobile);
+  max-width: var(--logo-max-width-mobile);
+}
+
+@media (min-width: 768px) {
+  .logo {
+    width: var(--logo-width-desktop);
+    height: var(--logo-height-desktop);
+    min-width: var(--logo-min-width-desktop);
+    max-width: var(--logo-max-width-desktop);
+  }
+}
