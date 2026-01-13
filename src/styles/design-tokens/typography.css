@@ -1,173 +1,67 @@
 /**
- * Design Tokens: Typography - Inter Font (Brand Book 2.0)
+ * Design Tokens: Typography
  * 
- * Font families, sizes, weights, line heights, letter spacing.
- * All typography values centralized for consistent brand identity.
- * 
- * @see /docs/brand/VISUAL_BRAND_BOOK.md - Typography guidelines
+ * Font families, sizes, weights, line heights
  */
 
-/* ===================================== */
-/* IMPORT INTER FONT (from Fontsource) */
-/* ===================================== */
-
-/* Import Inter font weights needed for the app */
-@import '@fontsource/inter/400.css';  /* Regular - body text */
-@import '@fontsource/inter/500.css';  /* Medium - emphasis */
-@import '@fontsource/inter/600.css';  /* Semibold - subheadings */
-@import '@fontsource/inter/700.css';  /* Bold - headings */
-
-/* ===================================== */
-/* FONT FAMILIES */
-/* ===================================== */
-
 :root {
-  /* Primary font family - Inter first, then system fonts fallback */
-  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-                      Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  /* ===================================== */
+  /* FONT FAMILIES */
+  /* ===================================== */
   
-  /* Monospace font family - for code, technical text */
-  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', 
-                      Consolas, 'Courier New', monospace;
-}
-
-/* ===================================== */
-/* FONT SIZES (Based on 4px grid) */
-/* ===================================== */
-
-:root {
-  --font-size-xs: 0.75rem;      /* 12px - Captions, labels, fine print */
-  --font-size-sm: 0.875rem;     /* 14px - Secondary text, metadata */
-  --font-size-base: 1rem;       /* 16px - Body text (default) */
-  --font-size-lg: 1.125rem;     /* 18px - Emphasized text */
-  --font-size-xl: 1.25rem;      /* 20px - Small headings */
-  --font-size-2xl: 1.5rem;      /* 24px - Section headings */
-  --font-size-3xl: 1.875rem;    /* 30px - Page headings */
-  --font-size-4xl: 2.25rem;     /* 36px - Hero text, display */
-}
-
-/* ===================================== */
-/* LINE HEIGHTS */
-/* ===================================== */
-
-:root {
-  --line-height-tight: 1.25;     /* Headings, display text */
-  --line-height-snug: 1.375;     /* Subheadings */
-  --line-height-normal: 1.5;     /* Body text (default) */
-  --line-height-relaxed: 1.625;  /* Emphasized paragraphs */
-  --line-height-loose: 1.75;     /* Long-form content */
-}
-
-/* ===================================== */
-/* LETTER SPACING (Brand Book premium feel) */
-/* ===================================== */
-
-:root {
-  /* Tight spacing for premium, refined look on headings */
-  --letter-spacing-tight: -0.02em;  /* Headlines, display text */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                      Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   
-  /* Normal spacing for body text */
-  --letter-spacing-normal: 0;       /* Body text, paragraphs */
+  --font-family-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", 
+                      Consolas, "Courier New", monospace;
   
-  /* Wide spacing for all-caps labels */
-  --letter-spacing-wide: 0.02em;    /* All caps, labels, buttons */
+  /* ===================================== */
+  /* FONT SIZES (Based on 4px grid) */
+  /* ===================================== */
+  
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  --font-size-5xl: 3rem;        /* 48px */
+  
+  /* ===================================== */
+  /* LINE HEIGHTS */
+  /* ===================================== */
+  
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+  
+  /* ===================================== */
+  /* FONT WEIGHTS */
+  /* ===================================== */
+  
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
 }
 
 /* ===================================== */
-/* FONT WEIGHTS */
+/* UTILITY CLASSES */
 /* ===================================== */
 
-:root {
-  --font-weight-light: 300;      /* Rarely used - decorative only */
-  --font-weight-regular: 400;    /* Body text (default) */
-  --font-weight-medium: 500;     /* Emphasis, buttons */
-  --font-weight-semibold: 600;   /* Subheadings */
-  --font-weight-bold: 700;       /* Headings, strong emphasis */
-  --font-weight-extrabold: 800;  /* Rarely used - special cases */
-}
-
-/* ===================================== */
-/* APPLY GLOBAL TYPOGRAPHY */
-/* ===================================== */
-
-/* Base body typography */
+/* Font smoothing (for better readability) */
 body {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-base);         /* 16px */
-  font-weight: var(--font-weight-regular);  /* 400 */
-  line-height: var(--line-height-normal);   /* 1.5 */
-  letter-spacing: var(--letter-spacing-tight); /* -0.02em for premium feel */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Code and pre elements */
-code,
-pre {
+code, pre {
   font-family: var(--font-family-mono);
 }
-
-/* ===================================== */
-/* UTILITY CLASSES (Optional) */
-/* ===================================== */
-
-/* Heading letter-spacing */
-h1, h2, h3, h4, h5, h6 {
-  letter-spacing: var(--letter-spacing-tight);  /* Tight for premium look */
-}
-
-/* All-caps text */
-.text-uppercase {
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);  /* Wider for readability */
-}
-
-/* ===================================== */
-/* TYPOGRAPHY USAGE EXAMPLES */
-/* ===================================== */
-
-/*
-Hero Heading:
-  font-size: var(--font-size-4xl);       // 36px
-  font-weight: var(--font-weight-bold);  // 700
-  line-height: var(--line-height-tight); // 1.25
-  letter-spacing: var(--letter-spacing-tight); // -0.02em
-
-Section Heading:
-  font-size: var(--font-size-2xl);       // 24px
-  font-weight: var(--font-weight-semibold); // 600
-  letter-spacing: var(--letter-spacing-tight);
-
-Body Text:
-  font-size: var(--font-size-base);      // 16px
-  font-weight: var(--font-weight-regular); // 400
-  line-height: var(--line-height-normal); // 1.5
-  letter-spacing: var(--letter-spacing-normal); // 0
-
-Small Text (metadata):
-  font-size: var(--font-size-sm);        // 14px
-  color: var(--color-text-secondary);
-
-Caption:
-  font-size: var(--font-size-xs);        // 12px
-  color: var(--color-text-tertiary);
-
-Button Text:
-  font-size: var(--font-size-base);      // 16px
-  font-weight: var(--font-weight-medium); // 500
-  letter-spacing: var(--letter-spacing-wide); // 0.02em (if all-caps)
-*/
-
-/* ===================================== */
-/* TYPOGRAPHY BEST PRACTICES */
-/* ===================================== */
-
-/*
-1. Headings: Always use tight letter-spacing (-0.02em)
-2. Body text: Use normal letter-spacing (0)
-3. All caps: Use wide letter-spacing (0.02em)
-4. Long-form: Use relaxed or loose line-height
-5. Dark mode: Off-white text (#E0E0E0), not pure white
-6. Minimum size: 12px (--font-size-xs) for accessibility
-7. Touch targets: Buttons min 44x44px with 16px+ text
-*/
