@@ -25,7 +25,7 @@ export function HeroSection({ onCTA }: { onCTA: () => void }) {
         {/* Left side: Content */}
         <div className="landing-hero__content">
           <h1 className="landing-hero__title hero-fade-in hero-fade-in--1">
-            Tvůj dechový průvodce v kapse. 🚀
+            Tvůj dechový průvodce v kapse.
           </h1>
           
           <p className="landing-hero__subtitle hero-fade-in hero-fade-in--2">
