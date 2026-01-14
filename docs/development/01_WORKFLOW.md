@@ -83,27 +83,68 @@ dechbar-app/
 
 ## 🔄 DEVELOPMENT WORKFLOW
 
-### 1️⃣ **Feature Development**
+### Git Branching Strategy
+
+**Máme 3 typy branches:**
+
+```
+main     → dechbar.cz (PRODUKCE)
+dev      → test.dechbar.cz (TEST prostředí)
+feature/* → Vercel preview URLs (dočasné)
+```
+
+**Deployment flow:**
+```
+Lokální vývoj
+    ↓
+feature/xyz branch → Vercel preview URL
+    ↓
+Merge do dev → test.dechbar.cz (automaticky)
+    ↓
+Testování na test.dechbar.cz (24h+)
+    ↓
+Merge do main → dechbar.cz (automaticky)
+```
+
+---
+
+### 1️⃣ **Feature Development (Standardní workflow)**
 
 ```bash
-# 1. Vytvoř feature branch
+# 1. Začni z dev branch (ne main!)
+git checkout dev
+git pull origin dev
+
+# 2. Vytvoř feature branch
 git checkout -b feature/add-exercises-module
 
-# 2. Vyvíjej
+# 3. Vyvíjej
 # - Edituj kód v src/
 # - Hot reload (Vite)
-# - Testuj v browseru
+# - Testuj v browseru lokálně
 
-# 3. Commit průběžně
+# 4. Commit průběžně
 git add .
 git commit -m "feat(studio): add exercise builder UI"
 
-# 4. Pushni
+# 5. Pushni feature branch
 git push origin feature/add-exercises-module
+# → Vercel vytvoří preview URL pro review
 
-# 5. Create Pull Request
-# - Code review
-# - Merge to main
+# 6. Merge do dev pro test.dechbar.cz
+git checkout dev
+git merge feature/add-exercises-module
+git push origin dev
+# → Auto-deploy na test.dechbar.cz
+
+# 7. Testuj na test.dechbar.cz (24h minimum!)
+
+# 8. Merge do main pro produkci (pouze pokud test OK!)
+git checkout main
+git pull origin main
+git merge dev
+git push origin main
+# → Auto-deploy na dechbar.cz (PRODUKCE)
 ```
 
 ---
