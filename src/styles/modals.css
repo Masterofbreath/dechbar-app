@@ -348,3 +348,35 @@ Premium Modal (with gold accent):
     </div>
   </div>
 */
+
+/* ===================================
+   MODAL FADE-OUT (Smooth transition after login)
+   =================================== */
+
+.modal-overlay--fading-out {
+  animation: modal-fade-out 400ms var(--modal-transition-timing) forwards;
+}
+
+.modal-overlay--fading-out .modal-card {
+  animation: modal-slide-down 400ms var(--modal-transition-timing) forwards;
+}
+
+@keyframes modal-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-slide-down {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+}

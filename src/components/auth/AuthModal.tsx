@@ -25,6 +25,7 @@ type AuthView = 'login' | 'register' | 'reset';
 
 export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalProps) {
   const [currentView, setCurrentView] = useState<AuthView>(defaultView);
+  const [isClosing, setIsClosing] = useState(false);
 
   // Reset view when modal opens
   useEffect(() => {
@@ -60,13 +61,16 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
     setCurrentView(view);
   }
 
-  function handleSuccess() {
+  async function handleSuccess() {
+    setIsClosing(true);  // Start fade-out animation
+    await new Promise(resolve => setTimeout(resolve, 400));  // Wait for fade-out
     onClose();
+    setIsClosing(false);
   }
 
   return (
     <div
-      className="modal-overlay"
+      className={`modal-overlay ${isClosing ? 'modal-overlay--fading-out' : ''}`}
       aria-hidden={!isOpen}
       role="dialog"
       aria-modal="true"

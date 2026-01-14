@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-01-14
+
+### Changed (BREAKING)
+- **Membership Plans Rebrand:**
+  - `DECHBAR_HRA` → `SMART` (Inteligentní doporučení)
+  - `AI_KOUC` → `AI_COACH` (Tvůj osobní AI trenér)
+  - Database migration required
+  - Better value proposition and Czech market fit
+
+### Added
+- Pricing cards now show annual pricing prominently
+- Subtitle field for pricing tiers
+- Enhanced savings display (no emoji, clear CZK amount)
+
+### Migration Required
+- Run `supabase db push` to apply membership plan updates
+- Existing users automatically migrated to new plan names
+
 ## [0.2.0] - 2026-01-12
 
 ### Added

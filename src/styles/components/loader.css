@@ -55,7 +55,7 @@
   animation: logo-breathe var(--logo-pulse-duration) var(--logo-pulse-timing) infinite;
   
   /* Smooth hardware-accelerated animation */
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
   
   /* Center logo */
   display: flex;
@@ -73,6 +73,15 @@
   /* Sharp rendering for icon */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
+  
+  /* Gold glow (Brand Book 2.0 accent) - synchronized with breathing */
+  filter: drop-shadow(0 0 20px rgba(214, 162, 58, 0.3));
+}
+
+/* Animate glow intensity with breathing */
+.logo-pulse-wrapper {
+  animation: logo-breathe var(--logo-pulse-duration) var(--logo-pulse-timing) infinite;
+  will-change: transform, opacity, filter;
 }
 
 /* Breathing keyframes - mimics breathing exercise */
@@ -80,10 +89,12 @@
   0%, 100% { 
     transform: scale(1);
     opacity: 1;
+    filter: drop-shadow(0 0 20px rgba(214, 162, 58, 0.3));
   }
   50% { 
     transform: scale(var(--logo-pulse-scale-max));  /* Inhale! */
     opacity: var(--logo-pulse-opacity-min);         /* Subtle fade */
+    filter: drop-shadow(0 0 30px rgba(214, 162, 58, 0.5)); /* Stronger glow during inhale */
   }
 }
 

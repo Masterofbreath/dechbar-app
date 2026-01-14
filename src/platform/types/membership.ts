@@ -1,4 +1,4 @@
-export type MembershipPlan = 'ZDARMA' | 'STUDIO' | 'PRO';
+export type MembershipPlan = 'ZDARMA' | 'SMART' | 'AI_COACH';
 export type MembershipStatus = 'active' | 'cancelled' | 'expired';
 export type PurchaseType = 'lifetime' | 'subscription';
 

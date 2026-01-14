@@ -10,7 +10,7 @@ import { supabase } from '../api/supabase';
 interface Membership {
   id: string;
   user_id: string;
-  plan: 'ZDARMA' | 'DECHBAR_HRA' | 'AI_KOUC';
+  plan: 'ZDARMA' | 'SMART' | 'AI_COACH';
   status: 'active' | 'cancelled' | 'expired';
   type: 'lifetime' | 'subscription';
   purchased_at: string;
@@ -19,7 +19,7 @@ interface Membership {
 
 interface UseMembershipReturn {
   membership: Membership | null;
-  plan: 'ZDARMA' | 'DECHBAR_HRA' | 'AI_KOUC';
+  plan: 'ZDARMA' | 'SMART' | 'AI_COACH';
   isPremium: boolean;
   isLoading: boolean;
   error: Error | null;

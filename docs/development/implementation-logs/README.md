@@ -38,6 +38,16 @@ Každý implementation log **MUSÍ obsahovat:**
 
 ## 📅 Timeline
 
+### 2026-01-14 - Smooth Auth Transition
+
+#### UX Improvements
+1. **[Smooth Auth Transition with 3000ms Loader](./2026-01-14-smooth-auth-transition-3000ms.md)**
+   - Fixed typo in breathing fact #1
+   - Optimized timing: 5000ms → 3000ms (1.5 breathing cycles)
+   - Added OAuth flow with loader
+   - Complete documentation (API + Implementation Log)
+   - Optional gold glow for Brand Book 2.0 compliance
+
 ### 2026-01-10 - Premium Component Design & Documentation
 
 #### Component Redesign

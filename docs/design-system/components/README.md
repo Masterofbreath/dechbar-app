@@ -25,6 +25,9 @@ Všechny Platform komponenty s detailní dokumentací API a příklady použití
 ### Layout Components
 - **[Card](./Card.md)** - Liquid glass cards pro modals a content containers
 
+### Feedback Components
+- **[Loader](./Loader.md)** - Global loading indicator with breathing animation
+
 ---
 
 ## ⚡ Quick Reference

@@ -32,8 +32,8 @@ export const APP_CONFIG = {
   // Membership Plans (technical identifiers)
   memberships: {
     FREE: 'ZDARMA',
-    GAME: 'DECHBAR_HRA',
-    AI_COACH: 'AI_KOUC',
+    SMART: 'SMART',
+    AI_COACH: 'AI_COACH',
   } as const,
 
   // User Roles (technical identifiers)

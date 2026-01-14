@@ -12,8 +12,10 @@ import { Button } from '@/platform';
 
 export interface PricingCardProps {
   title: string;
+  subtitle?: string;
   price: string;
   period?: string;
+  priceAnnual?: string;
   badge?: string;
   savingsBadge?: string;
   features: string[];
@@ -25,8 +27,10 @@ export interface PricingCardProps {
 
 export function PricingCard({
   title,
+  subtitle,
   price,
   period,
+  priceAnnual,
   badge,
   savingsBadge,
   features,
@@ -47,11 +51,26 @@ export function PricingCard({
       {/* Title */}
       <h3 className="pricing-card__title">{title}</h3>
 
+      {/* Subtitle */}
+      {subtitle && (
+        <p className="pricing-card__subtitle">{subtitle}</p>
+      )}
+
       {/* Price */}
       <div className="pricing-card__price">
-        <span className="pricing-card__price-amount">{price}</span>
-        {period && (
-          <span className="pricing-card__price-period">/{period}</span>
+        {priceAnnual ? (
+          <>
+            <span className="pricing-card__price-annual">{priceAnnual}</span>
+            <span className="pricing-card__price-note">(roční předplatné)</span>
+            <span className="pricing-card__price-monthly">nebo {price}/{period}</span>
+          </>
+        ) : (
+          <>
+            <span className="pricing-card__price-amount">{price}</span>
+            {period && (
+              <span className="pricing-card__price-period">/{period}</span>
+            )}
+          </>
         )}
       </div>
 

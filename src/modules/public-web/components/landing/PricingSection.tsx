@@ -1,9 +1,9 @@
 /**
  * PricingSection Component
  * 
- * Displays 3 pricing tiers: ZDARMA, STARTER, PRO
+ * Displays 3 pricing tiers: ZDARMA, SMART, AI COACH
  * Grid layout with responsive adaptation per Visual Brand Book
- * Based on Czech market research - transparent pricing, lifetime options
+ * Based on Czech market research - transparent pricing, annual emphasis
  * 
  * @package DechBar_App
  * @subpackage Modules/PublicWeb
@@ -16,47 +16,54 @@ import { AuthModal } from '@/components/auth/AuthModal';
 const PRICING_PLANS = [
   {
     title: 'ZDARMA',
+    subtitle: 'Základy funkčního dýchání',
     price: '0 Kč',
     badge: undefined,
     savingsBadge: undefined,
     features: [
-      '10 dechových tréninků',
-      'Přístup do komunity',
-      'Základní funkce',
+      '3 základní dechová cvičení',
+      'Ranní, polední a večerní protokol',
+      'Audio instrukce',
     ],
     ctaText: 'Začít zdarma',
     ctaVariant: 'ghost' as const,
     highlighted: false,
   },
   {
-    title: 'DechBar HRA',
+    title: 'SMART',
+    subtitle: 'Inteligentní doporučení',
     price: '249 Kč',
     period: 'měsíc',
+    priceAnnual: '125 Kč/měsíc',
     badge: 'OBLÍBENÉ',
-    savingsBadge: '💰 -50% sleva při ročním předplatném!',
+    savingsBadge: 'Ušetříš 1,488 Kč ročně',
     features: [
-      'Vše zdarma',
-      'Gamifikace a odměny',
-      'Neomezené tréninky',
-      'Statistiky a progress',
+      'Všechno z ZDARMA',
+      'BOLT skóre tracking',
+      'Smart doporučení tréninků',
+      'Grafy a statistiky pokroku',
+      '50+ audio programů',
     ],
-    ctaText: 'Koupit',
+    ctaText: 'Začít →',
     ctaVariant: 'primary' as const,
     highlighted: true,
   },
   {
-    title: 'AI Průvodce',
+    title: 'AI COACH',
+    subtitle: 'Tvůj osobní AI trenér',
     price: '490 Kč',
     period: 'měsíc',
+    priceAnnual: '245 Kč/měsíc',
     badge: 'PREMIUM',
-    savingsBadge: '💰 -50% sleva při ročním předplatném!',
+    savingsBadge: 'Ušetříš 2,940 Kč ročně',
     features: [
-      'Vše z DechBar HRA',
-      'AI osobní trenér',
-      'Personalizace',
-      'Prioritní podpora',
+      'Všechno ze SMART',
+      'Všech 100+ programů',
+      'AI trenér přizpůsobený tobě',
+      'Pokročilé analýzy (HRV, trendy)',
+      'Prioritní podpora od týmu',
     ],
-    ctaText: 'Koupit',
+    ctaText: 'Získat AI Coache →',
     ctaVariant: 'primary' as const,
     highlighted: false,
   },

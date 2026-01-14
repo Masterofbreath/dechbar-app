@@ -346,6 +346,49 @@
   margin-left: var(--spacing-1);  /* 4px */
 }
 
+/* Pricing Card Subtitle */
+.pricing-card__subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  margin-top: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+/* Annual Pricing Display */
+.pricing-card__price-annual {
+  display: block;
+  font-size: 32px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+  line-height: 1.2;
+  margin-bottom: var(--spacing-2);
+}
+
+.pricing-card__price-note {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-3);
+}
+
+.pricing-card__price-monthly {
+  display: block;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Highlighted card - gold accent for annual price */
+.pricing-card--highlighted .pricing-card__price-annual {
+  color: var(--color-accent);
+  text-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
 .pricing-card__savings {
   background: color-mix(in srgb, var(--color-accent) 10%, transparent);
   color: var(--color-accent);  /* Gold */

@@ -25,37 +25,33 @@ interface UseAuthReturn {
 /**
  * Ensure minimum loading time for premium UX
  * 
- * Provides:
- * - Time for logo breathing animation (2s cycle, 2.5 cycles at 5000ms)
- * - Premium perceived quality (ultra-calm, meditative experience)
- * - Buffer for preloading critical data during auth flow
- * - Network optimization window (parallel data fetching)
+ * Currently used ONLY for logout (1500ms smooth transition).
+ * Login flow uses Button loading state (no artificial delay).
  * 
  * Timing Strategy:
- * - 5000ms: Login/Register (2.5 breathing cycles, ultra-premium)
- *   → User sees 2 FULL breathing cycles + start of third
- *   → Time to prefetch: profiles, modules, progress, achievements, avatars
- *   → Result: Dashboard loads INSTANTLY (data in cache)
+ * - 1500ms: Logout (0.75 breathing cycles)
+ *   → Smooth exit (web: redirect to /, native: stay in /app)
+ *   → Prevents jarring instant disappear
  * 
- * - 1500ms: Logout (0.75 breathing cycles, faster but smooth)
- *   → User expects faster exit
- *   → Still premium, not jarring
+ * - Login: NO artificial delay (Button "Načítám..." is sufficient)
+ *   → Real network time: 0.5-2s (Supabase auth)
+ *   → AuthModal fade-out: 400ms (smooth transition)
+ *   → Dashboard fade-in: 600ms (smooth entrance)
+ *   → Total: ~1-3s natural, smooth transition
  * 
- * - 500ms: Quick checks (background, minimal UX impact)
- * 
- * @param promise - Async operation (login, logout, data fetch)
- * @param minTime - Minimum duration in milliseconds (default 5000ms)
+ * @param promise - Async operation (logout, etc.)
+ * @param minTime - Minimum duration in milliseconds (default 1500ms for logout)
  * @returns Promise result
  * 
  * @example
  * await ensureMinLoadingTime(
- *   supabase.auth.signInWithPassword(...),
- *   5000  // Ultra-premium login
+ *   supabase.auth.signOut(),
+ *   1500  // Smooth logout
  * );
  */
 async function ensureMinLoadingTime<T>(
   promise: Promise<T>,
-  minTime: number = 5000
+  minTime: number = 1500
 ): Promise<T> {
   const startTime = Date.now();
   
@@ -196,11 +192,8 @@ export function useAuth(): UseAuthReturn {
         })(),
       ]);
 
-      // Wait for both login and preload (with 5000ms minimum for ultra-premium breathing)
-      const [loginResult] = await ensureMinLoadingTime(
-        Promise.all([loginPromise, preloadPromise]),
-        5000  // 2.5 breathing cycles (ultra-premium)
-      );
+      // Wait for both login and preload (no artificial delay - button handles loading state)
+      const [loginResult] = await Promise.all([loginPromise, preloadPromise]);
 
       if (loginResult.error) throw loginResult.error;
       
@@ -342,6 +335,8 @@ export function useAuth(): UseAuthReturn {
     try {
       setError(null);
 
+      // OAuth popup is the loading indicator
+      // User sees: Click → Google popup → Choose account → Redirect to /app
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {

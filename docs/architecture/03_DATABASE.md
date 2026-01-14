@@ -138,7 +138,7 @@ auth.users (Supabase Auth)
 |--------|------|-------------|-------------|
 | `id` | UUID | PK, DEFAULT gen_random_uuid() | Unikátní ID |
 | `user_id` | UUID | NOT NULL, FK → auth.users | ID uživatele |
-| `plan` | TEXT | NOT NULL, DEFAULT 'ZDARMA' | 'ZDARMA', 'DECHBAR_HRA', 'AI_KOUC' |
+| `plan` | TEXT | NOT NULL, DEFAULT 'ZDARMA' | 'ZDARMA', 'SMART', 'AI_COACH' |
 | `status` | TEXT | NOT NULL, DEFAULT 'active' | 'active', 'cancelled', 'expired' |
 | `type` | TEXT | NOT NULL, DEFAULT 'lifetime' | 'lifetime' nebo 'subscription' |
 | `purchased_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Datum nákupu |
@@ -154,8 +154,8 @@ auth.users (Supabase Auth)
 | Plan | Type | Features |
 |------|------|----------|
 | **ZDARMA** | lifetime | Základní přístup, omezené funkce |
-| **DECHBAR_HRA** | subscription | Přístup k gamifikaci, výzvám |
-| **AI_KOUC** | subscription | AI průvodce, personalizace |
+| **SMART** | subscription | BOLT tracking, smart doporučení, 50+ programů |
+| **AI_COACH** | subscription | AI coach, pokročilé analýzy, 100+ programů |
 
 **Indexes:**
 - `memberships_user_idx` ON `user_id`
