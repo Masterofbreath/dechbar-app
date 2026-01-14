@@ -1,0 +1,10 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Step 2: Practice (Headphones with play) -->
+  <path d="M6 14V12C6 7.58172 9.58172 4 14 4H18C22.4183 4 26 7.58172 26 12V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <rect x="4" y="14" width="5" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
+  <rect x="23" y="14" width="5" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
+  <path d="M14 16L18 18.5L14 21V16Z" fill="currentColor"/>
+  <!-- Number Badge -->
+  <circle cx="24" cy="8" r="6" fill="var(--color-accent)"/>
+  <text x="24" y="12" text-anchor="middle" font-size="10" font-weight="bold" fill="var(--color-background)">2</text>
+</svg>

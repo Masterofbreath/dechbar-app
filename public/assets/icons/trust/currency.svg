@@ -1,0 +1,5 @@
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Currency/Money Icon (Czech Crown) -->
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+  <path d="M12 7V12M12 12V17M12 12H15.5C16.33 12 17 11.33 17 10.5C17 9.67 16.33 9 15.5 9H12M12 12H8.5C7.67 12 7 12.67 7 13.5C7 14.33 7.67 15 8.5 15H12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>

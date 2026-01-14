@@ -1,14 +1,17 @@
 /**
  * PricingSection Component
  * 
- * Displays 3 pricing tiers: ZDARMA, DechBar HRA, AI Průvodce
+ * Displays 3 pricing tiers: ZDARMA, STARTER, PRO
  * Grid layout with responsive adaptation per Visual Brand Book
+ * Based on Czech market research - transparent pricing, lifetime options
  * 
  * @package DechBar_App
  * @subpackage Modules/PublicWeb
  */
 
+import { useState } from 'react';
 import { PricingCard } from './PricingCard';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 const PRICING_PLANS = [
   {
@@ -59,24 +62,43 @@ const PRICING_PLANS = [
   },
 ];
 
-export function PricingSection({ onCTA }: { onCTA: () => void }) {
+export function PricingSection() {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  function handleCTA() {
+    setShowAuthModal(true);
+  }
+
   return (
-    <section className="landing-pricing" id="pricing">
-      <div className="landing-pricing__container">
-        <h2 className="landing-pricing__title">
-          Vyber si svůj tarif
-        </h2>
-        
-        <div className="landing-pricing__grid">
-          {PRICING_PLANS.map(plan => (
-            <PricingCard 
-              key={plan.title}
-              {...plan}
-              onCTA={onCTA}
-            />
-          ))}
+    <>
+      <section className="landing-pricing" id="pricing">
+        <div className="landing-pricing__container">
+          <h2 className="landing-pricing__title">
+            Vyber si svou cestu
+          </h2>
+          
+          <p className="landing-pricing__subtitle">
+            Začni zdarma. Upgrade, když uvidíš výsledky.
+          </p>
+          
+          <div className="landing-pricing__grid">
+            {PRICING_PLANS.map(plan => (
+              <PricingCard 
+                key={plan.title}
+                {...plan}
+                onCTA={handleCTA}
+              />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        defaultView="register"
+      />
+    </>
   );
 }

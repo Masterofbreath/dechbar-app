@@ -1,55 +1,69 @@
 /**
- * LandingPage Component
+ * LandingPage Component - Research-Based Rebuild
  * 
- * Main landing page - public-facing marketing page
+ * Main landing page optimized for Czech market 2026 launch
+ * Based on market research, personas, and conversion optimization
+ * 
  * Routes: dechbar.cz/
  * 
- * Sections:
- * - Header (sticky with glassmorphism)
- * - Hero (headline, CTA, animated waves, screenshot)
- * - Pricing (3 tiers)
- * - Footer (4-column links + copyright)
+ * Structure (6-section "Modified Apple" model):
+ * 1. Hero - Value proposition + CTA
+ * 2. Science - Why breathing matters (credibility)
+ * 3. How It Works - Process clarity (3 steps)
+ * 4. Trust - Social proof (endorsement + data)
+ * 5. Pricing - Value proposition (3 tiers)
+ * 6. Final CTA + FAQ - Last conversion chance + objection handling
+ * 
+ * Positioning: "První česká aplikace pro funkční dýchání"
+ * Primary CTA: Email registration (Magic Link)
+ * Differentiation: Science-first, measurement-focused, Czech authority
  * 
  * @package DechBar_App
  * @subpackage Modules/PublicWeb
  */
 
-import { useState } from 'react';
 import { Header } from '../components/landing/Header';
 import { HeroSection } from '../components/landing/HeroSection';
+import { SciencePillars } from '../components/landing/SciencePillars';
+import { HowItWorks } from '../components/landing/HowItWorks';
+import { TrustSection } from '../components/landing/TrustSection';
 import { PricingSection } from '../components/landing/PricingSection';
+import { FinalCTASection } from '../components/landing/FinalCTASection';
 import { Footer } from '../components/landing/Footer';
-import { AuthModal } from '@/components/auth/AuthModal';
 
 export function LandingPage() {
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authView, setAuthView] = useState<'login' | 'register'>('register');
-
-  function handleCTA() {
-    setAuthView('register');
-    setShowAuthModal(true);
-  }
-
   return (
     <div className="landing-page">
-      {/* Header - sticky navigation */}
+      {/* Header - sticky navigation with glassmorphism */}
       <Header />
 
-      {/* Hero - main value proposition */}
-      <HeroSection onCTA={handleCTA} />
+      {/* Section 1: Hero - Main value proposition */}
+      {/* "První česká aplikace pro funkční dýchání" */}
+      <HeroSection />
 
-      {/* Pricing - 3 tiers */}
-      <PricingSection onCTA={handleCTA} />
+      {/* Section 2: Science - Why breathing matters */}
+      {/* Bohr effect, NO, BOLT tracking - credibility builder */}
+      <SciencePillars />
 
-      {/* Footer - links and copyright */}
+      {/* Section 3: How It Works - Process clarity */}
+      {/* Measure → Practice → Improve (3 steps) */}
+      <HowItWorks />
+
+      {/* Section 4: Trust - Social proof */}
+      {/* Professional endorsement + data metrics */}
+      <TrustSection showEndorsement={true} />
+
+      {/* Section 5: Pricing - Value proposition */}
+      {/* 3 tiers: ZDARMA, STARTER (highlighted), PRO */}
+      <PricingSection />
+
+      {/* Section 6: Final CTA + FAQ - Last conversion chance */}
+      {/* Repeat CTA + objection handling */}
+      <FinalCTASection />
+
+      {/* Footer - links, copyright, Czech badge */}
       <Footer />
-
-      {/* AuthModal - shared from platform */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        defaultView={authView}
-      />
     </div>
   );
 }
+

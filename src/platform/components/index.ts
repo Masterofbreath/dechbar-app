@@ -27,3 +27,9 @@ export type { CardProps } from './Card';
 
 export { Logo } from './Logo';
 export type { LogoProps } from './Logo';
+
+export { Icon } from './Icon';
+export type { IconProps } from './Icon';
+
+export { Loader } from './Loader';
+export type { LoaderProps } from './Loader';

@@ -10,62 +10,76 @@
  * @package DechBar_App
  */
 
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { App as CapacitorApp } from '@capacitor/app';
 import { useAuth } from '@/platform/auth';
+import { isNativeApp } from '@/platform/utils/environment';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+import { Loader } from '@/platform/components';
 
-// Public Web Module - Landing Page (eager load, not lazy)
+// Public Web Module - Landing Page + Science Page (eager load, not lazy)
 import { LandingPage } from '@/modules/public-web/pages/LandingPage';
+import { SciencePage } from '@/modules/public-web/pages/SciencePage';
+
+// Deep Link Router Component (needs to be inside BrowserRouter to use useNavigate)
+function DeepLinkRouter() {
+  const navigate = useNavigate();
+
+  // 🔗 Deep Link Handler (Native only)
+  useEffect(() => {
+    if (!isNativeApp()) return;
+
+    let listener: any;
+
+    const setupDeepLink = async () => {
+      listener = await CapacitorApp.addListener('appUrlOpen', (event) => {
+        console.log('🔗 Deep link opened:', event.url);
+        
+        try {
+          const url = new URL(event.url);
+          const path = url.pathname;
+          const search = url.search;
+          
+          if (path.includes('/reset-password')) {
+            navigate('/reset-password' + search);
+          } else if (path.includes('/app')) {
+            navigate('/app' + search);
+          } else {
+            navigate('/app');
+          }
+        } catch (err) {
+          console.error('❌ Deep link parse error:', err);
+          navigate('/app');
+        }
+      });
+    };
+
+    setupDeepLink();
+
+    return () => {
+      if (listener) {
+        listener.remove();
+      }
+    };
+  }, [navigate]);
+
+  return null; // This component doesn't render anything
+}
 
 function App() {
   const { user, isLoading } = useAuth();
 
-  // Show loading spinner while checking authentication
+  // Show loading while checking authentication
   if (isLoading) {
-    return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'var(--color-background)'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <svg 
-            style={{ 
-              animation: 'spin 1s linear infinite',
-              width: '48px',
-              height: '48px',
-              color: 'var(--color-accent)',
-              margin: '0 auto 16px'
-            }}
-            viewBox="0 0 24 24"
-          >
-            <circle 
-              style={{ opacity: 0.25 }}
-              cx="12" 
-              cy="12" 
-              r="10" 
-              stroke="currentColor" 
-              strokeWidth="4"
-              fill="none"
-            />
-            <path 
-              style={{ opacity: 0.75 }}
-              fill="currentColor" 
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Načítám DechBar App...</p>
-        </div>
-      </div>
-    );
+    return <Loader showBreathingFact />;
   }
 
   return (
     <BrowserRouter>
+      <DeepLinkRouter />
       <Routes>
         {/* ========================================
             PUBLIC ROUTES (No auth required)
@@ -75,6 +89,12 @@ function App() {
         <Route 
           path="/" 
           element={user ? <Navigate to="/app" replace /> : <LandingPage />} 
+        />
+
+        {/* Science page - deep dive into breathing science (public) */}
+        <Route 
+          path="/veda" 
+          element={<SciencePage />} 
         />
 
         {/* Reset password page (public, accessed from email link) */}

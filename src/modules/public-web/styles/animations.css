@@ -27,8 +27,8 @@
   height: 200%;
   background: radial-gradient(
     ellipse at center,
-    rgba(44, 190, 198, 0.4) 0%,    /* Teal primary */
-    rgba(44, 190, 198, 0.2) 30%,
+    color-mix(in srgb, var(--color-primary) 40%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary) 20%, transparent) 30%,
     transparent 70%
   );
   will-change: transform; /* GPU acceleration hint */
@@ -175,7 +175,7 @@
 .pricing-card--highlighted:hover {
   box-shadow: 
     0 12px 32px rgba(0, 0, 0, 0.4),
-    0 4px 16px rgba(214, 162, 58, 0.3); /* Gold glow */
+    0 4px 16px color-mix(in srgb, var(--color-accent) 30%, transparent);
 }
 
 /* ===================================

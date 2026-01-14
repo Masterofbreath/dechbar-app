@@ -1,0 +1,12 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Step 3: Improve (Trending Up) -->
+  <path d="M5 25L12 17L17 20L27 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M27 9V15M27 9H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="5" cy="25" r="2" fill="currentColor"/>
+  <circle cx="12" cy="17" r="2" fill="currentColor"/>
+  <circle cx="17" cy="20" r="2" fill="currentColor"/>
+  <circle cx="27" cy="9" r="2" fill="currentColor"/>
+  <!-- Number Badge -->
+  <circle cx="24" cy="4" r="6" fill="var(--color-accent)"/>
+  <text x="24" y="8" text-anchor="middle" font-size="10" font-weight="bold" fill="var(--color-background)">3</text>
+</svg>

@@ -1,101 +1,113 @@
 /**
- * HeroSection Component
+ * HeroSection Component - Research-Based Rebuild
  * 
- * Main hero section with headline, subheading, trust signals, and CTA
- * Includes animated waves background and app screenshot mockup
+ * Main hero section optimized for Czech market 2026 launch
+ * Based on market research, personas, and Visual Brand Book 2.0
  * 
  * Design: Full viewport height, 2-column layout (desktop), stacked (mobile)
- * Headline: "Tvůj dechový průvodce v kapse." - 48px desktop, 36px mobile
+ * Headline: "První česká aplikace pro funkční dýchání" - Science-first positioning
+ * CTA: Email registration (Magic Link) - lowest friction conversion
  * 
  * @package DechBar_App
  * @subpackage Modules/PublicWeb
  */
 
+import { useState } from 'react';
 import { Button } from '@/platform';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { AnimatedWaves } from './AnimatedWaves';
-import { TrustSignals } from './TrustSignals';
+import { HeroMockup } from './HeroMockup';
 
-export function HeroSection({ onCTA }: { onCTA: () => void }) {
+// Trust signals data
+const TRUST_SIGNALS = [
+  { icon: 'users', text: '1150+ dýchačů' },
+  { icon: 'headphones', text: '100+ cvičení' },
+  { icon: 'certificate', text: 'Certifikováno' },
+  { icon: 'currency', text: 'Od 0 Kč' },
+];
+
+export function HeroSection() {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  function handleCTA() {
+    setShowAuthModal(true);
+  }
+
   return (
-    <section className="landing-hero">
-      {/* Animated waves background */}
-      <AnimatedWaves />
-      
-      <div className="landing-hero__container">
-        {/* Left side: Content */}
-        <div className="landing-hero__content">
-          <h1 className="landing-hero__title hero-fade-in hero-fade-in--1">
-            Tvůj dechový průvodce v kapse.
-          </h1>
-          
-          <p className="landing-hero__subtitle hero-fade-in hero-fade-in--2">
-            Přes 100 dechových tréninků. AI průvodce. Komunita 1,150+ lidí.
-          </p>
-          
-          <div className="hero-fade-in hero-fade-in--3">
-            <TrustSignals />
+    <>
+      <section className="landing-hero">
+        {/* Animated waves background */}
+        <AnimatedWaves />
+        
+        <div className="landing-hero__container">
+          {/* Left side: Content */}
+          <div className="landing-hero__content">
+            <h1 className="landing-hero__title">
+              První česká aplikace pro funkční dýchání
+            </h1>
+            
+            <h2 className="landing-hero__subtitle">
+              Měř svůj pokrok. Cvič s certifikovaným instruktorem. Viditelné výsledky za 21 dní.
+            </h2>
+            
+            <div className="landing-hero__cta">
+              <Button 
+                variant="primary" 
+                size="lg" 
+                onClick={handleCTA}
+              >
+                Začít zdarma →
+              </Button>
+              
+              <p className="landing-hero__cta-subtext">
+                Email → První cvičení za 2 minuty
+              </p>
+            </div>
+            
+            {/* Trust signals */}
+            <div className="trust-signals">
+              {TRUST_SIGNALS.map((item, index) => (
+                <div key={index} className="trust-signal">
+                  <img 
+                    src={`/assets/icons/trust/${item.icon}.svg`}
+                    alt=""
+                    aria-hidden="true"
+                    width="20"
+                    height="20"
+                    className="trust-signal__icon"
+                  />
+                  <span className="trust-signal__text">{item.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
           
-          <div className="landing-hero__cta hero-fade-in hero-fade-in--4">
-            <Button 
-              variant="primary" 
-              size="lg" 
-              onClick={onCTA}
-            >
-              Začít zdarma
-            </Button>
+          {/* Right side: App mockup */}
+          <div className="landing-hero__visual">
+            <HeroMockup />
           </div>
         </div>
         
-        {/* Right side: App screenshot mockup */}
-        <div className="landing-hero__visual hero-fade-in hero-fade-in--2">
-          <div className="app-mockup">
-            <div className="app-mockup__frame">
-              <div className="app-mockup__screen">
-                {/* Placeholder for app screenshot - will be replaced with real image */}
-                <div className="screenshot-placeholder">
-                  <svg 
-                    width="200" 
-                    height="400" 
-                    viewBox="0 0 200 400" 
-                    fill="none"
-                    className="screenshot-placeholder__svg"
-                  >
-                    <rect 
-                      width="200" 
-                      height="400" 
-                      fill="var(--color-surface)"
-                      rx="20"
-                    />
-                    <text 
-                      x="100" 
-                      y="200" 
-                      textAnchor="middle" 
-                      fill="var(--color-text-tertiary)"
-                      fontSize="14"
-                    >
-                      Screenshot aplikace
-                    </text>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Scroll indicator */}
+        <div className="scroll-indicator">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path 
+              d="M12 4v16m0 0l-6-6m6 6l6-6" 
+              stroke="var(--color-primary)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
-      </div>
+      </section>
       
-      {/* Scroll indicator */}
-      <div className="scroll-indicator">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path 
-            d="M12 4v16m0 0l-6-6m6 6l6-6" 
-            stroke="var(--color-primary)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-    </section>
+      {/* Auth Modal - Email registration */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        defaultView="register"
+      />
+    </>
   );
 }

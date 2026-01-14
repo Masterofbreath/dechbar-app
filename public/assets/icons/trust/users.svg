@@ -1,0 +1,7 @@
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Users/Community Icon -->
+  <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+  <path d="M3 21C3 17.134 6.134 14 10 14C10.695 14 11.366 14.101 12 14.288" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="17" cy="7" r="3" stroke="currentColor" stroke-width="2"/>
+  <path d="M21 21C21 18.239 18.761 16 16 16C13.239 16 11 18.239 11 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>

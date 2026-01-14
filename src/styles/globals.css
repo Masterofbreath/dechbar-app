@@ -50,6 +50,7 @@
 @import './components/close-button.css';
 @import './components/error-message.css';
 @import './components/icon-button.css';
+@import './components/loader.css';
 
 /* ===================================
    IMPORT LAYOUT STYLES

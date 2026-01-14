@@ -31,8 +31,8 @@ export function Footer() {
             <h3 className="landing-footer__column-title">Produkt</h3>
             <ul className="landing-footer__links">
               <li><a href="#pricing">Ceník</a></li>
+              <li><a href="/veda">Věda za DechBarem</a></li>
               <li><a href="/app">Funkce</a></li>
-              <li><a href="/about">O nás</a></li>
             </ul>
           </div>
 
@@ -66,10 +66,13 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar - copyright */}
+        {/* Bottom bar - copyright + Czech badge */}
         <div className="landing-footer__bottom">
           <p className="landing-footer__copyright">
             © {currentYear} DechBar | Certifikováno odborníky
+          </p>
+          <p className="landing-footer__made-in">
+            🇨🇿 Vytvořeno v České republice
           </p>
         </div>
       </div>

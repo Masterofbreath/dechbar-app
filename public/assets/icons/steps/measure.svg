@@ -1,0 +1,10 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Step 1: Measure (Stopwatch) -->
+  <circle cx="16" cy="17" r="10" stroke="currentColor" stroke-width="2"/>
+  <path d="M16 10V17L20 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <path d="M13 6H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="16" cy="17" r="1.5" fill="currentColor"/>
+  <!-- Number Badge -->
+  <circle cx="24" cy="8" r="6" fill="var(--color-accent)"/>
+  <text x="24" y="12" text-anchor="middle" font-size="10" font-weight="bold" fill="var(--color-background)">1</text>
+</svg>

@@ -1,0 +1,37 @@
+/**
+ * How It Works Data
+ * 
+ * 3-step process explanation for landing page
+ * Measure → Practice → Improve flow
+ * 
+ * @package DechBar_App
+ * @subpackage Modules/PublicWeb/Data
+ */
+
+export interface HowItWorksStep {
+  number: number;
+  title: string;
+  description: string;
+  screenshotPlaceholder: 'measure' | 'practice' | 'improve';
+}
+
+export const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
+  {
+    number: 1,
+    title: 'Změř',
+    description: 'Zjisti své BOLT skóre během 60 sekund. Získej výchozí hodnotu pro tracking.',
+    screenshotPlaceholder: 'measure',
+  },
+  {
+    number: 2,
+    title: 'Cvič',
+    description: 'Vyber z 100+ audio programů. Ranní aktivace, polední reset nebo večerní relaxace.',
+    screenshotPlaceholder: 'practice',
+  },
+  {
+    number: 3,
+    title: 'Zlepšuj',
+    description: 'Sleduj svůj pokrok v čase. Průměrné zlepšení: +12 sekund za 3 týdny.',
+    screenshotPlaceholder: 'improve',
+  },
+];

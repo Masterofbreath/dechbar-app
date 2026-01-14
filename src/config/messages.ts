@@ -48,7 +48,33 @@ export const MESSAGES = {
     login: "Přihlašujeme tě, nádech...",
     registering: "Vytváříme tvůj účet, výdech...",
     loadingExercise: "Připravujeme tvoje dechování...",
+    breatheWithUs: "Dýchej s námi...",
+    preparingApp: "Připravujeme tvou aplikaci. Dýchej s námi...",
   },
+
+  // ============================================================
+  // 💡 BREATHING FACTS (Loading Screen Tips)
+  // Tone: Educational + Inspiring (like PC game loading screens)
+  // Format: Short, valuable, enriching
+  // Usage: Random selection during login/app loading
+  // ============================================================
+  breathingFacts: [
+    "Průměrný člověk nadechne 20 000× denně. Kolik z toho je vědomě?",
+    "Správný dech může snížit stres až o 40% během 2 minut.",
+    "Lenochod dýchá 6× za minutu. My 12-20×. Koho bys rád napodobil?",
+    "Tvůj dech ovlivňuje tepovou frekvenci během 30 sekund.",
+    "Nejdelší zadržení dechu: 24 minut. Ale 5 sekund ti změní den.",
+    "Nosní dýchání zvyšuje příjem kyslíku o 10-15% oproti ústům.",
+    "Japonci mají slovo 'Kokyu' - doslovně 'spolupráce dechu s tělem'.",
+    "Dech je jediná autonomní funkce těla, kterou můžeš vědomě řídit.",
+    "4-7-8 dech ti pomůže usnout do 2 minut. Zkusíš to dnes?",
+    "Hlubší dech aktivuje parasympatikus - tvůj přirozený zklidňovač.",
+    "Navy SEALs používají 'Box breathing' před misemi. Funguje i v běžném životě.",
+    "Výdech by měl být 2× delší než nádech pro maximální relaxaci.",
+    "Dýchání ovlivňuje pH krve. Tělo je chemická laboratoř.",
+    "Freedivers dokážou snížit tep na 30 úderů/min jen dechem.",
+    "Pranayama znamená 'řízení životní energie'. Všechno začíná dechem.",
+  ],
 
   // ============================================================
   // 🚫 ERROR MESSAGES
@@ -91,6 +117,11 @@ export const MESSAGES = {
     challengeLocked: "Tato výzva je zamčená. Splň nejdřív předchozí!",
     passwordResetFailed: "Nepodařilo se odeslat odkaz. Zkus to znovu",
     passwordUpdateFailed: "Nepodařilo se změnit heslo. Zkus to znovu",
+    
+    // OAuth chyby
+    oauthFailed: "Nepodařilo se přihlásit. Zkus to znovu",
+    oauthCancelled: "Přihlášení bylo zrušeno",
+    oauthNotAvailable: "Tato možnost bude brzy dostupná",
   },
 
   // ============================================================
@@ -136,6 +167,11 @@ export const MESSAGES = {
     sendResetLink: "Poslat odkaz →",
     setPassword: "Nastavit heslo →",
     createAccount: "Vytvořit účet zdarma →",
+    
+    // OAuth Buttons
+    continueWithGoogle: "Pokračovat s Google",
+    continueWithApple: "Pokračovat s Apple",
+    continueWithFacebook: "Pokračovat s Facebook",
     
     // Secondary Actions
     save: "Uložit",
@@ -225,6 +261,59 @@ export const MESSAGES = {
     emailSentSubtitle: "Poslali jsme ti odkaz na:",
     emailSentInstruction: "Klikni na odkaz v emailu a pokračuj ve svém dechování.",
     emailSentSpamHint: "💡 Nenašel jsi email? Zkontroluj spam.",
+  },
+
+  // ============================================================
+  // 🌐 LANDING PAGE MESSAGES
+  // Public-facing marketing copy (Czech market 2026)
+  // Science-first positioning, minimal "dechový vibe"
+  // ============================================================
+  landing: {
+    // Hero section
+    hero: {
+      headline: "První česká aplikace pro funkční dýchání",
+      subheadline: "Měř svůj pokrok. Cvič s certifikovaným instruktorem. Viditelné výsledky za 21 dní.",
+      ctaPrimary: "Začít zdarma →",
+      ctaSubtext: "Email → První cvičení za 2 minuty",
+    },
+
+    // Trust signals
+    trust: {
+      users: "1150+ dýchačů",
+      exercises: "100+ cvičení",
+      certified: "Certifikováno",
+      pricing: "Od 0 Kč",
+    },
+
+    // Science section
+    science: {
+      title: "Proč dýchání mění vše",
+      intro: "95% populace dýchá suboptimálně. To ovlivňuje spánek, energii i odolnost vůči stresu.",
+      linkText: "Přečti si vědecké pozadí →",
+    },
+
+    // How it works section
+    howItWorks: {
+      title: "Jak DechBar funguje",
+    },
+
+    // Trust section
+    trustSection: {
+      title: "Co říkají odborníci",
+    },
+
+    // Final CTA section
+    finalCTA: {
+      headline: "Připravený na první nádech?",
+      faqTitle: "Často kladené otázky",
+    },
+
+    // Footer
+    footer: {
+      slogan: "Tvůj dechový průvodce v kapse.",
+      madeIn: "🇨🇿 Vytvořeno v České republice",
+      copyright: "© 2026 DechBar | Certifikováno odborníky",
+    },
   },
 } as const;
 

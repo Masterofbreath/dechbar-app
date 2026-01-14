@@ -1,0 +1,7 @@
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Certificate/Badge Icon -->
+  <path d="M4 6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V14C20 15.1046 19.1046 16 18 16H6C4.89543 16 4 15.1046 4 14V6Z" stroke="currentColor" stroke-width="2"/>
+  <path d="M9 16V20L12 18L15 20V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+  <path d="M12 7V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>
