@@ -1,53 +1,42 @@
-# 🗄️ Database Schema Documentation
+# Database Architecture
 
-**Project:** DechBar App  
-**Database:** Supabase PostgreSQL  
-**Region:** West EU (Ireland)  
-**Project ID:** `iqyahebbteiwzwyrtmns`
+**Backend:** Supabase PostgreSQL
 
 ---
 
-## 📋 PŘEHLED
+## 📊 OVERVIEW
 
-Databáze je navržena pro **modulární platformu** s:
-- 🔐 Autentizace (Supabase Auth)
-- 👥 Uživatelské profily
-- 📦 Produktové moduly (lifetime/subscription)
-- 🎖️ Role a oprávnění
-- 💳 Membership plány
-
----
-
-## 📊 ER DIAGRAM (Zjednodušený)
+DechBar používá **6 core tabulek** pro správu uživatelů, členství, modulů a oprávnění.
 
 ```
 auth.users (Supabase Auth)
-    │
-    ├─→ profiles (1:1)
-    │
-    ├─→ user_modules (1:N) ──→ modules (N:1)
-    │
-    ├─→ memberships (1:N)
-    │
-    └─→ user_roles (1:N) ──→ roles (N:1)
+    ↓
+profiles ← memberships (členství: ZDARMA, SMART, AI_COACH)
+    ↓
+    ├─→ user_modules (zakoupené lifetime moduly)
+    └─→ user_roles (přiřazené role: member, admin, teacher...)
 ```
 
 ---
 
-## 🏗️ TABULKY
+## 🗄️ CORE TABLES
 
 ### 1. `profiles`
 
-**Účel:** Rozšíření `auth.users` o custom data
+**Účel:** Základní profil uživatele (rozšíření Supabase Auth)
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| `user_id` | UUID | PK, FK → auth.users | ID uživatele |
-| `email` | TEXT | NOT NULL | Email (zrcadlený z auth.users) |
+| `id` | UUID | PK, FK → auth.users | ID uživatele |
+| `email` | TEXT | NOT NULL, UNIQUE | Email (sync z auth.users) |
 | `full_name` | TEXT | | Celé jméno |
-| `avatar_url` | TEXT | | URL profilového obrázku |
+| `avatar_url` | TEXT | | URL avatara (Supabase Storage) |
 | `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Vytvořeno |
 | `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Aktualizováno |
+
+**Constraints:**
+- PRIMARY KEY (id)
+- FOREIGN KEY (id) REFERENCES auth.users ON DELETE CASCADE
 
 **Indexes:**
 - `profiles_email_idx` ON `email`
@@ -56,44 +45,44 @@ auth.users (Supabase Auth)
 - Users can view own profile (SELECT)
 - Users can update own profile (UPDATE)
 
-**Trigger:**
-- Auto-create při registraci (`handle_new_user`)
-
 ---
 
 ### 2. `modules`
 
-**Účel:** Dostupné produktové moduly (co lze koupit)
+**Účel:** Definice dostupných modulů (produktů)
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | TEXT | PK | Unikátní ID ('studio', 'challenges', ...) |
 | `name` | TEXT | NOT NULL | Název modulu |
-| `description` | TEXT | | Popis |
-| `price_czk` | INTEGER | NOT NULL | Cena v Kč |
-| `price_type` | TEXT | NOT NULL | 'lifetime' nebo 'subscription' |
-| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Aktivní/neaktivní |
-| `is_beta` | BOOLEAN | NOT NULL, DEFAULT false | Beta verze |
-| `requires_module_id` | TEXT | FK → modules | Vyžaduje jiný modul |
-| `icon` | TEXT | | Icon identifier |
-| `color` | TEXT | | Barva (#F8CA00) |
-| `sort_order` | INTEGER | DEFAULT 0 | Pořadí v UI |
+| `description` | TEXT | | Popis modulu |
+| `price_czk` | INTEGER | | Cena v CZK (null = zdarma) |
+| `price_type` | TEXT | NOT NULL, DEFAULT 'lifetime' | 'lifetime' nebo 'subscription' |
+| `stripe_price_id` | TEXT | | Stripe Price ID |
+| `gopay_product_id` | TEXT | | GoPay Product ID |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Aktivní modul? |
+| `features` | JSONB | | JSON pole features |
 | `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Vytvořeno |
-| `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Aktualizováno |
 
-**Seeded Data (5 modulů):**
+**Seeded Data:**
+
+**Membership Tier Products (subscription):**
+
+| ID | Name | Price | Type | Description |
+|----|------|-------|------|-------------|
+| `membership-smart` | SMART | 249 Kč/měsíc | subscription | Inteligentní doporučení - BOLT tracking, smart tréninky, 50+ programů |
+| `membership-ai-coach` | AI COACH | 490 Kč/měsíc | subscription | Tvůj osobní AI trenér - AI personalizace, pokročilé analýzy, 100+ programů |
+
+**Lifetime Products:**
 
 | ID | Name | Price | Type | Description |
 |----|------|-------|------|-------------|
 | `studio` | DechBar STUDIO | 990 Kč | lifetime | Vytvoř si vlastní dechová cvičení |
 | `challenges` | Výzvy | 490 Kč | lifetime | 21-denní dechové výzvy |
 | `akademie` | Akademie | 1490 Kč | lifetime | Vzdělávací kurzy a lekce |
-| `game` | DechBar GAME | 149 Kč | subscription | Gamifikace a soutěže |
-| `ai-coach` | AI Coach | 490 Kč | subscription | Osobní AI průvodce |
 
 **Indexes:**
-- `modules_sort_order_idx` ON `sort_order`
-- `modules_is_active_idx` ON `is_active`
+- `modules_price_type_idx` ON `price_type`
 
 **RLS Policies:**
 - Anyone can view active modules (SELECT WHERE is_active = true)
@@ -102,19 +91,20 @@ auth.users (Supabase Auth)
 
 ### 3. `user_modules`
 
-**Účel:** Junction table - které moduly uživatel vlastní
+**Účel:** Junction table - které lifetime moduly uživatel vlastní (Many-to-Many)
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | UUID | PK, DEFAULT gen_random_uuid() | Unikátní ID |
 | `user_id` | UUID | NOT NULL, FK → auth.users | ID uživatele |
 | `module_id` | TEXT | NOT NULL, FK → modules | ID modulu |
+| `purchase_type` | TEXT | NOT NULL, DEFAULT 'lifetime' | 'lifetime' nebo 'subscription' |
 | `purchased_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Datum nákupu |
-| `purchase_type` | TEXT | NOT NULL | 'lifetime' nebo 'subscription' |
-| `subscription_status` | TEXT | | 'active', 'cancelled', 'past_due' |
-| `current_period_end` | TIMESTAMPTZ | | Konec předplatného (jen subscription) |
-| `payment_id` | TEXT | | ID platby (GoPay/Stripe) |
-| `payment_provider` | TEXT | | 'gopay' nebo 'stripe' |
+| `expires_at` | TIMESTAMPTZ | | Datum expirace (pokud není lifetime) |
+| `subscription_status` | TEXT | DEFAULT 'active' | 'active', 'cancelled', 'expired' |
+| `stripe_subscription_id` | TEXT | | Stripe subscription ID |
+| `gopay_payment_id` | TEXT | | GoPay payment ID |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Vytvořeno |
 
 **Constraints:**
 - UNIQUE(user_id, module_id) - uživatel může vlastnit modul jen 1x
@@ -139,6 +129,12 @@ auth.users (Supabase Auth)
 | `id` | UUID | PK, DEFAULT gen_random_uuid() | Unikátní ID |
 | `user_id` | UUID | NOT NULL, FK → auth.users | ID uživatele |
 | `plan` | TEXT | NOT NULL, DEFAULT 'ZDARMA' | 'ZDARMA', 'SMART', 'AI_COACH' |
+
+**Data Type:**
+- `plan` používá PostgreSQL ENUM type: `membership_plan_type`
+- Hodnoty: 'ZDARMA', 'SMART', 'AI_COACH'
+- Automatický dropdown v Supabase Table Editor
+
 | `status` | TEXT | NOT NULL, DEFAULT 'active' | 'active', 'cancelled', 'expired' |
 | `type` | TEXT | NOT NULL, DEFAULT 'lifetime' | 'lifetime' nebo 'subscription' |
 | `purchased_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Datum nákupu |
@@ -167,6 +163,83 @@ auth.users (Supabase Auth)
 
 **Default:**
 - Každý nový uživatel dostane `ZDARMA` plan automaticky (trigger)
+
+---
+
+## 🎯 MEMBERSHIP TIERS vs LIFETIME MODULES
+
+### Rozdíl Mezi Typy Produktů
+
+#### **Membership Tiers** (tabulka `memberships`)
+
+**Jeden aktivní tier na uživatele:**
+- **ZDARMA** - Default při registraci (lifetime)
+- **SMART** - 249 Kč/měsíc (nebo 125 Kč/měsíc při ročním předplatném)
+- **AI_COACH** - 490 Kč/měsíc (nebo 245 Kč/měsíc při ročním předplatném)
+
+**Charakteristika:**
+- ✅ Pouze JEDEN aktivní najednou
+- ✅ UPDATE při změně plánu (ne INSERT nový záznam)
+- ✅ Určuje základní level funkcí platformy
+- ✅ V `modules` jako `membership-smart`, `membership-ai-coach`
+
+#### **Lifetime Modules** (tabulka `user_modules`)
+
+**Zakoupené lifetime produkty:**
+- **DechBar STUDIO** - 990 Kč (lifetime)
+- **Výzvy** - 490 Kč (lifetime)
+- **Akademie** - 1490 Kč (lifetime)
+
+**Charakteristika:**
+- ✅ Uživatel může vlastnit VÍCE najednou
+- ✅ Nezávislé na membership tier
+- ✅ Permanentní přístup (lifetime)
+- ✅ INSERT nový záznam při každém nákupu
+
+### Příklad Kombinace:
+
+```sql
+-- Uživatel Jakub:
+
+memberships:
+  user_id: abc-123
+  plan: 'SMART'
+  status: 'active'
+
+user_modules:
+  1. { module_id: 'studio', purchase_type: 'lifetime' }
+  2. { module_id: 'challenges', purchase_type: 'lifetime' }
+
+user_roles:
+  1. 'member' (default)
+  2. 'teacher' (manuálně přidělen)
+
+-- Výsledný přístup:
+-- ✅ SMART membership funkce (BOLT tracking, smart doporučení, 50+ programů)
+-- ✅ DechBar STUDIO (vytváření vlastních cvičení)
+-- ✅ Výzvy (21-denní programy)
+-- ✅ Teacher oprávnění (tvorba kurzů)
+```
+
+### Logika Nákupu:
+
+**Když uživatel koupí SMART membership:**
+```sql
+-- NE: INSERT nový záznam
+-- ANO: UPDATE existující záznam
+UPDATE memberships 
+SET plan = 'SMART', 
+    purchased_at = NOW(),
+    expires_at = NOW() + INTERVAL '1 month'
+WHERE user_id = 'abc-123';
+```
+
+**Když uživatel koupí DechBar STUDIO:**
+```sql
+-- INSERT nový záznam (může mít více)
+INSERT INTO user_modules (user_id, module_id, purchase_type)
+VALUES ('abc-123', 'studio', 'lifetime');
+```
 
 ---
 
@@ -210,12 +283,12 @@ auth.users (Supabase Auth)
 | `id` | UUID | PK, DEFAULT gen_random_uuid() | Unikátní ID |
 | `user_id` | UUID | NOT NULL, FK → auth.users | ID uživatele |
 | `role_id` | TEXT | NOT NULL, FK → roles | ID role |
-| `assigned_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Kdy přiděleno |
-| `assigned_by` | UUID | FK → auth.users | Kdo přidělil |
-| `notes` | TEXT | | Poznámky |
+| `assigned_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Přiřazeno kdy |
+| `assigned_by` | UUID | FK → auth.users | Přiřazeno kým (admin) |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Vytvořeno |
 
 **Constraints:**
-- UNIQUE(user_id, role_id) - uživatel může mít roli jen 1x
+- UNIQUE(user_id, role_id) - uživatel nemůže mít stejnou roli 2x
 
 **Indexes:**
 - `user_roles_user_idx` ON `user_id`
@@ -223,121 +296,152 @@ auth.users (Supabase Auth)
 
 **RLS Policies:**
 - Users can view own roles (SELECT)
-- Only admins/CEO can manage roles (ALL)
+- Admins can manage roles (INSERT, DELETE)
 
 **Default:**
-- Každý nový uživatel dostane roli `member` automaticky (trigger)
+- Každý nový uživatel dostane automaticky roli `member` (trigger)
 
 ---
 
-## 🔧 TRIGGERS & FUNCTIONS
+## 🔗 Relationships
 
-### `handle_new_user()`
+**memberships → profiles:**
+- One-to-one (každý user má jeden membership plan)
+- ON DELETE CASCADE
 
-**Trigger:** `on_auth_user_created` (AFTER INSERT ON auth.users)
+**user_modules → profiles:**
+- Many-to-one (user může vlastnit více modulů)
+- ON DELETE CASCADE
 
-**Akce při registraci:**
-1. Vytvoří záznam v `profiles`
-2. Přidělí roli `member` v `user_roles`
-3. Vytvoří `ZDARMA` membership v `memberships`
+**user_modules → modules:**
+- Many-to-one (modul může být vlastněn více uživateli)
+- ON DELETE RESTRICT
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (user_id, email)
-  VALUES (NEW.id, NEW.email);
+**user_roles → profiles:**
+- Many-to-one (user může mít více rolí)
+- ON DELETE CASCADE
 
-  INSERT INTO public.user_roles (user_id, role_id)
-  VALUES (NEW.id, 'member');
-
-  INSERT INTO public.memberships (user_id, plan, status, type)
-  VALUES (NEW.id, 'ZDARMA', 'active', 'lifetime');
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-```
-
----
-
-### Helper Functions
-
-#### `user_has_role(user_id, role_id)`
-Kontrola, zda má uživatel konkrétní roli
-
-```sql
-SELECT public.user_has_role('uuid...', 'admin');
--- Returns: true/false
-```
-
-#### `user_has_any_role(user_id, role_ids[])`
-Kontrola, zda má uživatel alespoň jednu z rolí
-
-```sql
-SELECT public.user_has_any_role('uuid...', ARRAY['admin', 'ceo']);
--- Returns: true/false
-```
-
-#### `get_user_roles(user_id)`
-Vrátí všechny role uživatele
-
-```sql
-SELECT * FROM public.get_user_roles('uuid...');
--- Returns: TABLE (role_id, role_name, role_level, assigned_at)
-```
-
-#### `user_is_admin(user_id)`
-Kontrola, zda je uživatel admin nebo CEO
-
-```sql
-SELECT public.user_is_admin('uuid...');
--- Returns: true/false
-```
-
-#### `get_active_membership(user_id)`
-Vrátí aktivní membership plan uživatele
-
-```sql
-SELECT * FROM public.get_active_membership('uuid...');
--- Returns: TABLE (plan, type, purchased_at, expires_at)
-```
+**user_roles → roles:**
+- Many-to-one (role může být přiřazena více uživatelům)
+- ON DELETE RESTRICT
 
 ---
 
 ## 🔐 ROW LEVEL SECURITY (RLS)
 
-**Všechny tabulky mají RLS ENABLED!**
+**Všechny tabulky mají aktivní RLS!**
 
-### Základní princip:
-```sql
--- Users vidí jen své data
-auth.uid() = user_id
-
--- Admini vidí vše
-EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role_id IN ('admin', 'ceo'))
-```
-
-### Security Best Practices:
-- ✅ Nikdy nepoužívej `service_role` key na klientu
-- ✅ Všechny queries jdou přes `anon` nebo `authenticated` role
-- ✅ RLS policies kontrolují každý SELECT/INSERT/UPDATE/DELETE
-- ✅ Helper funkce jsou `SECURITY DEFINER` (běží s právy vlastníka)
+Základní pravidla:
+- Uživatelé vidí pouze **svá** data (profiles, memberships, user_modules, user_roles)
+- Uživatelé mohou upravovat **svůj** profil
+- Admins mají plný přístup (level 4+)
 
 ---
 
-## 📈 BUDOUCÍ ROZŠÍŘENÍ
+## 🚀 TRIGGERS
 
-### Plánované tabulky:
+### 1. `handle_new_user()`
+
+**Trigger:** `on_auth_user_created`
+**Tabulka:** `auth.users`
+**Akce:** AFTER INSERT
+
+**Funkce:**
+1. Vytvoří profil v `profiles`
+2. Vytvoří membership `ZDARMA` v `memberships`
+3. Přiřadí roli `member` v `user_roles`
+
+```sql
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+```
+
+---
+
+## 📝 SCHEMA UPDATES
+
+### Jak Aktualizovat Schema
+
+**NIKDY NE přímo v produkční DB!**
+
+Vždy přes Supabase CLI:
+
+```bash
+# 1. Vytvoř novou migraci
+supabase migration new add_new_column
+
+# 2. Edituj SQL soubor v supabase/migrations/
+# 3. Test lokálně
+supabase db reset
+
+# 4. Pusť na PROD
+supabase db push
+```
+
+### Migration Best Practices
+
+- Vždy přidávej DEFAULT hodnoty pro nové sloupce
+- Nikdy nemazej sloupce (raději DEPRECATED_ prefix)
+- Testuj migraci na lokální DB předtím, než pushneš
+- Vždy přidej `IF NOT EXISTS` / `IF EXISTS`
+
+---
+
+## 🔍 QUERY EXAMPLES
+
+### 1. Získat celý profil uživatele
+
+```sql
+SELECT 
+  p.*,
+  m.plan,
+  m.status,
+  json_agg(DISTINCT um.module_id) as modules,
+  json_agg(DISTINCT ur.role_id) as roles
+FROM profiles p
+LEFT JOIN memberships m ON p.id = m.user_id
+LEFT JOIN user_modules um ON p.id = um.user_id
+LEFT JOIN user_roles ur ON p.id = ur.user_id
+WHERE p.id = 'user-uuid'
+GROUP BY p.id, m.plan, m.status;
+```
+
+### 2. Kontrola přístupu k modulu
+
+```sql
+SELECT EXISTS (
+  SELECT 1 
+  FROM user_modules 
+  WHERE user_id = 'user-uuid' 
+    AND module_id = 'studio'
+    AND (
+      purchase_type = 'lifetime' 
+      OR (subscription_status = 'active' AND expires_at > NOW())
+    )
+);
+```
+
+### 3. Všichni uživatelé s SMART membership
+
+```sql
+SELECT p.email, p.full_name, m.purchased_at
+FROM profiles p
+INNER JOIN memberships m ON p.id = m.user_id
+WHERE m.plan = 'SMART' AND m.status = 'active';
+```
+
+---
+
+## 📦 FUTURE TABLES
+
+Tabulky, které přidáme později:
 
 #### `exercises`
-Uživatelská dechová cvičení (pro Studio modul)
+Dechová cvičení (vytvořená uživateli i defaultní)
 
-#### `challenge_packs`
-21-denní výzvy (pro Challenges modul)
-
-#### `user_progress`
-Progress tracking (dokončené lekce, cvičení, výzvy)
+#### `exercise_sessions`
+Historie provedených cvičení (BOLT skóre, HRV, ...)
 
 #### `achievements`
 Gamifikace - dosažené úspěchy
@@ -355,4 +459,4 @@ Historie konverzací s AI Coach
 
 ---
 
-*Last updated: 2026-01-09*
+*Last updated: 2026-01-14*

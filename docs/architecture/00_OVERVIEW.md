@@ -13,11 +13,11 @@ PLATFORM (Foundation Layer)
 └── Shared Services
 
 MODULES (Feature Products)
+├── SMART Membership - Smart Recommendations (249 Kč/month)
+├── AI COACH Membership - Personal AI Trainer (490 Kč/month)
 ├── Studio - Exercise Builder (990 Kč lifetime)
 ├── Challenges - 21-day Programs (490 Kč lifetime)
-├── Akademie - Educational Courses (1490 Kč lifetime)
-├── Game - Gamification (149 Kč/month)
-└── AI Coach - Personal AI (490 Kč/month)
+└── Akademie - Educational Courses (1490 Kč lifetime)
 ```
 
 ## Key Principles

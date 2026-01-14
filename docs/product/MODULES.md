@@ -16,39 +16,60 @@ Prices are NEVER hardcoded. The app loads pricing dynamically from the database.
 
 ---
 
-## Available Modules
+## Available Products
 
 Pricing shown below is REFERENCE ONLY - check database for current values.
 
-### 1. DechBar STUDIO
+### Membership Tiers (Subscription)
+
+#### 1. SMART
+- **ID:** `membership-smart`
+- **Type:** Monthly/Annual subscription
+- **Pricing:** 
+  - Monthly: 249 Kč/měsíc
+  - Annual: 125 Kč/měsíc (1,499 Kč ročně, úspora 1,488 Kč)
+- **Features:**
+  - BOLT skóre tracking
+  - Smart doporučení tréninků
+  - Grafy a statistiky pokroku
+  - 50+ audio programů
+- **Description:** Inteligentní doporučení pro pokročilé
+
+#### 2. AI COACH
+- **ID:** `membership-ai-coach`
+- **Type:** Monthly/Annual subscription
+- **Pricing:** 
+  - Monthly: 490 Kč/měsíc
+  - Annual: 245 Kč/měsíc (2,940 Kč ročně, úspora 2,940 Kč)
+- **Features:**
+  - Všechno ze SMART
+  - Všech 100+ programů
+  - AI trenér přizpůsobený tobě
+  - Pokročilé analýzy (HRV, trendy)
+  - Prioritní podpora
+- **Description:** Tvůj osobní AI trenér
+
+---
+
+### Lifetime Products
+
+#### 3. DechBar STUDIO
 - **ID:** `studio`
 - **Type:** Lifetime purchase
-- **Reference Price:** ~990 Kč
+- **Reference Price:** 990 Kč
 - **Description:** Build custom breathing exercises
 
-### 2. Výzvy (Challenges)
+#### 4. Výzvy (Challenges)
 - **ID:** `challenges`
 - **Type:** Lifetime purchase
-- **Reference Price:** ~490 Kč
+- **Reference Price:** 490 Kč
 - **Description:** 21-day breathing challenges
 
-### 3. Akademie
+#### 5. Akademie
 - **ID:** `akademie`
 - **Type:** Lifetime purchase
-- **Reference Price:** ~1490 Kč
+- **Reference Price:** 1490 Kč
 - **Description:** Educational courses and lessons
-
-### 4. DechBar GAME
-- **ID:** `game`
-- **Type:** Monthly subscription
-- **Reference Price:** ~149 Kč/month
-- **Description:** Gamification and competitions
-
-### 5. AI Coach
-- **ID:** `ai-coach`
-- **Type:** Monthly subscription
-- **Reference Price:** ~490 Kč/month
-- **Description:** Personal AI breathing coach
 
 ---
 
@@ -59,12 +80,18 @@ Pricing shown below is REFERENCE ONLY - check database for current values.
 **Lifetime products:**
 - One-time payment
 - User owns forever
-- Good for: Content modules (Studio, Challenges, Akademie)
+- Examples: Studio, Challenges, Akademie
+- Stored in: `user_modules` table
 
-**Subscription products:**
-- Monthly recurring
-- Ongoing costs (AI tokens, server)
-- Good for: AI Coach, Game (active features)
+**Subscription products (Membership Tiers):**
+- Monthly or annual recurring
+- Access while active
+- Examples: SMART, AI COACH
+- Stored in: `memberships` table (ONE active tier per user)
+
+**Key Difference:**
+- User has ONE active membership tier (ZDARMA → SMART → AI_COACH)
+- User can own MULTIPLE lifetime modules
 
 ### Bundle Pricing
 

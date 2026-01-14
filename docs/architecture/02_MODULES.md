@@ -14,11 +14,11 @@ Each module:
 
 | Module | Type | ID | Database Table |
 |--------|------|----|----|
+| SMART (Membership) | Subscription | `membership-smart` | modules |
+| AI COACH (Membership) | Subscription | `membership-ai-coach` | modules |
 | DechBar STUDIO | Lifetime | `studio` | modules |
 | Výzvy (Challenges) | Lifetime | `challenges` | modules |
 | Akademie | Lifetime | `akademie` | modules |
-| DechBar GAME | Subscription | `game` | modules |
-| AI Coach | Subscription | `ai-coach` | modules |
 
 ## Module Structure
 
