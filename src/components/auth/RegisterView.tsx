@@ -8,7 +8,7 @@
  * @subpackage Components/Auth
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { Button, Input, TextLink, Checkbox } from '@/platform/components';
 import { ErrorMessage } from '@/components/shared';
@@ -18,19 +18,58 @@ import { useAuth } from '@/platform/auth';
 interface RegisterViewProps {
   onSwitchToLogin: () => void;
   onSuccess?: () => void;
+  onSuccessStateChange?: (isSuccess: boolean) => void;
 }
 
-export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) {
+export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange }: RegisterViewProps) {
   const { signUpWithMagicLink, signInWithOAuth } = useAuth();
   const [email, setEmail] = useState('');
   const [gdprConsent, setGdprConsent] = useState(false);
   const [formError, setFormError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [rateLimitSeconds, setRateLimitSeconds] = useState<number | null>(null);
+
+  // ✅ Notify parent about success state
+  useEffect(() => {
+    if (onSuccessStateChange) {
+      onSuccessStateChange(emailSent);
+    }
+  }, [emailSent, onSuccessStateChange]);
+
+  // ✅ COUNTDOWN TIMER pro rate limit (pouze pro error message)
+  useEffect(() => {
+    if (rateLimitSeconds === null || rateLimitSeconds <= 0) {
+      // Když countdown skončí, vyčisti error
+      if (rateLimitSeconds === 0) {
+        setFormError('');
+        setRateLimitSeconds(null);
+      }
+      return;
+    }
+    
+    const timer = setInterval(() => {
+      setRateLimitSeconds(prev => {
+        if (prev === null || prev <= 1) {
+          return 0; // Spustí cleanup výše
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [rateLimitSeconds]);
 
   async function handleOAuthSignIn(provider: 'google' | 'apple' | 'facebook') {
     try {
       setFormError('');
+      
+      // ✅ GDPR VALIDATION (same as Magic Link)
+      if (!gdprConsent) {
+        setFormError(MESSAGES.error.gdprRequired);
+        return;
+      }
+      
       await signInWithOAuth(provider, {
         redirectTo: `${window.location.origin}/app`
       });
@@ -72,18 +111,26 @@ export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) 
       console.log('✅ Magic link sent to:', email);
       
       setEmailSent(true);
-      
-      if (onSuccess) {
-        onSuccess();
-      }
+      // ✅ onSuccess() se zavolá až při kliknutí na "Zavřít" v success view
       
     } catch (err: any) {
       console.error('Register error:', err);
       
       const errorMessage = err.message || MESSAGES.error.registrationFailed;
       
-      if (errorMessage.includes('Unable to validate email')) {
+      // ✅ PARSOVAT DYNAMICKÝ ČAS ZE SUPABASE + COUNTDOWN
+      if (errorMessage.includes('For security purposes') || errorMessage.includes('Email rate limit')) {
+        // Extract seconds: "...after 45 seconds" → 45
+        const secondsMatch = errorMessage.match(/(\d+)\s+seconds?/);
+        const seconds = secondsMatch ? parseInt(secondsMatch[1]) : 60;
+        
+        // Spusť countdown timer
+        setRateLimitSeconds(seconds);
+        setFormError(`Z bezpečnostních důvodů můžeš poslat další email až za ${seconds} sekund.`);
+      } else if (errorMessage.includes('Unable to validate email')) {
         setFormError(MESSAGES.error.invalidEmailRegister);
+      } else if (errorMessage.includes('too many requests') || errorMessage.includes('rate limit')) {
+        setFormError(MESSAGES.error.tooManyRequests);
       } else {
         setFormError(errorMessage);
       }
@@ -92,26 +139,21 @@ export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) 
     }
   }
 
-  // Success view - email byl odeslán
+  // ✅ SUCCESS VIEW - Apple "Méně je více" (3 prvky: Title + Email + Instruction)
   if (emailSent) {
     return (
       <div className="auth-view">
-        <div className="modal-header text-center">
-          <div className="text-6xl mb-4">✅</div>
+        <div className="modal-header">
           <h2 className="modal-title">
             {MESSAGES.auth.emailSentTitle}
           </h2>
-          <p className="modal-subtitle mb-2">
-            {MESSAGES.auth.emailSentSubtitle}
-          </p>
-          <p className="text-lg font-semibold text-[#F8CA00] mb-4">
+          
+          <p className="success-email-display">
             {email}
           </p>
-          <p className="text-gray-600 mb-4">
+          
+          <p className="success-instruction">
             {MESSAGES.auth.emailSentInstruction}
-          </p>
-          <p className="text-sm text-gray-500">
-            {MESSAGES.auth.emailSentSpamHint}
           </p>
         </div>
 
@@ -120,7 +162,12 @@ export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) 
             variant="secondary"
             size="lg"
             fullWidth
-            onClick={onSwitchToLogin}
+            onClick={() => {
+              onSwitchToLogin();
+              if (onSuccess) {
+                onSuccess();
+              }
+            }}
           >
             Zavřít
           </Button>
@@ -162,11 +209,11 @@ export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) 
           label={
             <>
               Souhlasím s{' '}
-              <a href="/gdpr" target="_blank" rel="noopener noreferrer" className="text-[#F8CA00] hover:underline">
+              <a href="/gdpr" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
                 GDPR
               </a>
               {' '}a{' '}
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-[#F8CA00] hover:underline">
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
                 obchodními podmínkami
               </a>
               <span className="text-[#ef4444] ml-1">*</span>
@@ -177,9 +224,15 @@ export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) 
           required
         />
 
-        {/* Error Message */}
+        {/* Error Message - dynamický countdown pro rate limit */}
         {formError && (
-          <ErrorMessage message={formError} />
+          <ErrorMessage 
+            message={
+              rateLimitSeconds !== null && rateLimitSeconds > 0
+                ? `Z bezpečnostních důvodů můžeš poslat další email až za ${rateLimitSeconds} sekund.`
+                : formError
+            } 
+          />
         )}
 
         {/* Submit Button */}
@@ -195,81 +248,57 @@ export function RegisterView({ onSwitchToLogin, onSuccess }: RegisterViewProps) 
         </Button>
       </form>
 
-      {/* OAuth Buttons - Design tokens ensure global scalability */}
+      {/* OAuth Icons - Premium Minimal (Stripe/Notion style) */}
       <div className="mt-6">
-        {/* Divider uses --color-background and --color-border tokens */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[var(--color-border)]"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-[var(--color-background)] text-[var(--color-text-secondary)]">nebo</span>
-          </div>
+        {/* Divider with imperativ "nebo pokračuj s" */}
+        <div className="auth-divider">
+          <span>{MESSAGES.auth.oauthDivider}</span>
         </div>
 
-        <div className="mt-6 space-y-3">
+        {/* OAuth icons - small, side by side */}
+        <div className="oauth-icons">
           {/* Google - ENABLED */}
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
+          <button
+            type="button"
+            className="oauth-icon-button"
             onClick={() => handleOAuthSignIn('google')}
             disabled={isLoading}
+            aria-label="Pokračovat s Google"
           >
-            <span className="flex items-center justify-center gap-3">
-              <img 
-                src="/assets/images/icons/oauth/google.svg" 
-                alt="Google logo" 
-                width="20" 
-                height="20"
-                className="flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span>{MESSAGES.buttons.continueWithGoogle}</span>
-            </span>
-          </Button>
+            <img 
+              src="/assets/images/icons/oauth/google.svg" 
+              alt=""
+              aria-hidden="true"
+            />
+          </button>
 
           {/* Facebook - DISABLED (připraveno) */}
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
+          <button
+            type="button"
+            className="oauth-icon-button"
             disabled
+            aria-label="Pokračovat s Facebook (brzy dostupné)"
           >
-            <span className="flex items-center justify-center gap-3">
-              <img 
-                src="/assets/images/icons/oauth/facebook.svg" 
-                alt="Facebook logo" 
-                width="20" 
-                height="20"
-                className="flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span>{MESSAGES.buttons.continueWithFacebook}</span>
-              <span className="text-xs text-[var(--color-text-tertiary)]">(brzy)</span>
-            </span>
-          </Button>
+            <img 
+              src="/assets/images/icons/oauth/facebook.svg" 
+              alt=""
+              aria-hidden="true"
+            />
+          </button>
 
           {/* Apple - DISABLED (připraveno) */}
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
+          <button
+            type="button"
+            className="oauth-icon-button"
             disabled
+            aria-label="Pokračovat s Apple (brzy dostupné)"
           >
-            <span className="flex items-center justify-center gap-3">
-              <img 
-                src="/assets/images/icons/oauth/apple.svg" 
-                alt="Apple logo" 
-                width="20" 
-                height="20"
-                className="flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span>{MESSAGES.buttons.continueWithApple}</span>
-              <span className="text-xs text-[var(--color-text-tertiary)]">(brzy)</span>
-            </span>
-          </Button>
+            <img 
+              src="/assets/images/icons/oauth/apple.svg" 
+              alt=""
+              aria-hidden="true"
+            />
+          </button>
         </div>
       </div>
 

@@ -112,21 +112,20 @@ export function ResetPasswordPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] p-4">
-        <div className="modal-card max-w-md w-full">
+        <div className="modal-card modal-card--success max-w-md w-full">
           <div className="auth-view">
+            {/* Header */}
             <div className="modal-header">
-              <h2 className="modal-title text-green-600 mb-4">
-                {MESSAGES.auth.passwordResetSuccessTitle}
-              </h2>
-              <p className="modal-subtitle">
-                Přesměrováváme tě na dashboard...
-              </p>
+              <h2 className="modal-title">Heslo změněno</h2>
             </div>
 
-            <ErrorMessage 
-              variant="success"
-              message={MESSAGES.success.passwordResetSuccess}
-            />
+            {/* Instruction */}
+            <p className="success-instruction">Dýchej s námi.</p>
+
+            {/* Auto-redirect hint */}
+            <p className="text-sm text-text-tertiary text-center mt-4">
+              Za chvíli tě přesměrujeme...
+            </p>
           </div>
         </div>
       </div>

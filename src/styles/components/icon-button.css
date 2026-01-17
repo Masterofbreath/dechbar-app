@@ -16,8 +16,8 @@
 :root {
   /* Icon button colors */
   --icon-btn-color: #6b7280; /* Gray default */
-  --icon-btn-color-hover: #F8CA00; /* DechBar gold */
-  --icon-btn-color-active: #F8CA00; /* Gold when active/selected */
+  --icon-btn-color-hover: var(--color-accent); /* DechBar gold (new #D6A23A) */
+  --icon-btn-color-active: var(--color-accent); /* Gold when active/selected */
   --icon-btn-color-disabled: #d1d5db; /* Light gray */
   
   /* Icon button sizing */

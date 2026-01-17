@@ -13,7 +13,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
-import { useAuth } from '@/platform/auth';
+import { useAuth, useInitializeAuth } from '@/platform/auth';
 import { isNativeApp } from '@/platform/utils/environment';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
@@ -71,10 +71,13 @@ function DeepLinkRouter() {
 
 function App() {
   const { user, isLoading } = useAuth();
+  
+  // ✅ Initialize Zustand auth store (session check + listener)
+  useInitializeAuth();
 
   // Show loading while checking authentication
   if (isLoading) {
-    return <Loader showBreathingFact />;
+    return <Loader message="Dýchej s námi..." />;
   }
 
   return (
@@ -85,10 +88,10 @@ function App() {
             PUBLIC ROUTES (No auth required)
             ======================================== */}
         
-        {/* Landing page - redirect to /app if logged in */}
+        {/* Landing page - accessible to all (authenticated and unauthenticated) */}
         <Route 
           path="/" 
-          element={user ? <Navigate to="/app" replace /> : <LandingPage />} 
+          element={<LandingPage />} 
         />
 
         {/* Science page - deep dive into breathing science (public) */}

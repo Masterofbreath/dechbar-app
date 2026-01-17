@@ -151,20 +151,20 @@
     /* GRADIENT DEFINITIONS */
     /* ===================================== */
     
-    /* Gold gradient (luxusní) */
+    /* Gold gradient (luxusní) - using new accent color #D6A23A */
     --gradient-gold: linear-gradient(
         135deg,
-        #F8CA00 0%,
-        #FFD700 50%,
-        #F8CA00 100%
+        var(--color-accent) 0%,
+        var(--color-accent-light) 50%,
+        var(--color-accent) 100%
     );
     
     /* Gold gradient (radial, pro spotlight) */
     --gradient-gold-radial: radial-gradient(
         circle at center,
-        #FFD700 0%,
-        #F8CA00 50%,
-        #E5B800 100%
+        var(--color-accent-light) 0%,
+        var(--color-accent) 50%,
+        var(--color-accent-dark) 100%
     );
     
     /* Temperament mesh gradient (all 4 colors) */

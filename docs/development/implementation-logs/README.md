@@ -38,6 +38,41 @@ Každý implementation log **MUSÍ obsahovat:**
 
 ## 📅 Timeline
 
+### 2026-01-17 - OAuth GDPR Compliance
+
+#### Legal Compliance & UX
+1. **[OAuth GDPR Compliance](./2026-01-17-oauth-gdpr-compliance.md)** ⚖️ **Legal + UX (v1)**
+   - GDPR consent required for OAuth registration
+   - Visual hint text + disabled buttons approach
+   - Dynamic aria-label for accessibility
+   - GDPR consent storage in user_metadata (post-OAuth)
+   - Legal compliance: GDPR Article 7
+
+2. **[OAuth GDPR UX Refactoring](./2026-01-17-oauth-gdpr-ux-refactoring.md)** 🎨 **UX Refactor (v2 - finální)**
+   - "Less is More" princip - odstranění visual hints
+   - OAuth buttons vždy enabled (barevné, klikatelné)
+   - Error message pouze on-demand (když user klikne bez GDPR)
+   - -37 lines kódu (čistší, jednodušší)
+   - Konzistentní s Magic Link flow
+   - User feedback: "Takhle je to moc textu a není to čisté"
+
+### 2026-01-15 - State Management Migration & Auth UX Fixes
+
+#### Architecture Improvements
+1. **[Zustand Auth Store](./2026-01-15-zustand-auth-store.md)** 🏗️ **State Management**
+   - Migration from React useState to Zustand global store
+   - Fixed logout LoginView flash (200-300ms)
+   - Backward-compatible wrapper (zero breaking changes)
+   - Redux DevTools integration
+   - 90% reduction in state instances (44 → 4)
+
+#### UX & I18N Improvements
+2. **[Auth UX Fixes](./2026-01-15-auth-ux-fixes.md)** 🎨 **UX + I18N**
+   - Fixed yellow input autocomplete (unreadable → teal+white)
+   - Comprehensive Supabase error translation (100% Czech)
+   - Loader refactor (breathing facts only for long loading)
+   - Brand Book 2.0 compliance (design tokens)
+
 ### 2026-01-14 - Smooth Auth Transition
 
 #### UX Improvements
@@ -47,6 +82,21 @@ Každý implementation log **MUSÍ obsahovat:**
    - Added OAuth flow with loader
    - Complete documentation (API + Implementation Log)
    - Optional gold glow for Brand Book 2.0 compliance
+
+2. **[Magic Link UX Improvements](./2026-01-14-magic-link-ux-improvements.md)** 🔐 **Auth Flow**
+   - Univerzální texty (registrace = login)
+   - "Poslat znovu" tlačítko s 60s countdown
+   - Časový limit 15 minut viditelný pro uživatele
+   - Email zůstane prefilled pro rychlý resend
+   - Rate limiting transparency (countdown timer)
+   - **v2.0:** Apple "Méně je více" success view (3 prvky)
+
+3. **[Apple-Style Auth Refactor](./2026-01-14-apple-auth-refactor.md)** 🍎 **Complete Redesign**
+   - OAuth Icons: Stripe/Notion style (3 ikony vedle sebe)
+   - Text Updates: Stručnější, imperativ, Tone of Voice compliance
+   - Global Modal Close: Click outside to close
+   - 60% space reduction in OAuth section
+   - Centrální CSS ovládání (oauth-icons.css)
 
 ### 2026-01-10 - Premium Component Design & Documentation
 

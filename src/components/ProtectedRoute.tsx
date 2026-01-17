@@ -19,20 +19,27 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isLoggingOut } = useAuth(); // ✅ USE isLoggingOut FLAG
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     // If not loading and no user, show auth modal
-    if (!isLoading && !user) {
+    // ✅ BUT: Don't show if logging out (prevents LoginView flash during redirect)
+    if (!isLoading && !user && !isLoggingOut) {
       setShowAuthModal(true);
     } else {
       setShowAuthModal(false);
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, isLoggingOut]); // ✅ ADD isLoggingOut DEPENDENCY
 
   // Show loading while checking authentication
   if (isLoading) {
+    return <Loader message="Dýchej s námi..." />;
+  }
+
+  // ✅ NEW: If logging out, show loader (NOT LoginView)
+  // This prevents the flash of LoginView during web logout redirect
+  if (isLoggingOut) {
     return <Loader message="Dýchej s námi..." />;
   }
 

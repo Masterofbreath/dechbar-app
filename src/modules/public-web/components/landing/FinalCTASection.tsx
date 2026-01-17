@@ -12,15 +12,26 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/platform';
+import { useAuth } from '@/platform/auth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { FAQ } from './FAQ';
+import { MESSAGES } from '@/config/messages';
 
 export function FinalCTASection() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   function handleCTA() {
-    setShowAuthModal(true);
+    if (user) {
+      // ✅ Přihlášený user → redirect do appky
+      navigate('/app');
+    } else {
+      // ✅ Nepřihlášený user → otevři register modal
+      setShowAuthModal(true);
+    }
   }
 
   return (
@@ -38,11 +49,15 @@ export function FinalCTASection() {
               size="lg"
               onClick={handleCTA}
             >
-              Začít zdarma →
+              {user 
+                ? MESSAGES.landing.authenticatedCTA.finalPrimary 
+                : MESSAGES.landing.hero.ctaPrimary}
             </Button>
             
             <p className="final-cta__subtext">
-              Email → První cvičení za 2 minuty
+              {user 
+                ? MESSAGES.landing.authenticatedCTA.finalSubtext 
+                : MESSAGES.landing.hero.ctaSubtext}
             </p>
           </div>
           

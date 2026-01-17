@@ -19,15 +19,33 @@
  * - logo-pulse (DEFAULT): Icon breathes (2s inhale/exhale cycle)
  * - spinner: Generic spinner (fallback)
  * 
- * @example
- * // Full screen with breathing fact (login screen)
- * <Loader showBreathingFact />
+ * ⏱️ USAGE GUIDELINES - Breathing Facts:
  * 
- * // Custom message
+ * ✅ USE showBreathingFact FOR:
+ * - Exercise loading (3-5s) - user has time to read (15-20 words)
+ * - Long data fetches (user analytics, progress reports)
+ * - Initial module loading (first visit to new feature)
+ * 
+ * ❌ DON'T USE showBreathingFact FOR:
+ * - Login/Register (too fast, 300-400ms - facts unreadable!)
+ * - Quick actions (save, delete, update - instant feedback better)
+ * - Route protection checks (auth guard - show simple message)
+ * 
+ * 💡 RULE: If loading < 2s → use simple message, not fact!
+ * Facts need 3-5s reading time for educational value.
+ * 
+ * @example
+ * // Login/Register (FAST - no fact)
  * <Loader message="Dýchej s námi..." />
  * 
- * // Inline (no message)
- * <Loader variant="spinner" size="sm" fullScreen={false} />
+ * // Exercise loading (SLOW - with fact)
+ * <Loader showBreathingFact message="Připravujeme cvičení..." />
+ * 
+ * // Route protection (FAST - simple message)
+ * <Loader message="Dýchej s námi..." />
+ * 
+ * // App initialization (MEDIUM - simple message)
+ * <Loader message="Dýchej s námi..." />
  * 
  * @package DechBar_App
  * @subpackage Platform/Components

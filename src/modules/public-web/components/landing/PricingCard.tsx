@@ -22,6 +22,7 @@ export interface PricingCardProps {
   ctaText: string;
   ctaVariant: 'primary' | 'ghost';
   highlighted?: boolean;
+  isDisabled?: boolean; // ✅ NEW: For "Aktivní" state
   onCTA: () => void;
 }
 
@@ -37,6 +38,7 @@ export function PricingCard({
   ctaText,
   ctaVariant,
   highlighted = false,
+  isDisabled = false, // ✅ NEW: Default false
   onCTA,
 }: PricingCardProps) {
   return (
@@ -111,6 +113,7 @@ export function PricingCard({
         size="lg"
         fullWidth
         onClick={onCTA}
+        disabled={isDisabled}
         className="pricing-card__cta"
       >
         {ctaText}

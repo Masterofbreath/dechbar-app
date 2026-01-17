@@ -75,15 +75,41 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
     } catch (err: any) {
       console.error('Login error:', err);
       
-      // Map Supabase errors to Czech
-      const errorMessage = err.message || MESSAGES.error.loginFailed;
+      const errorMessage = err.message || '';
       
+      // ✅ COMPREHENSIVE ERROR TRANSLATION (100% Czech coverage)
       if (errorMessage.includes('Invalid login credentials')) {
+        // Wrong email/password combination
         setFormError(MESSAGES.error.invalidCredentials);
+        
       } else if (errorMessage.includes('Email not confirmed')) {
-        setFormError('Email nebyl potvrzen. Zkontroluj svou schránku.');
+        // Email verification pending
+        setFormError(MESSAGES.error.emailNotConfirmed);
+        
+      } else if (errorMessage.includes('Email and password') || 
+                 errorMessage.includes('Password authentication') ||
+                 errorMessage.includes('signup provider')) {
+        // OAuth account trying to login with password
+        setFormError(MESSAGES.error.oauthAccountExists);
+        
+      } else if (errorMessage.includes('User not found')) {
+        // Security: Don't reveal if email exists (email enumeration attack prevention)
+        setFormError(MESSAGES.error.invalidCredentials);
+        
+      } else if (errorMessage.includes('too many requests') || 
+                 errorMessage.includes('rate limit')) {
+        // Rate limiting (brute force protection)
+        setFormError(MESSAGES.error.tooManyRequests);
+        
+      } else if (errorMessage.includes('network') || 
+                 errorMessage.includes('Failed to fetch')) {
+        // Network connectivity issues
+        setFormError(MESSAGES.error.networkError);
+        
       } else {
-        setFormError(errorMessage);
+        // ✅ FALLBACK: Generic Czech error (no more English!)
+        console.warn('Unknown auth error:', errorMessage);
+        setFormError(MESSAGES.error.unknownAuthError);
       }
     }
   }
@@ -157,81 +183,57 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
         </Button>
       </form>
 
-      {/* OAuth Buttons - Design tokens ensure global scalability */}
+      {/* OAuth Icons - Premium Minimal (Stripe/Notion style) */}
       <div className="mt-6">
-        {/* Divider uses --color-background and --color-border tokens */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[var(--color-border)]"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-[var(--color-background)] text-[var(--color-text-secondary)]">nebo</span>
-          </div>
+        {/* Divider with imperativ "nebo pokračuj s" */}
+        <div className="auth-divider">
+          <span>{MESSAGES.auth.oauthDivider}</span>
         </div>
 
-        <div className="mt-6 space-y-3">
+        {/* OAuth icons - small, side by side */}
+        <div className="oauth-icons">
           {/* Google - ENABLED */}
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
+          <button
+            type="button"
+            className="oauth-icon-button"
             onClick={() => handleOAuthSignIn('google')}
             disabled={isLoading}
+            aria-label="Pokračovat s Google"
           >
-            <span className="flex items-center justify-center gap-3">
-              <img 
-                src="/assets/images/icons/oauth/google.svg" 
-                alt="Google logo" 
-                width="20" 
-                height="20"
-                className="flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span>{MESSAGES.buttons.continueWithGoogle}</span>
-            </span>
-          </Button>
+            <img 
+              src="/assets/images/icons/oauth/google.svg" 
+              alt=""
+              aria-hidden="true"
+            />
+          </button>
 
           {/* Facebook - DISABLED (připraveno) */}
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
+          <button
+            type="button"
+            className="oauth-icon-button"
             disabled
+            aria-label="Pokračovat s Facebook (brzy dostupné)"
           >
-            <span className="flex items-center justify-center gap-3">
-              <img 
-                src="/assets/images/icons/oauth/facebook.svg" 
-                alt="Facebook logo" 
-                width="20" 
-                height="20"
-                className="flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span>{MESSAGES.buttons.continueWithFacebook}</span>
-              <span className="text-xs text-[var(--color-text-tertiary)]">(brzy)</span>
-            </span>
-          </Button>
+            <img 
+              src="/assets/images/icons/oauth/facebook.svg" 
+              alt=""
+              aria-hidden="true"
+            />
+          </button>
 
           {/* Apple - DISABLED (připraveno) */}
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
+          <button
+            type="button"
+            className="oauth-icon-button"
             disabled
+            aria-label="Pokračovat s Apple (brzy dostupné)"
           >
-            <span className="flex items-center justify-center gap-3">
-              <img 
-                src="/assets/images/icons/oauth/apple.svg" 
-                alt="Apple logo" 
-                width="20" 
-                height="20"
-                className="flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span>{MESSAGES.buttons.continueWithApple}</span>
-              <span className="text-xs text-[var(--color-text-tertiary)]">(brzy)</span>
-            </span>
-          </Button>
+            <img 
+              src="/assets/images/icons/oauth/apple.svg" 
+              alt=""
+              aria-hidden="true"
+            />
+          </button>
         </div>
       </div>
 

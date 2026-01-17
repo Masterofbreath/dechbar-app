@@ -26,11 +26,13 @@ type AuthView = 'login' | 'register' | 'reset';
 export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalProps) {
   const [currentView, setCurrentView] = useState<AuthView>(defaultView);
   const [isClosing, setIsClosing] = useState(false);
+  const [isSuccessState, setIsSuccessState] = useState(false);
 
   // Reset view when modal opens
   useEffect(() => {
     if (isOpen) {
       setCurrentView(defaultView);
+      setIsSuccessState(false);
     }
   }, [isOpen, defaultView]);
 
@@ -68,15 +70,23 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
     setIsClosing(false);
   }
 
+  // ✅ Close modal when clicking outside (on overlay, not on modal-card)
+  function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }
+
   return (
     <div
       className={`modal-overlay ${isClosing ? 'modal-overlay--fading-out' : ''}`}
+      onClick={handleOverlayClick}
       aria-hidden={!isOpen}
       role="dialog"
       aria-modal="true"
     >
-      {/* Modal card with liquid glass effect */}
-      <div className="modal-card">
+      {/* Modal card with liquid glass effect + success variant */}
+      <div className={`modal-card ${isSuccessState ? 'modal-card--success' : ''}`}>
         {/* Close button */}
         <CloseButton onClick={onClose} />
 
@@ -99,12 +109,14 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
             <RegisterView
               onSwitchToLogin={() => switchView('login')}
               onSuccess={handleSuccess}
+              onSuccessStateChange={setIsSuccessState}
             />
           )}
 
           {currentView === 'reset' && (
             <ForgotPasswordView
               onSwitchToLogin={() => switchView('login')}
+              onSuccessStateChange={setIsSuccessState}
             />
           )}
         </div>

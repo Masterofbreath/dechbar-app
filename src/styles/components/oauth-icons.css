@@ -1,0 +1,182 @@
+/**
+ * OAuth Icons - Premium Minimal Style
+ * Small icon buttons for social login (Google, Facebook, Apple)
+ * Inspired by: Stripe, Notion, Figma
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ * @version 1.0.0
+ */
+
+/* ===================================
+   OAUTH DIVIDER
+   =================================== */
+
+.auth-divider {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0 1rem 0;  /* 24px top, 16px bottom */
+}
+
+.auth-divider span {
+  position: relative;
+  display: inline-block;
+  padding: 0 1rem;  /* 16px horizontal padding */
+  font-size: var(--font-size-sm);  /* 14px */
+  font-weight: var(--font-weight-medium);  /* 500 */
+  color: var(--color-text-tertiary);  /* #707070 */
+  background: transparent;  /* No background - text directly on modal */
+  z-index: 1;
+}
+
+/* Divider line (subtle) */
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-border);  /* #2A2A2A */
+  z-index: 0;
+}
+
+/* ===================================
+   OAUTH ICONS CONTAINER
+   =================================== */
+
+.oauth-icons {
+  display: flex;
+  gap: 12px;  /* 12px spacing between icons */
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===================================
+   OAUTH ICON BUTTON
+   =================================== */
+
+.oauth-icon-button {
+  /* Size */
+  width: 48px;
+  height: 48px;
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Style */
+  background: var(--color-surface);  /* #1E1E1E */
+  border: 1px solid var(--color-border);  /* #2A2A2A */
+  border-radius: 8px;  /* Premium rounded corners */
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);  /* Apple timing */
+  
+  /* Reset button defaults */
+  padding: 0;
+  margin: 0;
+}
+
+/* Hover state (only for enabled buttons) */
+.oauth-icon-button:hover:not(:disabled) {
+  border-color: var(--color-primary);  /* Teal #2CBEC6 */
+  background: rgba(44, 190, 198, 0.05);  /* Subtle teal tint */
+  transform: scale(1.05);  /* Subtle grow */
+}
+
+/* Active state */
+.oauth-icon-button:active:not(:disabled) {
+  transform: scale(0.98);  /* Subtle press */
+}
+
+/* Focus state (keyboard navigation) */
+.oauth-icon-button:focus-visible {
+  outline: 2px solid var(--color-primary);  /* Teal focus ring */
+  outline-offset: 2px;
+}
+
+/* Disabled state */
+.oauth-icon-button:disabled {
+  opacity: 0.3;  /* 30% opacity */
+  cursor: not-allowed;
+  border-color: var(--color-border);  /* No hover effect */
+}
+
+/* Icon inside button */
+.oauth-icon-button img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  pointer-events: none;  /* Icon is decorative */
+}
+
+/* ===================================
+   RESPONSIVE - Mobile
+   =================================== */
+
+@media (max-width: 390px) {
+  .oauth-icons {
+    gap: 10px;  /* Slightly tighter on mobile */
+  }
+  
+  .oauth-icon-button {
+    width: 44px;  /* Slightly smaller on mobile */
+    height: 44px;
+  }
+  
+  .oauth-icon-button img {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .oauth-icon-button {
+    transition: none;
+  }
+  
+  .oauth-icon-button:hover:not(:disabled) {
+    transform: none;  /* No scale animation */
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .oauth-icon-button {
+    border-width: 2px;
+  }
+  
+  .oauth-icon-button:disabled {
+    opacity: 0.5;  /* Higher opacity for better visibility */
+  }
+}
+
+/* ===================================
+   USAGE EXAMPLE
+   =================================== */
+
+/*
+<div class="auth-divider">
+  <span>nebo pokračuj s</span>
+</div>
+
+<div class="oauth-icons">
+  <button class="oauth-icon-button" onclick="...">
+    <img src="/path/to/google.svg" alt="">
+  </button>
+  <button class="oauth-icon-button" disabled>
+    <img src="/path/to/facebook.svg" alt="">
+  </button>
+  <button class="oauth-icon-button" disabled>
+    <img src="/path/to/apple.svg" alt="">
+  </button>
+</div>
+*/

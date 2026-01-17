@@ -8,7 +8,7 @@
  * @subpackage Components/Auth
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '@/platform/auth';
 import { Button, Input, TextLink } from '@/platform/components';
@@ -17,15 +17,46 @@ import { MESSAGES } from '@/config/messages';
 
 interface ForgotPasswordViewProps {
   onSwitchToLogin: () => void;
+  onSuccessStateChange?: (isSuccess: boolean) => void;
 }
 
-export function ForgotPasswordView({ onSwitchToLogin }: ForgotPasswordViewProps) {
+export function ForgotPasswordView({ onSwitchToLogin, onSuccessStateChange }: ForgotPasswordViewProps) {
   const { resetPassword } = useAuth();
   
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [rateLimitSeconds, setRateLimitSeconds] = useState<number | null>(null);
+
+  // ✅ Notify parent about success state
+  useEffect(() => {
+    if (onSuccessStateChange) {
+      onSuccessStateChange(isSuccess);
+    }
+  }, [isSuccess, onSuccessStateChange]);
+
+  // ✅ COUNTDOWN TIMER pro rate limit
+  useEffect(() => {
+    if (rateLimitSeconds === null || rateLimitSeconds <= 0) {
+      if (rateLimitSeconds === 0) {
+        setFormError('');
+        setRateLimitSeconds(null);
+      }
+      return;
+    }
+    
+    const timer = setInterval(() => {
+      setRateLimitSeconds(prev => {
+        if (prev === null || prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [rateLimitSeconds]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -55,8 +86,17 @@ export function ForgotPasswordView({ onSwitchToLogin }: ForgotPasswordViewProps)
       // Map Supabase errors to Czech
       const errorMessage = err.message || MESSAGES.error.passwordResetFailed;
       
-      if (errorMessage.includes('Unable to validate email')) {
+      // ✅ PARSOVAT DYNAMICKÝ ČAS ZE SUPABASE + COUNTDOWN
+      if (errorMessage.includes('For security purposes') || errorMessage.includes('Email rate limit')) {
+        const secondsMatch = errorMessage.match(/(\d+)\s+seconds?/);
+        const seconds = secondsMatch ? parseInt(secondsMatch[1]) : 60;
+        
+        setRateLimitSeconds(seconds);
+        setFormError(`Z bezpečnostních důvodů můžeš poslat další email až za ${seconds} sekund.`);
+      } else if (errorMessage.includes('Unable to validate email')) {
         setFormError(MESSAGES.error.invalidEmail);
+      } else if (errorMessage.includes('too many requests') || errorMessage.includes('rate limit')) {
+        setFormError(MESSAGES.error.tooManyRequests);
       } else if (errorMessage.includes('User not found')) {
         // Security: Nezobrazujeme, že email neexistuje (security best practice)
         setIsSuccess(true);
@@ -74,44 +114,25 @@ export function ForgotPasswordView({ onSwitchToLogin }: ForgotPasswordViewProps)
       <div className="auth-view">
         {/* Header */}
         <div className="modal-header">
-          <h2 className="modal-title">
-            ✉️ Email odeslán!
-          </h2>
-          <p className="modal-subtitle">
-            Zkontrolujte svou emailovou schránku
-          </p>
+          <h2 className="modal-title">E-mail poslán</h2>
         </div>
 
-        {/* Success message */}
-        <ErrorMessage 
-          variant="success"
-          message={MESSAGES.success.passwordResetSent.replace('Pokud existuje účet s tímto emailem', `Pokud existuje účet s emailem ${email}`)}
-          className="mb-6"
-        />
+        {/* Email Display (Gold) */}
+        <p className="success-email-display">{email}</p>
 
-        {/* Instructions */}
-        <div className="space-y-3 mb-6">
-          <p className="text-sm text-gray-600">
-            <strong>Co dál?</strong>
-          </p>
-          <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
-            <li>Zkontrolujte svou emailovou schránku</li>
-            <li>Otevřete email od DechBar</li>
-            <li>Klikněte na odkaz pro obnovení hesla</li>
-            <li>Nastavte si nové heslo</li>
-          </ol>
-          <p className="text-xs text-gray-500 mt-4">
-            💡 Pokud email nevidíte, zkontrolujte složku SPAM
-          </p>
-        </div>
+        {/* Instruction (Teal) */}
+        <p className="success-instruction">Dýchej s námi.</p>
 
-        {/* Back to login */}
+        {/* Close Button */}
         <div className="modal-footer">
-          <p className="modal-footer-text">
-            <TextLink onClick={onSwitchToLogin} bold>
-              ← Zpět na přihlášení
-            </TextLink>
-          </p>
+          <Button
+            variant="secondary"
+            size="lg"
+            fullWidth
+            onClick={onSwitchToLogin}
+          >
+            Zavřít
+          </Button>
         </div>
       </div>
     );
@@ -146,9 +167,15 @@ export function ForgotPasswordView({ onSwitchToLogin }: ForgotPasswordViewProps)
           helperText={MESSAGES.hints.emailHelper}
         />
 
-        {/* Error Message */}
+        {/* Error Message - dynamický countdown pro rate limit */}
         {formError && (
-          <ErrorMessage message={formError} />
+          <ErrorMessage 
+            message={
+              rateLimitSeconds !== null && rateLimitSeconds > 0
+                ? `Z bezpečnostních důvodů můžeš poslat další email až za ${rateLimitSeconds} sekund.`
+                : formError
+            } 
+          />
         )}
 
         {/* Submit Button */}

@@ -51,6 +51,7 @@
 @import './components/error-message.css';
 @import './components/icon-button.css';
 @import './components/loader.css';
+@import './components/oauth-icons.css';
 
 /* ===================================
    IMPORT LAYOUT STYLES

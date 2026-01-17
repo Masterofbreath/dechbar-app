@@ -47,7 +47,7 @@ export const MESSAGES = {
     processing: "Chvilku strpení, nádech, výdech...",
     login: "Přihlašujeme tě, nádech...",
     registering: "Vytváříme tvůj účet, výdech...",
-    loadingExercise: "Připravujeme tvoje dechování...",
+    loadingExercise: "Připravujeme tvoje cvičení...",
     breatheWithUs: "Dýchej s námi...",
     preparingApp: "Připravujeme tvou aplikaci. Dýchej s námi...",
   },
@@ -113,7 +113,7 @@ export const MESSAGES = {
     
     // Feature-specific chyby
     uploadFailed: "Nepodařilo se nahrát soubor. Zkus to znovu",
-    exerciseNotFound: "Tohle dechování jsme nenašli",
+    exerciseNotFound: "Tohle cvičení jsme nenašli",
     challengeLocked: "Tato výzva je zamčená. Splň nejdřív předchozí!",
     passwordResetFailed: "Nepodařilo se odeslat odkaz. Zkus to znovu",
     passwordUpdateFailed: "Nepodařilo se změnit heslo. Zkus to znovu",
@@ -122,6 +122,17 @@ export const MESSAGES = {
     oauthFailed: "Nepodařilo se přihlásit. Zkus to znovu",
     oauthCancelled: "Přihlášení bylo zrušeno",
     oauthNotAvailable: "Tato možnost bude brzy dostupná",
+    
+    // ✅ NEW: OAuth-specific errors (account type mismatch)
+    oauthAccountExists: "Tento e-mail používá přihlášení přes Google. Klikni na ikonu Google níže.",
+    emailNotConfirmed: "E-mail nebyl potvrzen. Zkontroluj svou schránku a klikni na odkaz.",
+    
+    // ✅ NEW: Generic fallback (when we don't know the specific error)
+    unknownAuthError: "Něco se pokazilo. Zkus to prosím znovu.",
+    
+    // Supabase rate limiting & security
+    rateLimitEmail: "Z bezpečnostních důvodů můžeš poslat další email až za 60 sekund.",
+    tooManyRequests: "Příliš mnoho pokusů. Zkus to za chvilku",
   },
 
   // ============================================================
@@ -133,10 +144,10 @@ export const MESSAGES = {
     noChallenges: "Zatím je tu ticho bez dechu. Začni svou první výzvu!",
     noHistory: "Tvoje cesta právě začíná. Nádechni se k prvnímu kroku!",
     noExercises: "Ještě jsi nerozdýchal žádnou výzvu. Začni teď!",
-    noProgress: "Tvůj první nádech čeká. Začni své dechování!",
+    noProgress: "Tvůj první nádech čeká. Začni své cvičení!",
     noNotifications: "Žádné nové zprávy. Dýchej v klidu!",
     noSearchResults: "Nic jsme nenašli. Zkus jiná slova",
-    noFavorites: "Ještě nemáš oblíbená dechování. Přidej si je!",
+    noFavorites: "Ještě nemáš oblíbená cvičení. Přidej si je!",
   },
 
   // ============================================================
@@ -160,10 +171,10 @@ export const MESSAGES = {
     // Primary CTA
     login: "Přihlásit se →",
     register: "Registruj se zdarma →",
-    continueWithEmail: "Pokračovat s emailem →",
+    continueWithEmail: "Poslat odkaz →",
     startChallenge: "Začít výzvu →",
     continue: "Pokračovat →",
-    startExercise: "Začít dechování →",
+    startExercise: "Začít cvičení →",
     sendResetLink: "Poslat odkaz →",
     setPassword: "Nastavit heslo →",
     createAccount: "Vytvořit účet zdarma →",
@@ -200,7 +211,7 @@ export const MESSAGES = {
   nav: {
     dashboard: "Dashboard",
     challenges: "Výzvy",
-    exercises: "Dechování",
+    exercises: "Cvičení",
     progress: "Tvůj pokrok",
     settings: "Nastavení",
     profile: "Profil",
@@ -240,15 +251,15 @@ export const MESSAGES = {
   auth: {
     // Titles
     loginTitle: "Vítej v DechBaru",
-    registerTitle: "Začni svou cestu!",
+    registerTitle: "Registruj se zdarma",
     forgotPasswordTitle: "Zapomenuté heslo?",
     resetPasswordTitle: "Nastav si nové heslo",
-    passwordResetSuccessTitle: "Heslo bylo změněno!",
+    passwordResetSuccessTitle: "Heslo změněno",
     
     // Subtitles
-    loginSubtitle: "Přihlaš se a pokračuj ve svém dechování",
-    registerSubtitle: "Připoj se k 1150+ členům komunity DechBar",
-    forgotPasswordSubtitle: "Zadej svůj email a my ti pošleme další instrukce",
+    loginSubtitle: "Přihlaš se a dýchej s námi",
+    registerSubtitle: "Registrační odkaz ti pošleme na e-mail",
+    forgotPasswordSubtitle: "Zadej svůj email a pošleme ti další instrukce",
     resetPasswordSubtitle: "Vyber si silné heslo pro svůj účet",
     
     // Footer links
@@ -256,11 +267,26 @@ export const MESSAGES = {
     alreadyHaveAccount: "Už máš účet?",
     knowPassword: "Už víš heslo?",
     
-    // Email sent messages
-    emailSentTitle: "Zkontroluj svůj email!",
-    emailSentSubtitle: "Poslali jsme ti odkaz na:",
-    emailSentInstruction: "Klikni na odkaz v emailu a pokračuj ve svém dechování.",
-    emailSentSpamHint: "💡 Nenašel jsi email? Zkontroluj spam.",
+    // Email sent messages (Apple "Méně je více" - ultra minimal)
+    emailSentTitle: "E-mail poslán",
+    emailSentInstruction: "Dýchej s námi.",
+    
+    // OAuth divider (imperativ per Tone of Voice)
+    oauthDivider: "nebo pokračuj s",
+  },
+
+  // ============================================================
+  // 🏠 HEADER MESSAGES
+  // Landing page header CTAs (authenticated vs. unauthenticated)
+  // ============================================================
+  header: {
+    // Authenticated user CTAs
+    authenticatedPrimaryCTA: "Dýchej s námi →",
+    authenticatedProfileFallback: "Profil",  // Fallback if no vocative_name
+    
+    // Unauthenticated CTAs
+    loginCTA: "Přihlásit",
+    registerCTA: "Začít zdarma",
   },
 
   // ============================================================
@@ -275,6 +301,14 @@ export const MESSAGES = {
       subheadline: "Měř svůj pokrok. Cvič s certifikovaným instruktorem. Viditelné výsledky za 21 dní.",
       ctaPrimary: "Začít zdarma →",
       ctaSubtext: "Email → První cvičení za 2 minuty",
+    },
+
+    // ✅ NOVÉ: Authenticated user CTAs (when user is logged in on landing page)
+    authenticatedCTA: {
+      heroPrimary: "Pokračovat v cvičení →",
+      heroSubtext: "Vrať se k tréninku",
+      finalPrimary: "Pokračovat v cvičení →",
+      finalSubtext: "Pokračuj tam, kde jsi skončil",
     },
 
     // Trust signals

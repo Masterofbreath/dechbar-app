@@ -290,6 +290,30 @@ body.modal-open {
   color: var(--color-success);  /* Green */
 }
 
+/* Success state - email display (large, bold, accent color) */
+.success-email-display {
+  font-size: 20px;              /* Larger than body text */
+  font-weight: var(--font-weight-bold); /* 700 */
+  color: var(--color-accent);   /* Gold #D6A23A */
+  letter-spacing: -0.05em;      /* Tight letter-spacing for premium feel */
+  margin: 0 0 1.5rem 0;         /* 24px bottom margin */
+  word-break: break-word;       /* Prevent overflow on long emails */
+}
+
+/* Success state - instruction text */
+.success-instruction {
+  font-size: var(--font-size-base); /* 16px */
+  color: var(--color-text-secondary); /* #A0A0A0 */
+  margin: 0 0 1rem 0;           /* 16px bottom margin */
+}
+
+/* Success state - hint text (small, tertiary) */
+.success-hint {
+  font-size: var(--font-size-sm); /* 14px */
+  color: var(--color-text-tertiary); /* #707070 */
+  margin: 0;
+}
+
 /* Error modal (with red accent) */
 .modal-card--error .modal-title {
   color: var(--color-error);  /* Red */

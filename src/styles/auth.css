@@ -136,26 +136,9 @@
 }
 
 /* ===================================
-   AUTH DIVIDER ("or" separator)
+   AUTH DIVIDER - REMOVED (use oauth-icons.css)
+   OAuth divider is now centralized in oauth-icons.css
    =================================== */
-
-.auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin: 1.5rem 0;
-  color: var(--color-text-secondary);  /* #A0A0A0 */
-  font-size: 0.875rem;
-  font-weight: var(--font-weight-medium);  /* 500 */
-}
-
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--color-border);  /* #2A2A2A */
-}
 
 /* ===================================
    AUTH CHECKBOX (GDPR, Remember Me)

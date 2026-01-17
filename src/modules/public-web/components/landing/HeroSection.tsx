@@ -13,10 +13,13 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/platform';
+import { useAuth } from '@/platform/auth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { AnimatedWaves } from './AnimatedWaves';
 import { HeroMockup } from './HeroMockup';
+import { MESSAGES } from '@/config/messages';
 
 // Trust signals data
 const TRUST_SIGNALS = [
@@ -27,10 +30,18 @@ const TRUST_SIGNALS = [
 ];
 
 export function HeroSection() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   function handleCTA() {
-    setShowAuthModal(true);
+    if (user) {
+      // ✅ Přihlášený user → redirect do appky
+      navigate('/app');
+    } else {
+      // ✅ Nepřihlášený user → otevři register modal
+      setShowAuthModal(true);
+    }
   }
 
   return (
@@ -56,11 +67,15 @@ export function HeroSection() {
                 size="lg" 
                 onClick={handleCTA}
               >
-                Začít zdarma →
+                {user 
+                  ? MESSAGES.landing.authenticatedCTA.heroPrimary 
+                  : MESSAGES.landing.hero.ctaPrimary}
               </Button>
               
               <p className="landing-hero__cta-subtext">
-                Email → První cvičení za 2 minuty
+                {user 
+                  ? MESSAGES.landing.authenticatedCTA.heroSubtext 
+                  : MESSAGES.landing.hero.ctaSubtext}
               </p>
             </div>
             

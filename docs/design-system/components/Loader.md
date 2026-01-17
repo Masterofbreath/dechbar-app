@@ -44,18 +44,45 @@ Generic circular spinner (fallback).
 
 ## Usage Examples
 
-### With Random Breathing Fact
+### ⏱️ WHEN TO USE BREATHING FACTS
+
+**✅ USE `showBreathingFact` FOR:**
+- **Exercise loading (3-5s)** - User has time to read 15-20 words
+- **Long data fetches** - User analytics, progress reports, large datasets
+- **Initial module loading** - First visit to new feature (onboarding)
+
+**❌ DON'T USE `showBreathingFact` FOR:**
+- **Login/Register (300-400ms)** - Too fast, facts unreadable! Use simple message instead
+- **Quick actions** - Save, delete, update operations (instant feedback better)
+- **Route protection checks** - Auth guard, simple message sufficient
+
+**💡 GOLDEN RULE:**  
+If loading **< 2 seconds** → use simple message, **not fact**!  
+Facts need **3-5 seconds** reading time for educational value.
+
+---
+
+### With Random Breathing Fact (3-5s loading)
 
 ```tsx
-// Login screen - educational tip
-<Loader showBreathingFact />
+// ✅ GOOD: Exercise loading (slow, user has time to read)
+<Loader 
+  showBreathingFact 
+  message="Připravujeme tvoje cvičení..." 
+/>
 // Shows: "Navy SEALs používají 'Box breathing' před misemi..."
 ```
 
-### With Custom Message
+### With Custom Message (fast loading)
 
 ```tsx
-// Protected route check
+// ✅ GOOD: Login/Register (fast, simple message)
+<Loader message="Dýchej s námi..." />
+
+// ✅ GOOD: Protected route check
+<Loader message="Dýchej s námi..." />
+
+// ✅ GOOD: App initialization
 <Loader message="Dýchej s námi..." />
 ```
 

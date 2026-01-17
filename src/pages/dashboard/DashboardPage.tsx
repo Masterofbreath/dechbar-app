@@ -22,8 +22,9 @@ export function DashboardPage() {
 
   async function handleSignOut() {
     try {
+      // ✅ Logout logic now centralized in useAuth
+      // It handles: logout → state update → redirect (web) or show AuthModal (native)
       await signOut();
-      // User will be redirected by ProtectedRoute
     } catch (error) {
       console.error('Sign out error:', error);
     }
@@ -35,7 +36,7 @@ export function DashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Vítej zpátky, <span className="text-[#F8CA00]">{greetingName}</span>! 🎉
+            Vítej zpátky, <span className="text-accent">{greetingName}</span>! 🎉
           </h1>
           <p className="text-gray-600">
             Jsi úspěšně přihlášen do DechBar App

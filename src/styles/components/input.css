@@ -278,6 +278,46 @@
 }
 
 /* ===================================
+   AUTOCOMPLETE OVERRIDE (Fix yellow highlight)
+   =================================== */
+
+/* 
+ * Browser autocomplete - override yellow background
+ * 
+ * Problem: Browser sets yellow bg (#FFFE99) → text unreadable
+ * Solution: Force dark bg + light text (brand compliant)
+ */
+.input-field:-webkit-autofill,
+.input-field:-webkit-autofill:hover,
+.input-field:-webkit-autofill:focus,
+.input-field:-webkit-autofill:active {
+  /* Override browser's yellow bg with our dark bg */
+  -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+  /* Override browser's black text with our light text */
+  -webkit-text-fill-color: var(--input-text) !important;
+  /* Teal border on autocomplete focus (brand identity) */
+  border-color: var(--input-border-focus) !important;
+  /* Light caret for visibility */
+  caret-color: var(--input-text) !important;
+}
+
+/* 
+ * Selection within inputs - teal bg + white text
+ * 
+ * Brand Book 2.0: Solid teal (premium feel, high contrast)
+ * Replaces global ::selection (30% opacity) for better readability
+ */
+.input-field::selection {
+  background: var(--color-primary);     /* Solid teal #2CBEC6 */
+  color: var(--color-background);       /* Dark bg → White text */
+}
+
+.input-field::-moz-selection {
+  background: var(--color-primary);
+  color: var(--color-background);
+}
+
+/* ===================================
    ACCESSIBILITY
    =================================== */
 

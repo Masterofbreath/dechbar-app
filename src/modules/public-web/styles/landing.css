@@ -54,6 +54,12 @@
   gap: var(--spacing-4);  /* 16px */
 }
 
+/* Authenticated user state - ensure vocative_name doesn't break */
+.landing-header__actions .button--ghost {
+  white-space: nowrap;
+  min-width: auto;
+}
+
 /* Mobile responsive */
 @media (max-width: 390px) {
   .landing-header {
@@ -427,6 +433,19 @@
 
 .pricing-card__cta {
   margin-top: var(--spacing-6);  /* 24px */
+}
+
+/* ✅ NEW: Disabled state for "Aktivní" pricing cards */
+.pricing-card__cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+}
+
+.pricing-card__cta:disabled:hover {
+  transform: none;  /* Remove hover lift effect */
+  box-shadow: none;  /* Remove hover shadow */
 }
 
 /* ===================================

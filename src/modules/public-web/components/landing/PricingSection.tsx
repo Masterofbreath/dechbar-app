@@ -10,6 +10,7 @@
  */
 
 import { useState } from 'react';
+import { useAuth } from '@/platform/auth';
 import { PricingCard } from './PricingCard';
 import { AuthModal } from '@/components/auth/AuthModal';
 
@@ -70,6 +71,7 @@ const PRICING_PLANS = [
 ];
 
 export function PricingSection() {
+  const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   function handleCTA() {
@@ -89,13 +91,24 @@ export function PricingSection() {
           </p>
           
           <div className="landing-pricing__grid">
-            {PRICING_PLANS.map(plan => (
-              <PricingCard 
-                key={plan.title}
-                {...plan}
-                onCTA={handleCTA}
-              />
-            ))}
+            {PRICING_PLANS.map(plan => {
+              // ✅ Dynamic CTA for authenticated users
+              const isFreePlan = plan.title === 'ZDARMA';
+              const ctaText = (user && isFreePlan) 
+                ? 'Aktivní' 
+                : plan.ctaText;
+              const isDisabled = Boolean(user && isFreePlan); // ✅ Convert to boolean
+              
+              return (
+                <PricingCard 
+                  key={plan.title}
+                  {...plan}
+                  ctaText={ctaText}
+                  isDisabled={isDisabled}
+                  onCTA={handleCTA}
+                />
+              );
+            })}
           </div>
         </div>
       </section>

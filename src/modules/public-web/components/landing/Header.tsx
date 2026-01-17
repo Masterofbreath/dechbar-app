@@ -14,9 +14,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Logo, Button } from '@/platform';
+import { useAuth } from '@/platform/auth';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { MESSAGES } from '@/config/messages';
 
 export function Header() {
+  const { user } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
@@ -52,32 +55,57 @@ export function Header() {
             onClick={() => navigate('/')}
           />
 
-          {/* Auth actions */}
+          {/* Conditional Auth actions based on user state */}
           <nav className="landing-header__actions">
-            <Button 
-              variant="ghost" 
-              size="md"
-              onClick={openLoginModal}
-            >
-              Přihlásit
-            </Button>
-            <Button 
-              variant="primary" 
-              size="md"
-              onClick={openRegisterModal}
-            >
-              Začít zdarma
-            </Button>
+            {user ? (
+              // AUTHENTICATED: Personalized CTAs
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="md"
+                  onClick={() => navigate('/app/profile')}
+                >
+                  {user.vocative_name || MESSAGES.header.authenticatedProfileFallback}
+                </Button>
+                <Button 
+                  variant="primary" 
+                  size="md"
+                  onClick={() => navigate('/app')}
+                >
+                  {MESSAGES.header.authenticatedPrimaryCTA}
+                </Button>
+              </>
+            ) : (
+              // UNAUTHENTICATED: Login/Register CTAs
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="md"
+                  onClick={openLoginModal}
+                >
+                  {MESSAGES.header.loginCTA}
+                </Button>
+                <Button 
+                  variant="primary" 
+                  size="md"
+                  onClick={openRegisterModal}
+                >
+                  {MESSAGES.header.registerCTA}
+                </Button>
+              </>
+            )}
           </nav>
         </div>
       </header>
 
-      {/* Reuse existing AuthModal component */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        defaultView={authView}
-      />
+      {/* AuthModal only shown when unauthenticated */}
+      {!user && (
+        <AuthModal 
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          defaultView={authView}
+        />
+      )}
     </>
   );
 }
