@@ -20,6 +20,10 @@ export type { Module, UserModule, ModuleManifest } from './modules';
 export { supabase, usePublicStats } from './api';
 export type { PublicStats } from './api';
 
+// Hooks
+export { useScrollLock, useNavigation, useFocusTrap } from './hooks';
+export type { NavTab } from './hooks';
+
 // Components
 export { 
   Button, 
@@ -28,7 +32,8 @@ export {
   Input, 
   Checkbox, 
   Card,
-  Logo 
+  Logo,
+  NavIcon
 } from './components';
 export type { 
   ButtonProps, 
@@ -37,8 +42,17 @@ export type {
   InputProps, 
   CheckboxProps, 
   CardProps,
-  LogoProps 
+  LogoProps,
+  NavIconProps
 } from './components';
+
+// Navigation
+export { TopNav, BottomNav } from './components/navigation';
+export type { TopNavProps } from './components/navigation';
+
+// Layouts
+export { AppLayout } from './layouts';
+export type { AppLayoutProps } from './layouts';
 
 // Types (re-export from types folder)
 export type * from './types';

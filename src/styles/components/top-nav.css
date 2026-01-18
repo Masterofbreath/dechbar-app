@@ -1,0 +1,117 @@
+/* ============================================================
+   TopNav Styles - Minimalist Top Navigation
+   Brand Book 2.0: Balanced Minimal (Avatar + Settings)
+   ============================================================ */
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 var(--spacing-4); /* 16px horizontal */
+  padding-top: env(safe-area-inset-top); /* iOS notch */
+  background: transparent; /* Transparent by default */
+  position: sticky;
+  top: 0;
+  z-index: 1001; /* Above content, below modals */
+}
+
+/* Transparent variant (for special screens) */
+.top-nav--transparent {
+  background: transparent;
+}
+
+/* ============================================================
+   Avatar Button
+   ============================================================ */
+
+.top-nav__avatar-button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  min-width: 44px; /* Touch target */
+  min-height: 44px; /* Touch target */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-nav__avatar-button:active {
+  transform: scale(0.95);
+}
+
+/* Avatar Image */
+.top-nav__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary); /* Teal ring */
+  object-fit: cover;
+  display: block;
+}
+
+/* Avatar Placeholder (no image uploaded) */
+.top-nav__avatar--placeholder {
+  background: var(--color-surface); /* #1E1E1E */
+  color: var(--color-text-primary); /* #E0E0E0 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   Settings Button
+   ============================================================ */
+
+.top-nav__settings-button {
+  padding: 10px; /* 44x44 touch target */
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary); /* #A0A0A0 */
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-nav__settings-button:hover {
+  color: var(--color-text-primary); /* #E0E0E0 */
+}
+
+.top-nav__settings-button:active {
+  transform: scale(0.9);
+}
+
+/* ============================================================
+   Focus States (Accessibility)
+   ============================================================ */
+
+.top-nav__avatar-button:focus-visible,
+.top-nav__settings-button:focus-visible {
+  outline: 2px solid var(--color-primary); /* Teal */
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+/* ============================================================
+   Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .top-nav__avatar-button,
+  .top-nav__settings-button {
+    transition: none;
+  }
+}

@@ -8,9 +8,9 @@
  * @subpackage Components/Auth
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
-import { Button, Input, TextLink, Checkbox } from '@/platform/components';
+import { Button, Input, TextLink } from '@/platform/components';
 import { ErrorMessage } from '@/components/shared';
 import { MESSAGES } from '@/config/messages';
 import { useAuth } from '@/platform/auth';
@@ -24,11 +24,11 @@ interface RegisterViewProps {
 export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange }: RegisterViewProps) {
   const { signUpWithMagicLink, signInWithOAuth } = useAuth();
   const [email, setEmail] = useState('');
-  const [gdprConsent, setGdprConsent] = useState(false);
   const [formError, setFormError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [rateLimitSeconds, setRateLimitSeconds] = useState<number | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // ✅ Notify parent about success state
   useEffect(() => {
@@ -36,6 +36,24 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
       onSuccessStateChange(emailSent);
     }
   }, [emailSent, onSuccessStateChange]);
+
+  // ✅ Keyboard shortcut: Cmd/Ctrl+Enter to submit
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault(); // Prevent default browser behavior
+        
+        // Only submit if form is not already loading and success screen is not shown
+        if (!isLoading && !emailSent) {
+          formRef.current?.requestSubmit(); // Triggers validation + onSubmit handler
+        }
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isLoading, emailSent]);
 
   // ✅ COUNTDOWN TIMER pro rate limit (pouze pro error message)
   useEffect(() => {
@@ -64,11 +82,8 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
     try {
       setFormError('');
       
-      // ✅ GDPR VALIDATION (same as Magic Link)
-      if (!gdprConsent) {
-        setFormError(MESSAGES.error.gdprRequired);
-        return;
-      }
+      // ✅ Implicit consent: User consents by clicking OAuth button
+      // Backend will automatically store gdpr_consent: true in authStore.ts
       
       await signInWithOAuth(provider, {
         redirectTo: `${window.location.origin}/app`
@@ -94,17 +109,15 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
       return;
     }
 
-    if (!gdprConsent) {
-      setFormError(MESSAGES.error.gdprRequired);
-      return;
-    }
+    // ✅ Implicit consent: User consents by submitting the form
+    // Backend will automatically store gdpr_consent: true in authStore.ts
 
     try {
       setIsLoading(true);
       
-      // ✅ IMPLEMENTOVÁNO: Magic Link registrace
+      // ✅ Magic Link registration (implicit GDPR consent)
       await signUpWithMagicLink(email, {
-        gdprConsent,
+        gdprConsent: true,
         emailRedirectTo: `${window.location.origin}/app`
       });
       
@@ -190,7 +203,7 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
       </div>
 
       {/* Register Form */}
-      <form onSubmit={handleSubmit} className="auth-form" noValidate>
+      <form ref={formRef} onSubmit={handleSubmit} className="auth-form" noValidate>
         
         {/* Email */}
         <Input
@@ -202,26 +215,6 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
           autoFocus
           required
           disabled={isLoading}
-        />
-
-        {/* GDPR Consent */}
-        <Checkbox
-          label={
-            <>
-              Souhlasím s{' '}
-              <a href="/gdpr" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
-                GDPR
-              </a>
-              {' '}a{' '}
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
-                obchodními podmínkami
-              </a>
-              <span className="text-[#ef4444] ml-1">*</span>
-            </>
-          }
-          checked={gdprConsent}
-          onChange={(e) => setGdprConsent(e.target.checked)}
-          required
         />
 
         {/* Error Message - dynamický countdown pro rate limit */}
@@ -300,6 +293,19 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
             />
           </button>
         </div>
+
+        {/* GDPR Notice - Informational text (VARIANTA A: below OAuth) */}
+        <p className="gdpr-notice">
+          Registrací souhlasíš s{' '}
+          <a href="/gdpr" target="_blank" rel="noopener noreferrer">
+            GDPR
+          </a>
+          {' '}a{' '}
+          <a href="/terms" target="_blank" rel="noopener noreferrer">
+            obchodními podmínkami
+          </a>
+          {' '}včetně používání souborů Cookie.
+        </p>
       </div>
 
       {/* Login Link */}

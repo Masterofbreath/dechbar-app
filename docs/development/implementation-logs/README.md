@@ -38,6 +38,31 @@ Každý implementation log **MUSÍ obsahovat:**
 
 ## 📅 Timeline
 
+### 2026-01-18 - Accessibility & Keyboard UX
+
+#### WCAG AA Compliance
+1. **[Modal Accessibility Polish](./2026-01-18-modal-accessibility-polish.md)** ♿ **Accessibility + UX**
+   - TIER 1: Breathing animation respects prefers-reduced-motion (WCAG 2.3.3)
+   - TIER 1: Console.log removed from production (security)
+   - TIER 1: Landscape mobile optimization (max-height + overflow)
+   - TIER 2: Focus trap with react-focus-lock (WCAG 2.4.3)
+   - TIER 2: Cmd/Ctrl+Enter shortcuts for power users (Cholerik)
+   - TIER 2: Centralized fade-out duration (CSS variable + JS)
+   - ✅ WCAG 2.1 Level AA compliance achieved
+   - 6 files modified, 1 dependency added, ~135 lines
+   - All manual tests passed, build successful
+
+### 2026-01-18 - GDPR Implicit Consent
+
+#### Legal Compliance & UX Improvement
+1. **[GDPR Implicit Consent](./2026-01-18-gdpr-implicit-consent.md)** ⚖️ **Legal + UX (HeroHero-inspired)**
+   - Changed GDPR consent from explicit checkbox to implicit consent via informational text
+   - Maintained backend tracking for legal compliance
+   - Improved UX by reducing registration friction (one less click)
+   - "Less is More" principle - cleaner UI, no visual noise
+   - Positioned text below OAuth buttons (least intrusive placement)
+   - Legal compliance: GDPR Article 7 + ePrivacy Directive
+
 ### 2026-01-17 - OAuth GDPR Compliance
 
 #### Legal Compliance & UX
@@ -55,6 +80,14 @@ Každý implementation log **MUSÍ obsahovat:**
    - -37 lines kódu (čistší, jednodušší)
    - Konzistentní s Magic Link flow
    - User feedback: "Takhle je to moc textu a není to čisté"
+
+3. **[Modal Scroll Lock](./2026-01-17-modal-scroll-lock.md)** 🎯 **Global UX Fix**
+   - Fixed modal layout shift (scrollbar compensation)
+   - Created `useScrollLock()` global platform hook
+   - Zero layout shift - smooth, jemný efekt
+   - Reusable across ALL modals in app
+   - Industry-standard solution (Bootstrap, Material-UI pattern)
+   - User feedback: "pravý posuvný bar zmizí a modals se posune o trochu doprava"
 
 ### 2026-01-15 - State Management Migration & Auth UX Fixes
 

@@ -1,0 +1,41 @@
+{
+  "id": "mvp0",
+  "name": "DechBar MVP0 - The Core",
+  "version": "0.1.0",
+  "description": "Core breathing protocols (RÁNO, RESET, NOC) with daily tips. Foundation for all future features.",
+  "pricing": {
+    "source": "free",
+    "note": "MVP0 is free for all users. SMART features require SMART tier."
+  },
+  "dependencies": {
+    "platform": ["auth", "navigation", "membership"],
+    "modules": []
+  },
+  "api": {
+    "routes": [
+      "/app/dnes",
+      "/app/cvicit",
+      "/app/akademie",
+      "/app/pokrok",
+      "/app/profil",
+      "/app/nastaveni"
+    ],
+    "tables": []
+  },
+  "permissions": [],
+  "features": {
+    "free": [
+      "3 preset protocols (RÁNO, RESET, NOC)",
+      "Daily breathing tips",
+      "Basic greeting"
+    ],
+    "smart": [
+      "All FREE features",
+      "SMART exercise recommendations (placeholder)"
+    ],
+    "ai_coach": [
+      "All SMART features",
+      "AI personalized insights (future)"
+    ]
+  }
+}

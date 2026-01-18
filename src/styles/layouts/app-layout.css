@@ -1,0 +1,102 @@
+/* ============================================================
+   AppLayout Styles - Main Application Wrapper
+   TOP NAV + Content + BOTTOM NAV
+   ============================================================ */
+
+/* ============================================================
+   Layout Container
+   ============================================================ */
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Fallback */
+  min-height: 100dvh; /* Dynamic viewport height (mobile) */
+  background: var(--color-background); /* #121212 */
+}
+
+/* ============================================================
+   Content Area (Scrollable)
+   ============================================================ */
+
+.app-layout__content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
+  padding-bottom: 72px; /* Space for bottom nav */
+}
+
+/* Safe Area Handling (iOS home indicator) */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .app-layout__content {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================================
+   Modal Styles (for Profile & Settings modals)
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85); /* Dark overlay */
+  display: flex;
+  align-items: flex-end; /* Bottom sheet style */
+  justify-content: center;
+  z-index: 10000; /* Above everything */
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: var(--color-surface-elevated); /* #2A2A2A */
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0; /* 16px top corners */
+  max-height: 90vh;
+  width: 100%;
+  max-width: 600px;
+  overflow-y: auto;
+  padding: var(--spacing-6); /* 24px */
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Desktop modal centering */
+@media (min-width: 768px) {
+  .modal-overlay {
+    align-items: center;
+  }
+  
+  .modal-content {
+    border-radius: var(--radius-xl); /* All corners */
+    max-height: 80vh;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-content {
+    animation: none;
+  }
+}

@@ -206,3 +206,38 @@
     border: 1px solid var(--color-text-tertiary);
   }
 }
+
+/* ===================================
+   GDPR NOTICE - Informational text
+   Implicit consent (non-interactive)
+   =================================== */
+
+.gdpr-notice {
+  font-size: var(--font-size-xs);  /* 12px */
+  color: var(--color-text-tertiary);  /* #707070 */
+  text-align: center;
+  margin: 1.5rem 0 0 0;  /* 24px top spacing, no bottom (last element) */
+  padding: 0 1rem;  /* 16px horizontal padding */
+  line-height: 1.5;
+}
+
+.gdpr-notice a {
+  color: var(--color-accent);  /* Gold #D6A23A */
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);  /* 500 */
+  transition: opacity 0.2s ease;
+}
+
+.gdpr-notice a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 390px) {
+  .gdpr-notice {
+    font-size: 11px;
+    padding: 0 0.5rem;
+  }
+}
+

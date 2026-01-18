@@ -273,6 +273,9 @@ export const MESSAGES = {
     
     // OAuth divider (imperativ per Tone of Voice)
     oauthDivider: "nebo pokračuj s",
+    
+    // GDPR Notice (implicit consent - informational only)
+    gdprNotice: "Registrací souhlasíš s GDPR a obchodními podmínkami včetně používání souborů Cookie.",
   },
 
   // ============================================================

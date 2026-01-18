@@ -19,10 +19,22 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { Loader } from '@/platform/components';
+import { AppLayout } from '@/platform/layouts';
+import { useNavigation } from '@/platform/hooks';
 
 // Public Web Module - Landing Page + Science Page (eager load, not lazy)
 import { LandingPage } from '@/modules/public-web/pages/LandingPage';
 import { SciencePage } from '@/modules/public-web/pages/SciencePage';
+
+// MVP0 Module - Core Pages
+import { 
+  DnesPage, 
+  CvicitPage, 
+  AkademiePage, 
+  PokrokPage,
+  ProfilPage,
+  SettingsPage
+} from '@/modules/mvp0';
 
 // Deep Link Router Component (needs to be inside BrowserRouter to use useNavigate)
 function DeepLinkRouter() {
@@ -69,6 +81,54 @@ function DeepLinkRouter() {
   return null; // This component doesn't render anything
 }
 
+// Navigation Router Component - Renders current tab content
+function NavigationRouter() {
+  const { currentTab, isProfileOpen, isSettingsOpen, closeProfile, closeSettings } = useNavigation();
+  
+  // Render modals
+  const renderModals = () => (
+    <>
+      {isProfileOpen && (
+        <div className="modal-overlay" onClick={closeProfile}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <ProfilPage />
+          </div>
+        </div>
+      )}
+      {isSettingsOpen && (
+        <div className="modal-overlay" onClick={closeSettings}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <SettingsPage />
+          </div>
+        </div>
+      )}
+    </>
+  );
+  
+  // Render current tab content
+  const renderContent = () => {
+    switch (currentTab) {
+      case 'dnes':
+        return <DnesPage />;
+      case 'cvicit':
+        return <CvicitPage />;
+      case 'akademie':
+        return <AkademiePage />;
+      case 'pokrok':
+        return <PokrokPage />;
+      default:
+        return <DnesPage />;
+    }
+  };
+  
+  return (
+    <>
+      {renderContent()}
+      {renderModals()}
+    </>
+  );
+}
+
 function App() {
   const { user, isLoading } = useAuth();
   
@@ -111,9 +171,21 @@ function App() {
             All under /app/* to maintain Bluetooth context
             ======================================== */}
         
-        {/* Dashboard - main app entry point */}
+        {/* Dashboard - main app entry point (MVP0 with navigation) */}
         <Route 
           path="/app" 
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <NavigationRouter />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Legacy dashboard route (old implementation, keep for backwards compatibility) */}
+        <Route 
+          path="/app/old-dashboard" 
           element={
             <ProtectedRoute>
               <DashboardPage />

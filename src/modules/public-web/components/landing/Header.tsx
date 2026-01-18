@@ -47,7 +47,10 @@ export function Header() {
 
   return (
     <>
-      <header className={`landing-header ${isScrolled ? 'landing-header--scrolled' : ''}`}>
+      <header 
+        className={`landing-header ${isScrolled ? 'landing-header--scrolled' : ''}`}
+        data-fixed-element
+      >
         <div className="landing-header__container">
           {/* Logo - clickable, navigates to home */}
           <Logo 

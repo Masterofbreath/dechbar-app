@@ -8,7 +8,7 @@
  * @subpackage Components/Auth
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '@/platform/auth';
 import { Button, Input, TextLink } from '@/platform/components';
@@ -28,6 +28,7 @@ export function ForgotPasswordView({ onSwitchToLogin, onSuccessStateChange }: Fo
   const [formError, setFormError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [rateLimitSeconds, setRateLimitSeconds] = useState<number | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // ✅ Notify parent about success state
   useEffect(() => {
@@ -35,6 +36,24 @@ export function ForgotPasswordView({ onSwitchToLogin, onSuccessStateChange }: Fo
       onSuccessStateChange(isSuccess);
     }
   }, [isSuccess, onSuccessStateChange]);
+
+  // ✅ Keyboard shortcut: Cmd/Ctrl+Enter to submit
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault(); // Prevent default browser behavior
+        
+        // Only submit if form is not already loading and success screen is not shown
+        if (!isLoading && !isSuccess) {
+          formRef.current?.requestSubmit(); // Triggers validation + onSubmit handler
+        }
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isLoading, isSuccess]);
 
   // ✅ COUNTDOWN TIMER pro rate limit
   useEffect(() => {
@@ -152,7 +171,7 @@ export function ForgotPasswordView({ onSwitchToLogin, onSuccessStateChange }: Fo
         </div>
 
       {/* Reset Form */}
-      <form onSubmit={handleSubmit} className="auth-form" noValidate>
+      <form ref={formRef} onSubmit={handleSubmit} className="auth-form" noValidate>
         
         {/* Email */}
         <Input

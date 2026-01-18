@@ -13,7 +13,7 @@ import { LoginView } from './LoginView';
 import { RegisterView } from './RegisterView';
 import { ForgotPasswordView } from './ForgotPasswordView';
 import { CloseButton } from '@/components/shared/CloseButton';
-import { Logo } from '@/platform';
+import { Logo, useScrollLock, useFocusTrap } from '@/platform';
 
 export interface AuthModalProps {
   isOpen: boolean;
@@ -28,6 +28,12 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
   const [isClosing, setIsClosing] = useState(false);
   const [isSuccessState, setIsSuccessState] = useState(false);
 
+  // ✅ Global scroll lock with scrollbar compensation (no layout shift)
+  useScrollLock(isOpen);
+
+  // ✅ Custom focus trap (replaces react-focus-lock, -3KB bundle size)
+  const modalCardRef = useFocusTrap<HTMLDivElement>(isOpen, onClose);
+
   // Reset view when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -36,36 +42,28 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
     }
   }, [isOpen, defaultView]);
 
-  // ESC key handler
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, onClose]);
+  // Note: ESC key is now handled by useFocusTrap hook
 
   if (!isOpen) return null;
 
   function switchView(view: AuthView) {
-    console.log(`Switching to ${view} view`);
+    // ✅ Dev-only logging (stripped from production build by Vite)
+    if (import.meta.env.DEV) {
+      console.log(`[AuthModal] Switching to ${view} view`);
+    }
     setCurrentView(view);
   }
 
   async function handleSuccess() {
     setIsClosing(true);  // Start fade-out animation
-    await new Promise(resolve => setTimeout(resolve, 400));  // Wait for fade-out
+    
+    // ✅ Read duration from CSS variable (single source of truth)
+    const duration = parseInt(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue('--modal-fade-out-duration')
+    );
+    
+    await new Promise(resolve => setTimeout(resolve, duration));  // Wait for fade-out
     onClose();
     setIsClosing(false);
   }
@@ -85,42 +83,46 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
       role="dialog"
       aria-modal="true"
     >
+      {/* ✅ Custom focus trap via ref (replaces react-focus-lock) */}
       {/* Modal card with liquid glass effect + success variant */}
-      <div className={`modal-card ${isSuccessState ? 'modal-card--success' : ''}`}>
-        {/* Close button */}
-        <CloseButton onClick={onClose} />
+      <div 
+        ref={modalCardRef}
+        className={`modal-card ${isSuccessState ? 'modal-card--success' : ''}`}
+      >
+          {/* Close button */}
+          <CloseButton onClick={onClose} />
 
-        {/* Logo */}
-        <div className="modal-logo">
-          <Logo variant="off-white" />
+          {/* Logo */}
+          <div className="modal-logo">
+            <Logo variant="off-white" />
+          </div>
+
+          {/* View content */}
+          <div className="auth-view">
+            {currentView === 'login' && (
+              <LoginView
+                onSwitchToRegister={() => switchView('register')}
+                onSwitchToReset={() => switchView('reset')}
+                onSuccess={handleSuccess}
+              />
+            )}
+
+            {currentView === 'register' && (
+              <RegisterView
+                onSwitchToLogin={() => switchView('login')}
+                onSuccess={handleSuccess}
+                onSuccessStateChange={setIsSuccessState}
+              />
+            )}
+
+            {currentView === 'reset' && (
+              <ForgotPasswordView
+                onSwitchToLogin={() => switchView('login')}
+                onSuccessStateChange={setIsSuccessState}
+              />
+            )}
+          </div>
         </div>
-
-        {/* View content */}
-        <div className="auth-view">
-          {currentView === 'login' && (
-            <LoginView
-              onSwitchToRegister={() => switchView('register')}
-              onSwitchToReset={() => switchView('reset')}
-              onSuccess={handleSuccess}
-            />
-          )}
-
-          {currentView === 'register' && (
-            <RegisterView
-              onSwitchToLogin={() => switchView('login')}
-              onSuccess={handleSuccess}
-              onSuccessStateChange={setIsSuccessState}
-            />
-          )}
-
-          {currentView === 'reset' && (
-            <ForgotPasswordView
-              onSwitchToLogin={() => switchView('login')}
-              onSuccessStateChange={setIsSuccessState}
-            />
-          )}
-        </div>
-      </div>
     </div>
   );
 }

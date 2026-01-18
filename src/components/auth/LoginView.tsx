@@ -8,7 +8,7 @@
  * @subpackage Components/Auth
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/platform/auth';
@@ -30,6 +30,25 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [formError, setFormError] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // ✅ Keyboard shortcut: Cmd/Ctrl+Enter to submit
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault(); // Prevent default browser behavior
+        
+        // Only submit if form is not already loading
+        if (!isLoading) {
+          formRef.current?.requestSubmit(); // Triggers validation + onSubmit handler
+        }
+      }
+    }
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isLoading]);
 
   async function handleOAuthSignIn(provider: 'google' | 'apple' | 'facebook') {
     try {
@@ -127,7 +146,7 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
       </div>
 
       {/* Login Form */}
-      <form onSubmit={handleSubmit} className="auth-form" noValidate>
+      <form ref={formRef} onSubmit={handleSubmit} className="auth-form" noValidate>
         
         {/* Email */}
         <Input

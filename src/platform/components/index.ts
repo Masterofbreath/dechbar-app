@@ -33,3 +33,6 @@ export type { IconProps } from './Icon';
 
 export { Loader } from './Loader';
 export type { LoaderProps } from './Loader';
+
+export { NavIcon } from './NavIcon';
+export type { NavIconProps } from './NavIcon';

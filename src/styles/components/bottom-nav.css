@@ -1,0 +1,156 @@
+/* ============================================================
+   BottomNav Styles - 4-Tab Navigation with FAB
+   Brand Book 2.0: Native Mobile Pattern
+   ============================================================ */
+
+/* ============================================================
+   Base Navigation Bar
+   ============================================================ */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  padding-bottom: env(safe-area-inset-bottom); /* iOS home indicator */
+  background: var(--color-surface); /* #1E1E1E */
+  border-top: 1px solid var(--color-border); /* #2A2A2A */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000; /* Below TOP NAV, above content */
+}
+
+/* ============================================================
+   Tab Item (Regular)
+   ============================================================ */
+
+.bottom-nav__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  min-width: 64px; /* Touch target width */
+  min-height: 56px; /* Touch target height */
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary); /* #A0A0A0 inactive */
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+
+/* Active Tab (Teal highlight) */
+.bottom-nav__tab--active {
+  color: var(--color-primary); /* Teal #2CBEC6 */
+}
+
+/* Tab press feedback */
+.bottom-nav__tab:active {
+  transform: scale(0.95);
+}
+
+/* Icon Wrapper */
+.bottom-nav__icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Label */
+.bottom-nav__label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  font-family: var(--font-family-base); /* Inter */
+}
+
+/* ============================================================
+   FAB (Floating Action Button) - Zlatý Primary CTA
+   ============================================================ */
+
+.bottom-nav__tab--fab {
+  position: relative;
+  margin-top: -24px; /* Elevated above nav bar */
+}
+
+.bottom-nav__fab-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--color-accent); /* Gold #D6A23A */
+  color: var(--color-background); /* Dark text #121212 */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(214, 162, 58, 0.4); /* Gold glow */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* FAB hover state */
+.bottom-nav__tab--fab:hover .bottom-nav__fab-icon {
+  box-shadow: 0 12px 24px rgba(214, 162, 58, 0.5);
+}
+
+/* FAB press animation */
+.bottom-nav__tab--fab:active .bottom-nav__fab-icon,
+.bottom-nav__tab--pressed .bottom-nav__fab-icon {
+  transform: scale(0.95);
+  box-shadow: 0 4px 8px rgba(214, 162, 58, 0.3);
+}
+
+/* FAB label (gold color) */
+.bottom-nav__tab--fab .bottom-nav__label {
+  color: var(--color-accent); /* Gold */
+  font-weight: 600;
+}
+
+/* FAB when active */
+.bottom-nav__tab--fab.bottom-nav__tab--active .bottom-nav__label {
+  color: var(--color-accent); /* Keep gold even when active */
+}
+
+/* ============================================================
+   Accessibility - Focus States
+   ============================================================ */
+
+.bottom-nav__tab:focus-visible {
+  outline: 2px solid var(--color-primary); /* Teal */
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ============================================================
+   Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav__tab,
+  .bottom-nav__fab-icon {
+    transition: none;
+  }
+  
+  .bottom-nav__tab:active,
+  .bottom-nav__tab--fab:active .bottom-nav__fab-icon {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Responsive (optional adjustments)
+   ============================================================ */
+
+/* Very narrow screens */
+@media (max-width: 375px) {
+  .bottom-nav__tab {
+    min-width: 56px;
+    padding: 8px 8px;
+  }
+  
+  .bottom-nav__label {
+    font-size: 10px;
+  }
+}
