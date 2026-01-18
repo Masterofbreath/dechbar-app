@@ -33,54 +33,104 @@
 .smart-exercise-button {
   width: 100%;
   padding: var(--spacing-6); /* 24px */
-  background: var(--color-surface); /* #1E1E1E */
-  border: 2px dashed var(--color-border); /* #2A2A2A dashed = locked */
+  
+  /* Gradient background - teal subtle */
+  background: linear-gradient(
+    135deg,
+    rgba(44, 190, 198, 0.1) 0%,
+    rgba(44, 190, 198, 0.05) 100%
+  );
+  border: 2px solid rgba(44, 190, 198, 0.3); /* Solid, ne dashed */
   border-radius: var(--radius-lg); /* 12px */
+  
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3); /* 12px */
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   margin-bottom: var(--spacing-8); /* 32px */
 }
 
+/* Hover - zlatý unlock preview */
 .smart-exercise-button:hover {
-  border-color: var(--color-primary); /* Teal */
-  background: rgba(44, 190, 198, 0.05); /* Subtle teal glow */
+  background: linear-gradient(
+    135deg,
+    rgba(214, 162, 58, 0.15) 0%,
+    rgba(214, 162, 58, 0.08) 100%
+  );
+  border-color: var(--color-accent); /* Gold */
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(214, 162, 58, 0.15); /* Gold glow */
 }
 
+/* Active - shake animation (locked feedback) */
 .smart-exercise-button:active {
-  transform: scale(0.99);
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 .smart-exercise-button__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-2); /* 8px */
 }
 
+/* Badge - zlatý text */
 .smart-exercise-button__badge {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-primary); /* Teal */
+  font-size: 13px;
+  font-weight: 700; /* Bolder */
+  color: var(--color-accent); /* Gold */
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
 }
 
+/* Lock icon - zlatý na hover */
 .smart-exercise-button__lock {
-  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-tertiary); /* Gray */
+  transition: color 0.2s ease;
+}
+
+.smart-exercise-button:hover .smart-exercise-button__lock {
+  color: var(--color-accent); /* Gold lock on hover */
 }
 
 .smart-exercise-button__text {
   font-size: 14px;
   color: var(--color-text-secondary); /* #A0A0A0 */
   line-height: 1.5;
-  margin-bottom: var(--spacing-3); /* 12px */
 }
 
+/* CTA - arrow slide */
 .smart-exercise-button__cta {
-  font-size: 14px;
-  color: var(--color-primary); /* Teal */
-  font-weight: 500;
+  font-size: 15px;
+  color: var(--color-accent); /* Gold */
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.smart-exercise-button__cta::after {
+  content: '→';
+  transition: transform 0.2s ease;
+}
+
+.smart-exercise-button:hover .smart-exercise-button__cta::after {
+  transform: translateX(4px); /* Arrow slides right */
 }
 
 /* ============================================================
@@ -92,17 +142,35 @@
 }
 
 .dnes-page__section-title {
-  font-size: var(--font-size-lg); /* 18px */
-  font-weight: 600;
+  font-size: 22px; /* Bigger */
+  font-weight: 700; /* Bolder */
   color: var(--color-text-primary); /* #E0E0E0 */
-  margin-bottom: var(--spacing-4); /* 16px */
+  text-transform: uppercase; /* Kapitálky */
+  letter-spacing: 0.08em;
+  margin-bottom: var(--spacing-6); /* 24px - bigger gap */
+  position: relative;
+  padding-left: var(--spacing-4); /* 16px - space for gold marker */
+}
+
+/* Zlatý marker vlevo - bigger + glow */
+.dnes-page__section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px; /* Thicker */
+  height: 24px; /* Taller */
+  background: var(--color-accent); /* Zlatý akcent */
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(214, 162, 58, 0.5); /* Gold glow */
 }
 
 /* Preset Protocols Grid (3 columns) */
 .dnes-page__protocols {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-4); /* 16px */
+  gap: var(--spacing-3); /* 12px - compact look */
   margin-bottom: var(--spacing-8); /* 32px */
 }
 
@@ -111,45 +179,74 @@
    ============================================================ */
 
 .preset-protocol-button {
-  background: var(--color-surface); /* #1E1E1E */
-  border: 1px solid var(--color-border); /* #2A2A2A */
-  border-radius: var(--radius-lg); /* 12px */
-  padding: var(--spacing-6); /* 24px */
+  /* Gradient background - teal subtle */
+  background: linear-gradient(
+    135deg,
+    var(--glow-primary-subtle) 0%,
+    rgba(44, 190, 198, 0.03) 100%
+  );
+  border: 1.5px solid rgba(44, 190, 198, 0.2);
+  border-radius: var(--radius-md); /* 12px - button style */
+  padding: var(--spacing-5) var(--spacing-4); /* 20px 16px */
+  
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-2); /* 8px */
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-  min-height: 140px; /* Consistent height */
+  transition: all 0.25s ease;
+  aspect-ratio: 1 / 1.2; /* Mírně vyšší než široké */
   text-align: center;
 }
 
+/* Hover - zlatý gradient + glow */
 .preset-protocol-button:hover {
-  background: var(--color-surface-elevated); /* #2A2A2A */
-  border-color: var(--color-primary); /* Teal */
+  background: linear-gradient(
+    135deg,
+    var(--glow-accent-medium) 0%,
+    rgba(214, 162, 58, 0.05) 100%
+  );
+  border-color: var(--color-accent); /* Gold border */
+  transform: translateY(-4px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(214, 162, 58, 0.15); /* Gold glow */
 }
 
+/* Active state */
 .preset-protocol-button:active {
-  transform: scale(0.98);
+  transform: translateY(-2px) scale(0.98);
 }
 
+/* Icon - bigger + gold on hover */
 .preset-protocol-button__icon {
+  width: 40px; /* Bigger */
+  height: 40px;
   color: var(--color-primary); /* Teal */
-  margin-bottom: var(--spacing-2); /* 8px */
+  transition: all 0.3s ease;
+  margin-bottom: 0; /* Remove extra margin */
 }
 
+.preset-protocol-button:hover .preset-protocol-button__icon {
+  color: var(--color-accent); /* Gold on hover */
+  transform: scale(1.1);
+}
+
+/* Label - bolder */
 .preset-protocol-button__label {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px; /* Bigger */
+  font-weight: 700; /* Bolder */
   color: var(--color-text-primary); /* #E0E0E0 */
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
+/* Duration - smaller, more muted */
 .preset-protocol-button__duration {
   font-size: 12px;
-  color: var(--color-text-secondary); /* #A0A0A0 */
+  color: var(--color-text-tertiary); /* More muted */
+  font-weight: 500;
 }
 
 /* Focus state */
@@ -163,18 +260,44 @@
    ============================================================ */
 
 .daily-tip-widget {
+  /* Glassmorphism effect */
   background: rgba(44, 190, 198, 0.05); /* Teal 5% tint */
-  border-left: 4px solid var(--color-primary); /* Teal accent */
+  backdrop-filter: blur(12px); /* Blur background */
+  -webkit-backdrop-filter: blur(12px); /* Safari */
+  
+  border-left: 3px solid var(--color-accent); /* Zlatý akcent */
   border-radius: var(--radius-lg); /* 12px */
   padding: var(--spacing-6); /* 24px */
+  
   display: flex;
   gap: var(--spacing-4); /* 16px */
   align-items: flex-start;
+  
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03); /* Inner light */
+  
+  transition: all 0.3s ease;
+}
+
+/* Hover effect - subtle lift */
+.daily-tip-widget:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 20px rgba(214, 162, 58, 0.1); /* Gold glow */
 }
 
 .daily-tip-widget__icon {
-  font-size: 24px;
+  font-size: 32px; /* Bigger emoji */
+  line-height: 1;
   flex-shrink: 0;
+  filter: drop-shadow(0 2px 8px rgba(214, 162, 58, 0.4)); /* Gold shadow */
+}
+
+.daily-tip-widget__icon svg {
+  display: block;
 }
 
 .daily-tip-widget__content {
@@ -236,7 +359,7 @@
   
   .dnes-page__protocols {
     grid-template-columns: 1fr; /* Stack on narrow mobile */
-    gap: var(--spacing-3); /* 12px */
+    gap: var(--spacing-2); /* 8px - extra compact on mobile */
   }
   
   .preset-protocol-button {

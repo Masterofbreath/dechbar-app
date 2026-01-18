@@ -32,7 +32,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
   useScrollLock(isOpen);
 
   // ✅ Custom focus trap (replaces react-focus-lock, -3KB bundle size)
-  const modalCardRef = useFocusTrap<HTMLDivElement>(isOpen, onClose);
+  const modalCardRef = useFocusTrap(isOpen);
 
   // Reset view when modal opens
   useEffect(() => {

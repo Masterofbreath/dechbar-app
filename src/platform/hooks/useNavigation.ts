@@ -27,10 +27,13 @@ interface NavigationState {
   // Modal states (for TOP NAV actions)
   isProfileOpen: boolean;
   isSettingsOpen: boolean;
+  isKPDetailOpen: boolean;
   openProfile: () => void;
   closeProfile: () => void;
   openSettings: () => void;
   closeSettings: () => void;
+  openKPDetail: () => void;
+  closeKPDetail: () => void;
   
   // FAB pressed state (for animation feedback)
   isFABPressed: boolean;
@@ -58,6 +61,11 @@ export const useNavigation = create<NavigationState>((set) => ({
   isSettingsOpen: false,
   openSettings: () => set({ isSettingsOpen: true }),
   closeSettings: () => set({ isSettingsOpen: false }),
+  
+  // KP Detail modal/view
+  isKPDetailOpen: false,
+  openKPDetail: () => set({ isKPDetailOpen: true }),
+  closeKPDetail: () => set({ isKPDetailOpen: false }),
   
   // FAB animation
   isFABPressed: false,

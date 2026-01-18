@@ -11,12 +11,36 @@
   padding: var(--spacing-8); /* 32px */
   text-align: center;
   max-width: 400px;
+  border-top: 3px solid var(--color-accent); /* Zlatý top border */
 }
 
-/* Icon */
+/* Icon (SVG lock) */
 .locked-feature__icon {
-  font-size: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: var(--spacing-4); /* 16px */
+  color: var(--color-accent); /* Gold lock */
+  position: relative;
+}
+
+/* Radial gold glow around icon */
+.locked-feature__icon::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(
+    circle,
+    rgba(214, 162, 58, 0.15) 0%,
+    transparent 70%
+  );
+  z-index: -1;
+}
+
+.locked-feature__icon svg {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 4px 12px rgba(214, 162, 58, 0.4)); /* Gold shadow */
 }
 
 /* Title */
@@ -47,16 +71,29 @@
   margin-bottom: var(--spacing-2); /* 8px */
 }
 
-/* Website Link (text only, not clickable - iOS compliance) */
+/* Website Link - styled as premium button */
 .locked-feature__link {
+  display: inline-block;
   font-size: var(--font-size-lg); /* 18px */
   font-weight: 600;
-  color: var(--color-primary); /* Teal */
+  color: var(--color-background); /* Dark text */
   font-family: var(--font-family-mono); /* Monospace for URL */
-  padding: var(--spacing-3); /* 12px */
-  background: rgba(44, 190, 198, 0.1); /* Teal 10% */
+  padding: var(--spacing-4) var(--spacing-6); /* 16px 24px */
+  background: linear-gradient(135deg, var(--color-accent) 0%, #C8922D 100%); /* Gold gradient */
   border-radius: var(--radius-md); /* 8px */
   margin-bottom: var(--spacing-6); /* 24px */
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.3); /* Gold shadow */
+}
+
+.locked-feature__link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(214, 162, 58, 0.4); /* Bigger gold shadow */
+}
+
+.locked-feature__link:active {
+  transform: translateY(0);
 }
 
 /* Close Button */

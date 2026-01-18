@@ -15,7 +15,7 @@ export interface NavIconProps {
   /**
    * Icon name
    */
-  name: 'home' | 'dumbbell' | 'graduation-cap' | 'chart-line' | 'settings' | 'bell' | 'sun' | 'refresh' | 'moon';
+  name: 'home' | 'dumbbell' | 'graduation-cap' | 'chart-line' | 'settings' | 'bell' | 'sun' | 'refresh' | 'moon' | 'lightbulb';
   
   /**
    * Size in pixels
@@ -61,13 +61,16 @@ export function NavIcon({
     ),
     'dumbbell': (
       <>
-        <path d="M6.5 8v8" strokeLinecap="round" />
-        <path d="M17.5 8v8" strokeLinecap="round" />
-        <rect x="4" y="7" width="5" height="2" rx="1" />
-        <rect x="4" y="15" width="5" height="2" rx="1" />
-        <rect x="15" y="7" width="5" height="2" rx="1" />
-        <rect x="15" y="15" width="5" height="2" rx="1" />
-        <path d="M9 12h6" strokeLinecap="round" />
+        {/* Levá závaží */}
+        <rect x="2" y="9" width="3" height="6" rx="1" />
+        {/* Levý úchyt */}
+        <rect x="5" y="10" width="2" height="4" rx="0.5" />
+        {/* Střední tyč */}
+        <line x1="7" y1="12" x2="17" y2="12" strokeWidth="2.5" strokeLinecap="round" />
+        {/* Pravý úchyt */}
+        <rect x="17" y="10" width="2" height="4" rx="0.5" />
+        {/* Pravá závaží */}
+        <rect x="19" y="9" width="3" height="6" rx="1" />
       </>
     ),
     'graduation-cap': (
@@ -79,16 +82,22 @@ export function NavIcon({
     ),
     'chart-line': (
       <>
-        <path d="M3 17l6-6 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M21 7v6h-6" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Osy */}
+        <line x1="3" y1="20" x2="21" y2="20" strokeLinecap="round" />
+        <line x1="3" y1="20" x2="3" y2="4" strokeLinecap="round" />
+        {/* Sloupce (rostoucí trend) */}
+        <rect x="6" y="15" width="3" height="5" rx="0.5" />
+        <rect x="11" y="11" width="3" height="9" rx="0.5" />
+        <rect x="16" y="7" width="3" height="13" rx="0.5" />
       </>
     ),
     
     // TOP NAV icons
     'settings': (
       <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" strokeLinecap="round" />
+        {/* Gear/Cog icon - jednodušší verze */}
+        <circle cx="12" cy="12" r="2.5" />
+        <path d="M12 1v3m0 16v3M4.22 4.22l2.12 2.12m11.32 11.32l2.12 2.12M1 12h3m16 0h3M4.22 19.78l2.12-2.12m11.32-11.32l2.12-2.12" strokeLinecap="round" />
       </>
     ),
     'bell': (
@@ -114,6 +123,24 @@ export function NavIcon({
     ),
     'moon': (
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    
+    // Info/Tips icon
+    'lightbulb': (
+      <>
+        {/* Skleněná část žárovky */}
+        <path d="M9 18h6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M10 22h4" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Vlákno + světlo */}
+        <path 
+          d="M15 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+        />
+        <path d="M9 11v3a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-3" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Závit */}
+        <path d="M9 18a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2" strokeLinecap="round" strokeLinejoin="round" />
+      </>
     ),
   };
   

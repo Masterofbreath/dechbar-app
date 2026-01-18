@@ -1,0 +1,134 @@
+/* ============================================================
+   KPDisplay Styles - Kontrolní Pauza Widget
+   Compact breathing control pause indicator for TOP NAV
+   ============================================================ */
+
+.kp-display {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1); /* 4px */
+  padding: var(--spacing-2) var(--spacing-3); /* 8px 12px */
+  background: rgba(44, 190, 198, 0.1); /* Teal 10% */
+  border: 1.5px solid rgba(44, 190, 198, 0.3);
+  border-radius: var(--radius-full); /* Pill shape */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 64px; /* Touch target */
+  min-height: 44px; /* Touch target */
+}
+
+/* Hover effect */
+.kp-display:hover {
+  background: rgba(44, 190, 198, 0.15);
+  border-color: var(--color-primary); /* Teal */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(44, 190, 198, 0.2); /* Teal glow */
+}
+
+/* Active/pressed state */
+.kp-display:active {
+  transform: scale(0.96);
+}
+
+/* ============================================================
+   Label (KP text)
+   ============================================================ */
+
+.kp-display__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary); /* #A0A0A0 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================
+   Value (35s)
+   ============================================================ */
+
+.kp-display__value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary); /* #E0E0E0 */
+  font-variant-numeric: tabular-nums; /* Monospace numbers */
+}
+
+/* ============================================================
+   Status Variants (color-coded)
+   ============================================================ */
+
+/* Low (< 20s) - Red/Warning */
+.kp-display--low {
+  background: rgba(239, 68, 68, 0.1); /* Red 10% */
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.kp-display--low:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #EF4444; /* Red */
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.kp-display--low .kp-display__value {
+  color: #EF4444; /* Red */
+}
+
+/* Normal (20-30s) - Teal */
+.kp-display--normal {
+  background: rgba(44, 190, 198, 0.1);
+  border-color: rgba(44, 190, 198, 0.3);
+}
+
+.kp-display--normal .kp-display__value {
+  color: var(--color-primary); /* Teal */
+}
+
+/* Good (30-40s) - Teal (same as normal) */
+.kp-display--good {
+  background: rgba(44, 190, 198, 0.1);
+  border-color: rgba(44, 190, 198, 0.3);
+}
+
+.kp-display--good .kp-display__value {
+  color: var(--color-primary); /* Teal */
+}
+
+/* Excellent (> 40s) - Gold */
+.kp-display--excellent {
+  background: rgba(214, 162, 58, 0.1); /* Gold 10% */
+  border-color: rgba(214, 162, 58, 0.3);
+}
+
+.kp-display--excellent:hover {
+  background: rgba(214, 162, 58, 0.15);
+  border-color: var(--color-accent); /* Gold */
+  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.3);
+}
+
+.kp-display--excellent .kp-display__value {
+  color: var(--color-accent); /* Gold */
+}
+
+/* ============================================================
+   Focus State (Accessibility)
+   ============================================================ */
+
+.kp-display:focus-visible {
+  outline: 2px solid var(--color-primary); /* Teal */
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .kp-display {
+    transition: none;
+  }
+  
+  .kp-display:hover,
+  .kp-display:active {
+    transform: none;
+  }
+}

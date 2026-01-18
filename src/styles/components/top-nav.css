@@ -26,6 +26,16 @@
 }
 
 /* ============================================================
+   Left Section (Avatar + KP)
+   ============================================================ */
+
+.top-nav__left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3); /* 12px */
+}
+
+/* ============================================================
    Avatar Button
    ============================================================ */
 
@@ -84,14 +94,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative; /* For pseudo-element */
 }
 
+/* Teal glow background on hover */
+.top-nav__settings-button::before {
+  content: '';
+  position: absolute;
+  inset: -4px; /* Bigger hit area */
+  background: var(--glow-primary-subtle); /* rgba(44, 190, 198, 0.05) */
+  border-radius: var(--radius-full);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: -1;
+}
+
+.top-nav__settings-button:hover::before {
+  opacity: 1;
+}
+
+/* Icon effects on hover */
 .top-nav__settings-button:hover {
-  color: var(--color-text-primary); /* #E0E0E0 */
+  color: var(--color-primary); /* Teal */
+}
+
+.top-nav__settings-button:hover svg {
+  transform: rotate(45deg); /* Gear rotates! */
+  transition: transform 0.3s ease;
 }
 
 .top-nav__settings-button:active {
-  transform: scale(0.9);
+  transform: scale(0.95);
 }
 
 /* ============================================================

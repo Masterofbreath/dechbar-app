@@ -33,7 +33,8 @@ export {
   Checkbox, 
   Card,
   Logo,
-  NavIcon
+  NavIcon,
+  KPDisplay
 } from './components';
 export type { 
   ButtonProps, 
@@ -43,7 +44,8 @@ export type {
   CheckboxProps, 
   CardProps,
   LogoProps,
-  NavIconProps
+  NavIconProps,
+  KPDisplayProps
 } from './components';
 
 // Navigation

@@ -1,7 +1,7 @@
 /**
  * TopNav Component - Minimalist Top Navigation
  * 
- * Brand Book 2.0: Balanced Minimal (Avatar + Settings)
+ * Brand Book 2.0: Balanced Minimal (Avatar + KP + Settings)
  * - Transparent background
  * - iOS safe area support
  * - Touch-friendly (44x44px targets)
@@ -12,6 +12,7 @@
  */
 
 import { NavIcon } from '../NavIcon';
+import { KPDisplay } from '../KPDisplay';
 import { useNavigation } from '@/platform/hooks';
 import { useAuth } from '@/platform/auth';
 
@@ -21,6 +22,12 @@ export interface TopNavProps {
    * @default false
    */
   transparent?: boolean;
+  
+  /**
+   * Show KP display (MVP0+)
+   * @default true
+   */
+  showKP?: boolean;
   
   /**
    * Additional CSS classes
@@ -33,11 +40,11 @@ export interface TopNavProps {
  * 
  * @example
  * <TopNav />
- * <TopNav transparent />
+ * <TopNav transparent showKP={false} />
  */
-export function TopNav({ transparent = false, className = '' }: TopNavProps) {
+export function TopNav({ transparent = false, showKP = true, className = '' }: TopNavProps) {
   const { user } = useAuth();
-  const { openProfile, openSettings } = useNavigation();
+  const { openProfile, openSettings, openKPDetail } = useNavigation();
   
   const navClass = [
     'top-nav',
@@ -50,27 +57,39 @@ export function TopNav({ transparent = false, className = '' }: TopNavProps) {
   const userName = user?.full_name || user?.email || '';
   const avatarInitial = userName.charAt(0).toUpperCase() || '?';
   
+  // Mock KP value (TODO: Replace with real data from Supabase)
+  const currentKP = 35; // seconds
+  
   return (
     <nav className={navClass} role="banner">
-      {/* Left: Avatar */}
-      <button
-        className="top-nav__avatar-button"
-        onClick={openProfile}
-        aria-label="Otevřít profil"
-        type="button"
-      >
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={userName}
-            className="top-nav__avatar"
+      {/* Left: Avatar + KP */}
+      <div className="top-nav__left">
+        <button
+          className="top-nav__avatar-button"
+          onClick={openProfile}
+          aria-label="Otevřít profil"
+          type="button"
+        >
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={userName}
+              className="top-nav__avatar"
+            />
+          ) : (
+            <div className="top-nav__avatar top-nav__avatar--placeholder">
+              {avatarInitial}
+            </div>
+          )}
+        </button>
+        
+        {showKP && (
+          <KPDisplay 
+            kpValue={currentKP} 
+            onClick={openKPDetail}
           />
-        ) : (
-          <div className="top-nav__avatar top-nav__avatar--placeholder">
-            {avatarInitial}
-          </div>
         )}
-      </button>
+      </div>
       
       {/* Right: Settings */}
       <button

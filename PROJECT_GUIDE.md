@@ -215,6 +215,9 @@ I když už jsi pracoval na projektu, můžeš kdykoliv začít znovu jako "nov�
 
 ## 📁 Project Structure
 
+> ⚠️ **REMINDER PRO AI AGENTY:** Při přidání nové složky/modulu VŽDY aktualizuj:  
+> - [`docs/architecture/CODE_STRUCTURE.md`](docs/architecture/CODE_STRUCTURE.md) (current file tree)
+
 ### Complete Folder Map:
 
 ```

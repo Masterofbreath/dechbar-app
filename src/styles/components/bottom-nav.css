@@ -41,14 +41,50 @@
   transition: color 0.2s ease, transform 0.1s ease;
 }
 
+/* Hover effect (besides FAB) */
+.bottom-nav__tab:not(.bottom-nav__tab--fab):hover .bottom-nav__icon {
+  color: var(--color-primary); /* Teal preview */
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
 /* Active Tab (Teal highlight) */
 .bottom-nav__tab--active {
   color: var(--color-primary); /* Teal #2CBEC6 */
 }
 
+/* Active indicator - zlatá tečka pod ikonou */
+.bottom-nav__tab--active .bottom-nav__icon {
+  position: relative;
+}
+
+.bottom-nav__tab--active .bottom-nav__icon::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--color-accent); /* Gold dot */
+  border-radius: var(--radius-full);
+  animation: fadeInDot 0.3s ease;
+}
+
+@keyframes fadeInDot {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
 /* Tab press feedback */
-.bottom-nav__tab:active {
-  transform: scale(0.95);
+.bottom-nav__tab:not(.bottom-nav__tab--fab):active {
+  transform: scale(0.92);
 }
 
 /* Icon Wrapper */

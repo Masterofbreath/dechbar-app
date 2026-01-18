@@ -1,46 +1,41 @@
 /**
- * Greeting Component - Dynamic Time-Based Welcome
+ * Greeting - Personalized Friendly Greeting
  * 
- * Displays personalized greeting based on time of day.
- * Tone of Voice: Tykání, gender-neutral, friendly.
+ * Always uses "Ahoj" for friendly tone.
+ * Supports vocative case (5. pád) for Czech names.
  * 
  * @package DechBar_App
  * @subpackage MVP0/Components
  * @since 0.1.0
  */
 
-/**
- * Get greeting based on current hour
- */
-function getGreeting(hour: number): string {
-  if (hour < 12) return "Dobré ráno";
-  if (hour < 18) return "Dobrý den";
-  return "Dobrý večer";
-}
-
 export interface GreetingProps {
-  /**
-   * User's first name or full name
-   * Falls back to "příteli" if not provided
-   */
   userName?: string;
+  userNameVocative?: string; // 5. pád (e.g., "Jakub" → "Jakube")
 }
 
 /**
- * Greeting - Dynamic welcome message
+ * Get greeting - always friendly "Ahoj"
+ */
+function getGreeting(): string {
+  return "Ahoj";
+}
+
+/**
+ * Greeting component with vocative support
  * 
  * @example
- * <Greeting userName="Jakub" />
- * // Output: "Dobré ráno, Jakube! 👋"
+ * <Greeting userName="Jakub Pelikán" userNameVocative="Jakube" />
  */
-export function Greeting({ userName }: GreetingProps) {
-  const hour = new Date().getHours();
-  const greeting = getGreeting(hour);
-  const displayName = userName || 'příteli';
+export function Greeting({ userName, userNameVocative }: GreetingProps) {
+  const greeting = getGreeting();
+  
+  // Prefer vocative, fallback to nominative or default
+  const displayName = userNameVocative || userName || 'příteli';
   
   return (
     <h1 className="greeting">
-      {greeting}, {displayName}! 👋
+      {greeting}, {displayName}!
     </h1>
   );
 }

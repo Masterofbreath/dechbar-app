@@ -13,6 +13,10 @@ Všechny Platform komponenty s detailní dokumentací API a příklady použití
 
 ## 🧩 Available Components
 
+### Navigation Components
+- **[TopNav](./TopNav.md)** - Minimalistický top bar (Avatar + Settings)
+- **[BottomNav](./BottomNav.md)** - 4-tab navigace s zlatým FAB
+
 ### Interactive Components
 - **[Button](./Button.md)** - Primary, Secondary, Ghost variants s gold theme
 - **[IconButton](./IconButton.md)** - Icon-only transparent buttons pro audio controls a toggles

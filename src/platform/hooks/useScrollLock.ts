@@ -74,14 +74,26 @@ export function useScrollLock(isLocked: boolean): void {
     // ✅ Find all fixed/sticky elements and compensate them too
     const fixedElements = document.querySelectorAll('[data-fixed-element]');
     const originalPaddings = new Map<Element, string>();
+    const originalRights = new Map<Element, string>();
     
     fixedElements.forEach(element => {
       if (element instanceof HTMLElement) {
-        // Store original padding for cleanup
-        originalPaddings.set(element, element.style.paddingRight);
+        const computedStyle = window.getComputedStyle(element);
+        const isFixed = computedStyle.position === 'fixed';
+        const hasRightZero = computedStyle.right === '0px';
         
-        // Apply scrollbar compensation
-        element.style.paddingRight = `${scrollbarWidth}px`;
+        // Store original values for cleanup
+        originalPaddings.set(element, element.style.paddingRight);
+        originalRights.set(element, element.style.right);
+        
+        // For fixed elements with right: 0, adjust right position instead of padding
+        // This prevents the element from expanding and shifting its content
+        if (isFixed && hasRightZero && scrollbarWidth > 0) {
+          element.style.right = `${scrollbarWidth}px`;
+        } else {
+          // For other fixed/sticky elements, use padding compensation
+          element.style.paddingRight = `${scrollbarWidth}px`;
+        }
       }
     });
 
@@ -94,7 +106,11 @@ export function useScrollLock(isLocked: boolean): void {
       // Restore fixed elements styles
       fixedElements.forEach(element => {
         if (element instanceof HTMLElement) {
-          element.style.paddingRight = originalPaddings.get(element) || '';
+          const originalPadding = originalPaddings.get(element);
+          const originalRight = originalRights.get(element);
+          
+          element.style.paddingRight = originalPadding || '';
+          element.style.right = originalRight || '';
         }
       });
     };

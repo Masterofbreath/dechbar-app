@@ -36,3 +36,7 @@ export type { LoaderProps } from './Loader';
 
 export { NavIcon } from './NavIcon';
 export type { NavIconProps } from './NavIcon';
+
+export { KPDisplay } from './KPDisplay';
+export type { KPDisplayProps } from './KPDisplay';
+

@@ -11,12 +11,6 @@
 
 import { getDailyTip } from '../data/dailyTips';
 
-/**
- * DailyTipWidget - Educational tip card
- * 
- * @example
- * <DailyTipWidget />
- */
 export function DailyTipWidget() {
   const tip = getDailyTip();
   
@@ -27,7 +21,7 @@ export function DailyTipWidget() {
       </div>
       <div className="daily-tip-widget__content">
         <h3 className="daily-tip-widget__title">
-          Věděl jsi, že...
+          Víš, že...
         </h3>
         <p className="daily-tip-widget__text">
           {tip.text}
