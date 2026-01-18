@@ -23,13 +23,13 @@
    =================================== */
 
 .landing-header {
-  position: fixed;
+  position: sticky;  /* Sticky instead of fixed - prevents viewport-based width calculation */
   top: 0;
   left: 0;
-  width: 100%;  /* Use width instead of right: 0 to prevent expansion with padding */
+  width: 100%;
   z-index: 1000;
   padding: var(--spacing-4) var(--spacing-6);  /* 16px 24px */
-  box-sizing: border-box;  /* Padding is included in width, not added to it */
+  box-sizing: border-box;
   transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); /* Apple timing */
 }
 
