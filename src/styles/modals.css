@@ -17,9 +17,9 @@
 
 :root {
   /* Modal-specific colors */
-  --modal-overlay-bg: rgba(0, 0, 0, 0.85);      /* Dark overlay */
-  --modal-card-bg: var(--color-surface-elevated); /* #2A2A2A */
-  --modal-border: rgba(255, 255, 255, 0.05);    /* Subtle border */
+  --modal-overlay-bg: var(--color-overlay-dark);      /* Dark overlay */
+  --modal-card-bg: var(--color-surface-elevated);     /* #2A2A2A */
+  --modal-border: var(--color-border-subtle);         /* Subtle border */
   
   /* Modal spacing */
   --modal-padding: 2rem;
@@ -29,6 +29,9 @@
   /* Modal animations */
   --modal-transition-duration: 0.3s;
   --modal-transition-timing: cubic-bezier(0.25, 0.1, 0.25, 1); /* Apple timing */
+  
+  /* ✅ NEW: Fade-out duration (used by JS + CSS) */
+  --modal-fade-out-duration: 400ms;
 }
 
 /* ===================================
@@ -56,8 +59,8 @@
   width: 200%;
   height: 200%;
   background: 
-    radial-gradient(circle at 20% 50%, rgba(44, 190, 198, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(214, 162, 58, 0.03) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, var(--glow-primary-subtle) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, var(--glow-accent-subtle) 0%, transparent 50%);
   animation: particles-float 20s ease-in-out infinite;
   z-index: 0;
   pointer-events: none;
@@ -93,8 +96,8 @@
   border-radius: 1.5rem;
   padding: var(--modal-padding);
   box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.5),   /* Prominent shadow for dark mode */
-    0 8px 16px rgba(0, 0, 0, 0.3);
+    0 20px 40px var(--shadow-color-dark),   /* Prominent shadow for dark mode */
+    0 8px 16px var(--shadow-color-medium);
   animation: 
     modal-slide-up var(--modal-transition-duration) var(--modal-transition-timing),
     modal-breathe 4s ease-in-out infinite 0.5s;  /* Breathing starts after slide-up */
@@ -192,7 +195,7 @@
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-surface-hover);
   color: var(--color-text-primary);  /* #E0E0E0 */
   transform: scale(1.05);
 }
@@ -248,6 +251,36 @@
 }
 
 /* ===================================
+   RESPONSIVE - Landscape Mobile
+   =================================== */
+
+/* Small height screens (landscape phones, small tablets) */
+@media (max-height: 600px) and (orientation: landscape) {
+  .modal-card {
+    max-height: 90vh;
+    overflow-y: auto;
+    
+    /* Smooth momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Reduce padding to maximize visible content */
+  .modal-card {
+    padding: 1.25rem;
+  }
+  
+  /* Tighten spacing */
+  .modal-header {
+    margin-bottom: 1rem;
+  }
+  
+  .modal-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+}
+
+/* ===================================
    ACCESSIBILITY
    =================================== */
 
@@ -256,12 +289,17 @@
   .modal-overlay,
   .modal-card,
   .modal-close {
-    animation: none;
+    animation: none !important; /* !important to override .modal-card's two animations */
     transition: none;
   }
   
   .modal-overlay::before {
     animation: none;
+  }
+  
+  /* ✅ ADDED: Allow entry slide-up (fast, no motion sickness risk) but NO breathing */
+  .modal-card {
+    animation: modal-slide-up 0.2s ease-out !important; /* Fast slide, no breathing */
   }
 }
 
@@ -276,10 +314,34 @@
   }
 }
 
-/* Focus trap (prevent background scroll when modal open) */
-body.modal-open {
-  overflow: hidden;
-}
+/* ===================================
+   SCROLL LOCK
+   =================================== */
+
+/**
+ * IMPORTANT: Body scroll locking is handled by useScrollLock() hook
+ * 
+ * ✅ DO NOT manually add overflow: hidden to body
+ * ✅ Always use useScrollLock(isOpen) in modal components
+ * 
+ * The hook automatically:
+ * - Locks body scroll when modal opens
+ * - Calculates scrollbar width
+ * - Compensates with padding-right (prevents layout shift)
+ * - Cleans up on unmount
+ * 
+ * Example:
+ * ```tsx
+ * import { useScrollLock } from '@/platform';
+ * 
+ * function MyModal({ isOpen }) {
+ *   useScrollLock(isOpen);
+ *   return <div className="modal-overlay">...</div>;
+ * }
+ * ```
+ * 
+ * @see /src/platform/hooks/useScrollLock.ts
+ */
 
 /* ===================================
    MODAL VARIANTS (optional)
@@ -321,10 +383,10 @@ body.modal-open {
 
 /* Premium modal (with gold accent) */
 .modal-card--premium {
-  border-color: rgba(214, 162, 58, 0.2);  /* Gold border */
+  border-color: var(--glow-accent-border);  /* Gold border */
   box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(214, 162, 58, 0.1);  /* Gold glow */
+    0 20px 40px var(--shadow-color-dark),
+    0 0 40px var(--glow-accent-medium);  /* Gold glow */
 }
 
 /* ===================================
@@ -378,11 +440,11 @@ Premium Modal (with gold accent):
    =================================== */
 
 .modal-overlay--fading-out {
-  animation: modal-fade-out 400ms var(--modal-transition-timing) forwards;
+  animation: modal-fade-out var(--modal-fade-out-duration) var(--modal-transition-timing) forwards;
 }
 
 .modal-overlay--fading-out .modal-card {
-  animation: modal-slide-down 400ms var(--modal-transition-timing) forwards;
+  animation: modal-slide-down var(--modal-fade-out-duration) var(--modal-transition-timing) forwards;
 }
 
 @keyframes modal-fade-out {

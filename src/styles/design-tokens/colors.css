@@ -103,6 +103,30 @@
 }
 
 /* ===================================== */
+/* OVERLAY & SHADOW COLORS (for modals, popovers) */
+/* ===================================== */
+:root {
+  /* Overlay backgrounds */
+  --color-overlay-dark: rgba(0, 0, 0, 0.85);       /* Dark semi-transparent overlay */
+  --color-overlay-surface: rgba(30, 30, 30, 0.8);  /* Surface with transparency */
+  
+  /* Subtle borders and accents */
+  --color-border-subtle: rgba(255, 255, 255, 0.05); /* Very subtle white border */
+  --color-surface-hover: rgba(255, 255, 255, 0.05); /* Hover state for dark surfaces */
+  
+  /* Shadow colors (for elevation) */
+  --shadow-color-dark: rgba(0, 0, 0, 0.5);    /* Strong shadow */
+  --shadow-color-medium: rgba(0, 0, 0, 0.3);  /* Medium shadow */
+  --shadow-color-light: rgba(0, 0, 0, 0.2);   /* Light shadow */
+  
+  /* Accent glows (for premium effects) */
+  --glow-primary-subtle: rgba(44, 190, 198, 0.05);  /* Teal glow - very subtle */
+  --glow-accent-subtle: rgba(214, 162, 58, 0.03);   /* Gold glow - very subtle */
+  --glow-accent-medium: rgba(214, 162, 58, 0.1);    /* Gold glow - medium */
+  --glow-accent-border: rgba(214, 162, 58, 0.2);    /* Gold border - visible */
+}
+
+/* ===================================== */
 /* LEGACY COLOR COMPATIBILITY */
 /* Temporary: Map old gold to new accent for backward compatibility */
 /* TODO: Remove after all components updated to use accent */
