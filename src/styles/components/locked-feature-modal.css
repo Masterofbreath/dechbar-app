@@ -11,7 +11,7 @@
   padding: var(--spacing-8); /* 32px */
   text-align: center;
   max-width: 400px;
-  border-top: 3px solid var(--color-accent); /* Zlatý top border */
+  /* Gold top border removed */
 }
 
 /* Icon (SVG lock) */
@@ -21,20 +21,6 @@
   justify-content: center;
   margin-bottom: var(--spacing-4); /* 16px */
   color: var(--color-accent); /* Gold lock */
-  position: relative;
-}
-
-/* Radial gold glow around icon */
-.locked-feature__icon::before {
-  content: '';
-  position: absolute;
-  inset: -20px;
-  background: radial-gradient(
-    circle,
-    rgba(214, 162, 58, 0.15) 0%,
-    transparent 70%
-  );
-  z-index: -1;
 }
 
 .locked-feature__icon svg {
@@ -85,11 +71,12 @@
   text-decoration: none;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(214, 162, 58, 0.3); /* Gold shadow */
+  user-select: all; /* Double-click selects entire URL */
 }
 
 .locked-feature__link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(214, 162, 58, 0.4); /* Bigger gold shadow */
+  /* transform: translateY(-2px); REMOVED - not a button */
+  box-shadow: 0 6px 18px rgba(214, 162, 58, 0.3); /* Keep shadow, reduce from 0.4 */
 }
 
 .locked-feature__link:active {

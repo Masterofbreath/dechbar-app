@@ -1,0 +1,85 @@
+/* ============================================================
+   EmptyState Component - Brand Book Compliant
+   Premium empty state for placeholder pages
+   ============================================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--spacing-12) var(--spacing-6); /* 48px vertical, 24px horizontal */
+  min-height: 50vh; /* Center vertically */
+}
+
+.empty-state__icon {
+  font-size: 80px;
+  line-height: 1;
+  margin-bottom: var(--spacing-6);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
+.empty-state__title {
+  font-size: var(--font-size-2xl); /* 24px */
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-3);
+  line-height: 1.2;
+}
+
+.empty-state__message {
+  font-size: var(--font-size-lg); /* 18px */
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-2);
+  max-width: 400px;
+}
+
+.empty-state__subtext {
+  font-size: var(--font-size-sm); /* 14px */
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-8);
+  max-width: 360px;
+}
+
+.empty-state__action {
+  background: var(--color-primary); /* Teal */
+  color: white;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  padding: var(--spacing-3) var(--spacing-6);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px; /* Touch target */
+}
+
+.empty-state__action:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(44, 190, 198, 0.3);
+}
+
+.empty-state__action:active {
+  transform: translateY(0);
+}
+
+/* Focus state for accessibility */
+.empty-state__action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .empty-state__action {
+    transition: none;
+  }
+  
+  .empty-state__action:hover {
+    transform: none;
+  }
+}

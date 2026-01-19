@@ -12,19 +12,18 @@
  * @since 0.1.0
  */
 
+import { EmptyState } from '@/platform/components/EmptyState';
+
 /**
  * AkademiePage - Placeholder for education content
  */
 export function AkademiePage() {
   return (
-    <div className="placeholder-page">
-      <h1 className="placeholder-page__title">Akademie</h1>
-      <p className="placeholder-page__text">
-        Vzdělávací obsah bude dostupný brzy...
-      </p>
-      <p className="placeholder-page__subtext">
-        Zde najdeš vědecké články, kurzy a prémiové moduly (Studio, Výzvy).
-      </p>
-    </div>
+    <EmptyState
+      icon="🎓"
+      title="Akademie"
+      message="Vzdělávací obsah bude dostupný brzy."
+      subtext="Zde najdeš vědecké články, kurzy a prémiové moduly (Studio, Výzvy)."
+    />
   );
 }

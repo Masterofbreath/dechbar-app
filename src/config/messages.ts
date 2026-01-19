@@ -303,15 +303,15 @@ export const MESSAGES = {
       headline: "První česká aplikace pro funkční dýchání",
       subheadline: "Měř svůj pokrok. Cvič s certifikovaným instruktorem. Viditelné výsledky za 21 dní.",
       ctaPrimary: "Začít zdarma →",
-      ctaSubtext: "Email → První cvičení za 2 minuty",
+      ctaSubtext: "",
     },
 
     // ✅ NOVÉ: Authenticated user CTAs (when user is logged in on landing page)
     authenticatedCTA: {
-      heroPrimary: "Pokračovat v cvičení →",
-      heroSubtext: "Vrať se k tréninku",
-      finalPrimary: "Pokračovat v cvičení →",
-      finalSubtext: "Pokračuj tam, kde jsi skončil",
+      heroPrimary: "Vrať se do appky →",
+      heroSubtext: "",
+      finalPrimary: "Vrať se do appky →",
+      finalSubtext: "",
     },
 
     // Trust signals

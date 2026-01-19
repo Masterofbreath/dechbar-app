@@ -1,9 +1,9 @@
 /**
  * SmartExerciseButton - AI-Powered Exercise Recommendation
  * 
- * Tier-gated feature:
- * - FREE: Locked (shows paywall modal)
- * - SMART/AI_COACH: Unlocked (shows recommendation)
+ * Tier-aware CTA:
+ * - FREE/STARTER: Tertiary (dashed border, locked)
+ * - SMART/AI_COACH: PRIMARY CTA (gold gradient, unlocked)
  * 
  * @package DechBar_App
  * @subpackage MVP0/Components
@@ -11,14 +11,12 @@
  */
 
 import { useState } from 'react';
+import { NavIcon } from '@/platform/components';
+import { useAuth } from '@/platform/auth';
+import { useMembership } from '@/platform/membership';
 import { LockedFeatureModal } from './LockedFeatureModal';
 
 export interface SmartExerciseButtonProps {
-  /**
-   * Is feature locked for current user?
-   */
-  locked: boolean;
-  
   /**
    * Click handler (when unlocked)
    */
@@ -26,15 +24,19 @@ export interface SmartExerciseButtonProps {
 }
 
 /**
- * SmartExerciseButton - SMART tier feature button
+ * SmartExerciseButton - Tier-aware SMART feature
  * 
  * @example
- * const { plan } = useMembership();
- * const locked = plan === 'ZDARMA';
- * <SmartExerciseButton locked={locked} />
+ * <SmartExerciseButton onClick={() => navigate('/smart')} />
  */
-export function SmartExerciseButton({ locked, onClick }: SmartExerciseButtonProps) {
+export function SmartExerciseButton({ onClick }: SmartExerciseButtonProps) {
+  const { user } = useAuth();
+  const { plan } = useMembership(user?.id);
   const [showModal, setShowModal] = useState(false);
+  
+  // User has SMART or AI COACH tier - becomes PRIMARY CTA
+  const isPremium = plan === 'SMART' || plan === 'AI_COACH';
+  const locked = !isPremium;
   
   function handleClick() {
     if (locked) {
@@ -46,43 +48,21 @@ export function SmartExerciseButton({ locked, onClick }: SmartExerciseButtonProp
   
   return (
     <>
-      <button 
-        className="smart-exercise-button"
+      <button
+        className={`smart-exercise-button ${isPremium ? 'smart-exercise-button--premium' : ''}`}
         onClick={handleClick}
         type="button"
       >
-        <div className="smart-exercise-button__header">
-          <span className="smart-exercise-button__badge">
-            SMART CVIČENÍ
-          </span>
-          {locked && (
-            <svg 
-              className="smart-exercise-button__lock" 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          )}
-        </div>
-        
-        <p className="smart-exercise-button__text">
-          {locked 
-            ? "Personalizované doporučení na základě tvého pokroku"
-            : "Tvoje dnešní doporučení: RESET (5 min)"
-          }
+        <p className="smart-exercise-button__subtitle">
+          Personalizované doporučení na základě tvého pokroku
         </p>
         
-        {locked && (
-          <p className="smart-exercise-button__cta">
-            Odemkni v SMART tarifu →
-          </p>
-        )}
+        <div className="smart-exercise-button__title">
+          {locked && (
+            <NavIcon name="lock" size={18} className="smart-exercise-button__lock" />
+          )}
+          <span>SMART CVIČENÍ</span>
+        </div>
       </button>
       
       {locked && (

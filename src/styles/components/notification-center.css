@@ -1,0 +1,215 @@
+/* ============================================================
+   NotificationCenter Modal Styles
+   Platform notifications timeline
+   ============================================================ */
+
+.notification-center {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-8);
+  max-width: 480px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: visible; /* Allow hover effects to extend beyond */
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-center__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.notification-center__header h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.notification-center__badge {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px; /* Full pill */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-2);
+  box-shadow: 0 2px 8px rgba(44, 190, 198, 0.3); /* Teal glow */
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(44, 190, 198, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(44, 190, 198, 0.5);
+  }
+}
+
+.notification-center__list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: visible; /* Allow hover effects to extend beyond container */
+  margin-bottom: var(--spacing-6);
+}
+
+.notification-center__empty {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-8);
+}
+
+.notification-item {
+  padding: var(--spacing-4);
+  padding-right: var(--spacing-10); /* Space for delete button */
+  border-radius: var(--radius-md); /* 12px - brand standard */
+  background: var(--color-surface); /* Same as notification-center background */
+  display: flex;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2); /* Gap instead of border */
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative; /* For absolute positioning of delete */
+}
+
+.notification-item:last-child {
+  margin-bottom: 0; /* No gap after last item */
+}
+
+.notification-item--unread {
+  background: rgba(44, 190, 198, 0.08); /* Slightly stronger */
+  border-left: 3px solid var(--color-primary); /* Teal marker */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle elevation */
+}
+
+.notification-item:hover {
+  background: var(--color-surface-elevated);
+  z-index: 10; /* Lift above siblings */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* Deeper shadow */
+}
+
+.notification-item__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+}
+
+/* Type-specific icon backgrounds */
+
+/* System - Teal */
+.notification-item--system .notification-item__icon {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+/* Progress - Teal */
+.notification-item--progress .notification-item__icon {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+/* Achievement - Gold */
+.notification-item--achievement .notification-item__icon {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  font-size: 20px; /* Emoji trophy */
+}
+
+/* Social - Gray */
+.notification-item--social .notification-item__icon {
+  background: linear-gradient(135deg, #757575 0%, #616161 100%);
+}
+
+.notification-item__content {
+  flex: 1;
+}
+
+.notification-item__content h3 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-1);
+}
+
+.notification-item__content p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-1);
+}
+
+.notification-item__content time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.notification-center__close {
+  width: 100%;
+  padding: var(--spacing-4);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.notification-center__close:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
+.notification-center__close:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================
+   Notification Item Delete Button
+   ============================================================ */
+
+/* Delete button - CloseButton component handles styling */
+.notification-item__delete {
+  position: absolute;
+  top: var(--spacing-3);
+  right: var(--spacing-3);
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.2s ease;
+  /* CloseButton component handles all other styling */
+}
+
+/* Show on parent hover */
+.notification-item:hover .notification-item__delete {
+  opacity: 1;
+}
+
+/* ============================================================
+   Mobile Responsive
+   ============================================================ */
+
+@media (max-width: 375px) {
+  .notification-center {
+    width: 95%; /* Almost full width */
+    padding: var(--spacing-6); /* Tighter */
+  }
+  
+  .notification-item__content h3 {
+    font-size: var(--font-size-sm);
+  }
+  
+  .notification-item__content p {
+    font-size: 12px;
+  }
+}

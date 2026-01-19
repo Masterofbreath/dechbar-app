@@ -12,6 +12,10 @@
   max-width: 600px;
   margin: 0 auto;
   padding-top: var(--spacing-8); /* 32px from TOP NAV */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6); /* Consistent spacing */
+  padding-bottom: var(--spacing-8); /* Normal spacing only */
 }
 
 /* ============================================================
@@ -19,56 +23,66 @@
    ============================================================ */
 
 .greeting {
-  font-size: 24px;
+  font-size: 20px; /* Adjusted for hierarchy */
   font-weight: 600;
   color: var(--color-text-primary); /* #E0E0E0 */
-  margin-bottom: var(--spacing-6); /* 24px */
+  margin-bottom: var(--spacing-6); /* Consistent with design system */
   letter-spacing: var(--letter-spacing-tight); /* -0.02em premium */
 }
 
 /* ============================================================
-   SMART Exercise Button (Locked/Unlocked)
+   SMART Exercise Button - Tier-Aware (Tertiary → Primary)
    ============================================================ */
 
 .smart-exercise-button {
   width: 100%;
-  padding: var(--spacing-6); /* 24px */
+  padding: var(--spacing-5); /* Reduced from 6 */
   
-  /* Gradient background - teal subtle */
-  background: linear-gradient(
-    135deg,
-    rgba(44, 190, 198, 0.1) 0%,
-    rgba(44, 190, 198, 0.05) 100%
-  );
-  border: 2px solid rgba(44, 190, 198, 0.3); /* Solid, ne dashed */
-  border-radius: var(--radius-lg); /* 12px */
+  /* Default: Tertiary (Locked) */
+  background: transparent;
+  border: 1.5px dashed rgba(214, 162, 58, 0.3);
+  border-radius: var(--radius-lg);
   
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3); /* 12px */
-  text-align: left;
+  align-items: center;
+  gap: var(--spacing-2);
+  text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  margin-bottom: var(--spacing-8); /* 32px */
+  margin-bottom: var(--spacing-6); /* Reduced from 8 */
 }
 
-/* Hover - zlatý unlock preview */
+.smart-exercise-button__subtitle {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.smart-exercise-button__title {
+  font-size: 18px; /* Reduced from 20 */
+  font-weight: 700;
+  color: var(--color-text-secondary); /* Muted when locked */
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.smart-exercise-button__lock {
+  color: var(--color-accent);
+}
+
+/* Locked hover - subtle */
 .smart-exercise-button:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(214, 162, 58, 0.15) 0%,
-    rgba(214, 162, 58, 0.08) 100%
-  );
-  border-color: var(--color-accent); /* Gold */
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(214, 162, 58, 0.15); /* Gold glow */
+  border-color: var(--color-accent);
+  background: rgba(214, 162, 58, 0.03);
 }
 
-/* Active - shake animation (locked feedback) */
-.smart-exercise-button:active {
+/* Shake animation only for locked state */
+.smart-exercise-button:not(.smart-exercise-button--premium):active {
   animation: shake 0.3s ease;
 }
 
@@ -78,59 +92,38 @@
   75% { transform: translateX(4px); }
 }
 
-.smart-exercise-button__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* ============================================================
+   PREMIUM STATE - Primary CTA when user has SMART/AI tier
+   ============================================================ */
+
+.smart-exercise-button--premium {
+  /* Primary emphasis */
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  border: none;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(214, 162, 58, 0.3);
+  padding: var(--spacing-6); /* Bigger */
 }
 
-/* Badge - zlatý text */
-.smart-exercise-button__badge {
-  font-size: 13px;
-  font-weight: 700; /* Bolder */
-  color: var(--color-accent); /* Gold */
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
+.smart-exercise-button--premium .smart-exercise-button__subtitle {
+  color: rgba(18, 18, 18, 0.7); /* Dark on gold */
 }
 
-/* Lock icon - zlatý na hover */
-.smart-exercise-button__lock {
-  width: 16px;
-  height: 16px;
-  color: var(--color-text-tertiary); /* Gray */
-  transition: color 0.2s ease;
+.smart-exercise-button--premium .smart-exercise-button__title {
+  font-size: 22px; /* Bigger */
+  color: var(--color-background); /* Dark text on gold */
 }
 
-.smart-exercise-button:hover .smart-exercise-button__lock {
-  color: var(--color-accent); /* Gold lock on hover */
+.smart-exercise-button--premium:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(214, 162, 58, 0.4);
 }
 
-.smart-exercise-button__text {
-  font-size: 14px;
-  color: var(--color-text-secondary); /* #A0A0A0 */
-  line-height: 1.5;
-}
-
-/* CTA - arrow slide */
-.smart-exercise-button__cta {
-  font-size: 15px;
-  color: var(--color-accent); /* Gold */
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-1);
-}
-
-.smart-exercise-button__cta::after {
-  content: '→';
-  transition: transform 0.2s ease;
-}
-
-.smart-exercise-button:hover .smart-exercise-button__cta::after {
-  transform: translateX(4px); /* Arrow slides right */
+.smart-exercise-button--premium:active {
+  transform: translateY(-2px) scale(0.98);
 }
 
 /* ============================================================
@@ -138,7 +131,7 @@
    ============================================================ */
 
 .dnes-page__section {
-  margin-top: var(--spacing-8); /* 32px */
+  margin-top: calc(var(--spacing-8) * 1.618); /* 51.8px - golden ratio */
 }
 
 .dnes-page__section-title {
@@ -171,81 +164,104 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-3); /* 12px - compact look */
-  margin-bottom: var(--spacing-8); /* 32px */
+  margin-bottom: var(--spacing-6); /* Reduced from 8 */
 }
 
 /* ============================================================
-   Preset Protocol Button
+   Preset Protocol Button - 3D Premium Effect
    ============================================================ */
 
 .preset-protocol-button {
-  /* Gradient background - teal subtle */
+  /* 3D gradient with depth */
   background: linear-gradient(
     135deg,
-    var(--glow-primary-subtle) 0%,
-    rgba(44, 190, 198, 0.03) 100%
+    var(--color-surface) 0%,
+    var(--color-surface-elevated) 100%
   );
-  border: 1.5px solid rgba(44, 190, 198, 0.2);
-  border-radius: var(--radius-md); /* 12px - button style */
-  padding: var(--spacing-5) var(--spacing-4); /* 20px 16px */
+  border: 2px solid rgba(44, 190, 198, 0.4); /* Stronger than before */
+  border-radius: var(--radius-md);
+  padding: var(--spacing-5) var(--spacing-4);
   
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-2); /* 8px */
+  gap: var(--spacing-2);
   cursor: pointer;
   transition: all 0.25s ease;
-  aspect-ratio: 1 / 1.2; /* Mírně vyšší než široké */
+  aspect-ratio: 1 / 1.2;
   text-align: center;
+  position: relative;
+  
+  /* 3D depth effect */
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05); /* Inner highlight */
 }
 
-/* Hover - zlatý gradient + glow */
+/* Subtle top gradient for 3D feel */
+.preset-protocol-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+/* Hover - gold + bigger lift */
 .preset-protocol-button:hover {
   background: linear-gradient(
     135deg,
     var(--glow-accent-medium) 0%,
     rgba(214, 162, 58, 0.05) 100%
   );
-  border-color: var(--color-accent); /* Gold border */
-  transform: translateY(-4px);
+  border-color: var(--color-accent);
+  transform: translateY(-6px); /* Bigger lift */
   box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(214, 162, 58, 0.15); /* Gold glow */
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    0 0 20px rgba(214, 162, 58, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Active state */
+/* Active - press down */
 .preset-protocol-button:active {
   transform: translateY(-2px) scale(0.98);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* Icon - bigger + gold on hover */
+/* Icon - gold on hover */
 .preset-protocol-button__icon {
-  width: 40px; /* Bigger */
+  width: 40px;
   height: 40px;
-  color: var(--color-primary); /* Teal */
+  color: var(--color-primary);
   transition: all 0.3s ease;
-  margin-bottom: 0; /* Remove extra margin */
 }
 
 .preset-protocol-button:hover .preset-protocol-button__icon {
-  color: var(--color-accent); /* Gold on hover */
-  transform: scale(1.1);
+  color: var(--color-accent);
+  transform: scale(1.15); /* Slightly bigger */
 }
 
-/* Label - bolder */
+/* Label - bigger, bolder */
 .preset-protocol-button__label {
-  font-size: 18px; /* Bigger */
-  font-weight: 700; /* Bolder */
-  color: var(--color-text-primary); /* #E0E0E0 */
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-/* Duration - smaller, more muted */
+/* Duration */
 .preset-protocol-button__duration {
   font-size: 12px;
-  color: var(--color-text-tertiary); /* More muted */
+  color: var(--color-text-tertiary);
   font-weight: 500;
 }
 
@@ -260,6 +276,8 @@
    ============================================================ */
 
 .daily-tip-widget {
+  position: relative; /* For absolute CloseButton positioning */
+  
   /* Glassmorphism effect */
   background: rgba(44, 190, 198, 0.05); /* Teal 5% tint */
   backdrop-filter: blur(12px); /* Blur background */
@@ -277,11 +295,13 @@
     0 4px 16px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.03); /* Inner light */
   
+  opacity: 0.9; /* Passive - slightly muted */
   transition: all 0.3s ease;
 }
 
-/* Hover effect - subtle lift */
+/* Hover effect - subtle lift + full opacity */
 .daily-tip-widget:hover {
+  opacity: 1;
   transform: translateY(-2px);
   box-shadow: 
     0 8px 24px rgba(0, 0, 0, 0.2),
@@ -315,6 +335,18 @@
   font-size: var(--font-size-sm); /* 14px */
   color: var(--color-text-secondary); /* #A0A0A0 */
   line-height: 1.6;
+}
+
+.daily-tip-widget__dismiss {
+  position: absolute;
+  top: var(--spacing-3); /* 12px */
+  right: var(--spacing-3); /* 12px */
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.daily-tip-widget__dismiss:hover {
+  opacity: 1;
 }
 
 /* ============================================================

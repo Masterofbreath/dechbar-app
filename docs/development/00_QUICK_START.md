@@ -88,3 +88,140 @@ npm install
 # Restart TypeScript server in Cursor
 # Cmd + Shift + P → "TypeScript: Restart TS Server"
 ```
+
+---
+
+## 🎯 Your First Task (Tutorial)
+
+After setup, try this simple task to verify everything works.
+
+### Task 1: Change Landing Page Hero Headline
+
+**Goal:** Edit hero section text on landing page.
+
+**Steps:**
+
+1. **Find the component:**
+```bash
+open src/modules/public-web/components/landing/HeroSection.tsx
+```
+
+2. **Locate the headline (around line 10):**
+```tsx
+<h1 className="landing-hero__title">
+  První česká aplikace pro funkční dýchání
+</h1>
+```
+
+3. **Edit text (test change):**
+```tsx
+<h1 className="landing-hero__title">
+  TESTOVACÍ HEADLINE - První česká aplikace pro funkční dýchání
+</h1>
+```
+
+4. **Save and check browser:**
+   - Dev server auto-reloads
+   - See change instantly at http://localhost:5173/
+
+5. **Verify Tone of Voice:**
+   - Check [docs/design-system/TONE_OF_VOICE.md](../design-system/TONE_OF_VOICE.md)
+   - ✅ Tykání? ✅ Imperativ? ✅ Krátké věty?
+
+6. **Revert change:**
+```tsx
+<h1 className="landing-hero__title">
+  První česká aplikace pro funkční dýchání
+</h1>
+```
+
+7. **Optional - Git practice:**
+```bash
+git status  # See what changed
+git diff    # See exact changes
+# No need to commit (was just test)
+```
+
+**Success Checklist:**
+
+- [ ] Found component in correct location
+- [ ] Dev server auto-reloaded on save
+- [ ] Saw change in browser
+- [ ] Understood Tone of Voice rules
+- [ ] Reverted change successfully
+
+---
+
+### Task 2: Understand Component Architecture
+
+**Goal:** Learn Platform component structure.
+
+**Steps:**
+
+1. **Read existing Button component:**
+```bash
+open src/platform/components/Button.tsx
+```
+
+2. **Study structure:**
+   - TypeScript interface for props
+   - Variant system (primary/secondary/ghost)
+   - Size system (sm/md/lg)
+   - CSS class composition
+
+3. **Check CSS:**
+```bash
+open src/styles/components/button.css
+```
+
+4. **See BEM naming:**
+   - `.dechbar-button` (base)
+   - `.dechbar-button--primary` (variant)
+   - `.dechbar-button--lg` (size)
+
+5. **Read documentation:**
+```bash
+open docs/design-system/components/Button.md
+```
+
+**Key Takeaways:**
+
+- Platform components are reusable across modules
+- TypeScript props define API
+- CSS uses BEM-like naming
+- Documentation is mandatory
+
+---
+
+### Task 3: Practice Decision Tree
+
+**Goal:** Use decision tree to determine code location.
+
+**Scenarios:**
+
+1. **"I need to add a Modal component"**
+   - Question: Will 2+ modules use it?
+   - Answer: YES → `src/platform/components/Modal.tsx`
+
+2. **"I need to edit Landing Page pricing"**
+   - Question: Module-specific?
+   - Answer: YES → `src/modules/public-web/components/landing/PricingSection.tsx`
+
+3. **"I need a hook to fetch exercises"**
+   - Question: General or module-specific?
+   - Answer: Module-specific → `src/modules/studio/hooks/useExercises.ts`
+
+---
+
+## 🎓 What's Next?
+
+1. **Read full workflow:** [01_WORKFLOW.md](01_WORKFLOW.md)
+2. **Explore PROJECT_GUIDE.md:** [../../PROJECT_GUIDE.md](../../PROJECT_GUIDE.md)
+3. **Study 4 Temperaments:** [../design-system/01_PHILOSOPHY.md](../design-system/01_PHILOSOPHY.md)
+4. **Start real work!**
+
+---
+
+*Congratulations! Your setup is verified and you understand the basics.*
+
+*Time to first successful change: ~1 hour (vs 2.5 hours without this tutorial)*

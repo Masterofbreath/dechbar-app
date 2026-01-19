@@ -13,6 +13,7 @@
   min-height: 100vh; /* Fallback */
   min-height: 100dvh; /* Dynamic viewport height (mobile) */
   background: var(--color-background); /* #121212 */
+  overflow: hidden; /* Prevent viewport scrollbar */
 }
 
 /* ============================================================
@@ -20,18 +21,18 @@
    ============================================================ */
 
 .app-layout__content {
-  flex: 1;
+  flex: 1 1 0; /* flex-basis 0 forces correct calculation */
+  min-height: 0; /* Allow flexbox to constrain overflow */
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
-  padding-bottom: 72px; /* Space for bottom nav */
-}
-
-/* Safe Area Handling (iOS home indicator) */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .app-layout__content {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom));
-  }
+  
+  /* FIXED: Space for TopNav at top, BottomNav is flex item */
+  padding-top: calc(
+    64px +                              /* TopNav height */
+    env(safe-area-inset-top)           /* iOS notch */
+  );
+  padding-bottom: var(--spacing-4);    /* 16px breathing space only */
 }
 
 /* ============================================================

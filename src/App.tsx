@@ -18,9 +18,9 @@ import { isNativeApp } from '@/platform/utils/environment';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
-import { Loader } from '@/platform/components';
+import { Loader, NotificationCenter, KPCenter, SettingsDrawer } from '@/platform/components';
 import { AppLayout } from '@/platform/layouts';
-import { useNavigation } from '@/platform/hooks';
+import { useNavigation, useKeyboardShortcuts } from '@/platform/hooks';
 
 // Public Web Module - Landing Page + Science Page (eager load, not lazy)
 import { LandingPage } from '@/modules/public-web/pages/LandingPage';
@@ -32,8 +32,7 @@ import {
   CvicitPage, 
   AkademiePage, 
   PokrokPage,
-  ProfilPage,
-  SettingsPage
+  ProfilPage
 } from '@/modules/mvp0';
 
 // Deep Link Router Component (needs to be inside BrowserRouter to use useNavigate)
@@ -83,22 +82,22 @@ function DeepLinkRouter() {
 
 // Navigation Router Component - Renders current tab content
 function NavigationRouter() {
-  const { currentTab, isProfileOpen, isSettingsOpen, closeProfile, closeSettings } = useNavigation();
+  const { currentTab, isProfileOpen, closeProfile } = useNavigation();
+  
+  // ✅ Global keyboard shortcuts (Cmd+K, Cmd+,, Esc, 1-4)
+  // Must be inside Router context
+  useKeyboardShortcuts();
   
   // Render modals
   const renderModals = () => (
     <>
+      <NotificationCenter />
+      <KPCenter />
+      <SettingsDrawer />
       {isProfileOpen && (
         <div className="modal-overlay" onClick={closeProfile}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <ProfilPage />
-          </div>
-        </div>
-      )}
-      {isSettingsOpen && (
-        <div className="modal-overlay" onClick={closeSettings}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <SettingsPage />
           </div>
         </div>
       )}

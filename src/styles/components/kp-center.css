@@ -1,0 +1,107 @@
+/* ============================================================
+   KPCenter Modal Styles
+   Kontrolní Pauza measurement and history
+   ============================================================ */
+
+.kp-center {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-8);
+  max-width: 480px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.kp-center h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+  text-align: center;
+}
+
+.kp-center__current {
+  text-align: center;
+  padding: var(--spacing-8);
+  background: rgba(44, 190, 198, 0.05);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-6);
+}
+
+.kp-center__value {
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.kp-center__status {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-2);
+}
+
+.kp-center__start-test {
+  width: 100%;
+  padding: var(--spacing-4);
+  background: var(--color-accent);
+  color: var(--color-background);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: var(--spacing-6);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.3);
+}
+
+.kp-center__start-test:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(214, 162, 58, 0.4);
+}
+
+.kp-center__start-test:active {
+  transform: translateY(0);
+}
+
+.kp-center__history {
+  margin-bottom: var(--spacing-6);
+}
+
+.kp-center__history h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.kp-center__empty {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-6);
+  font-size: var(--font-size-sm);
+}
+
+.kp-center__close {
+  width: 100%;
+  padding: var(--spacing-4);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.kp-center__close:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
+.kp-center__close:active {
+  transform: scale(0.98);
+}

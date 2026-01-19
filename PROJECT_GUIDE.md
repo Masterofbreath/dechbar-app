@@ -381,6 +381,90 @@ dechbar-app/
 
 ---
 
+## 🗺️ WHERE DOES MY CODE GO? (Decision Tree)
+
+### React Component
+
+**Question: "Will 2+ modules use this component?"**
+
+✅ **YES** → Platform Component
+```
+src/platform/components/Button.tsx
+src/styles/components/button.css
+docs/design-system/components/Button.md
+```
+
+❌ **NO** → Module Component
+```
+src/modules/public-web/components/landing/HeroSection.tsx
+src/modules/public-web/styles/landing.css
+```
+
+### CSS Styles
+
+**Question: "Is it for a Platform component?"**
+
+✅ **YES** → Platform CSS
+```
+src/styles/components/button.css
+(Import in src/main.tsx)
+```
+
+❌ **NO** → Module CSS
+```
+src/modules/public-web/styles/landing.css
+(Import in module index.ts)
+```
+
+### React Hook
+
+**Question: "Is it auth/membership/general purpose?"**
+
+✅ **YES** → Platform Hook
+```
+src/platform/auth/useAuth.ts
+src/platform/membership/useMembership.ts
+```
+
+❌ **NO** → Module Hook
+```
+src/modules/studio/hooks/useExercises.ts
+```
+
+### TypeScript Type
+
+**Question: "Used in multiple modules?"**
+
+✅ **YES** → Platform Type
+```
+src/platform/types/user.ts
+src/platform/types/membership.ts
+```
+
+❌ **NO** → Module Type
+```
+src/modules/studio/types.ts
+```
+
+### Quick Examples
+
+| Task | Location |
+|------|----------|
+| Add primary CTA button variant | `src/platform/components/Button.tsx` |
+| Edit Landing Page hero text | `src/modules/public-web/components/landing/HeroSection.tsx` |
+| Add new pricing tier | `src/modules/public-web/components/landing/PricingSection.tsx` |
+| Create exercise builder UI | `src/modules/studio/components/ExerciseBuilder.tsx` |
+| Add design token | `src/styles/design-tokens/*.css` (discuss first!) |
+| Add Supabase query | `src/platform/api/` or `src/modules/{module}/api/` |
+
+### Still Confused?
+
+1. Check existing similar code in the project
+2. Read [docs/development/AI_AGENT_COMPONENT_GUIDE.md](docs/development/AI_AGENT_COMPONENT_GUIDE.md)
+3. Ask in discussion before creating files
+
+---
+
 ## 🏗️ Architecture
 
 ### Platform + Modules Pattern

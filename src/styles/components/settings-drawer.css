@@ -1,0 +1,232 @@
+/* ============================================================
+   Settings Drawer - Premium slide-in panel
+   ============================================================ */
+
+.settings-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-dark);
+  z-index: 10000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.settings-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  max-width: 85vw;
+  height: 100vh;
+  background: var(--color-surface-elevated);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.3);
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Closing animations */
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.settings-drawer--closing {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.settings-drawer-overlay--closing {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+.settings-drawer__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-6) var(--spacing-4);
+  padding-bottom: var(--spacing-5); /* Breathing space */
+  border-bottom: none; /* Removed border-image for consistency */
+  position: relative;
+}
+
+/* Gold gradient line - unified with divider */
+.settings-drawer__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: none;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-accent) 50%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px rgba(214, 162, 58, 0.2);
+}
+
+.settings-drawer__header h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.settings-drawer__menu {
+  flex: 1;
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.settings-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  min-height: 44px; /* Touch target guarantee */
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.settings-menu-item:hover {
+  background: var(--color-surface);
+  transform: translateX(4px);
+}
+
+/* Icon hover - Teal color */
+.settings-menu-item:hover svg {
+  color: var(--color-primary);
+}
+
+/* Exception for danger state - Keep red */
+.settings-menu-item--danger:hover svg {
+  color: var(--color-error);
+}
+
+/* Active state - Teal marker */
+.settings-menu-item--active {
+  background: rgba(44, 190, 198, 0.08);
+  border-left: 3px solid var(--color-primary);
+  padding-left: calc(var(--spacing-4) - 3px); /* Compensate for border */
+}
+
+.settings-menu-item--active svg {
+  color: var(--color-primary);
+}
+
+.settings-menu-item--danger {
+  color: var(--color-error);
+}
+
+.settings-menu-item--danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.settings-menu-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-accent) 50%,
+    transparent 100%
+  );
+  margin: var(--spacing-4) 0;
+  box-shadow: 0 0 8px rgba(214, 162, 58, 0.2);
+}
+
+/* ============================================================
+   Focus States (Accessibility)
+   ============================================================ */
+
+.settings-menu-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+.settings-drawer__close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+/* ============================================================
+   Mobile Responsive
+   ============================================================ */
+
+/* Full width on mobile */
+@media (max-width: 768px) {
+  .settings-drawer {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Very narrow screens */
+@media (max-width: 375px) {
+  .settings-drawer__header h2 {
+    font-size: var(--font-size-lg);
+  }
+  
+  .settings-menu-item {
+    padding: var(--spacing-3);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* ============================================================
+   Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-drawer-overlay,
+  .settings-drawer {
+    animation: none;
+  }
+  
+  .settings-menu-item {
+    transition: none;
+  }
+  
+  .settings-menu-item:hover {
+    transform: none;
+  }
+}

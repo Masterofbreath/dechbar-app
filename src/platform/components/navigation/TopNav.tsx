@@ -44,7 +44,7 @@ export interface TopNavProps {
  */
 export function TopNav({ transparent = false, showKP = true, className = '' }: TopNavProps) {
   const { user } = useAuth();
-  const { openProfile, openSettings, openKPDetail } = useNavigation();
+  const { openProfile, openSettings, openKPDetail, openNotifications, unreadNotifications } = useNavigation();
   
   const navClass = [
     'top-nav',
@@ -91,15 +91,29 @@ export function TopNav({ transparent = false, showKP = true, className = '' }: T
         )}
       </div>
       
-      {/* Right: Settings */}
-      <button
-        className="top-nav__settings-button"
-        onClick={openSettings}
-        aria-label="Nastavení"
-        type="button"
-      >
-        <NavIcon name="settings" size={24} />
-      </button>
+      {/* Right: Bell + Settings */}
+      <div className="top-nav__right">
+        <button
+          className="top-nav__bell-button"
+          onClick={openNotifications}
+          aria-label="Notifikace"
+          type="button"
+        >
+          <NavIcon name="bell" size={24} />
+          {unreadNotifications > 0 && (
+            <span className="top-nav__badge">{unreadNotifications}</span>
+          )}
+        </button>
+        
+        <button
+          className="top-nav__settings-button"
+          onClick={openSettings}
+          aria-label="Nastavení"
+          type="button"
+        >
+          <NavIcon name="settings" size={24} />
+        </button>
+      </div>
     </nav>
   );
 }

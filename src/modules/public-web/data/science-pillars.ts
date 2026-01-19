@@ -2,7 +2,7 @@
  * Science Pillars Data
  * 
  * 3 key scientific principles behind DechBar
- * Based on Bohr effect, nitric oxide, and BOLT measurement
+ * Benefit-driven approach covering sleep, energy, and stress
  * 
  * @package DechBar_App
  * @subpackage Modules/PublicWeb/Data
@@ -10,28 +10,32 @@
 
 export interface SciencePillar {
   id: string;
-  icon: 'dna' | 'lungs' | 'chart';
+  icon: 'moon' | 'lightning' | 'chart';
   title: string;
+  subtitle: string;
   description: string;
 }
 
 export const SCIENCE_PILLARS: SciencePillar[] = [
   {
-    id: 'bohr-effect',
-    icon: 'dna',
-    title: 'Bohrův efekt',
-    description: 'Více CO₂ = lepší okysličení tkání',
+    id: 'better-sleep',
+    icon: 'moon',
+    title: 'Lepší spánek',
+    subtitle: 'Dýchání do břicha',
+    description: 'Aktivuje parasympatikus - nervový systém klidu. Usneš rychleji, spíš hlouběji.',
   },
   {
-    id: 'nitric-oxide',
-    icon: 'lungs',
-    title: 'Oxid dusnatý',
-    description: 'Nosní dech = +18% kyslíku',
+    id: 'more-energy',
+    icon: 'lightning',
+    title: 'Víc energie',
+    subtitle: 'Bohrův efekt',
+    description: 'Správné CO₂ = víc kyslíku v buňkách. Méně únavy, víc výkonu během dne.',
   },
   {
-    id: 'bolt-tracking',
+    id: 'less-stress',
     icon: 'chart',
-    title: 'Sleduj pokrok',
-    description: 'BOLT skóre = objektivní metrika zdraví',
+    title: 'Měřitelný pokrok',
+    subtitle: 'BOLT skóre',
+    description: 'Sleduj svou odolnost vůči stresu objektivně. Vyšší BOLT = lepší zvládání.',
   },
 ];

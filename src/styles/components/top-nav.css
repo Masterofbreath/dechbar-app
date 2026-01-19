@@ -15,8 +15,10 @@
   padding: 0 var(--spacing-4); /* 16px horizontal */
   padding-top: env(safe-area-inset-top); /* iOS notch */
   background: transparent; /* Transparent by default */
-  position: sticky;
+  position: fixed; /* Fixed to float above content */
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1001; /* Above content, below modals */
 }
 
@@ -36,6 +38,30 @@
 }
 
 /* ============================================================
+   Right Section (Bell + Settings) - Liquid Glass Pill
+   ============================================================ */
+
+.top-nav__right {
+  display: flex;
+  align-items: center;
+  gap: 0; /* Buttons touch inside pill */
+  
+  /* Liquid glass pill - matches KP Display */
+  background: rgba(30, 30, 30, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 4px; /* Inner padding for buttons */
+  transition: all 0.2s ease;
+}
+
+.top-nav__right:hover {
+  background: rgba(44, 190, 198, 0.05);
+  border-color: rgba(44, 190, 198, 0.2);
+}
+
+/* ============================================================
    Avatar Button
    ============================================================ */
 
@@ -50,6 +76,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative; /* For pseudo-element */
+}
+
+/* Teal glow background on hover */
+.top-nav__avatar-button::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: var(--glow-primary-subtle); /* rgba(44, 190, 198, 0.05) */
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: -1;
+}
+
+.top-nav__avatar-button:hover::before {
+  opacity: 1;
 }
 
 .top-nav__avatar-button:active {
@@ -64,6 +107,13 @@
   border: 2px solid var(--color-primary); /* Teal ring */
   object-fit: cover;
   display: block;
+  transition: all 0.2s ease; /* Smooth transform + border */
+}
+
+/* Avatar hover effects */
+.top-nav__avatar-button:hover .top-nav__avatar {
+  border-color: var(--color-primary); /* Teal ring */
+  transform: scale(1.05);
 }
 
 /* Avatar Placeholder (no image uploaded) */
@@ -83,34 +133,17 @@
    ============================================================ */
 
 .top-nav__settings-button {
-  padding: 10px; /* 44x44 touch target */
+  padding: 7px; /* 38x38 touch target */
   border: none;
   background: transparent;
   color: var(--color-text-secondary); /* #A0A0A0 */
   cursor: pointer;
   transition: color 0.2s ease, transform 0.2s ease;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 38px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative; /* For pseudo-element */
-}
-
-/* Teal glow background on hover */
-.top-nav__settings-button::before {
-  content: '';
-  position: absolute;
-  inset: -4px; /* Bigger hit area */
-  background: var(--glow-primary-subtle); /* rgba(44, 190, 198, 0.05) */
-  border-radius: var(--radius-full);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: -1;
-}
-
-.top-nav__settings-button:hover::before {
-  opacity: 1;
 }
 
 /* Icon effects on hover */
@@ -118,9 +151,13 @@
   color: var(--color-primary); /* Teal */
 }
 
+/* SVG transition for smooth rotation back */
+.top-nav__settings-button svg {
+  transition: transform 0.3s ease;
+}
+
 .top-nav__settings-button:hover svg {
   transform: rotate(45deg); /* Gear rotates! */
-  transition: transform 0.3s ease;
 }
 
 .top-nav__settings-button:active {
@@ -128,14 +165,120 @@
 }
 
 /* ============================================================
+   Bell Button (Notifications)
+   ============================================================ */
+
+.top-nav__bell-button {
+  padding: 7px; /* 38x38 touch target */
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary); /* #A0A0A0 */
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  min-width: 38px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* For badge positioning */
+}
+
+/* Icon effects on hover */
+.top-nav__bell-button:hover {
+  color: var(--color-primary); /* Teal */
+}
+
+/* Bell swing animation on hover */
+.top-nav__bell-button:hover svg {
+  animation: bellRing 0.8s ease-in-out;
+  transform-origin: top center; /* Pivot from top like real bell */
+}
+
+.top-nav__bell-button:active {
+  transform: scale(0.95);
+}
+
+/* Unread badge */
+.top-nav__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--color-error);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 0 0 2px var(--color-background);
+  animation: badgePop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes badgePop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================================
    Focus States (Accessibility)
    ============================================================ */
 
 .top-nav__avatar-button:focus-visible,
-.top-nav__settings-button:focus-visible {
+.top-nav__settings-button:focus-visible,
+.top-nav__bell-button:focus-visible {
   outline: 2px solid var(--color-primary); /* Teal */
   outline-offset: 2px;
   border-radius: 50%;
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+
+/* Bell swing animation - realistic ring */
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(15deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-8deg); }
+  50% { transform: rotate(5deg); }
+  60% { transform: rotate(-3deg); }
+  70% { transform: rotate(0deg); }
+}
+
+/* ============================================================
+   Mobile Responsive
+   ============================================================ */
+
+/* Very narrow screens - tighter spacing */
+@media (max-width: 375px) {
+  .top-nav {
+    padding: 0 var(--spacing-3); /* Reduce from 4 */
+  }
+  
+  .top-nav__left,
+  .top-nav__right {
+    padding: 2px; /* Tighter pill padding */
+  }
+  
+  .kp-display {
+    min-width: 60px; /* Slightly smaller */
+    font-size: 14px;
+  }
 }
 
 /* ============================================================
@@ -144,7 +287,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .top-nav__avatar-button,
-  .top-nav__settings-button {
+  .top-nav__settings-button,
+  .top-nav__bell-button {
     transition: none;
+  }
+  
+  .top-nav__bell-button:hover svg {
+    animation: none;
   }
 }

@@ -8,9 +8,11 @@
   align-items: center;
   gap: var(--spacing-1); /* 4px */
   padding: var(--spacing-2) var(--spacing-3); /* 8px 12px */
-  background: rgba(44, 190, 198, 0.1); /* Teal 10% */
-  border: 1.5px solid rgba(44, 190, 198, 0.3);
+  background: rgba(44, 190, 198, 0.03); /* Very transparent - liquid glass */
+  border: 1.5px solid rgba(44, 190, 198, 0.15); /* Semi-transparent */
   border-radius: var(--radius-full); /* Pill shape */
+  backdrop-filter: blur(16px); /* Glass effect */
+  -webkit-backdrop-filter: blur(16px); /* Safari support */
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 64px; /* Touch target */
@@ -61,6 +63,16 @@
 .kp-display--low {
   background: rgba(239, 68, 68, 0.1); /* Red 10% */
   border-color: rgba(239, 68, 68, 0.3);
+  animation: pulseWarning 2s ease-in-out infinite;
+}
+
+@keyframes pulseWarning {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+  }
 }
 
 .kp-display--low:hover {
@@ -130,5 +142,9 @@
   .kp-display:hover,
   .kp-display:active {
     transform: none;
+  }
+  
+  .kp-display--low {
+    animation: none;
   }
 }

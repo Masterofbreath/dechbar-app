@@ -129,6 +129,10 @@
 
 .landing-hero__cta {
   margin-top: var(--spacing-4);  /* 16px */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;  /* Left-align button + subtext */
+  gap: var(--spacing-3);  /* 12px spacing mezi button a subtext */
 }
 
 .landing-hero__visual {
@@ -219,12 +223,15 @@
 
 .trust-signal__icon {
   flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--color-accent);  /* GOLD #D6A23A */
 }
 
 .trust-signal__text {
-  font-size: var(--font-size-sm);  /* 14px */
-  font-weight: var(--font-weight-medium);  /* 500 */
-  color: var(--color-text-secondary);  /* #A0A0A0 */
+  font-size: var(--font-size-base);  /* 16px (z 14px) */
+  font-weight: var(--font-weight-semibold);  /* 600 (z 500) */
+  color: var(--color-text-primary);  /* #E0E0E0 (z #A0A0A0) */
 }
 
 /* Mobile responsive */
@@ -651,6 +658,14 @@
   margin: 0 0 var(--spacing-2) 0;  /* 8px bottom */
 }
 
+.pillar-card__subtitle {
+  font-size: var(--font-size-sm);  /* 14px */
+  font-weight: var(--font-weight-medium);  /* 500 */
+  color: var(--color-text-secondary);  /* #A0A0A0 */
+  margin-top: var(--spacing-1);  /* 4px */
+  margin-bottom: var(--spacing-2);  /* 8px */
+}
+
 .pillar-card__description {
   font-size: var(--font-size-base);  /* 16px */
   color: var(--color-text-secondary);
@@ -1005,9 +1020,10 @@
 
 .landing-hero__cta-subtext {
   font-size: var(--font-size-sm);  /* 14px */
-  color: var(--color-text-tertiary);  /* #707070 */
-  margin-top: var(--spacing-2);  /* 8px */
-  text-align: center;
+  color: var(--color-text-secondary);  /* #A0A0A0 (z #707070 pro lepší kontrast) */
+  margin-top: 0;  /* Odstraněno - používáme gap v parent containeru */
+  text-align: left;  /* Left-align s buttonem */
+  max-width: 320px;  /* Omezit šířku pro čistý vzhled */
 }
 
 /* ===================================

@@ -21,7 +21,7 @@ export { supabase, usePublicStats } from './api';
 export type { PublicStats } from './api';
 
 // Hooks
-export { useScrollLock, useNavigation, useFocusTrap } from './hooks';
+export { useScrollLock, useNavigation, useKeyboardShortcuts, useFocusTrap } from './hooks';
 export type { NavTab } from './hooks';
 
 // Components
@@ -47,6 +47,9 @@ export type {
   NavIconProps,
   KPDisplayProps
 } from './components';
+
+// Icons
+export { TrustIcon, ScienceIcon } from './components/icons';
 
 // Navigation
 export { TopNav, BottomNav } from './components/navigation';

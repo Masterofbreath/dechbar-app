@@ -13,7 +13,6 @@
  */
 
 import { useAuth } from '@/platform/auth';
-import { useMembership } from '@/platform/membership';
 import { 
   Greeting, 
   SmartExerciseButton, 
@@ -31,10 +30,6 @@ import {
  */
 export function DnesPage() {
   const { user } = useAuth();
-  const { plan } = useMembership();
-  
-  // Determine if user has SMART tier access
-  const hasSmart = plan === 'SMART' || plan === 'AI_COACH';
   
   // Handle protocol button clicks (placeholder until Session Engine is ready)
   function handleProtocolClick(protocol: string) {
@@ -48,9 +43,8 @@ export function DnesPage() {
       {/* 1. Greeting */}
       <Greeting userName={user?.full_name} />
       
-      {/* 2. SMART Exercise Button (tier-gated) */}
+      {/* 2. SMART Exercise Button (tier-aware) */}
       <SmartExerciseButton 
-        locked={!hasSmart}
         onClick={() => console.log('SMART exercise clicked')}
       />
       

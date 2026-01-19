@@ -100,6 +100,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Scrollbar gutter - prevents layout shift */
+html {
+  scrollbar-gutter: stable; /* Modern CSS - reserves space even when no scroll */
+  overflow-y: scroll; /* Fallback for older browsers */
+}
+
 /* Body - Dark background by default (Brand Book 2.0) */
 body {
   background: var(--color-background);    /* Dark #121212 */
@@ -115,6 +121,34 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+/* ===================================
+   CUSTOM SCROLLBAR (Premium styling)
+   =================================== */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
 }
 
 /* Code and pre elements */

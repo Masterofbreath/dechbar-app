@@ -28,12 +28,19 @@ interface NavigationState {
   isProfileOpen: boolean;
   isSettingsOpen: boolean;
   isKPDetailOpen: boolean;
+  isNotificationsOpen: boolean;
   openProfile: () => void;
   closeProfile: () => void;
   openSettings: () => void;
   closeSettings: () => void;
   openKPDetail: () => void;
   closeKPDetail: () => void;
+  openNotifications: () => void;
+  closeNotifications: () => void;
+  
+  // Notification state
+  unreadNotifications: number;
+  setUnreadNotifications: (count: number) => void;
   
   // FAB pressed state (for animation feedback)
   isFABPressed: boolean;
@@ -66,6 +73,15 @@ export const useNavigation = create<NavigationState>((set) => ({
   isKPDetailOpen: false,
   openKPDetail: () => set({ isKPDetailOpen: true }),
   closeKPDetail: () => set({ isKPDetailOpen: false }),
+  
+  // Notifications center
+  isNotificationsOpen: false,
+  openNotifications: () => set({ isNotificationsOpen: true }),
+  closeNotifications: () => set({ isNotificationsOpen: false }),
+  
+  // Notification state
+  unreadNotifications: 0,
+  setUnreadNotifications: (count) => set({ unreadNotifications: count }),
   
   // FAB animation
   isFABPressed: false,

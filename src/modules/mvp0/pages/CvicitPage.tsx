@@ -12,19 +12,18 @@
  * @since 0.1.0
  */
 
+import { EmptyState } from '@/platform/components/EmptyState';
+
 /**
  * CvicitPage - Placeholder for exercise library
  */
 export function CvicitPage() {
   return (
-    <div className="placeholder-page">
-      <h1 className="placeholder-page__title">Cvičit</h1>
-      <p className="placeholder-page__text">
-        Knihovna cvičení bude dostupná brzy...
-      </p>
-      <p className="placeholder-page__subtext">
-        Zde najdeš všechna dechová cvičení (preset i vlastní).
-      </p>
-    </div>
+    <EmptyState
+      icon="🏋️"
+      title="Cvičit"
+      message="Knihovna cvičení bude dostupná brzy."
+      subtext="Zde najdeš všechna dechová cvičení (preset i vlastní)."
+    />
   );
 }

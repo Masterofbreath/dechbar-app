@@ -14,7 +14,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/platform';
+import { Button, TrustIcon } from '@/platform';
 import { useAuth } from '@/platform/auth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { AnimatedWaves } from './AnimatedWaves';
@@ -23,10 +23,10 @@ import { MESSAGES } from '@/config/messages';
 
 // Trust signals data
 const TRUST_SIGNALS = [
-  { icon: 'users', text: '1150+ dýchačů' },
-  { icon: 'headphones', text: '100+ cvičení' },
-  { icon: 'certificate', text: 'Certifikováno' },
-  { icon: 'currency', text: 'Od 0 Kč' },
+  { icon: 'users' as const, text: '1150+ dýchačů' },
+  { icon: 'headphones' as const, text: '100+ cvičení' },
+  { icon: 'certificate' as const, text: 'Certifikováno' },
+  { icon: 'currency' as const, text: 'Od 0 Kč' },
 ];
 
 export function HeroSection() {
@@ -71,26 +71,13 @@ export function HeroSection() {
                   ? MESSAGES.landing.authenticatedCTA.heroPrimary 
                   : MESSAGES.landing.hero.ctaPrimary}
               </Button>
-              
-              <p className="landing-hero__cta-subtext">
-                {user 
-                  ? MESSAGES.landing.authenticatedCTA.heroSubtext 
-                  : MESSAGES.landing.hero.ctaSubtext}
-              </p>
             </div>
             
             {/* Trust signals */}
             <div className="trust-signals">
               {TRUST_SIGNALS.map((item, index) => (
                 <div key={index} className="trust-signal">
-                  <img 
-                    src={`/assets/icons/trust/${item.icon}.svg`}
-                    alt=""
-                    aria-hidden="true"
-                    width="20"
-                    height="20"
-                    className="trust-signal__icon"
-                  />
+                  <TrustIcon type={item.icon} className="trust-signal__icon" />
                   <span className="trust-signal__text">{item.text}</span>
                 </div>
               ))}

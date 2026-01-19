@@ -8,10 +8,7 @@
    ============================================================ */
 
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  /* Part of flex layout, not fixed - allows proper scrollbar containment */
   height: 72px;
   padding-bottom: env(safe-area-inset-bottom); /* iOS home indicator */
   background: var(--color-surface); /* #1E1E1E */
@@ -19,7 +16,7 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 1000; /* Below TOP NAV, above content */
+  flex-shrink: 0; /* Prevent shrinking in flex layout */
 }
 
 /* ============================================================
@@ -51,35 +48,6 @@
 /* Active Tab (Teal highlight) */
 .bottom-nav__tab--active {
   color: var(--color-primary); /* Teal #2CBEC6 */
-}
-
-/* Active indicator - zlatá tečka pod ikonou */
-.bottom-nav__tab--active .bottom-nav__icon {
-  position: relative;
-}
-
-.bottom-nav__tab--active .bottom-nav__icon::after {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  background: var(--color-accent); /* Gold dot */
-  border-radius: var(--radius-full);
-  animation: fadeInDot 0.3s ease;
-}
-
-@keyframes fadeInDot {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) scale(0);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
 }
 
 /* Tab press feedback */

@@ -13,19 +13,18 @@
  * @since 0.1.0
  */
 
+import { EmptyState } from '@/platform/components/EmptyState';
+
 /**
  * PokrokPage - Placeholder for progress tracking
  */
 export function PokrokPage() {
   return (
-    <div className="placeholder-page">
-      <h1 className="placeholder-page__title">Pokrok</h1>
-      <p className="placeholder-page__text">
-        Tvoje statistiky budou dostupné brzy...
-      </p>
-      <p className="placeholder-page__subtext">
-        Zde uvidíš své KP trendy, level, badges a pokrok v čase.
-      </p>
-    </div>
+    <EmptyState
+      icon="📊"
+      title="Pokrok"
+      message="Tvoje statistiky budou dostupné brzy."
+      subtext="Zde uvidíš své KP trendy, level, badges a pokrok v čase."
+    />
   );
 }

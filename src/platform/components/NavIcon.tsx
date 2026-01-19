@@ -15,7 +15,9 @@ export interface NavIconProps {
   /**
    * Icon name
    */
-  name: 'home' | 'dumbbell' | 'graduation-cap' | 'chart-line' | 'settings' | 'bell' | 'sun' | 'refresh' | 'moon' | 'lightbulb';
+  name: 'home' | 'dumbbell' | 'graduation-cap' | 'chart-line' | 'settings' | 'bell' | 
+        'sun' | 'refresh' | 'moon' | 'lightbulb' | 'sparkles' | 'chevron-right' |
+        'close' | 'user' | 'credit-card' | 'info' | 'logout' | 'lock';
   
   /**
    * Size in pixels
@@ -140,6 +142,58 @@ export function NavIcon({
         <path d="M9 11v3a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-3" strokeLinecap="round" strokeLinejoin="round" />
         {/* Závit */}
         <path d="M9 18a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    
+    // Smart Exercise Button
+    'sparkles': (
+      <>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'chevron-right': (
+      <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    
+    // Settings Drawer icons
+    'close': (
+      <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    
+    'user': (
+      <>
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="7" r="4" />
+      </>
+    ),
+    
+    'credit-card': (
+      <>
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+        <line x1="1" y1="10" x2="23" y2="10" />
+      </>
+    ),
+    
+    'info': (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" strokeLinecap="round" />
+        <line x1="12" y1="8" x2="12.01" y2="8" strokeLinecap="round" />
+      </>
+    ),
+    
+    'logout': (
+      <>
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round" />
+        <line x1="21" y1="12" x2="9" y2="12" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    
+    'lock': (
+      <>
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       </>
     ),
   };
