@@ -17,8 +17,8 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { NavIcon, Button, CelebrationIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
-import { CloseButton } from '@/components/shared';
+import { NavIcon, Button } from '@/platform/components';
+import { CloseButton, ConfirmModal } from '@/components/shared';
 import { useScrollLock } from '@/platform/hooks';
 import { SafetyQuestionnaire } from './SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../api/exercises';
@@ -48,11 +48,13 @@ export function SessionEngineModal({
   const [difficultyRating, setDifficultyRating] = useState<number | null>(null);
   const [notes, setNotes] = useState<string>('');
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   
   const circleRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
   const bellAudioRef = useRef<HTMLAudioElement | null>(null);
+  const currentPhaseRef = useRef(currentPhaseIndex);
   
   const { data: safetyFlags } = useSafetyFlags();
   const completeSession = useCompleteSession();
@@ -61,6 +63,11 @@ export function SessionEngineModal({
   
   const currentPhase = exercise.breathing_pattern.phases[currentPhaseIndex];
   const totalPhases = exercise.breathing_pattern.phases.length;
+  
+  // Update ref when phase index changes
+  useEffect(() => {
+    currentPhaseRef.current = currentPhaseIndex;
+  }, [currentPhaseIndex]);
   
   // =====================================================
   // AUDIO: Bell Cue
@@ -260,8 +267,11 @@ export function SessionEngineModal({
           // Phase complete, move to next
           setCurrentInstruction('');
           
-          if (currentPhaseIndex < totalPhases - 1) {
-            setCurrentPhaseIndex((i) => i + 1);
+          // Use ref to avoid stale closure
+          const nextIndex = currentPhaseRef.current + 1;
+          
+          if (nextIndex < totalPhases) {
+            setCurrentPhaseIndex(nextIndex);
             playBell();
           } else {
             // All phases complete
@@ -279,16 +289,14 @@ export function SessionEngineModal({
       if (breathingIntervalId) window.clearInterval(breathingIntervalId);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [sessionState, currentPhaseIndex, currentPhase, totalPhases, animateBreathingCircle, playBell, completeExercise]);
+  }, [sessionState, currentPhase, totalPhases, animateBreathingCircle, playBell, completeExercise]);
   
   // Handle modal close
   const handleClose = useCallback(() => {
     if (sessionState === 'active') {
-      // Confirm before closing active session
-      if (!confirm('Opravdu ukončit cvičení? Progres nebude uložen.')) {
-        return;
-      }
-      setSessionState('abandoned');
+      // Show confirm modal before closing active session
+      setShowCloseConfirm(true);
+      return;
     }
     
     // Cleanup
@@ -303,6 +311,23 @@ export function SessionEngineModal({
     
     onClose();
   }, [sessionState, onClose]);
+  
+  // Confirm close during active session
+  const confirmClose = useCallback(() => {
+    setSessionState('abandoned');
+    
+    // Cleanup
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    if (timerRef.current) window.clearInterval(timerRef.current);
+    
+    // Reset state
+    setSessionState('idle');
+    setCurrentPhaseIndex(0);
+    setMoodBefore(null);
+    setMoodAfter(null);
+    
+    onClose();
+  }, [onClose]);
   
   // Save session to history
   const saveSession = useCallback(async () => {
@@ -418,12 +443,13 @@ export function SessionEngineModal({
         
         {/* ACTIVE: Breathing session */}
         {sessionState === 'active' && currentPhase && (
-          <div className="session-active">
-            {/* Close button (with confirm) */}
-            <CloseButton onClick={handleClose} className="session-active__close" />
+          <>
+            {/* Close button (positioned relative to modal content) */}
+            <CloseButton onClick={handleClose} className="session-engine-modal__close" ariaLabel="Zavřít" />
             
-            {/* Phase indicator */}
-            <div className="session-active__header">
+            <div className="session-active">
+              {/* Phase indicator */}
+              <div className="session-active__header">
               {totalPhases > 1 && (
                 <span className="phase-indicator">
                   Fáze {currentPhaseIndex + 1}/{totalPhases}
@@ -474,7 +500,8 @@ export function SessionEngineModal({
                 </span>
               </div>
             )}
-          </div>
+            </div>
+          </>
         )}
         
         {/* COMPLETED: Celebration & mood check */}
@@ -536,25 +563,25 @@ export function SessionEngineModal({
                   >
                     {mood === 'energized' && (
                       <>
-                        <EnergeticIcon size={20} />
+                        <span className="mood-emoji" aria-hidden="true">⚡</span>
                         <span>Energický</span>
                       </>
                     )}
                     {mood === 'calm' && (
                       <>
-                        <CalmIcon size={20} />
+                        <span className="mood-emoji" aria-hidden="true">😌</span>
                         <span>Klidný</span>
                       </>
                     )}
                     {mood === 'tired' && (
                       <>
-                        <TiredIcon size={20} />
+                        <span className="mood-emoji" aria-hidden="true">😴</span>
                         <span>Unavený</span>
                       </>
                     )}
                     {mood === 'stressed' && (
                       <>
-                        <StressedIcon size={20} />
+                        <span className="mood-emoji" aria-hidden="true">😰</span>
                         <span>Stresovaný</span>
                       </>
                     )}
@@ -609,6 +636,18 @@ export function SessionEngineModal({
             </div>
           </div>
         )}
+        
+        {/* Confirm modal for closing during active session */}
+        <ConfirmModal
+          isOpen={showCloseConfirm}
+          onClose={() => setShowCloseConfirm(false)}
+          onConfirm={confirmClose}
+          title="Opravdu ukončit cvičení?"
+          message="Progres nebude uložen."
+          confirmText="Ukončit"
+          cancelText="Pokračovat"
+          variant="warning"
+        />
       </div>
     </div>
   );
