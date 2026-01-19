@@ -104,9 +104,20 @@ export function ExerciseCard({
             {durationMinutes} min
           </span>
           
-          {exercise.phase_count > 1 && (
+          {exercise.phase_count === 1 ? (
+            // Show breathing pattern for simple exercises
+            exercise.breathing_pattern.phases[0].pattern && (
+              <span className="badge badge--pattern">
+                {exercise.breathing_pattern.phases[0].pattern.inhale_seconds}|
+                {exercise.breathing_pattern.phases[0].pattern.hold_after_inhale_seconds}|
+                {exercise.breathing_pattern.phases[0].pattern.exhale_seconds}|
+                {exercise.breathing_pattern.phases[0].pattern.hold_after_exhale_seconds}
+              </span>
+            )
+          ) : (
+            // Show phase count for multi-phase exercises
             <span className="badge badge--phases">
-              {exercise.phase_count} fází
+              {exercise.phase_count === 2 || exercise.phase_count === 3 || exercise.phase_count === 4 ? `${exercise.phase_count} fáze` : `${exercise.phase_count} fází`}
             </span>
           )}
           

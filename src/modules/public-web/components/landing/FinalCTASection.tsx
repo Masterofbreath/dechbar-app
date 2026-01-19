@@ -17,7 +17,7 @@ import { Button } from '@/platform';
 import { useAuth } from '@/platform/auth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { FAQ } from './FAQ';
-import { MESSAGES } from '@/config/messages';
+// import { MESSAGES } from '@/config/messages';
 
 export function FinalCTASection() {
   const { user } = useAuth();
@@ -38,27 +38,23 @@ export function FinalCTASection() {
     <>
       <section className="final-cta-section">
         <div className="final-cta__container">
-          {/* CTA Card */}
-          <div className="final-cta__card">
+          {/* CTA Content - bez karty, čistě */}
+          <div className="final-cta__content">
             <h2 className="final-cta__headline">
-              Připravený na první nádech?
+              Začni dnes. Změň dech za 21 dní.
             </h2>
+            
+            <p className="final-cta__description">
+              První měření KP zdarma. Bez kreditní karty.
+            </p>
             
             <Button
               variant="primary"
               size="lg"
               onClick={handleCTA}
             >
-              {user 
-                ? MESSAGES.landing.authenticatedCTA.finalPrimary 
-                : MESSAGES.landing.hero.ctaPrimary}
+              {user ? "Vrať se do appky →" : "Začít zdarma →"}
             </Button>
-            
-            <p className="final-cta__subtext">
-              {user 
-                ? MESSAGES.landing.authenticatedCTA.finalSubtext 
-                : MESSAGES.landing.hero.ctaSubtext}
-            </p>
           </div>
           
           {/* FAQ */}

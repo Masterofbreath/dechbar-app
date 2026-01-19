@@ -381,8 +381,30 @@
 }
 
 /* ============================================================
-   Responsive - Mobile Stack
+   Responsive - Mobile Optimization
    ============================================================ */
+
+@media (max-width: 768px) {
+  /* Keep 3 columns but reduce button height */
+  .preset-protocol-button {
+    min-height: 140px; /* Reduced from aspect-ratio 1:1.2 */
+    padding: 12px;
+    aspect-ratio: auto; /* Override */
+  }
+  
+  .preset-protocol-button__icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .preset-protocol-button__label {
+    font-size: 16px;
+  }
+  
+  .preset-protocol-button__duration {
+    font-size: 11px;
+  }
+}
 
 @media (max-width: 390px) {
   .dnes-page {

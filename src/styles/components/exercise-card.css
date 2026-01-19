@@ -18,6 +18,9 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 .exercise-card:hover:not(.exercise-card--locked) {
@@ -94,7 +97,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--color-border);
   border-radius: 12px;
@@ -110,6 +113,14 @@
 
 .badge--phases {
   color: var(--color-accent);
+}
+
+.badge--pattern {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
 }
 
 .badge--difficulty {
@@ -163,14 +174,14 @@
 }
 
 .icon-button {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;

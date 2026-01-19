@@ -172,6 +172,7 @@ export interface CompleteSessionPayload {
   was_completed: boolean;
   mood_before?: MoodType;
   mood_after?: MoodType;
+  difficulty_rating?: number; // 1-3 (1=easy, 2=just right, 3=hard)
   quality_rating?: number; // 1-5
   notes?: string;
 }

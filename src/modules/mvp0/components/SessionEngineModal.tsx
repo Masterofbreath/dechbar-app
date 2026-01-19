@@ -18,6 +18,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { NavIcon, Button } from '@/platform/components';
+import { CloseButton } from '@/components/shared';
 import { useScrollLock } from '@/platform/hooks';
 import { SafetyQuestionnaire } from './SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../api/exercises';
@@ -40,8 +41,12 @@ export function SessionEngineModal({
   const [sessionState, setSessionState] = useState<SessionState>('idle');
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
   const [phaseTimeRemaining, setPhaseTimeRemaining] = useState(0);
+  const [currentInstruction, setCurrentInstruction] = useState<string>('');
+  const [countdownNumber, setCountdownNumber] = useState(5);
   const [moodBefore, setMoodBefore] = useState<MoodType | null>(null);
   const [moodAfter, setMoodAfter] = useState<MoodType | null>(null);
+  const [difficultyRating, setDifficultyRating] = useState<number | null>(null);
+  const [notes, setNotes] = useState<string>('');
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   
   const circleRef = useRef<HTMLDivElement>(null);
@@ -127,18 +132,21 @@ export function SessionEngineModal({
   // SESSION FLOW: State Machine
   // =====================================================
   
-  // Start countdown (3-2-1)
+  // Start countdown (5-4-3-2-1)
   const startCountdown = useCallback(() => {
     setSessionState('countdown');
+    setCountdownNumber(5);
     playBell();
     
-    let count = 3;
-    const countdownInterval = setInterval(() => {
+    let count = 5;
+    const countdownInterval = window.setInterval(() => {
       count--;
+      setCountdownNumber(count);
+      
       if (count > 0) {
         playBell();
       } else {
-        clearInterval(countdownInterval);
+        window.clearInterval(countdownInterval);
         startSession();
       }
     }, 1000);
@@ -152,6 +160,20 @@ export function SessionEngineModal({
     playBell();
   }, [playBell]);
   
+  // Complete exercise
+  const completeExercise = useCallback(() => {
+    setSessionState('completed');
+    playBell();
+    
+    // Stop all animations
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+    }
+  }, [playBell]);
+  
   // Run current phase
   useEffect(() => {
     if (sessionState !== 'active' || !currentPhase) return;
@@ -159,43 +181,69 @@ export function SessionEngineModal({
     // Set initial time remaining
     setPhaseTimeRemaining(currentPhase.duration_seconds);
     
-    // Start breathing animation if breathing phase
-    if (currentPhase.type === 'breathing' && currentPhase.pattern) {
-      const { inhale_seconds, exhale_seconds } = currentPhase.pattern;
-      const cycleMs = (inhale_seconds + exhale_seconds) * 1000;
-      const phaseDurationMs = currentPhase.duration_seconds * 1000;
-      const cyclesNeeded = Math.ceil(phaseDurationMs / cycleMs);
-      
-      let currentCycle = 0;
-      
-      const runBreathingCycle = () => {
-        if (currentCycle >= cyclesNeeded) return;
-        
-        // Inhale
-        animateBreathingCircle('inhale', inhale_seconds * 1000);
-        
-        setTimeout(() => {
-          // Exhale
-          animateBreathingCircle('exhale', exhale_seconds * 1000);
-          
-          currentCycle++;
-          
-          setTimeout(() => {
-            if (currentCycle < cyclesNeeded && sessionState === 'active') {
-              runBreathingCycle();
-            }
-          }, exhale_seconds * 1000);
-        }, inhale_seconds * 1000);
-      };
-      
-      runBreathingCycle();
+    // Set instruction based on phase type
+    if (currentPhase.type === 'silence') {
+      setCurrentInstruction('DOZNĚNÍ');
     }
     
-    // Countdown timer
+    // Start breathing animation if breathing phase
+    if (currentPhase.type === 'breathing' && currentPhase.pattern) {
+      const { inhale_seconds, hold_after_inhale_seconds, exhale_seconds, hold_after_exhale_seconds } = currentPhase.pattern;
+      const cycleTime = inhale_seconds + hold_after_inhale_seconds + exhale_seconds + hold_after_exhale_seconds;
+      
+      const phaseStartTime = Date.now();
+      let lastInstruction = '';
+      let breathingIntervalId: number | null = null;
+      
+      const updateBreathingState = () => {
+        const elapsedTime = (Date.now() - phaseStartTime) / 1000;
+        const cyclePosition = elapsedTime % cycleTime;
+        
+        // Determine current instruction based on cycle position
+        let newInstruction = '';
+        
+        if (cyclePosition < inhale_seconds) {
+          newInstruction = 'NÁDECH';
+          // Trigger animation only on instruction change
+          if (lastInstruction !== 'NÁDECH') {
+            animateBreathingCircle('inhale', inhale_seconds * 1000);
+          }
+        } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds) {
+          newInstruction = hold_after_inhale_seconds > 0 ? 'ZADRŽ' : '';
+        } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds + exhale_seconds) {
+          newInstruction = 'VÝDECH';
+          // Trigger animation only on instruction change
+          if (lastInstruction !== 'VÝDECH') {
+            animateBreathingCircle('exhale', exhale_seconds * 1000);
+          }
+        } else {
+          newInstruction = hold_after_exhale_seconds > 0 ? 'ZADRŽ' : '';
+        }
+        
+        if (newInstruction !== lastInstruction) {
+          setCurrentInstruction(newInstruction);
+          lastInstruction = newInstruction;
+        }
+      };
+      
+      // Run breathing cycle update every 100ms (smooth instruction changes)
+      breathingIntervalId = window.setInterval(updateBreathingState, 100);
+      
+      // Cleanup function
+      return () => {
+        if (breathingIntervalId !== null) {
+          window.clearInterval(breathingIntervalId);
+        }
+      };
+    }
+    
+    // Countdown timer (controls phase transitions)
     timerRef.current = window.setInterval(() => {
       setPhaseTimeRemaining((prev) => {
         if (prev <= 1) {
           // Phase complete, move to next
+          setCurrentInstruction('');
+          
           if (currentPhaseIndex < totalPhases - 1) {
             setCurrentPhaseIndex((i) => i + 1);
             playBell();
@@ -213,21 +261,7 @@ export function SessionEngineModal({
       if (timerRef.current) window.clearInterval(timerRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [sessionState, currentPhaseIndex, currentPhase, totalPhases, animateBreathingCircle, playBell]);
-  
-  // Complete exercise
-  const completeExercise = useCallback(() => {
-    setSessionState('completed');
-    playBell();
-    
-    // Stop all animations
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    if (timerRef.current) {
-      window.clearInterval(timerRef.current);
-    }
-  }, [playBell]);
+  }, [sessionState, currentPhaseIndex, currentPhase, totalPhases, currentInstruction, animateBreathingCircle, playBell, completeExercise]);
   
   // Handle modal close
   const handleClose = useCallback(() => {
@@ -264,6 +298,8 @@ export function SessionEngineModal({
         was_completed: sessionState === 'completed',
         mood_before: moodBefore || undefined,
         mood_after: moodAfter || undefined,
+        difficulty_rating: difficultyRating || undefined,
+        notes: notes.trim() || undefined,
       });
       
       onClose();
@@ -304,14 +340,7 @@ export function SessionEngineModal({
         {/* IDLE: Start screen */}
         {sessionState === 'idle' && (
           <div className="session-start">
-            <button
-              className="session-start__close"
-              onClick={handleClose}
-              aria-label="Zavřít"
-              type="button"
-            >
-              <NavIcon name="x" size={24} />
-            </button>
+            <CloseButton onClick={handleClose} className="session-start__close" />
             
             <div className="session-start__icon">
               <NavIcon name={currentPhase?.type === 'breathing' ? 'wind' : 'moon'} size={48} />
@@ -328,7 +357,11 @@ export function SessionEngineModal({
               
               <div className="meta-item">
                 <NavIcon name="layers" size={20} />
-                <span>{totalPhases} fází</span>
+                <span>
+                  {totalPhases === 1 && '1 fáze'}
+                  {(totalPhases === 2 || totalPhases === 3 || totalPhases === 4) && `${totalPhases} fáze`}
+                  {totalPhases > 4 && `${totalPhases} fází`}
+                </span>
               </div>
               
               {exercise.difficulty && (
@@ -355,12 +388,12 @@ export function SessionEngineModal({
           </div>
         )}
         
-        {/* COUNTDOWN: 3-2-1 */}
+        {/* COUNTDOWN: 5-4-3-2-1 */}
         {sessionState === 'countdown' && (
           <div className="session-countdown">
+            <p className="countdown-instruction">Připrav se na první nádech</p>
             <div className="countdown-circle">
-              {/* Animated countdown number */}
-              <span className="countdown-number">Připrav se...</span>
+              <span className="countdown-number">{countdownNumber}</span>
             </div>
           </div>
         )}
@@ -369,39 +402,41 @@ export function SessionEngineModal({
         {sessionState === 'active' && currentPhase && (
           <div className="session-active">
             {/* Close button (with confirm) */}
-            <button
-              className="session-active__close"
-              onClick={handleClose}
-              aria-label="Ukončit cvičení"
-              type="button"
-            >
-              <NavIcon name="x" size={24} />
-            </button>
+            <CloseButton onClick={handleClose} className="session-active__close" />
             
             {/* Phase indicator */}
             <div className="session-active__header">
-              <span className="phase-indicator">
-                Fáze {currentPhaseIndex + 1}/{totalPhases}
-              </span>
+              {totalPhases > 1 && (
+                <span className="phase-indicator">
+                  Fáze {currentPhaseIndex + 1}/{totalPhases}
+                </span>
+              )}
               <h3 className="phase-name">{currentPhase.name}</h3>
               {currentPhase.description && (
                 <p className="phase-description">{currentPhase.description}</p>
               )}
             </div>
             
-            {/* Breathing circle */}
+            {/* Breathing circle with instruction inside */}
             <div className="breathing-circle-container">
               <div
                 ref={circleRef}
                 className="breathing-circle"
                 aria-label="Dechový pacer"
-              />
-              
-              {/* Timer overlay */}
-              <div className="breathing-circle__timer">
-                <span className="timer-seconds">{phaseTimeRemaining}</span>
-                <span className="timer-label">sekund</span>
+              >
+                {/* Breathing instruction inside circle */}
+                {currentInstruction && (
+                  <div className="breathing-instruction">
+                    {currentInstruction}
+                  </div>
+                )}
               </div>
+            </div>
+            
+            {/* Timer below circle */}
+            <div className="session-timer">
+              <span className="timer-seconds">{phaseTimeRemaining}</span>
+              <span className="timer-label">sekund</span>
             </div>
             
             {/* Instructions (if present) */}
@@ -429,14 +464,42 @@ export function SessionEngineModal({
           <div className="session-completed">
             <div className="celebration">
               <div className="celebration__icon">🎉</div>
-              <h2 className="celebration__title">Gratulujeme!</h2>
+              <h2 className="celebration__title">Bomba! Máš dodýcháno!</h2>
               <p className="celebration__message">
-                Dokončil jsi {exercise.name}
+                Právě jsi rozdýchal {exercise.name}
               </p>
               
               <div className="celebration__meta">
                 <NavIcon name="clock" size={20} />
                 <span>{Math.round(exercise.total_duration_seconds / 60)} minut</span>
+              </div>
+            </div>
+            
+            {/* Difficulty rating */}
+            <div className="difficulty-check">
+              <h3 className="difficulty-check__title">Jak se ti dýchalo?</h3>
+              <div className="difficulty-options">
+                <button
+                  className={`difficulty-button ${difficultyRating === 1 ? 'difficulty-button--active' : ''}`}
+                  onClick={() => setDifficultyRating(1)}
+                  type="button"
+                >
+                  ⭐ Snadné
+                </button>
+                <button
+                  className={`difficulty-button ${difficultyRating === 2 ? 'difficulty-button--active' : ''}`}
+                  onClick={() => setDifficultyRating(2)}
+                  type="button"
+                >
+                  ⭐⭐ Tak akorát
+                </button>
+                <button
+                  className={`difficulty-button ${difficultyRating === 3 ? 'difficulty-button--active' : ''}`}
+                  onClick={() => setDifficultyRating(3)}
+                  type="button"
+                >
+                  ⭐⭐⭐ Náročné
+                </button>
               </div>
             </div>
             
@@ -457,6 +520,25 @@ export function SessionEngineModal({
                     {mood === 'stressed' && '😰 Stresovaný'}
                   </button>
                 ))}
+              </div>
+            </div>
+            
+            {/* Notes field */}
+            <div className="session-notes">
+              <label htmlFor="session-notes-input" className="session-notes__label">
+                Poznámka (volitelné)
+              </label>
+              <textarea
+                id="session-notes-input"
+                className="session-notes__input"
+                placeholder="Jak ti to šlo? Nějaké postřehy..."
+                maxLength={150}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+              />
+              <div className="session-notes__counter">
+                {notes.length}/150
               </div>
             </div>
             

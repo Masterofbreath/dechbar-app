@@ -186,11 +186,11 @@ export function ExerciseList({
                     ))}
                   </div>
                 ) : (
-                  <EmptyState
-                    icon="✨"
-                    title="Žádná vlastní cvičení"
-                    message="Vytvoř si vlastní dechové cvičení na míru."
-                  />
+                <EmptyState
+                  icon="✨"
+                  title="Zatím tu není ani dech"
+                  message="Vytvoř si první vlastní cvičení!"
+                />
                 )}
                 
                 {/* Create button */}

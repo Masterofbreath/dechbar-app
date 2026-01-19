@@ -51,7 +51,9 @@ export function SciencePillars() {
             size="lg" 
             onClick={() => {
               const pricingSection = document.getElementById('pricing');
-              pricingSection?.scrollIntoView({ behavior: 'smooth' });
+              if (pricingSection) {
+                pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
             }}
           >
             Změň to za 21 dní →
