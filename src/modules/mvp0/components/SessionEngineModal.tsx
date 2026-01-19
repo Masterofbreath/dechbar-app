@@ -49,6 +49,7 @@ export function SessionEngineModal({
   const [notes, setNotes] = useState<string>('');
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [sessionProgress, setSessionProgress] = useState(0);
   
   const circleRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -190,6 +191,23 @@ export function SessionEngineModal({
     }
   }, [playBell]);
   
+  // Calculate session progress
+  useEffect(() => {
+    if (sessionState === 'active' && currentPhase) {
+      const totalDuration = exercise.breathing_pattern.phases.reduce(
+        (sum, phase) => sum + phase.duration_seconds,
+        0
+      );
+      const elapsed = exercise.breathing_pattern.phases
+        .slice(0, currentPhaseIndex)
+        .reduce((sum, phase) => sum + phase.duration_seconds, 0)
+        + (currentPhase.duration_seconds - phaseTimeRemaining);
+      
+      const progress = (elapsed / totalDuration) * 100;
+      setSessionProgress(Math.min(Math.max(progress, 0), 100));
+    }
+  }, [sessionState, currentPhaseIndex, phaseTimeRemaining, currentPhase, exercise]);
+
   // Run current phase
   useEffect(() => {
     if (sessionState !== 'active' || !currentPhase) return;
@@ -199,6 +217,10 @@ export function SessionEngineModal({
     
     // Declare breathing interval ID at the top level
     let breathingIntervalId: number | null = null;
+    
+    // Track current cycle position for smooth phase transitions
+    let currentCyclePosition = 0;
+    let isWaitingForCycleEnd = false;
     
     // Set instruction based on phase type
     if (currentPhase.type === 'silence') {
@@ -216,6 +238,7 @@ export function SessionEngineModal({
       const updateBreathingState = () => {
         const elapsedTime = (Date.now() - phaseStartTime) / 1000;
         const cyclePosition = elapsedTime % cycleTime;
+        currentCyclePosition = cyclePosition; // Track for phase transitions
         
         // Determine current instruction based on cycle position
         let newInstruction = '';
@@ -225,6 +248,13 @@ export function SessionEngineModal({
           // Trigger animation only on instruction change
           if (lastInstruction !== 'NÁDECH') {
             animateBreathingCircle('inhale', inhale_seconds * 1000);
+            // Gold pulse při změně rytmu
+            if (circleRef.current) {
+              circleRef.current.classList.add('pulse-gold');
+              setTimeout(() => {
+                circleRef.current?.classList.remove('pulse-gold');
+              }, 600);
+            }
             lastInstruction = 'NÁDECH';
           }
         } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds) {
@@ -240,6 +270,13 @@ export function SessionEngineModal({
           // Trigger animation only on instruction change
           if (lastInstruction !== 'VÝDECH') {
             animateBreathingCircle('exhale', exhale_seconds * 1000);
+            // Gold pulse při změně rytmu
+            if (circleRef.current) {
+              circleRef.current.classList.add('pulse-gold');
+              setTimeout(() => {
+                circleRef.current?.classList.remove('pulse-gold');
+              }, 600);
+            }
             lastInstruction = 'VÝDECH';
           }
         } else {
@@ -264,17 +301,45 @@ export function SessionEngineModal({
     timerRef.current = window.setInterval(() => {
       setPhaseTimeRemaining((prev) => {
         if (prev <= 1) {
-          // Phase complete, move to next
-          setCurrentInstruction('');
+          // Check if we need to wait for cycle end (breathing phases only)
+          if (currentPhase.type === 'breathing' && currentPhase.pattern) {
+            const { inhale_seconds, hold_after_inhale_seconds, exhale_seconds } = currentPhase.pattern;
+            const endOfExhalePosition = inhale_seconds + hold_after_inhale_seconds + exhale_seconds;
+            
+            // If we're in the middle of a cycle, wait
+            if (currentCyclePosition > 0.5 && currentCyclePosition < endOfExhalePosition && !isWaitingForCycleEnd) {
+              isWaitingForCycleEnd = true;
+              return 0; // Hold at 0 seconds
+            }
+            
+            // If waiting and now at start of new cycle (or end of exhale), transition
+            if (isWaitingForCycleEnd && currentCyclePosition < 0.5) {
+              setCurrentInstruction('');
+              const nextIndex = currentPhaseRef.current + 1;
+              
+              if (nextIndex < totalPhases) {
+                setCurrentPhaseIndex(nextIndex);
+                playBell();
+              } else {
+                completeExercise();
+              }
+              return 0;
+            }
+            
+            // Still waiting
+            if (isWaitingForCycleEnd) {
+              return 0;
+            }
+          }
           
-          // Use ref to avoid stale closure
+          // For non-breathing phases or if cycle is aligned, transition immediately
+          setCurrentInstruction('');
           const nextIndex = currentPhaseRef.current + 1;
           
           if (nextIndex < totalPhases) {
             setCurrentPhaseIndex(nextIndex);
             playBell();
           } else {
-            // All phases complete
             completeExercise();
           }
           return 0;
@@ -431,30 +496,35 @@ export function SessionEngineModal({
           </div>
         )}
         
-        {/* COUNTDOWN: 5-4-3-2-1 */}
-        {sessionState === 'countdown' && (
-          <div className="session-countdown">
-            <p className="countdown-instruction">Připrav se na první nádech</p>
-            <div className="countdown-circle">
-              <span className="countdown-number">{countdownNumber}</span>
-            </div>
-          </div>
-        )}
-        
-        {/* ACTIVE: Breathing session */}
-        {sessionState === 'active' && currentPhase && (
+        {/* Wrapper pro smooth cross-fade transition */}
+        {(sessionState === 'countdown' || sessionState === 'active') && (
           <>
-            {/* Close button (positioned relative to modal content) */}
-            <CloseButton onClick={handleClose} className="session-engine-modal__close" ariaLabel="Zavřít" />
+            {/* Close button & phase indicator (only for active) */}
+            {sessionState === 'active' && (
+              <>
+                <CloseButton onClick={handleClose} className="session-engine-modal__close" ariaLabel="Zavřít" />
+                {totalPhases > 1 && (
+                  <span className="phase-indicator">
+                    FÁZE {currentPhaseIndex + 1}/{totalPhases}
+                  </span>
+                )}
+              </>
+            )}
             
-            <div className="session-active">
-              {/* Phase indicator */}
+            <div className="session-states-wrapper">
+              {/* COUNTDOWN: 5-4-3-2-1 with fade */}
+              <div className={`session-countdown ${sessionState === 'countdown' ? 'active' : 'exiting'}`}>
+                <p className="countdown-instruction">Připrav se na první nádech</p>
+                <div className="countdown-circle">
+                  <span className="countdown-number">{countdownNumber}</span>
+                </div>
+              </div>
+              
+              {/* ACTIVE: Breathing session with fade */}
+              {currentPhase && (
+                <div className={`session-active ${sessionState === 'active' ? 'active' : 'entering'}`}>
+              {/* Phase header without indicator */}
               <div className="session-active__header">
-              {totalPhases > 1 && (
-                <span className="phase-indicator">
-                  Fáze {currentPhaseIndex + 1}/{totalPhases}
-                </span>
-              )}
               <h3 className="phase-name">{currentPhase.name}</h3>
               {currentPhase.description && (
                 <p className="phase-description">{currentPhase.description}</p>
@@ -500,6 +570,18 @@ export function SessionEngineModal({
                 </span>
               </div>
             )}
+                </div>
+              )}
+              
+              {/* Gold progress bar */}
+              {sessionState === 'active' && (
+                <div className="session-progress">
+                  <div 
+                    className="session-progress__fill" 
+                    style={{ width: `${sessionProgress}%` }}
+                  />
+                </div>
+              )}
             </div>
           </>
         )}
@@ -507,18 +589,23 @@ export function SessionEngineModal({
         {/* COMPLETED: Celebration & mood check */}
         {sessionState === 'completed' && (
           <div className="session-completed">
-            <div className="celebration">
-              <div className="celebration__icon">
-                <CelebrationIcon size={64} color="var(--color-accent)" />
-              </div>
-              <h2 className="celebration__title">Bomba! Máš dodýcháno!</h2>
-              <p className="celebration__message">
-                Právě jsi rozdýchal {exercise.name}
+            {/* Gold celebration header */}
+            <div className="completion-header">
+              <h2 className="completion-title">Bomba! Máš dodýcháno!</h2>
+              <p className="completion-subtitle">
+                {exercise.name} • {Math.floor(exercise.total_duration_seconds / 60)} minut
               </p>
-              
-              <div className="celebration__meta">
-                <NavIcon name="clock" size={20} />
-                <span>{Math.round(exercise.total_duration_seconds / 60)} minut</span>
+            </div>
+            
+            {/* Stats with gold accent */}
+            <div className="completion-stats">
+              <div className="stat-item stat-item--gold">
+                <span className="stat-value">{totalPhases}</span>
+                <span className="stat-label">{totalPhases === 1 ? 'fáze' : 'fází'} dokončeno</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{Math.floor(exercise.total_duration_seconds / 60)}</span>
+                <span className="stat-label">minut dechové práce</span>
               </div>
             </div>
             

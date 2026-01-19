@@ -115,16 +115,45 @@
 }
 
 /* ============================================================
-   COUNTDOWN Screen (3-2-1)
+   SESSION STATES WRAPPER (Smooth Cross-Fade)
+   ============================================================ */
+.session-states-wrapper {
+  position: relative;
+  min-height: 550px;
+  width: 100%;
+}
+
+/* ============================================================
+   COUNTDOWN Screen (3-2-1) - with fade transition
    ============================================================ */
 .session-countdown {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 32px;
-  min-height: 500px;
   padding: 32px 24px;
+  
+  /* Fade transition */
+  opacity: 0;
+  transform: scale(0.98);
+  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.session-countdown.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.session-countdown.exiting {
+  opacity: 0;
+  transform: scale(1.02);
 }
 
 .countdown-instruction {
@@ -181,16 +210,35 @@
 }
 
 /* ============================================================
-   ACTIVE Session Screen
+   ACTIVE Session Screen - with fade transition
    ============================================================ */
 .session-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 500px;
   padding: 32px 24px;
-  position: relative;
+  
+  /* Fade transition */
+  opacity: 0;
+  transform: scale(0.98);
+  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.session-active.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.session-active.entering {
+  opacity: 0;
+  transform: scale(0.98);
 }
 
 /* Close button uses global .close-button class */
@@ -214,9 +262,9 @@
 }
 
 .phase-indicator {
-  display: block;
-  width: fit-content;
-  margin: 0 auto 12px auto;
+  position: absolute;
+  top: 16px;
+  left: 16px;
   padding: 6px 12px;
   background: rgba(44, 190, 198, 0.15);
   border: 1px solid var(--color-primary);
@@ -226,6 +274,14 @@
   color: var(--color-primary);
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  z-index: 9; /* Pod close button (10) */
+}
+
+@media (max-width: 768px) {
+  .phase-indicator {
+    top: max(16px, env(safe-area-inset-top));
+    left: max(16px, env(safe-area-inset-left));
+  }
 }
 
 .phase-name {
@@ -286,6 +342,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Gold pulse animation při změně rytmu */
+@keyframes goldPulse {
+  0% {
+    box-shadow: 
+      0 0 20px rgba(44, 190, 198, 0.3),
+      0 0 40px rgba(44, 190, 198, 0.2),
+      inset 0 0 30px rgba(44, 190, 198, 0.15);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(214, 162, 58, 0.5),  /* GOLD */
+      0 0 60px rgba(214, 162, 58, 0.3),  /* GOLD */
+      inset 0 0 40px rgba(214, 162, 58, 0.2); /* GOLD */
+    border-color: rgba(214, 162, 58, 0.8);
+  }
+  100% {
+    box-shadow: 
+      0 0 20px rgba(44, 190, 198, 0.3),
+      0 0 40px rgba(44, 190, 198, 0.2),
+      inset 0 0 30px rgba(44, 190, 198, 0.15);
+  }
+}
+
+.breathing-circle.pulse-gold {
+  animation: goldPulse 600ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Breathing instruction INSIDE circle */
@@ -664,4 +747,100 @@
   .breathing-circle {
     transition: none !important;
   }
+}
+
+/* ============================================================
+   GOLD CELEBRATION STYLES (New Design)
+   ============================================================ */
+   
+/* Gold celebration header */
+.completion-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.completion-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-accent); /* GOLD */
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+  
+  /* Subtle gold glow */
+  text-shadow: 0 0 20px rgba(214, 162, 58, 0.3);
+}
+
+.completion-subtitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Stats grid with gold accent */
+.completion-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.stat-item--gold {
+  border-color: var(--color-accent);
+  background: linear-gradient(
+    135deg,
+    rgba(214, 162, 58, 0.05) 0%,
+    rgba(214, 162, 58, 0.02) 100%
+  );
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.stat-item--gold .stat-value {
+  color: var(--color-accent); /* GOLD */
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   GOLD PROGRESS BAR (Subtle Session Tracking)
+   ============================================================ */
+.session-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(214, 162, 58, 0.1); /* Light gold bg */
+  border-radius: 0 0 24px 24px; /* Match modal radius */
+  overflow: hidden;
+}
+
+.session-progress__fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    rgba(214, 162, 58, 0.8) 100%
+  );
+  transition: width 1s linear;
+  box-shadow: 0 0 8px rgba(214, 162, 58, 0.6);
 }
