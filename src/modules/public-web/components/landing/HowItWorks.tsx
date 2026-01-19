@@ -13,7 +13,7 @@
 
 import { HOW_IT_WORKS_STEPS, type HowItWorksStep } from '../../data/how-it-works';
 
-function StepScreenshotPlaceholder({ type, number }: { type: 'measure' | 'practice' | 'improve'; number: number }) {
+function StepScreenshotPlaceholder({ type }: { type: 'measure' | 'practice' | 'improve' }) {
   return (
     <svg viewBox="0 0 200 220" className="step-screenshot-placeholder">
       {type === 'measure' && (
@@ -24,10 +24,6 @@ function StepScreenshotPlaceholder({ type, number }: { type: 'measure' | 'practi
           <circle cx="100" cy="100" r="42" stroke="var(--color-primary)" strokeWidth="3" fill="none" />
           {/* Clock hand */}
           <path d="M100 70v30l25 15" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round" />
-          {/* Step number in center */}
-          <text x="100" y="110" textAnchor="middle" fill="var(--color-accent)" fontSize="36" fontWeight="700">
-            {number}
-          </text>
         </>
       )}
       
@@ -39,11 +35,6 @@ function StepScreenshotPlaceholder({ type, number }: { type: 'measure' | 'practi
           <rect x="135" y="105" width="20" height="30" rx="5" fill="var(--color-primary)" />
           {/* Waveform */}
           <path d="M70 165h60M75 155h50M80 175h40" stroke="var(--color-primary)" strokeWidth="2" opacity="0.5" />
-          {/* Step number in circle */}
-          <circle cx="100" cy="70" r="24" fill="var(--color-accent)" />
-          <text x="100" y="80" textAnchor="middle" fill="var(--color-background)" fontSize="28" fontWeight="700">
-            {number}
-          </text>
         </>
       )}
       
@@ -57,11 +48,6 @@ function StepScreenshotPlaceholder({ type, number }: { type: 'measure' | 'practi
           <circle cx="100" cy="100" r="4" fill="var(--color-primary)" />
           <circle cx="130" cy="70" r="4" fill="var(--color-primary)" />
           <circle cx="160" cy="50" r="5" fill="var(--color-primary)" />
-          {/* Step number in circle */}
-          <circle cx="100" cy="180" r="24" fill="var(--color-accent)" />
-          <text x="100" y="190" textAnchor="middle" fill="var(--color-background)" fontSize="28" fontWeight="700">
-            {number}
-          </text>
         </>
       )}
     </svg>
@@ -77,8 +63,11 @@ export function HowItWorks() {
         <div className="steps-grid">
           {HOW_IT_WORKS_STEPS.map((step: HowItWorksStep) => (
             <div key={step.number} className="step-card">
+              {/* Číslo nahoře - malé a gold */}
+              <div className="step-card__number-badge">{step.number}</div>
+              
               <div className="step-card__screenshot">
-                <StepScreenshotPlaceholder type={step.screenshotPlaceholder} number={step.number} />
+                <StepScreenshotPlaceholder type={step.screenshotPlaceholder} />
               </div>
               
               <h3 className="step-card__title">{step.title}</h3>

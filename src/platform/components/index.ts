@@ -52,3 +52,13 @@ export type { EmptyStateProps } from './EmptyState';
 
 export { LoadingSkeleton } from './LoadingSkeleton';
 export type { LoadingSkeletonProps } from './LoadingSkeleton';
+
+// Mood Icons
+export { CelebrationIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from './icons/mood';
+export type { 
+  CelebrationIconProps, 
+  EnergeticIconProps, 
+  CalmIconProps, 
+  TiredIconProps, 
+  StressedIconProps 
+} from './icons/mood';

@@ -12,8 +12,9 @@
 
 import { useState } from 'react';
 import { ExerciseCard } from './ExerciseCard';
-import { Button, LoadingSkeleton, EmptyState, NavIcon } from '@/platform/components';
+import { Button, LoadingSkeleton, EmptyState, NavIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
 import { useMembership } from '@/platform/membership';
+import type { MoodType } from '../types/exercises';
 import {
   useExercises,
   useCustomExerciseCount,
@@ -41,13 +42,36 @@ export function ExerciseList({
   const [activeTab, setActiveTab] = useState<TabType>('presets');
   const { plan } = useMembership();
   
+  // Mood labels Czech mapping
+  const moodLabels: Record<MoodType, string> = {
+    energized: 'Energický',
+    calm: 'Klidný',
+    tired: 'Unavený',
+    stressed: 'Stresovaný',
+    neutral: 'Neutrální',
+  };
+  
+  // Mood icons mapping
+  const MoodIconComponent: Record<MoodType, typeof EnergeticIcon> = {
+    energized: EnergeticIcon,
+    calm: CalmIcon,
+    tired: TiredIcon,
+    stressed: StressedIcon,
+    neutral: CalmIcon, // Default to calm for neutral
+  };
+  
   const { data: exercises, isLoading: exercisesLoading } = useExercises();
   const { data: customCount } = useCustomExerciseCount();
   const { data: sessions, isLoading: sessionsLoading } = useExerciseSessions();
   const deleteExercise = useDeleteExercise();
   
   // Filter exercises by category
-  const presetExercises = exercises?.filter(ex => ex.category === 'preset') || [];
+  // Note: RÁNO, RESET, NOC are shown only on Dnes view (quick access)
+  // Cvičit shows other presets (BOX, Calm, Coherence + future additions)
+  const presetExercises = exercises?.filter(ex => 
+    ex.category === 'preset' && 
+    !['RÁNO', 'RESET', 'NOC'].includes(ex.name)
+  ) || [];
   const customExercises = exercises?.filter(ex => ex.category === 'custom') || [];
   
   // Tier limits
@@ -84,7 +108,7 @@ export function ExerciseList({
           aria-selected={activeTab === 'presets'}
           type="button"
         >
-          Presety
+          Doporučené
         </button>
         
         <button
@@ -273,12 +297,12 @@ export function ExerciseList({
                       )}
                       
                       {session.mood_after && (
-                        <span className="badge">
-                          {session.mood_after === 'energized' && '⚡'}
-                          {session.mood_after === 'calm' && '😌'}
-                          {session.mood_after === 'tired' && '😴'}
-                          {session.mood_after === 'stressed' && '😰'}
-                          {session.mood_after}
+                        <span className="badge badge--mood">
+                          {(() => {
+                            const Icon = MoodIconComponent[session.mood_after as MoodType];
+                            return Icon ? <Icon size={14} /> : null;
+                          })()}
+                          {moodLabels[session.mood_after as MoodType] || session.mood_after}
                         </span>
                       )}
                     </div>

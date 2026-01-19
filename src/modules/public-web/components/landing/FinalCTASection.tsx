@@ -41,11 +41,11 @@ export function FinalCTASection() {
           {/* CTA Content - bez karty, čistě */}
           <div className="final-cta__content">
             <h2 className="final-cta__headline">
-              Začni dnes. Změň dech za 21 dní.
+              Začni dnes a změň svůj dech za 21 dní
             </h2>
             
             <p className="final-cta__description">
-              První měření KP zdarma. Bez kreditní karty.
+              Registrace zdarma. Bez platební karty. Zruš kdykoliv.
             </p>
             
             <Button

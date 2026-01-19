@@ -869,15 +869,61 @@ section[id] {
   margin: 0;
 }
 
-.science-section__link {
+.science-proof {
+  max-width: 600px;
+  margin: var(--spacing-12) auto var(--spacing-8);  /* 48px 0 32px */
   text-align: center;
-  margin-top: var(--spacing-12);  /* 48px - zvětšeno z 24px */
+  padding: var(--spacing-6);  /* 24px */
+  border-left: 3px solid var(--color-accent);  /* Gold akcent */
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-md);
 }
 
-.science-section__cta {
-  text-align: center;
-  margin-top: var(--spacing-4);  /* 16px - menší gap mezi link a button */
-  margin-bottom: 0;  /* Odstraněno */
+.science-proof__text {
+  font-size: var(--font-size-lg);  /* 18px */
+  color: var(--color-text-primary);
+  font-style: italic;
+  margin-bottom: var(--spacing-2);  /* 8px */
+  line-height: var(--line-height-relaxed);
+}
+
+.science-proof__author {
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.science-section__cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-6);  /* 24px */
+  margin-top: var(--spacing-12);  /* 48px */
+  flex-wrap: wrap;  /* Pro mobil */
+}
+
+.cta-divider {
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+.text-link--large {
+  font-size: var(--font-size-base);  /* 16px */
+  padding: var(--spacing-3) var(--spacing-4);  /* Extra hit area */
+  transition: all 0.2s ease;
+}
+
+/* Mobile: Stack vertically */
+@media (max-width: 768px) {
+  .science-section__cta-row {
+    flex-direction: column;
+    gap: var(--spacing-4);  /* 16px */
+  }
+  
+  .cta-divider {
+    display: none;  /* Na mobilu nechceme "nebo" */
+  }
 }
 
 /* Mobile responsive */
@@ -915,7 +961,20 @@ section[id] {
   text-align: center;
 }
 
-/* step-card__number removed - number now integrated in SVG */
+.step-card__number-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-accent);  /* Gold */
+  color: var(--color-background);  /* Dark */
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-4);  /* 16px */
+  opacity: 0.9;
+}
 
 .step-card__screenshot {
   width: 100%;
@@ -1237,6 +1296,21 @@ section[id] {
   transform: translateX(-50%);
   animation: bounce 2s infinite;
   opacity: 0.6;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: var(--spacing-2);  /* 8px - větší klikací plocha */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.scroll-indicator:hover {
+  opacity: 1;
+  animation: none;
+  transform: translateX(-50%) scale(1.1);
+}
+
+.scroll-indicator:active {
+  transform: translateX(-50%) scale(0.95);
 }
 
 @keyframes bounce {

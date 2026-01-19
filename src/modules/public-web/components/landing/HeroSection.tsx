@@ -23,8 +23,8 @@ import { MESSAGES } from '@/config/messages';
 
 // Trust signals data
 const TRUST_SIGNALS = [
-  { icon: 'users' as const, text: '1150+ dýchačů' },
-  { icon: 'headphones' as const, text: '100+ cvičení' },
+  { icon: 'users' as const, text: '1 150+ dýchačů' },
+  { icon: 'headphones' as const, text: '150+ cvičení' },
   { icon: 'certificate' as const, text: 'Certifikováno' },
   { icon: 'currency' as const, text: 'Od 0 Kč' },
 ];
@@ -90,8 +90,17 @@ export function HeroSection() {
           </div>
         </div>
         
-        {/* Scroll indicator */}
-        <div className="scroll-indicator">
+        {/* Scroll indicator - clickable */}
+        <button 
+          className="scroll-indicator"
+          onClick={() => {
+            const scienceSection = document.querySelector('.science-section');
+            if (scienceSection) {
+              scienceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }}
+          aria-label="Scroll to content"
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path 
               d="M12 4v16m0 0l-6-6m6 6l6-6" 
@@ -101,7 +110,7 @@ export function HeroSection() {
               strokeLinejoin="round"
             />
           </svg>
-        </div>
+        </button>
       </section>
       
       {/* Auth Modal - Email registration */}

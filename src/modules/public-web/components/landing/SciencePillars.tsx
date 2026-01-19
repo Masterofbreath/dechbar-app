@@ -39,13 +39,24 @@ export function SciencePillars() {
           ))}
         </div>
         
-        <div className="science-section__link">
-          <a href="/veda" className="text-link">
-            Přečti si vědecké studie →
-          </a>
+        {/* Social Proof */}
+        <div className="science-proof">
+          <p className="science-proof__text">
+            "DechBar mi změnil život. Za 3 týdny jsem zvýšil KP z 15 na 27 sekund."
+          </p>
+          <p className="science-proof__author">
+            - Martin K., Praha
+          </p>
         </div>
         
-        <div className="science-section__cta">
+        {/* CTA row - horizontální Apple-style */}
+        <div className="science-section__cta-row">
+          <a href="/veda" className="text-link text-link--large">
+            Přečti si vědecké studie →
+          </a>
+          
+          <span className="cta-divider">nebo</span>
+          
           <Button 
             variant="primary" 
             size="lg" 

@@ -17,7 +17,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { NavIcon, Button } from '@/platform/components';
+import { NavIcon, Button, CelebrationIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
 import { CloseButton } from '@/components/shared';
 import { useScrollLock } from '@/platform/hooks';
 import { SafetyQuestionnaire } from './SafetyQuestionnaire';
@@ -463,7 +463,9 @@ export function SessionEngineModal({
         {sessionState === 'completed' && (
           <div className="session-completed">
             <div className="celebration">
-              <div className="celebration__icon">🎉</div>
+              <div className="celebration__icon">
+                <CelebrationIcon size={64} color="var(--color-accent)" />
+              </div>
               <h2 className="celebration__title">Bomba! Máš dodýcháno!</h2>
               <p className="celebration__message">
                 Právě jsi rozdýchal {exercise.name}
@@ -514,10 +516,30 @@ export function SessionEngineModal({
                     onClick={() => setMoodAfter(mood)}
                     type="button"
                   >
-                    {mood === 'energized' && '⚡ Energický'}
-                    {mood === 'calm' && '😌 Klidný'}
-                    {mood === 'tired' && '😴 Unavený'}
-                    {mood === 'stressed' && '😰 Stresovaný'}
+                    {mood === 'energized' && (
+                      <>
+                        <EnergeticIcon size={20} />
+                        <span>Energický</span>
+                      </>
+                    )}
+                    {mood === 'calm' && (
+                      <>
+                        <CalmIcon size={20} />
+                        <span>Klidný</span>
+                      </>
+                    )}
+                    {mood === 'tired' && (
+                      <>
+                        <TiredIcon size={20} />
+                        <span>Unavený</span>
+                      </>
+                    )}
+                    {mood === 'stressed' && (
+                      <>
+                        <StressedIcon size={20} />
+                        <span>Stresovaný</span>
+                      </>
+                    )}
                   </button>
                 ))}
               </div>
