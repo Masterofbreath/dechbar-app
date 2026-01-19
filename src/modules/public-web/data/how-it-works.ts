@@ -19,13 +19,13 @@ export const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
   {
     number: 1,
     title: 'Změř',
-    description: 'Zjisti své BOLT skóre během 60 sekund. Získej výchozí hodnotu pro tracking.',
+    description: 'Změř své KP během pár minut. Získej výchozí hodnotu pro sledování pokroku.',
     screenshotPlaceholder: 'measure',
   },
   {
     number: 2,
     title: 'Cvič',
-    description: 'Vyber z 100+ audio programů. Ranní aktivace, polední reset nebo večerní relaxace.',
+    description: 'Vyber si z 150+ audio cvičení. Ranní aktivace, polední reset nebo večerní relaxace.',
     screenshotPlaceholder: 'practice',
   },
   {

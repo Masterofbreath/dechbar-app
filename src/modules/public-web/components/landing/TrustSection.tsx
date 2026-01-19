@@ -46,12 +46,12 @@ export function TrustSection({ showEndorsement = true }: TrustSectionProps) {
           
           <div className="data-metric">
             <div className="data-metric__number">+12s</div>
-            <div className="data-metric__label">průměrné zlepšení BOLT (3 týdny)</div>
+            <div className="data-metric__label">průměrné zlepšení KP (3 týdny)</div>
           </div>
           
           <div className="data-metric">
-            <div className="data-metric__number">4.8★</div>
-            <div className="data-metric__label">hodnocení v App Store</div>
+            <div className="data-metric__number">4,9★</div>
+            <div className="data-metric__label">průměrné hodnocení (2025)</div>
           </div>
         </div>
       </div>

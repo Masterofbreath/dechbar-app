@@ -275,16 +275,36 @@
 /* Mobile responsive */
 @media (max-width: 768px) {
   .landing-pricing {
-    padding: var(--spacing-16) var(--spacing-4);  /* 64px 16px */
+    padding: var(--spacing-16) 0;  /* Bez horizontal padding */
   }
-  
-  .landing-pricing__title {
-    font-size: var(--font-size-2xl);  /* 24px */
-    margin-bottom: var(--spacing-8);  /* 32px */
+
+  .landing-pricing__container {
+    padding: 0;  /* Overflow mimo container */
   }
-  
+
+  .landing-pricing__title,
+  .landing-pricing__subtitle {
+    padding: 0 var(--spacing-4);  /* Text ma padding */
+  }
+
   .landing-pricing__grid {
-    grid-template-columns: 1fr;  /* Stack on mobile */
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: var(--spacing-4);  /* 16px mezi kartami */
+    padding: 0 var(--spacing-4);  /* Padding na stranach */
+    -webkit-overflow-scrolling: touch;  /* Smooth scroll iOS */
+    scrollbar-width: none;  /* Hide scrollbar Firefox */
+  }
+
+  .landing-pricing__grid::-webkit-scrollbar {
+    display: none;  /* Hide scrollbar Chrome/Safari */
+  }
+
+  .pricing-card {
+    flex: 0 0 85%;  /* Karta zabira 85% sirky obrazovky */
+    max-width: 350px;
+    scroll-snap-align: center;  /* Snap to center */
   }
 }
 
@@ -674,7 +694,13 @@
 
 .science-section__link {
   text-align: center;
-  margin-top: var(--spacing-6);
+  margin-top: var(--spacing-12);  /* 48px - zvětšeno z 24px */
+}
+
+.science-section__cta {
+  text-align: center;
+  margin-top: var(--spacing-4);  /* 16px - menší gap mezi link a button */
+  margin-bottom: 0;  /* Odstraněno */
 }
 
 /* Mobile responsive */
@@ -728,16 +754,14 @@
 
 .step-card__screenshot {
   width: 100%;
-  max-width: 200px;
-  margin-bottom: var(--spacing-4);  /* 16px */
-  border-radius: var(--radius-xl);  /* 16px */
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
+  max-width: 180px;  /* Mensí */
+  margin-bottom: var(--spacing-6);  /* Větší gap */
 }
 
 .step-screenshot-placeholder {
   width: 100%;
   height: auto;
+  opacity: 0.9;  /* Jemná průhlednost pro eleganci */
 }
 
 .step-card__title {
@@ -880,19 +904,23 @@
 }
 
 .final-cta__faq {
-  margin-top: var(--spacing-12);  /* 48px */
+  margin-top: var(--spacing-20);  /* 80px */
+  max-width: 800px;  /* Omezit šířku pro lepší čitelnost */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .final-cta__faq-title {
-  font-size: var(--font-size-2xl);  /* 24px */
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);  /* 28px */
+  font-weight: var(--font-weight-bold);  /* 700 */
   text-align: center;
-  margin: 0 0 var(--spacing-8) 0;  /* 32px bottom */
+  margin-bottom: var(--spacing-12);  /* 48px */
+  color: var(--color-text-primary);
+  letter-spacing: var(--letter-spacing-tight);  /* Premium feel */
 }
 
 /* ===================================
-   FAQ ACCORDION (New)
+   FAQ ACCORDION (Apple-style)
    =================================== */
 
 .faq-list {
@@ -901,11 +929,16 @@
 }
 
 .faq-item {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);  /* 12px */
-  margin-bottom: var(--spacing-4);  /* 16px */
-  overflow: hidden;
+  border-bottom: 1px solid var(--color-border);  /* Jemnější border */
+  transition: background-color 0.2s ease;  /* Smooth hover */
+}
+
+.faq-item:hover {
+  background-color: rgba(255, 255, 255, 0.02);  /* Subtle hover */
+}
+
+.faq-item:last-child {
+  border-bottom: none;  /* Poslední bez borderu */
 }
 
 .faq-item__question {
@@ -913,11 +946,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-5) var(--spacing-6);  /* 20px 24px */
+  padding: var(--spacing-6) 0;  /* Větší padding pro touch targets */
   background: transparent;
   border: none;
   color: var(--color-text-primary);
-  font-size: var(--font-size-lg);  /* 18px */
+  font-size: var(--font-size-lg);  /* 18px - větší pro čitelnost */
   font-weight: var(--font-weight-semibold);  /* 600 */
   text-align: left;
   cursor: pointer;
@@ -925,7 +958,7 @@
 }
 
 .faq-item__question:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;  /* Hover je na parent .faq-item */
 }
 
 .faq-item__question:focus-visible {
@@ -949,14 +982,15 @@
 }
 
 .faq-item__answer {
-  padding: 0 var(--spacing-6) var(--spacing-5);  /* 24px horizontal, 20px bottom */
-  animation: faq-expand 0.25s ease-out;
+  padding-bottom: var(--spacing-6);  /* 24px */
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);  /* Apple timing */
 }
 
 .faq-item__answer p {
   font-size: var(--font-size-base);  /* 16px */
   color: var(--color-text-secondary);
-  line-height: var(--line-height-normal);  /* 1.5 */
+  line-height: var(--line-height-relaxed);  /* 1.75 - lepší čitelnost */
   margin: 0;
 }
 

@@ -15,29 +15,26 @@ import { HOW_IT_WORKS_STEPS, type HowItWorksStep } from '../../data/how-it-works
 
 function StepScreenshotPlaceholder({ type }: { type: 'measure' | 'practice' | 'improve' }) {
   return (
-    <svg viewBox="0 0 200 360" className="step-screenshot-placeholder">
-      {/* Phone screen background */}
-      <rect width="200" height="360" rx="20" fill="var(--color-surface)" />
+    <svg viewBox="0 0 200 280" className="step-screenshot-placeholder">
+      {/* Bez rect pozadi - cistsi vzhled */}
       
       {type === 'measure' && (
         <>
-          {/* Stopwatch icon */}
-          <circle cx="100" cy="140" r="50" stroke="var(--color-primary)" strokeWidth="3" fill="none" />
-          <path d="M100 100v40l30 20" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" />
-          <text x="100" y="240" textAnchor="middle" fill="var(--color-text-secondary)" fontSize="16">
-            BOLT Test
+          <circle cx="100" cy="110" r="40" stroke="var(--color-primary)" strokeWidth="2.5" fill="none" />
+          <path d="M100 80v30l25 15" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round" />
+          <text x="100" y="200" textAnchor="middle" fill="var(--color-text-secondary)" fontSize="14" fontWeight="500">
+            KP Test
           </text>
         </>
       )}
       
       {type === 'practice' && (
         <>
-          {/* Headphones + waveform */}
-          <path d="M50 140c0-27.6 22.4-50 50-50s50 22.4 50 50v10" stroke="var(--color-primary)" strokeWidth="3" fill="none" />
-          <rect x="45" y="150" width="20" height="30" rx="5" fill="var(--color-primary)" />
-          <rect x="135" y="150" width="20" height="30" rx="5" fill="var(--color-primary)" />
-          <path d="M70 220h60M75 210h50M80 230h40" stroke="var(--color-primary)" strokeWidth="2" opacity="0.5" />
-          <text x="100" y="260" textAnchor="middle" fill="var(--color-text-secondary)" fontSize="16">
+          <path d="M50 110c0-27.6 22.4-50 50-50s50 22.4 50 50v10" stroke="var(--color-primary)" strokeWidth="2.5" fill="none" />
+          <rect x="45" y="120" width="20" height="30" rx="5" fill="var(--color-primary)" />
+          <rect x="135" y="120" width="20" height="30" rx="5" fill="var(--color-primary)" />
+          <path d="M70 180h60M75 170h50M80 190h40" stroke="var(--color-primary)" strokeWidth="2" opacity="0.5" />
+          <text x="100" y="230" textAnchor="middle" fill="var(--color-text-secondary)" fontSize="14" fontWeight="500">
             Audio Program
           </text>
         </>
@@ -45,14 +42,13 @@ function StepScreenshotPlaceholder({ type }: { type: 'measure' | 'practice' | 'i
       
       {type === 'improve' && (
         <>
-          {/* Graph trending up */}
-          <path d="M40 200L70 160L100 140L130 100L160 80" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" fill="none" />
-          <circle cx="40" cy="200" r="5" fill="var(--color-primary)" />
-          <circle cx="70" cy="160" r="5" fill="var(--color-primary)" />
-          <circle cx="100" cy="140" r="5" fill="var(--color-primary)" />
-          <circle cx="130" cy="100" r="5" fill="var(--color-primary)" />
-          <circle cx="160" cy="80" r="5" fill="var(--color-primary)" />
-          <text x="100" y="240" textAnchor="middle" fill="var(--color-text-secondary)" fontSize="16">
+          <path d="M40 180L70 150L100 130L130 100L160 80" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          <circle cx="40" cy="180" r="4" fill="var(--color-primary)" />
+          <circle cx="70" cy="150" r="4" fill="var(--color-primary)" />
+          <circle cx="100" cy="130" r="4" fill="var(--color-primary)" />
+          <circle cx="130" cy="100" r="4" fill="var(--color-primary)" />
+          <circle cx="160" cy="80" r="4" fill="var(--color-primary)" />
+          <text x="100" y="220" textAnchor="middle" fill="var(--color-text-secondary)" fontSize="14" fontWeight="500">
             Tvůj pokrok
           </text>
         </>

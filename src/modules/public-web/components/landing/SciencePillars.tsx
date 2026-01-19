@@ -12,7 +12,7 @@
  * @subpackage Modules/PublicWeb
  */
 
-import { ScienceIcon } from '@/platform';
+import { ScienceIcon, Button } from '@/platform';
 import { SCIENCE_PILLARS, type SciencePillar } from '../../data/science-pillars';
 
 export function SciencePillars() {
@@ -22,7 +22,7 @@ export function SciencePillars() {
         <h2 className="section-title">Proč dýchání funguje</h2>
         
         <p className="science-section__intro">
-          95 % lidí dýchá špatně. Výsledek: Špatný spánek, nízká energie a vysoký stres. Změň to za 21 dní.
+          95 % lidí dýchá špatně. Proto hůře spí, mají nízkou energii a vysoký stres.
         </p>
         
         <div className="science-pillars">
@@ -41,8 +41,21 @@ export function SciencePillars() {
         
         <div className="science-section__link">
           <a href="/veda" className="text-link">
-            Přečti si vědecké pozadí →
+            Přečti si vědecké studie →
           </a>
+        </div>
+        
+        <div className="science-section__cta">
+          <Button 
+            variant="primary" 
+            size="lg" 
+            onClick={() => {
+              const pricingSection = document.getElementById('pricing');
+              pricingSection?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            Změň to za 21 dní →
+          </Button>
         </div>
       </div>
     </section>

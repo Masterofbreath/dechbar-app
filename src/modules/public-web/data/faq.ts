@@ -16,11 +16,11 @@ export interface FAQItem {
 export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'Potřebuji nějaké vybavení?',
-    answer: 'Ne. Stačí telefon a 5 minut denně. Vše ostatní je v tobě.',
+    answer: 'Ne. Stačí telefon a 7 minut denně. Vše ostatní je v tobě.',
   },
   {
     question: 'Jak rychle uvidím výsledky?',
-    answer: 'První změny (lepší spánek, větší klid) během 7 dní. Měřitelné zlepšení BOLT skóre za 3 týdny.',
+    answer: 'První změny (lepší spánek, větší klid) během 7-14 dní. Měřitelné zlepšení KP za 3 týdny.',
   },
   {
     question: 'Je to vhodné pro začátečníky?',
@@ -35,11 +35,11 @@ export const FAQ_ITEMS: FAQItem[] = [
     answer: 'Ano. Všechna cvičení si můžeš stáhnout a cvičit bez internetu.',
   },
   {
-    question: 'Co je BOLT skóre?',
-    answer: 'Objektivní metrika tvé schopnosti tolerovat CO₂. Čím vyšší BOLT, tím zdravější dýchání. Průměr populace: 20 sekund. Optimum: 40+ sekund.',
+    question: 'Co je KP (Kontrolní pauza)?',
+    answer: 'Objektivní metrika tvé schopnosti tolerovat CO₂. Čím vyšší KP, tím zdravější dýchání. Průměr populace je 15 sekund. Od 25 sekund začíná tělo vykazovat první signály funkčního dýchání a optimální stav je 40+ sekund.',
   },
   {
     question: 'Potřebuji Apple Watch nebo fitness tracker?',
-    answer: 'Ne. Aplikace funguje samostatně. Ale podporujeme Apple Watch pro pokročilé sledování srdečního tepu (HRV).',
+    answer: 'Ne, aplikace funguje samostatně. Brzy však bude podporovat Apple Watch, Oura ring nebo hrudní pás pro pokročilé sledování.',
   },
 ];

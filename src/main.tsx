@@ -17,8 +17,13 @@ import './styles/components/confirm-modal.css' // ConfirmModal component
 import './styles/components/empty-state.css' // EmptyState component
 import './styles/components/loading-skeleton.css' // LoadingSkeleton component
 import './styles/components/locked-feature-modal.css' // Universal paywall
+import './styles/components/exercise-card.css' // Exercise card component
+import './styles/components/exercise-list.css' // Exercise list with tabs
+import './styles/components/session-engine-modal.css' // Session engine modal
+import './styles/components/safety-questionnaire.css' // Safety questionnaire
 import './styles/layouts/app-layout.css'    // AppLayout wrapper
 import './styles/pages/dnes.css'            // DNES dashboard
+import './styles/pages/cvicit.css'          // CVICIT exercise library
 import './styles/modals.css'  // Base modal styles (shared)
 import './styles/auth.css'    // Auth-specific styles
 import App from './App.tsx'
