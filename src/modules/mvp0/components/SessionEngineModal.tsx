@@ -50,6 +50,13 @@ export function SessionEngineModal({
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [sessionProgress, setSessionProgress] = useState(0);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  
+  const breathingTips = [
+    "Funkční dýchání = dýcháš potichu",
+    "Funkčně dýchat znamená dýchat pomalu",
+    "Dýchej nosem, ne ústy"
+  ];
   
   const circleRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -248,12 +255,17 @@ export function SessionEngineModal({
           // Trigger animation only on instruction change
           if (lastInstruction !== 'NÁDECH') {
             animateBreathingCircle('inhale', inhale_seconds * 1000);
-            // Gold pulse při změně rytmu
+            
+            // CSS class pro light teal (inhale)
             if (circleRef.current) {
+              circleRef.current.classList.remove('breathing-circle--exhale', 'breathing-circle--hold');
+              circleRef.current.classList.add('breathing-circle--inhale');
+              
+              // Gold pulse při změně rytmu
               circleRef.current.classList.add('pulse-gold');
               setTimeout(() => {
                 circleRef.current?.classList.remove('pulse-gold');
-              }, 600);
+              }, 900);
             }
             lastInstruction = 'NÁDECH';
           }
@@ -263,6 +275,19 @@ export function SessionEngineModal({
           if (lastInstruction !== 'ZADRŽ' && hold_after_inhale_seconds > 0 && animationFrameRef.current) {
             cancelAnimationFrame(animationFrameRef.current);
             animationFrameRef.current = null;
+            
+            // CSS class pro dark teal (hold)
+            if (circleRef.current) {
+              circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--exhale');
+              circleRef.current.classList.add('breathing-circle--hold');
+              
+              // Gold pulse při změně na ZADRŽ
+              circleRef.current.classList.add('pulse-gold');
+              setTimeout(() => {
+                circleRef.current?.classList.remove('pulse-gold');
+              }, 900);
+            }
+            
             lastInstruction = 'ZADRŽ';
           }
         } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds + exhale_seconds) {
@@ -270,12 +295,17 @@ export function SessionEngineModal({
           // Trigger animation only on instruction change
           if (lastInstruction !== 'VÝDECH') {
             animateBreathingCircle('exhale', exhale_seconds * 1000);
-            // Gold pulse při změně rytmu
+            
+            // CSS class pro standard teal (exhale)
             if (circleRef.current) {
+              circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--hold');
+              circleRef.current.classList.add('breathing-circle--exhale');
+              
+              // Gold pulse při změně rytmu
               circleRef.current.classList.add('pulse-gold');
               setTimeout(() => {
                 circleRef.current?.classList.remove('pulse-gold');
-              }, 600);
+              }, 900);
             }
             lastInstruction = 'VÝDECH';
           }
@@ -285,6 +315,19 @@ export function SessionEngineModal({
           if (lastInstruction !== 'ZADRŽ' && hold_after_exhale_seconds > 0 && animationFrameRef.current) {
             cancelAnimationFrame(animationFrameRef.current);
             animationFrameRef.current = null;
+            
+            // CSS class pro dark teal (hold)
+            if (circleRef.current) {
+              circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--exhale');
+              circleRef.current.classList.add('breathing-circle--hold');
+              
+              // Gold pulse při změně na ZADRŽ
+              circleRef.current.classList.add('pulse-gold');
+              setTimeout(() => {
+                circleRef.current?.classList.remove('pulse-gold');
+              }, 900);
+            }
+            
             lastInstruction = 'ZADRŽ';
           }
         }
@@ -356,6 +399,17 @@ export function SessionEngineModal({
     };
   }, [sessionState, currentPhase, totalPhases, animateBreathingCircle, playBell, completeExercise]);
   
+  // Rotate breathing tips every 8 seconds
+  useEffect(() => {
+    if (sessionState !== 'active') return;
+    
+    const tipInterval = setInterval(() => {
+      setCurrentTipIndex((prev) => (prev + 1) % breathingTips.length);
+    }, 8000);
+    
+    return () => clearInterval(tipInterval);
+  }, [sessionState, breathingTips.length]);
+  
   // Handle modal close
   const handleClose = useCallback(() => {
     if (sessionState === 'active') {
@@ -393,6 +447,28 @@ export function SessionEngineModal({
     
     onClose();
   }, [onClose]);
+  
+  // Share completed exercise
+  const handleShare = async () => {
+    const shareData = {
+      title: 'DechBar - Dokončil jsem cvičení!',
+      text: `Právě jsem dokončil ${exercise.name} (${Math.floor(exercise.total_duration_seconds / 60)} minut). Přidej se k nám v DechBaru! 🌬️`,
+      url: 'https://zdravedychej.cz'
+    };
+    
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+        // TODO: Show toast notification
+        console.log('Link zkopírován do schránky!');
+      }
+    } catch (error) {
+      console.error('Share failed:', error);
+    }
+  };
   
   // Save session to history
   const saveSession = useCallback(async () => {
@@ -514,22 +590,30 @@ export function SessionEngineModal({
             <div className="session-states-wrapper">
               {/* COUNTDOWN: 5-4-3-2-1 with fade */}
               <div className={`session-countdown ${sessionState === 'countdown' ? 'active' : 'exiting'}`}>
-                <p className="countdown-instruction">Připrav se na první nádech</p>
+                {/* Header se jménem cvičení */}
+                <div className="session-header">
+                  <h3 className="session-exercise-name">{exercise.name}</h3>
+                  <p className="session-instruction">Připrav se na první nádech</p>
+                </div>
+                
                 <div className="countdown-circle">
                   <span className="countdown-number">{countdownNumber}</span>
                 </div>
+                
+                {/* Breathing tip dole */}
+                <p className="session-tip">Funkční dýchání = dýcháš potichu</p>
               </div>
               
               {/* ACTIVE: Breathing session with fade */}
               {currentPhase && (
                 <div className={`session-active ${sessionState === 'active' ? 'active' : 'entering'}`}>
-              {/* Phase header without indicator */}
-              <div className="session-active__header">
-              <h3 className="phase-name">{currentPhase.name}</h3>
-              {currentPhase.description && (
-                <p className="phase-description">{currentPhase.description}</p>
-              )}
-            </div>
+              {/* Header se jménem cvičení (stejné místo jako countdown) */}
+              <div className="session-header">
+                <h3 className="session-exercise-name">{exercise.name}</h3>
+                {currentPhase.name && (
+                  <p className="session-instruction">{currentPhase.name}</p>
+                )}
+              </div>
             
             {/* Breathing circle with instruction inside */}
             <div className="breathing-circle-container">
@@ -552,6 +636,9 @@ export function SessionEngineModal({
               <span className="timer-seconds">{phaseTimeRemaining}</span>
               <span className="timer-label">sekund</span>
             </div>
+            
+            {/* Breathing tip dole (rotující) */}
+            <p className="session-tip">{breathingTips[currentTipIndex]}</p>
             
             {/* Instructions (if present) */}
             {currentPhase.instructions && (
@@ -597,28 +684,16 @@ export function SessionEngineModal({
               </p>
             </div>
             
-            {/* Stats with gold accent */}
-            <div className="completion-stats">
-              <div className="stat-item stat-item--gold">
-                <span className="stat-value">{totalPhases}</span>
-                <span className="stat-label">{totalPhases === 1 ? 'fáze' : 'fází'} dokončeno</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">{Math.floor(exercise.total_duration_seconds / 60)}</span>
-                <span className="stat-label">minut dechové práce</span>
-              </div>
-            </div>
-            
             {/* Difficulty rating */}
             <div className="difficulty-check">
               <h3 className="difficulty-check__title">Jak se ti dýchalo?</h3>
               <div className="difficulty-options">
                 <button
-                  className={`difficulty-button ${difficultyRating === 1 ? 'difficulty-button--active' : ''}`}
-                  onClick={() => setDifficultyRating(1)}
+                  className={`difficulty-button ${difficultyRating === 3 ? 'difficulty-button--active' : ''}`}
+                  onClick={() => setDifficultyRating(3)}
                   type="button"
                 >
-                  ⭐ Snadné
+                  ⭐⭐⭐ Snadné
                 </button>
                 <button
                   className={`difficulty-button ${difficultyRating === 2 ? 'difficulty-button--active' : ''}`}
@@ -628,11 +703,11 @@ export function SessionEngineModal({
                   ⭐⭐ Tak akorát
                 </button>
                 <button
-                  className={`difficulty-button ${difficultyRating === 3 ? 'difficulty-button--active' : ''}`}
-                  onClick={() => setDifficultyRating(3)}
+                  className={`difficulty-button ${difficultyRating === 1 ? 'difficulty-button--active' : ''}`}
+                  onClick={() => setDifficultyRating(1)}
                   type="button"
                 >
-                  ⭐⭐⭐ Náročné
+                  ⭐ Náročné
                 </button>
               </div>
             </div>
@@ -641,37 +716,22 @@ export function SessionEngineModal({
             <div className="mood-check">
               <h3 className="mood-check__title">Jak se teď cítíš?</h3>
               <div className="mood-options">
-                {(['energized', 'calm', 'tired', 'stressed'] as MoodType[]).map((mood) => (
+                {([
+                  { value: 'energized', emoji: '⚡', label: 'Energicky' },
+                  { value: 'calm', emoji: '😌', label: 'Klidně' },
+                  { value: 'neutral', emoji: '😐', label: 'Neutrálně' },
+                  { value: 'tired', emoji: '😴', label: 'Unaveně' },
+                  { value: 'stressed', emoji: '😰', label: 'Ve stresu' }
+                ] as const).map(({ value, emoji, label }) => (
                   <button
-                    key={mood}
-                    className={`mood-button ${moodAfter === mood ? 'mood-button--active' : ''}`}
-                    onClick={() => setMoodAfter(mood)}
+                    key={value}
+                    className={`mood-button ${moodAfter === value ? 'mood-button--active' : ''}`}
+                    onClick={() => setMoodAfter(value as MoodType)}
                     type="button"
                   >
-                    {mood === 'energized' && (
-                      <>
-                        <span className="mood-emoji" aria-hidden="true">⚡</span>
-                        <span>Energický</span>
-                      </>
-                    )}
-                    {mood === 'calm' && (
-                      <>
-                        <span className="mood-emoji" aria-hidden="true">😌</span>
-                        <span>Klidný</span>
-                      </>
-                    )}
-                    {mood === 'tired' && (
-                      <>
-                        <span className="mood-emoji" aria-hidden="true">😴</span>
-                        <span>Unavený</span>
-                      </>
-                    )}
-                    {mood === 'stressed' && (
-                      <>
-                        <span className="mood-emoji" aria-hidden="true">😰</span>
-                        <span>Stresovaný</span>
-                      </>
-                    )}
+                    {/* Mezera mezi emoji a textem */}
+                    <span className="mood-emoji" aria-hidden="true">{emoji}</span>{' '}
+                    <span>{label}</span>
                   </button>
                 ))}
               </div>
@@ -708,6 +768,16 @@ export function SessionEngineModal({
                 Uložit & Zavřít
               </Button>
               
+              {/* Share button */}
+              <Button
+                variant="secondary"
+                size="md"
+                fullWidth
+                onClick={handleShare}
+              >
+                Sdílet výsledek
+              </Button>
+              
               <Button
                 variant="ghost"
                 size="md"
@@ -718,7 +788,7 @@ export function SessionEngineModal({
                   setMoodAfter(null);
                 }}
               >
-                🔁 Opakovat cvičení
+                Opakovat cvičení
               </Button>
             </div>
           </div>

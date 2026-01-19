@@ -156,6 +156,46 @@
   transform: scale(1.02);
 }
 
+/* Session Header (countdown i active) */
+.session-header {
+  text-align: center;
+  max-width: 320px;
+  margin-bottom: 24px;
+}
+
+.session-exercise-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.session-instruction {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Breathing Tip (countdown i active) */
+.session-tip {
+  text-align: center;
+  max-width: 320px;
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  margin-top: 24px;
+  animation: tipFadeIn 600ms ease-in-out;
+}
+
+@keyframes tipFadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Legacy countdown-instruction (for backwards compatibility) */
 .countdown-instruction {
   font-size: 16px;
   font-weight: 500;
@@ -351,24 +391,54 @@
       0 0 20px rgba(44, 190, 198, 0.3),
       0 0 40px rgba(44, 190, 198, 0.2),
       inset 0 0 30px rgba(44, 190, 198, 0.15);
+    border-color: var(--color-primary);
   }
   50% {
+    /* Snížená intenzita (0.5→0.4, 0.3→0.25) pro jemnější efekt */
     box-shadow: 
-      0 0 30px rgba(214, 162, 58, 0.5),  /* GOLD */
-      0 0 60px rgba(214, 162, 58, 0.3),  /* GOLD */
-      inset 0 0 40px rgba(214, 162, 58, 0.2); /* GOLD */
-    border-color: rgba(214, 162, 58, 0.8);
+      0 0 25px rgba(214, 162, 58, 0.4),  /* GOLD */
+      0 0 50px rgba(214, 162, 58, 0.25),  /* GOLD */
+      inset 0 0 35px rgba(214, 162, 58, 0.15); /* GOLD */
+    /* Jemnější border (0.8→0.6) */
+    border-color: rgba(214, 162, 58, 0.6);
   }
   100% {
     box-shadow: 
       0 0 20px rgba(44, 190, 198, 0.3),
       0 0 40px rgba(44, 190, 198, 0.2),
       inset 0 0 30px rgba(44, 190, 198, 0.15);
+    border-color: var(--color-primary);
   }
 }
 
 .breathing-circle.pulse-gold {
-  animation: goldPulse 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Delší animace (600ms→900ms), plynulejší easing */
+  animation: goldPulse 900ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Breathing Circle - Color Variants (Teal Gradient) */
+.breathing-circle--inhale {
+  border-color: var(--color-primary-light); /* #6ADBE0 - Light teal pro nádech */
+  box-shadow: 
+    0 0 30px rgba(106, 219, 224, 0.4),
+    0 0 60px rgba(106, 219, 224, 0.3),
+    inset 0 0 30px rgba(106, 219, 224, 0.15);
+}
+
+.breathing-circle--exhale {
+  border-color: var(--color-primary); /* #2CBEC6 - Standard teal pro výdech */
+  box-shadow: 
+    0 0 20px rgba(44, 190, 198, 0.3),
+    0 0 40px rgba(44, 190, 198, 0.2),
+    inset 0 0 30px rgba(44, 190, 198, 0.15);
+}
+
+.breathing-circle--hold {
+  border-color: var(--color-primary-dark); /* #15939A - Dark teal pro zádrž */
+  box-shadow: 
+    0 0 15px rgba(21, 147, 154, 0.3),
+    0 0 30px rgba(21, 147, 154, 0.2),
+    inset 0 0 30px rgba(21, 147, 154, 0.15);
 }
 
 /* Breathing instruction INSIDE circle */
@@ -422,7 +492,8 @@
   font-size: 14px;
   font-weight: 500;
   margin-top: 32px;
-  margin-bottom: 16px;
+  /* Zvýšeno z 16px na 32px aby nekřížil progress bar */
+  margin-bottom: 32px;
 }
 
 .session-active__next {
@@ -543,8 +614,16 @@
 .difficulty-button--active {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: var(--color-background);
+  /* Bílý text na active */
+  color: var(--color-text-inverse);
   font-weight: 600;
+}
+
+/* Hover na active - text zůstává bílý */
+.difficulty-button--active:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent-light);
+  color: var(--color-text-inverse);
 }
 
 /* ============================================================
@@ -563,8 +642,22 @@
 
 .mood-options {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* Změna z 2 na 3 sloupce pro 5 options (3 horní, 2 dolní) */
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+
+/* Vycentrovat dolní 2 tlačítka (4. a 5.) */
+.mood-options .mood-button:nth-child(4) {
+  grid-column: 1 / 2;
+  margin-left: auto;
+  margin-right: 6px;
+}
+
+.mood-options .mood-button:nth-child(5) {
+  grid-column: 3 / 4;
+  margin-left: 6px;
+  margin-right: auto;
 }
 
 .mood-button {
@@ -591,8 +684,15 @@
 .mood-button--active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--color-background);
+  color: var(--color-text-inverse);
   font-weight: 600;
+}
+
+/* Hover na active - text zůstává bílý */
+.mood-button--active:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary-light);
+  color: var(--color-text-inverse);
 }
 
 /* ============================================================
@@ -825,7 +925,8 @@
    ============================================================ */
 .session-progress {
   position: absolute;
-  bottom: 0;
+  /* Posunuto níže (0→8px) aby nekřížil instructions */
+  bottom: 8px;
   left: 0;
   width: 100%;
   height: 3px;
