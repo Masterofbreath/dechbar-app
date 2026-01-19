@@ -34,15 +34,49 @@ import type { Exercise } from '../types/exercises';
  */
 export function DnesPage() {
   const { user } = useAuth();
-  const { data: exercises } = useExercises();
+  const { data: exercises, isLoading, error } = useExercises();
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   
   // Handle protocol button clicks - open SessionEngineModal
   function handleProtocolClick(protocolName: string) {
-    const exercise = exercises?.find(ex => ex.name === protocolName);
-    if (exercise) {
-      setSelectedExercise(exercise);
+    // Debug logging
+    console.log('🔍 [DnesPage] Hledám cvičení:', protocolName);
+    console.log('📦 [DnesPage] Načtená cvičení:', exercises?.length || 0, 'celkem');
+    console.log('📋 [DnesPage] Dostupné názvy:', exercises?.map(ex => ex.name).join(', '));
+    
+    if (!exercises) {
+      console.warn('⚠️ [DnesPage] Exercises ještě nejsou načteny');
+      return;
     }
+    
+    // Try exact match first
+    let exercise = exercises.find(ex => ex.name === protocolName);
+    
+    // Fallback: case-insensitive search
+    if (!exercise) {
+      console.log('🔄 [DnesPage] Zkouším case-insensitive search...');
+      exercise = exercises.find(ex => 
+        ex.name.toLowerCase() === protocolName.toLowerCase()
+      );
+    }
+    
+    if (exercise) {
+      console.log('✅ [DnesPage] Cvičení nalezeno:', exercise.name, `(${exercise.id})`);
+      setSelectedExercise(exercise);
+    } else {
+      console.error('❌ [DnesPage] Cvičení nenalezeno:', protocolName);
+      console.log('💡 [DnesPage] Tip: Zkontroluj názvy v databázi (exercises table)');
+    }
+  }
+  
+  // Show loading state
+  if (isLoading) {
+    console.log('⏳ [DnesPage] Načítám cvičení...');
+  }
+  
+  // Show error in console
+  if (error) {
+    console.error('🚨 [DnesPage] Chyba při načítání cvičení:', error);
   }
   
   return (

@@ -190,6 +190,9 @@ export function SessionEngineModal({
     // Set initial time remaining
     setPhaseTimeRemaining(currentPhase.duration_seconds);
     
+    // Declare breathing interval ID at the top level
+    let breathingIntervalId: number | null = null;
+    
     // Set instruction based on phase type
     if (currentPhase.type === 'silence') {
       setCurrentInstruction('DOZNĚNÍ');
@@ -202,7 +205,6 @@ export function SessionEngineModal({
       
       const phaseStartTime = Date.now();
       let lastInstruction = '';
-      let breathingIntervalId: number | null = null;
       
       const updateBreathingState = () => {
         const elapsedTime = (Date.now() - phaseStartTime) / 1000;
@@ -249,16 +251,9 @@ export function SessionEngineModal({
       
       // Run breathing cycle update every 100ms (smooth instruction changes)
       breathingIntervalId = window.setInterval(updateBreathingState, 100);
-      
-      // Cleanup function
-      return () => {
-        if (breathingIntervalId !== null) {
-          window.clearInterval(breathingIntervalId);
-        }
-      };
     }
     
-    // Countdown timer (controls phase transitions)
+    // Countdown timer (controls phase transitions) - RUNS FOR ALL PHASES
     timerRef.current = window.setInterval(() => {
       setPhaseTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -278,8 +273,10 @@ export function SessionEngineModal({
       });
     }, 1000);
     
+    // Single cleanup for ALL intervals
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
+      if (breathingIntervalId) window.clearInterval(breathingIntervalId);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
   }, [sessionState, currentPhaseIndex, currentPhase, totalPhases, animateBreathingCircle, playBell, completeExercise]);
