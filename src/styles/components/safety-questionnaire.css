@@ -1,0 +1,238 @@
+/* ============================================================
+   Safety Questionnaire Modal Styles
+   First-time user safety check with disclaimer
+   DechBar Tone of Voice: Friendly but responsible
+   ============================================================ */
+
+/* ============================================================
+   Modal Container
+   ============================================================ */
+.safety-questionnaire-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.safety-questionnaire-modal__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.safety-questionnaire-modal__content {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--color-surface-elevated);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.questionnaire-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.questionnaire-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.questionnaire-subtitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ============================================================
+   Questions Section
+   ============================================================ */
+.questionnaire-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   Disclaimer Section
+   ============================================================ */
+.disclaimer {
+  margin-bottom: 24px;
+}
+
+.disclaimer__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.disclaimer__text {
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.disclaimer__text p {
+  margin: 0 0 12px 0;
+}
+
+.disclaimer__text p:last-child {
+  margin-bottom: 0;
+}
+
+.disclaimer__text strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.disclaimer__text ul {
+  margin: 8px 0 12px 20px;
+  padding: 0;
+}
+
+.disclaimer__text li {
+  margin-bottom: 4px;
+}
+
+.disclaimer__warning {
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: 12px;
+  color: var(--color-error);
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.disclaimer__footer {
+  color: var(--color-text-tertiary);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ============================================================
+   Actions
+   ============================================================ */
+.questionnaire-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================================
+   Safety Warning Screen
+   ============================================================ */
+.safety-warning {
+  text-align: center;
+}
+
+.safety-warning__icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.safety-warning__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-error);
+  margin: 0 0 16px 0;
+}
+
+.safety-warning__message {
+  font-size: 16px;
+  color: var(--color-text-primary);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.safety-warning__recommendations {
+  text-align: left;
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  margin-bottom: 24px;
+}
+
+.safety-warning__recommendations h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 12px 0;
+}
+
+.safety-warning__recommendations ul {
+  margin: 0 0 16px 20px;
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.safety-warning__recommendations p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.safety-warning__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================================
+   Responsive Design
+   ============================================================ */
+@media (max-width: 768px) {
+  .safety-questionnaire-modal__content {
+    padding: 24px 20px;
+  }
+  
+  .questionnaire-title {
+    font-size: 24px;
+  }
+  
+  .questionnaire-questions {
+    padding: 16px;
+  }
+  
+  .disclaimer__text {
+    padding: 16px;
+    font-size: 13px;
+  }
+}

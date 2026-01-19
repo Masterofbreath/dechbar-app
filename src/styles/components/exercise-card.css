@@ -1,0 +1,257 @@
+/* ============================================================
+   Exercise Card Styles
+   Dark-First Premium Design (Brand Book 2.0)
+   ============================================================ */
+
+/* ============================================================
+   Base Card Styles
+   ============================================================ */
+.exercise-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  overflow: hidden;
+}
+
+.exercise-card:hover:not(.exercise-card--locked) {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(44, 190, 198, 0.15);
+}
+
+.exercise-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.exercise-card:active:not(.exercise-card--locked) {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   Icon
+   ============================================================ */
+.exercise-card__icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: 12px;
+  color: var(--color-background);
+}
+
+/* ============================================================
+   Content
+   ============================================================ */
+.exercise-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.exercise-card__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exercise-card__lock-icon {
+  color: var(--color-accent);
+}
+
+.exercise-card__description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Metadata Badges
+   ============================================================ */
+.exercise-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.badge--duration {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.badge--phases {
+  color: var(--color-accent);
+}
+
+.badge--difficulty {
+  font-weight: 600;
+}
+
+.badge--beginner {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.badge--intermediate {
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.badge--advanced {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.badge--success {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+/* ============================================================
+   Tags
+   ============================================================ */
+.exercise-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================================
+   Actions (Edit/Delete for custom exercises)
+   ============================================================ */
+.exercise-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.icon-button--danger:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* ============================================================
+   Locked State
+   ============================================================ */
+.exercise-card--locked {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.exercise-card__lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(18, 18, 18, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+}
+
+.lock-content {
+  text-align: center;
+  color: var(--color-accent);
+}
+
+.lock-text {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   Responsive Design
+   ============================================================ */
+@media (max-width: 768px) {
+  .exercise-card {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .exercise-card__icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .exercise-card__title {
+    font-size: 16px;
+  }
+  
+  .exercise-card__description {
+    font-size: 13px;
+  }
+}
+
+/* ============================================================
+   Accessibility
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .exercise-card {
+    transition: none;
+  }
+  
+  .exercise-card:hover {
+    transform: none;
+  }
+}

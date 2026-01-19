@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-19
+
+### Added
+- **DechBar Studio MVP1 - Multi-Phase Breathing Exercise System**
+  - 6 preset protocols: BOX Breathing, Calm, Coherence, RÁNO (7-phase), RESET (7-phase), NOC (5-phase)
+  - Multi-phase protocol support (phases with different breathing patterns)
+  - Tier-based custom exercise creation (3 for ZDARMA, unlimited for SMART)
+  - Exercise history tracking (7 days for ZDARMA, 90 days for SMART, unlimited for AI_COACH)
+  - Safety questionnaire (first-time users)
+  - Safety disclaimers with DechBar Tone of Voice
+  - Soft delete for exercises (preserve session history)
+- **Session Engine Modal**
+  - JS+RAF breathing circle animation (cubic-bezier easing)
+  - Real-time phase countdown timer
+  - Phase indicator (3/7)
+  - Bell audio cues on phase transitions
+  - NO PAUSE (uninterrupted flow for focus)
+  - Completion celebration with mood check
+  - Session history tracking
+- **CvicitPage - Exercise Library**
+  - Tabbed interface (Presets / Custom / History)
+  - Tier-aware exercise display
+  - Upgrade prompts for FREE users
+  - Exercise card with metadata (duration, phases, difficulty, tags)
+  - Edit/Delete actions for custom exercises
+- **Database Tables**
+  - `exercises` table (hybrid PostgreSQL + JSONB for breathing patterns)
+  - `exercise_sessions` table (history with mood tracking)
+  - `profiles.safety_flags` JSONB column (safety questionnaire responses)
+  - RLS policies for user data protection
+  - Admin bypass policies (CEO/admin roles can manage all exercises)
+  - 7 GIN and B-tree indexes for performance
+- **TypeScript Types**
+  - Complete type system for exercises, phases, sessions, safety flags
+  - API payload types for mutations
+  - UI component prop types
+- **API Hooks**
+  - `useExercises()` - Fetch all available exercises
+  - `useExercise(id)` - Fetch single exercise
+  - `useCustomExerciseCount()` - Tier limit tracking
+  - `useCreateExercise()` - Create with tier enforcement
+  - `useUpdateExercise()` - Update with ownership check
+  - `useDeleteExercise()` - Soft delete
+  - `useExerciseSessions()` - History with tier filtering
+  - `useCompleteSession()` - Save session with mood
+  - `useSafetyFlags()` - Get user safety flags
+  - `useUpdateSafetyFlags()` - Save questionnaire
+- **NavIcon Extensions**
+  - Added 11 new icons: clock, edit, trash, x, wind, layers, bar-chart, target, zap, circle, check
+  - Total 29 icons in system
+
+### Changed
+- **CvicitPage** - Replaced EmptyState placeholder with full exercise library
+- **MODULE_MANIFEST.json** - Updated api.tables and features for exercise system
+- **Platform Components** - Exported LoadingSkeleton for module use
+
+### Migration Required
+- Run `supabase db push` to apply exercises system migration
+- New tables: exercises, exercise_sessions
+- Profile column: safety_flags (JSONB)
+
 ## [0.2.1] - 2026-01-14
 
 ### Changed (BREAKING)

@@ -1,0 +1,54 @@
+/* ============================================================
+   CvicitPage Styles
+   Exercise Library Page
+   ============================================================ */
+
+/* ============================================================
+   Page Container
+   ============================================================ */
+.cvicit-page {
+  padding: 24px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.cvicit-page__header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.cvicit-page__title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.cvicit-page__subtitle {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ============================================================
+   Responsive Design
+   ============================================================ */
+@media (min-width: 768px) {
+  .cvicit-page {
+    padding: 32px 24px;
+  }
+  
+  .cvicit-page__header {
+    margin-bottom: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cvicit-page {
+    padding: 40px 32px;
+  }
+}

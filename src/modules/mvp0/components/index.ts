@@ -20,3 +20,15 @@ export { DailyTipWidget } from './DailyTipWidget';
 
 export { LockedFeatureModal } from './LockedFeatureModal';
 export type { LockedFeatureModalProps } from './LockedFeatureModal';
+
+export { ExerciseCard } from './ExerciseCard';
+export type { ExerciseCardProps } from './ExerciseCard';
+
+export { ExerciseList } from './ExerciseList';
+export type { ExerciseListProps } from './ExerciseList';
+
+export { SessionEngineModal } from './SessionEngineModal';
+export type { SessionEngineModalProps } from './SessionEngineModal';
+
+export { SafetyQuestionnaire } from './SafetyQuestionnaire';
+export type { SafetyQuestionnaireProps } from './SafetyQuestionnaire';

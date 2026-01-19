@@ -17,7 +17,9 @@ export interface NavIconProps {
    */
   name: 'home' | 'dumbbell' | 'graduation-cap' | 'chart-line' | 'settings' | 'bell' | 
         'sun' | 'refresh' | 'moon' | 'lightbulb' | 'sparkles' | 'chevron-right' |
-        'close' | 'user' | 'credit-card' | 'info' | 'logout' | 'lock';
+        'close' | 'user' | 'credit-card' | 'info' | 'logout' | 'lock' |
+        'clock' | 'edit' | 'trash' | 'x' | 'wind' | 'layers' | 'bar-chart' | 'target' | 
+        'zap' | 'circle' | 'check';
   
   /**
    * Size in pixels
@@ -195,6 +197,64 @@ export function NavIcon({
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       </>
+    ),
+    
+    // Exercise system icons
+    'clock': (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 6v6l4 2" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'edit': (
+      <>
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'trash': (
+      <>
+        <path d="M3 6h18" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'x': (
+      <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    'wind': (
+      <>
+        <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'layers': (
+      <>
+        <path d="M12 2L2 7l10 5 10-5-10-5z" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2 17l10 5 10-5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'bar-chart': (
+      <>
+        <line x1="12" y1="20" x2="12" y2="10" strokeLinecap="round" />
+        <line x1="18" y1="20" x2="18" y2="4" strokeLinecap="round" />
+        <line x1="6" y1="20" x2="6" y2="16" strokeLinecap="round" />
+      </>
+    ),
+    'target': (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="2" />
+      </>
+    ),
+    'zap': (
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    'circle': (
+      <circle cx="12" cy="12" r="10" />
+    ),
+    'check': (
+      <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
     ),
   };
   

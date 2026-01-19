@@ -19,3 +19,39 @@ export { SettingsPage } from './pages/SettingsPage';
 // Components (if needed by other modules)
 export { LockedFeatureModal } from './components/LockedFeatureModal';
 export type { LockedFeatureModalProps } from './components/LockedFeatureModal';
+
+// API Hooks
+export {
+  useExercises,
+  useExercise,
+  useCustomExerciseCount,
+  useCreateExercise,
+  useUpdateExercise,
+  useDeleteExercise,
+  useExerciseSessions,
+  useCompleteSession,
+  useSafetyFlags,
+  useUpdateSafetyFlags,
+  exerciseKeys,
+} from './api/exercises';
+
+// Types
+export type {
+  Exercise,
+  ExercisePhase,
+  BreathingPattern,
+  ExerciseSession,
+  SafetyFlags,
+  CreateExercisePayload,
+  CompleteSessionPayload,
+  SafetyQuestionnaireAnswers,
+  ExerciseCategory,
+  ExerciseSubcategory,
+  ExerciseDifficulty,
+  MembershipTier,
+  PhaseType,
+  Contraindication,
+  MoodType,
+  SessionState,
+  SessionEngineState,
+} from './types/exercises';

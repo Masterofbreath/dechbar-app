@@ -20,22 +20,30 @@
       "/app/profil",
       "/app/nastaveni"
     ],
-    "tables": []
+    "tables": ["exercises", "exercise_sessions"]
   },
   "permissions": [],
   "features": {
     "free": [
-      "3 preset protocols (RÁNO, RESET, NOC)",
+      "6 preset protocols (BOX, Calm, Coherence, RÁNO, RESET, NOC)",
+      "3 custom exercise slots",
+      "7-day exercise history",
       "Daily breathing tips",
-      "Basic greeting"
+      "Multi-phase protocol support"
     ],
     "smart": [
       "All FREE features",
-      "SMART exercise recommendations (placeholder)"
+      "Unlimited custom exercises (soft-limit 100)",
+      "90-day exercise history",
+      "SMART exercise recommendations",
+      "CSV export"
     ],
     "ai_coach": [
       "All SMART features",
-      "AI personalized insights (future)"
+      "Unlimited exercise history",
+      "AI personalized protocol suggestions",
+      "CSV + JSON export",
+      "Advanced biometric integration (future)"
     ]
   }
 }
