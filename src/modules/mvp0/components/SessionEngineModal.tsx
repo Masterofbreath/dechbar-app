@@ -26,7 +26,7 @@ import type { Exercise, SessionState, MoodType } from '../types/exercises';
 
 export interface SessionEngineModalProps {
   exercise: Exercise;
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
 }
 
@@ -35,7 +35,7 @@ export interface SessionEngineModalProps {
  */
 export function SessionEngineModal({
   exercise,
-  isOpen,
+  isOpen = true,
   onClose,
 }: SessionEngineModalProps) {
   const [sessionState, setSessionState] = useState<SessionState>('idle');
