@@ -38,6 +38,23 @@ Každý implementation log **MUSÍ obsahovat:**
 
 ## 📅 Timeline
 
+### 2026-01-19 - DechBar Studio MVP1
+
+#### Multi-Phase Exercise System
+1. **[DechBar Studio MVP1 Implementation](./2026-01-19-dechbar-studio-mvp1.md)** 🏆 **Major Feature Release**
+   - Multi-phase breathing exercise system with JSONB protocols
+   - 6 preset protocols: BOX, Calm, Coherence, RÁNO (7-phase), RESET (7-phase), NOC (5-phase)
+   - Session Engine modal with JS+RAF breathing circle animation (Apple-level quality)
+   - Safety questionnaire with DechBar Tone of Voice
+   - Tier-based custom exercise limits (3 for ZDARMA, unlimited for SMART)
+   - Exercise history with mood tracking (7/90/unlimited days)
+   - Database: exercises, exercise_sessions tables with RLS
+   - 10 API hooks, 4 UI components, 5 CSS files
+   - NO PAUSE design decision (mindfulness-first)
+   - Soft delete for data preservation
+   - 17 files, 3,850+ lines of code
+   - Build: ✅ TypeScript compiles, world-class UX achieved
+
 ### 2026-01-18 - Accessibility & Keyboard UX
 
 #### WCAG AA Compliance
