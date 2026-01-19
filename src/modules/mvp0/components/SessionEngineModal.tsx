@@ -99,6 +99,12 @@ export function SessionEngineModal({
   ) => {
     if (!circleRef.current) return;
     
+    // Cancel previous animation first
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    
     const startTime = performance.now();
     const startScale = type === 'inhale' ? 1.0 : 1.5;
     const endScale = type === 'inhale' ? 1.5 : 1.0;
@@ -122,6 +128,9 @@ export function SessionEngineModal({
       
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        // Clear ref when complete
+        animationFrameRef.current = null;
       }
     };
     
@@ -207,23 +216,35 @@ export function SessionEngineModal({
           // Trigger animation only on instruction change
           if (lastInstruction !== 'NÁDECH') {
             animateBreathingCircle('inhale', inhale_seconds * 1000);
+            lastInstruction = 'NÁDECH';
           }
         } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds) {
           newInstruction = hold_after_inhale_seconds > 0 ? 'ZADRŽ' : '';
+          // Cancel animation during hold (keeps scale at 1.5)
+          if (lastInstruction !== 'ZADRŽ' && hold_after_inhale_seconds > 0 && animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+            lastInstruction = 'ZADRŽ';
+          }
         } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds + exhale_seconds) {
           newInstruction = 'VÝDECH';
           // Trigger animation only on instruction change
           if (lastInstruction !== 'VÝDECH') {
             animateBreathingCircle('exhale', exhale_seconds * 1000);
+            lastInstruction = 'VÝDECH';
           }
         } else {
           newInstruction = hold_after_exhale_seconds > 0 ? 'ZADRŽ' : '';
+          // Cancel animation during hold (keeps scale at 1.0)
+          if (lastInstruction !== 'ZADRŽ' && hold_after_exhale_seconds > 0 && animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+            lastInstruction = 'ZADRŽ';
+          }
         }
         
-        if (newInstruction !== lastInstruction) {
-          setCurrentInstruction(newInstruction);
-          lastInstruction = newInstruction;
-        }
+        // Update instruction state
+        setCurrentInstruction(newInstruction);
       };
       
       // Run breathing cycle update every 100ms (smooth instruction changes)
@@ -261,7 +282,7 @@ export function SessionEngineModal({
       if (timerRef.current) window.clearInterval(timerRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [sessionState, currentPhaseIndex, currentPhase, totalPhases, currentInstruction, animateBreathingCircle, playBell, completeExercise]);
+  }, [sessionState, currentPhaseIndex, currentPhase, totalPhases, animateBreathingCircle, playBell, completeExercise]);
   
   // Handle modal close
   const handleClose = useCallback(() => {

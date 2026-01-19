@@ -40,6 +40,10 @@ export function ExerciseCard({
   const durationMinutes = Math.round(exercise.total_duration_seconds / 60);
   const isCustom = exercise.category === 'custom';
   
+  // Filter out difficulty tags (they're already shown in badge)
+  const difficultyTags = ['začátečník', 'mírně-pokročilý', 'pokročilý', 'expert'];
+  const displayTags = exercise.tags.filter(tag => !difficultyTags.includes(tag));
+  
   // Icon mapping for subcategories
   const subcategoryIcons: Record<string, string> = {
     morning: 'sun',
@@ -131,9 +135,9 @@ export function ExerciseCard({
         </div>
         
         {/* Tags */}
-        {exercise.tags.length > 0 && (
+        {displayTags.length > 0 && (
           <div className="exercise-card__tags">
-            {exercise.tags.slice(0, 3).map((tag) => (
+            {displayTags.slice(0, 3).map((tag) => (
               <span key={tag} className="tag">
                 {tag}
               </span>

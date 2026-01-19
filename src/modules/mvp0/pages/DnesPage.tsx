@@ -12,13 +12,17 @@
  * @since 0.1.0
  */
 
+import { useState } from 'react';
 import { useAuth } from '@/platform/auth';
 import { 
   Greeting, 
   SmartExerciseButton, 
   PresetProtocolButton, 
-  DailyTipWidget 
+  DailyTipWidget,
+  SessionEngineModal
 } from '../components';
+import { useExercises } from '../api/exercises';
+import type { Exercise } from '../types/exercises';
 
 /**
  * DnesPage - Dashboard with core protocols
@@ -30,12 +34,15 @@ import {
  */
 export function DnesPage() {
   const { user } = useAuth();
+  const { data: exercises } = useExercises();
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   
-  // Handle protocol button clicks (placeholder until Session Engine is ready)
-  function handleProtocolClick(protocol: string) {
-    console.log(`Protocol clicked: ${protocol}`);
-    // TODO: Open Session Engine modal (MVP1)
-    alert(`Připravujeme Session Engine pro ${protocol}...`);
+  // Handle protocol button clicks - open SessionEngineModal
+  function handleProtocolClick(protocolName: string) {
+    const exercise = exercises?.find(ex => ex.name === protocolName);
+    if (exercise) {
+      setSelectedExercise(exercise);
+    }
   }
   
   return (
@@ -81,6 +88,14 @@ export function DnesPage() {
       
       {/* 4. Daily Tip Widget */}
       <DailyTipWidget />
+      
+      {/* Session Engine Modal */}
+      {selectedExercise && (
+        <SessionEngineModal
+          exercise={selectedExercise}
+          onClose={() => setSelectedExercise(null)}
+        />
+      )}
     </div>
   );
 }

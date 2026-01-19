@@ -65,27 +65,7 @@
   text-align: center;
 }
 
-.session-start__close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: none;
-  border-radius: 12px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.session-start__close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--color-text-primary);
-}
+/* Close button uses global .close-button class */
 
 .session-start__icon {
   width: 80px;
@@ -138,17 +118,22 @@
    ============================================================ */
 .session-countdown {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 32px;
   min-height: 400px;
+  padding: 48px 24px;
 }
 
 .countdown-instruction {
-  text-align: center;
   font-size: 16px;
   font-weight: 500;
   color: var(--color-text-secondary);
-  margin-bottom: 24px;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
 }
 
 .countdown-circle {
@@ -188,27 +173,7 @@
   position: relative;
 }
 
-.session-active__close {
-  position: absolute;
-  top: -16px;
-  right: -16px;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: none;
-  border-radius: 12px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.session-active__close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--color-error);
-}
+/* Close button uses global .close-button class */
 
 .session-active__header {
   margin-bottom: 32px;
@@ -249,7 +214,9 @@
   position: relative;
   width: 280px;
   height: 280px;
-  margin: 0 auto 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .breathing-circle {
