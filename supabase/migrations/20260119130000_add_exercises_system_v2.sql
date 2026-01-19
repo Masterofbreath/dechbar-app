@@ -164,12 +164,11 @@ ADD COLUMN IF NOT EXISTS safety_flags JSONB DEFAULT '{
 }'::jsonb;
 
 -- =====================================================
--- SEED DATA: 6 Preset Protocols
+-- SEED DATA: 6 Preset Protocols (using gen_random_uuid())
 -- =====================================================
 
 -- 1. BOX BREATHING (4-4-4-4)
 INSERT INTO public.exercises (
-  id,
   name,
   description,
   category,
@@ -184,7 +183,6 @@ INSERT INTO public.exercises (
   tags,
   contraindications
 ) VALUES (
-  'box-breathing-preset',
   'Box Breathing',
   'Klasická technika 4-4-4-4 pro okamžité uklidnění a focus',
   'preset',
@@ -202,7 +200,6 @@ INSERT INTO public.exercises (
 
 -- 2. CALM (4-6 Pattern)
 INSERT INTO public.exercises (
-  id,
   name,
   description,
   category,
@@ -217,7 +214,6 @@ INSERT INTO public.exercises (
   tags,
   contraindications
 ) VALUES (
-  'calm-breathing-preset',
   'Calm',
   'Prodloužený výdech pro rychlé uklidnění',
   'preset',
@@ -235,7 +231,6 @@ INSERT INTO public.exercises (
 
 -- 3. COHERENCE (5-5 Pattern)
 INSERT INTO public.exercises (
-  id,
   name,
   description,
   category,
@@ -250,7 +245,6 @@ INSERT INTO public.exercises (
   tags,
   contraindications
 ) VALUES (
-  'coherence-breathing-preset',
   'Coherence',
   'Optimální rytmus pro srdeční variabilitu (HRV)',
   'preset',
@@ -268,10 +262,20 @@ INSERT INTO public.exercises (
 
 -- 4. RÁNO (7-phase Morning Protocol)
 INSERT INTO public.exercises (
-  id, name, description, category, subcategory, created_by, is_public, required_tier,
-  breathing_pattern, total_duration_seconds, phase_count, difficulty, tags, contraindications
+  name,
+  description,
+  category,
+  subcategory,
+  created_by,
+  is_public,
+  required_tier,
+  breathing_pattern,
+  total_duration_seconds,
+  phase_count,
+  difficulty,
+  tags,
+  contraindications
 ) VALUES (
-  'rano-protocol-preset',
   'RÁNO',
   'Ranní aktivace s postupnou progresí dechové frekvence',
   'preset',
@@ -289,10 +293,20 @@ INSERT INTO public.exercises (
 
 -- 5. RESET (7-phase Midday Protocol)
 INSERT INTO public.exercises (
-  id, name, description, category, subcategory, created_by, is_public, required_tier,
-  breathing_pattern, total_duration_seconds, phase_count, difficulty, tags, contraindications
+  name,
+  description,
+  category,
+  subcategory,
+  created_by,
+  is_public,
+  required_tier,
+  breathing_pattern,
+  total_duration_seconds,
+  phase_count,
+  difficulty,
+  tags,
+  contraindications
 ) VALUES (
-  'reset-protocol-preset',
   'RESET',
   'Poledavní reset s progresivním výdechem a nosním bzučením',
   'preset',
@@ -310,10 +324,20 @@ INSERT INTO public.exercises (
 
 -- 6. NOC (5-phase Evening Protocol)
 INSERT INTO public.exercises (
-  id, name, description, category, subcategory, created_by, is_public, required_tier,
-  breathing_pattern, total_duration_seconds, phase_count, difficulty, tags, contraindications
+  name,
+  description,
+  category,
+  subcategory,
+  created_by,
+  is_public,
+  required_tier,
+  breathing_pattern,
+  total_duration_seconds,
+  phase_count,
+  difficulty,
+  tags,
+  contraindications
 ) VALUES (
-  'noc-protocol-preset',
   'NOC',
   'Večerní relaxace s hlubokým dýcháním a nosním bzučením pro lepší spánek',
   'preset',
