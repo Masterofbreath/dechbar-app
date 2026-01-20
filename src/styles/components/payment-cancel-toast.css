@@ -1,0 +1,100 @@
+/**
+ * Payment Cancel Toast - Apple-style lightweight banner
+ * 
+ * Shows when user cancels Stripe checkout
+ * Auto-dismisses after 3 seconds
+ * Non-blocking, reassuring, minimal
+ * 
+ * Visual Brand Book compliance:
+ * - Uses --color-primary (Teal #2CBEC6)
+ * - Uses spacing tokens (4px base unit)
+ * - Premium shadows (Apple-style depth)
+ * - Calm by Default (non-blocking, auto-dismiss)
+ * - Less is More (minimal UI, clear message)
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+.payment-cancel-toast {
+  position: fixed;
+  top: var(--spacing-4);  /* 16px from top */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;  /* Above modals */
+  
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);  /* 12px gap */
+  
+  max-width: 90%;
+  width: fit-content;
+  padding: var(--spacing-4) var(--spacing-5);  /* 16px 20px */
+  
+  background: var(--color-primary);  /* Teal #2CBEC6 */
+  color: white;
+  border-radius: var(--radius-lg);  /* 12px */
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  
+  animation: toast-slide-down 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+@keyframes toast-slide-down {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.payment-cancel-toast__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-cancel-toast__text {
+  font-size: var(--font-size-sm);  /* 14px */
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.payment-cancel-toast__close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.payment-cancel-toast__close:hover {
+  opacity: 1;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .payment-cancel-toast {
+    max-width: calc(100% - 32px);
+    padding: var(--spacing-3) var(--spacing-4);  /* 12px 16px */
+  }
+  
+  .payment-cancel-toast__text {
+    font-size: var(--font-size-xs);  /* 12px */
+  }
+}

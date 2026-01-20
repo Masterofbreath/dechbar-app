@@ -1,0 +1,33 @@
+/**
+ * Session Engine Modal - Component Styles
+ * 
+ * Modular CSS architecture for maintainability.
+ * Import order is critical!
+ * 
+ * @package DechBar_App
+ */
+
+/* Base styles (must be first) */
+@import './_base.css';
+@import './_session-states.css';
+
+/* Session screens (chronological order) */
+@import './_session-start.css';
+@import './_countdown.css';
+@import './_active.css';
+@import './_completed.css';
+
+/* Session components */
+@import './_breathing-circle.css';
+@import './_instructions.css';
+@import './_progress-bar.css';
+
+/* Completion sub-components */
+@import './_difficulty-check.css';
+@import './_mood-check.css';
+@import './_mood-before.css';
+@import './_notes.css';
+
+/* Responsive & Accessibility (must be last) */
+@import './_mobile.css';
+@import './_accessibility.css';

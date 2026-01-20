@@ -1,16 +1,23 @@
 /**
  * PricingCard Component
  * 
- * Individual pricing plan card with features, badges, and CTA
- * Design: Dark surface with teal/gold accents per Visual Brand Book
+ * Individual pricing plan card with features, badges, and Stripe checkout integration.
+ * Design: Premium glassmorphism with teal/gold accents per Visual Brand Book.
  * 
  * @package DechBar_App
  * @subpackage Modules/PublicWeb
  */
 
-import { Button } from '@/platform';
+import { useState } from 'react';
+import { Button, EmailInputModal } from '@/platform';
+import { useCheckout } from '@/platform/payments';
+import { useAuth } from '@/platform/auth/useAuth';
+import type { BillingInterval } from './BillingToggle';
 
 export interface PricingCardProps {
+  moduleId: 'smart' | 'ai-coach' | 'free';
+  priceId?: string;  // Stripe Price ID (undefined for free tier)
+  billingInterval: BillingInterval;
   title: string;
   subtitle?: string;
   price: string;
@@ -22,11 +29,14 @@ export interface PricingCardProps {
   ctaText: string;
   ctaVariant: 'primary' | 'ghost';
   highlighted?: boolean;
-  isDisabled?: boolean; // ✅ NEW: For "Aktivní" state
-  onCTA: () => void;
+  isDisabled?: boolean;
+  onFreeTierCTA?: () => void;  // For free tier (auth modal)
 }
 
 export function PricingCard({
+  moduleId,
+  priceId,
+  billingInterval,
   title,
   subtitle,
   price,
@@ -38,11 +48,61 @@ export function PricingCard({
   ctaText,
   ctaVariant,
   highlighted = false,
-  isDisabled = false, // ✅ NEW: Default false
-  onCTA,
+  isDisabled = false,
+  onFreeTierCTA,
 }: PricingCardProps) {
+  const { user } = useAuth();
+  const { createCheckoutSession, isLoading, error } = useCheckout();
+  const [localLoading, setLocalLoading] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+
+  const handleCTA = async () => {
+    // Free tier: Open auth modal
+    if (moduleId === 'free' && onFreeTierCTA) {
+      onFreeTierCTA();
+      return;
+    }
+
+    // Paid tiers: Check authentication
+    if (!priceId) {
+      console.error('No priceId provided for paid tier');
+      return;
+    }
+
+    // Authenticated user: Direct to Stripe
+    if (user) {
+      setLocalLoading(true);
+      try {
+        await createCheckoutSession(priceId, billingInterval, moduleId);
+      } catch (err) {
+        console.error('Checkout failed:', err);
+      } finally {
+        setLocalLoading(false);
+      }
+    } else {
+      // Guest: Show email modal
+      setIsEmailModalOpen(true);
+    }
+  };
+
+  const handleEmailSubmit = async (email: string) => {
+    setLocalLoading(true);
+    try {
+      await createCheckoutSession(priceId!, billingInterval, moduleId, email);
+      setIsEmailModalOpen(false);
+    } catch (err) {
+      console.error('Checkout failed:', err);
+      throw err;  // Re-throw for modal error handling
+    } finally {
+      setLocalLoading(false);
+    }
+  };
+
+  const isButtonLoading = isLoading || localLoading;
+
   return (
-    <div className={`pricing-card ${highlighted ? 'pricing-card--highlighted' : ''}`}>
+    <>
+      <div className={`pricing-card ${highlighted ? 'pricing-card--highlighted' : ''}`}>
       {/* Badge (if exists) */}
       {badge && (
         <div className={`pricing-card__badge ${highlighted ? 'pricing-card__badge--gold' : 'pricing-card__badge--teal'}`}>
@@ -112,12 +172,28 @@ export function PricingCard({
         variant={ctaVariant}
         size="lg"
         fullWidth
-        onClick={onCTA}
-        disabled={isDisabled}
+        onClick={handleCTA}
+        disabled={isDisabled || isButtonLoading}
         className="pricing-card__cta"
       >
-        {ctaText}
+        {isButtonLoading ? 'Načítání...' : ctaText}
       </Button>
+
+      {/* Error message */}
+      {error && (
+        <p className="pricing-card__error" role="alert">
+          {error.message || 'Něco se pokazilo. Zkus to prosím znovu.'}
+        </p>
+      )}
     </div>
+
+    {/* Email Modal for Guest Checkout */}
+    <EmailInputModal
+      isOpen={isEmailModalOpen}
+      onClose={() => setIsEmailModalOpen(false)}
+      onSubmit={handleEmailSubmit}
+      isLoading={isButtonLoading}
+    />
+    </>
   );
 }

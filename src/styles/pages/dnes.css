@@ -406,19 +406,57 @@
   }
 }
 
-@media (max-width: 390px) {
+/* Small mobile (iPhone 13 mini, iPhone X/XS) - 3 sloupce vedle sebe */
+@media (max-width: 480px) {
+  .dnes-page__protocols {
+    gap: var(--spacing-2); /* 8px - kompaktnější */
+  }
+  
+  .preset-protocol-button {
+    min-height: 120px; /* Menší výška */
+    padding: 10px 8px; /* Menší padding */
+  }
+  
+  .preset-protocol-button__icon {
+    width: 28px; /* Menší ikona */
+    height: 28px;
+  }
+  
+  .preset-protocol-button__label {
+    font-size: 14px; /* Menší font */
+    letter-spacing: 0.03em;
+  }
+  
+  .preset-protocol-button__duration {
+    font-size: 10px;
+  }
+}
+
+/* Tiny mobile (iPhone SE) - Stack pouze tady */
+@media (max-width: 374px) {
   .dnes-page {
     padding: var(--spacing-4); /* 16px on very narrow */
   }
   
   .dnes-page__protocols {
-    grid-template-columns: 1fr; /* Stack on narrow mobile */
+    grid-template-columns: 1fr; /* Stack pouze na nejmenších zařízeních */
     gap: var(--spacing-2); /* 8px - extra compact on mobile */
   }
   
   .preset-protocol-button {
     min-height: auto;
     padding: var(--spacing-4);
+    flex-direction: row; /* Horizontální layout pro stack */
+    text-align: left;
+  }
+  
+  .preset-protocol-button__icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .preset-protocol-button__label {
+    font-size: 16px;
   }
 }
 

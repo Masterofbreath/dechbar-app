@@ -1,0 +1,111 @@
+/* ============================================================
+   Session Engine Modal - Mood Before Pick
+   Pre-session mood selection with emoji buttons
+   ============================================================ */
+
+.mood-before-pick {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.mood-before-pick__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 24px 0;
+  letter-spacing: -0.02em; /* Visual Brand Book */
+}
+
+.mood-before-pick__emojis {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mood-before-pick__emoji-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 12px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  opacity: 0.6;
+}
+
+.mood-before-pick__emoji-btn:hover {
+  opacity: 1;
+  background: var(--glow-primary-bg-subtle); /* Subtle teal */
+}
+
+.mood-before-pick__emoji-btn--selected {
+  opacity: 1;
+  background: var(--glow-primary-shadow-light);
+}
+
+.mood-before-pick__emoji {
+  font-size: 36px; /* Větší než "po cvičení" (32px) */
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.mood-before-pick__emoji-btn:hover .mood-before-pick__emoji {
+  transform: scale(1.15);
+}
+
+.mood-before-pick__label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.mood-before-pick__emoji-btn--selected .mood-before-pick__label {
+  color: var(--color-primary); /* Teal when selected */
+}
+
+.mood-before-pick__skip {
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin-top: 16px;
+  font-style: italic;
+}
+
+.mood-before-pick__skip-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+  font-style: italic;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.mood-before-pick__skip-btn:hover {
+  opacity: 0.7;
+}
+
+/* Mobile optimalizace */
+@media (max-width: 768px) {
+  .mood-before-pick__emojis {
+    gap: 8px;
+  }
+  
+  .mood-before-pick__emoji-btn {
+    padding: 8px 4px;
+  }
+  
+  .mood-before-pick__emoji {
+    font-size: 32px;
+  }
+  
+  .mood-before-pick__label {
+    font-size: 11px;
+  }
+}

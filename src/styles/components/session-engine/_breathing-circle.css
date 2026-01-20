@@ -1,0 +1,111 @@
+/* ============================================================
+   Session Engine Modal - Breathing Circle
+   JS+RAF controlled breathing pacer with color variants
+   ============================================================ */
+
+.breathing-circle-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.breathing-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 180px;
+  height: 180px;
+  margin: -90px 0 0 -90px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    var(--glow-primary-bg-strong) 0%,
+    var(--glow-primary-bg-medium) 50%,
+    var(--glow-primary-bg-subtle) 100%
+  );
+  border: 3px solid var(--color-primary);
+  box-shadow: 
+    0 0 20px var(--glow-primary-shadow-strong),
+    0 0 40px var(--glow-primary-shadow-medium),
+    inset 0 0 30px var(--glow-primary-shadow-subtle);
+  
+  /* JS+RAF will control transform scale */
+  transform: scale(1);
+  transform-origin: center;
+  will-change: transform;
+  
+  /* Center breathing instruction */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* GOLD PULSE REMOVED - too much distraction (Visual Brand Book: Calm by Default) */
+
+/* Breathing Circle - 2 Teal Variants (Simplified: Light/Dark) */
+/* Light teal = Nádech + Zádrž po nádechu (energie dovnitř/uvnitř) */
+.breathing-circle--inhale,
+.breathing-circle--hold-in {
+  border-color: var(--color-primary-light); /* #6ADBE0 - Light teal */
+  box-shadow: 
+    0 0 20px var(--glow-primary-light-subtle),
+    0 0 40px var(--glow-primary-light-medium),
+    inset 0 0 20px var(--glow-primary-light-faint);
+}
+
+/* Dark teal = Výdech + Zádrž po výdechu (klid ven/čekání) */
+.breathing-circle--exhale,
+.breathing-circle--hold,
+.breathing-circle--hold-out {
+  border-color: var(--color-primary-dark); /* #15939A - Dark teal */
+  box-shadow: 
+    0 0 20px var(--glow-primary-dark-subtle),
+    0 0 40px var(--glow-primary-dark-medium),
+    inset 0 0 20px var(--glow-primary-dark-faint);
+}
+
+/* Smooth transitions between colors (800ms for calm feel) */
+.breathing-circle {
+  transition: 
+    border-color 800ms ease-in-out,
+    box-shadow 800ms ease-in-out;
+}
+
+/* Breathing instruction INSIDE circle */
+.breathing-instruction {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+/* Timer BELOW circle */
+.session-timer {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.timer-seconds {
+  display: block;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.timer-label {
+  display: block;
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}

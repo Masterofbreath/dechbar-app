@@ -7,6 +7,102 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Premium Pricing Cards UI with Stripe Checkout Integration**
+  - Glassmorphism pricing cards with multi-layer shadows and gold accents
+  - Billing toggle component (Monthly ↔ Annual) with animated gold slider
+  - Dynamic pricing display based on billing interval
+  - Savings badges for annual plans ("Ušetříš X Kč ročně")
+  - Premium visual effects: hover animations, spring transitions, pulse effects
+  - Responsive grid layout (1 col mobile → 3 cols desktop)
+  - Mobile-optimized text labels ("Měsíčně" → "Měsíc" on narrow screens)
+  - Gold glow effect on SMART "OBLÍBENÉ" card
+  - Loading states during checkout initialization
+  - Error handling with inline error messages
+  - Accessibility: keyboard navigation, screen reader support, WCAG AA contrast
+  - Reduced motion support for animations
+
+- **Stripe Payment Integration - Subscription Checkout**
+  - Edge Functions: `create-checkout-session` and `stripe-webhooks`
+  - Platform Payments Layer: `useCheckout` hook, types, constants, utilities
+  - Checkout Success page with "Co dál?" onboarding steps and confetti-ready design
+  - Checkout Cancel page with empathetic messaging and FAQ section
+  - Price formatting utilities (`formatPrice`, `formatPriceWithInterval`)
+  - Savings calculation (`calculateSavings`, `formatSavingsBadge`)
+  - Full webhook handling (subscription lifecycle: created, updated, deleted, payment succeeded/failed)
+  - Test Mode ready with comprehensive testing guide
+  - Support for monthly and annual billing intervals
+  - Automatic membership updates via Stripe webhooks
+  - Routes for `/checkout/success` and `/checkout/cancel` pages
+
+- **Centralized CSS Design System**
+  - New design tokens: `pricing.css` (pricing-specific variables)
+  - Extended `effects.css` with pricing glassmorphism effects
+  - Component CSS: `pricing-card.css` and `billing-toggle.css`
+  - All values reference centralized design tokens (no hardcoded values)
+  - BEM-like naming convention for maintainability
+
+- **Deployment & Environment Setup**
+  - `.env.local.example` template for environment variables
+  - `deploy-edge-functions.sh` script for automated Edge Function deployment
+  - `setup-stripe-env.sh` script for Stripe environment setup in Supabase
+  - Comprehensive testing checklist in `STRIPE_TESTING_GUIDE.md`
+
+### Changed
+- **PricingSection Component**: Refactored to use BillingToggle and Stripe checkout
+  - Removed auth modal for paid tiers (replaced with Stripe checkout)
+  - Added dynamic Price ID selection based on billing interval
+  - Integrated real Stripe Price IDs from database
+  - Monthly: SMART 249 Kč, AI COACH 490 Kč
+  - Annual: SMART 1,500 Kč (125 Kč/měsíc), AI COACH 2,940 Kč (245 Kč/měsíc)
+
+- **PricingCard Component**: Enhanced with Stripe integration
+  - Added `priceId`, `moduleId`, and `billingInterval` props
+  - Integrated `useCheckout` hook for payment initiation
+  - Loading states and error handling
+  - Separate handling for free tier (auth modal) vs paid tiers (Stripe)
+
+- **App.tsx**: Added checkout routes
+  - `/checkout/success` for successful payments
+  - `/checkout/cancel` for cancelled checkouts
+
+- **globals.css**: Added imports for new pricing design tokens and component CSS
+
+- Platform index.ts: Added payments exports to Platform API
+- Supabase database: Price IDs synced for SMART and AI_COACH memberships
+
+### Documentation
+- **Updated `STRIPE_TESTING_GUIDE.md`** with:
+  - Pricing Cards UI testing checklist (6 sections, 40+ test cases)
+  - Stripe checkout flow testing scenarios (6 scenarios)
+  - Success/Cancel pages verification checklist
+  - Responsive breakpoints testing guide
+  - Accessibility testing requirements
+  - Database verification queries
+
+- **Added deployment scripts**:
+  - `scripts/deploy-edge-functions.sh` with automated deployment
+  - `scripts/setup-stripe-env.sh` for environment setup
+
+- Environment setup instructions for `.env.local`
+- Webhook configuration guide (local + production)
+- Test scenarios for all subscription flows
+
+### Fixed
+- N/A (new feature implementation)
+
+### Deprecated
+- N/A
+
+### Removed
+- Auth modal trigger from paid tier pricing cards (replaced with Stripe checkout)
+
+### Security
+- All Stripe API keys stored in environment variables (never hardcoded)
+- Webhook signature verification in Edge Functions
+- PCI DSS compliant payment processing via Stripe
+- No payment data stored in application database
+
 ## [0.3.0] - 2026-01-19
 
 ### Added

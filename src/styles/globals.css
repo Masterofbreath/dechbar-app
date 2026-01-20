@@ -31,6 +31,7 @@
 @import './design-tokens/shadows.css';
 @import './design-tokens/effects.css';
 @import './design-tokens/logo.css';
+@import './design-tokens/pricing.css';
 
 /* ===================================
    MODULE STYLES
@@ -48,6 +49,10 @@
 @import './components/input.css';
 @import './components/checkbox.css';
 @import './components/close-button.css';
+@import './components/pricing-card.css';
+@import './components/billing-toggle.css';
+@import './components/email-input-modal.css';
+@import './components/payment-cancel-toast.css';
 @import './components/error-message.css';
 @import './components/icon-button.css';
 @import './components/loader.css';

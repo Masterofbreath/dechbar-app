@@ -1,0 +1,459 @@
+/**
+ * Pricing Card Component Styles
+ * 
+ * Premium glassmorphism pricing cards with gold accents.
+ * Uses centralized design tokens for all values.
+ * 
+ * Features:
+ * - Glassmorphism backgrounds
+ * - Multi-layer shadows for elevation
+ * - Gold glow on highlighted cards
+ * - Smooth hover/active transitions
+ * - Responsive grid layout
+ * - Gold badge animations
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+/* ===================================== */
+/* PRICING SECTION CONTAINER */
+/* ===================================== */
+
+.landing-pricing {
+  padding: var(--spacing-16) var(--spacing-6);  /* 64px 24px */
+  background: var(--color-background);
+  position: relative;
+}
+
+.landing-pricing__container {
+  max-width: var(--container-xl);  /* 1280px */
+  margin: 0 auto;
+}
+
+.landing-pricing__title {
+  font-size: var(--font-size-4xl);  /* 36px */
+  font-weight: var(--font-weight-black);
+  color: var(--color-text-primary);
+  text-align: center;
+  margin-bottom: var(--spacing-4);
+  letter-spacing: -0.02em;
+}
+
+.landing-pricing__subtitle {
+  font-size: var(--font-size-lg);  /* 18px */
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: var(--spacing-12);  /* 48px */
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===================================== */
+/* PRICING GRID LAYOUT */
+/* ===================================== */
+
+.landing-pricing__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pricing-grid-gap);
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* Tablet: 2 columns or scroll */
+@media (max-width: 1279px) and (min-width: 768px) {
+  .landing-pricing__grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 740px;
+  }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 767px) {
+  .landing-pricing__grid {
+    grid-template-columns: 1fr;
+    gap: var(--pricing-grid-gap-mobile);
+  }
+  
+  .landing-pricing__title {
+    font-size: var(--font-size-3xl);  /* 30px */
+  }
+  
+  .landing-pricing__subtitle {
+    font-size: var(--font-size-base);  /* 16px */
+    margin-bottom: var(--spacing-8);
+  }
+}
+
+/* ===================================== */
+/* PRICING CARD BASE */
+/* ===================================== */
+
+.pricing-card {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: visible;
+  
+  /* Dimensions */
+  min-height: var(--pricing-card-min-height);
+  padding: var(--pricing-card-padding);
+  
+  /* Glassmorphism */
+  background: var(--gradient-pricing-card);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  
+  /* Borders & Shadows */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-2xl);  /* 24px */
+  box-shadow: var(--shadow-lg);
+  
+  /* Transitions */
+  transition: var(--pricing-card-transition);
+  z-index: 1;
+}
+
+/* Hover state */
+.pricing-card:hover {
+  transform: var(--pricing-card-hover-transform);
+  box-shadow: 
+    0 10px 24px rgba(0, 0, 0, 0.12),
+    0 0 26px rgba(44, 190, 198, 0.08);  /* Teal glow */
+  border-color: rgba(255, 255, 255, 0.2);
+  z-index: 10;
+}
+
+/* Focus-within (for keyboard navigation) */
+.pricing-card:focus-within {
+  transform: var(--pricing-card-hover-transform);
+  box-shadow: 
+    0 10px 24px rgba(0, 0, 0, 0.12),
+    0 0 26px rgba(44, 190, 198, 0.08);
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  z-index: 10;
+}
+
+/* Mobile: Smaller padding and min-height */
+@media (max-width: 767px) {
+  .pricing-card {
+    padding: var(--pricing-card-padding-mobile);
+    min-height: var(--pricing-card-min-height-mobile);
+  }
+}
+
+/* ===================================== */
+/* HIGHLIGHTED CARD (SMART - OBLÍBENÉ) */
+/* ===================================== */
+
+.pricing-card--highlighted {
+  background: var(--gradient-pricing-card-highlighted);
+  border-color: rgba(214, 162, 58, 0.3);  /* Gold border */
+  box-shadow: 
+    var(--shadow-lg),
+    0 0 32px rgba(214, 162, 58, 0.16);  /* Gold glow */
+}
+
+.pricing-card--highlighted:hover,
+.pricing-card--highlighted:focus-within {
+  box-shadow: 
+    0 14px 36px rgba(0, 0, 0, 0.16),
+    0 0 40px rgba(214, 162, 58, 0.24);  /* Stronger gold glow */
+  border-color: var(--color-accent);
+}
+
+/* ===================================== */
+/* BADGE (OBLÍBENÉ / PREMIUM) */
+/* ===================================== */
+
+.pricing-card__badge {
+  position: absolute;
+  top: var(--spacing-4);
+  right: var(--spacing-4);
+  z-index: 10;
+  
+  padding: var(--pricing-badge-padding);
+  border-radius: var(--pricing-badge-radius);
+  
+  font-size: var(--pricing-badge-font-size);
+  font-weight: var(--font-weight-black);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+  
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Gold badge (OBLÍBENÉ) */
+.pricing-card__badge--gold {
+  background: linear-gradient(180deg, #F0C76A, var(--color-accent));
+  color: var(--color-background);
+  box-shadow: var(--shadow-gold);
+  animation: badgePulse var(--pricing-badge-pulse-duration) ease-in-out infinite;
+}
+
+/* Teal badge (PREMIUM) */
+.pricing-card__badge--teal {
+  background: linear-gradient(180deg, #6ADBE0, var(--color-primary));
+  color: var(--color-background);
+  box-shadow: 0 4px 12px rgba(44, 190, 198, 0.3);
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: var(--shadow-gold);
+  }
+  50% {
+    transform: scale(var(--pricing-badge-pulse-scale));
+    box-shadow: var(--shadow-gold-strong);
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .pricing-card__badge--gold {
+    animation: none;
+  }
+}
+
+/* ===================================== */
+/* CARD TITLE & SUBTITLE */
+/* ===================================== */
+
+.pricing-card__title {
+  font-size: var(--font-size-2xl);  /* 24px */
+  font-weight: var(--font-weight-black);
+  color: var(--color-text-primary);
+  letter-spacing: 0.03em;
+  margin-bottom: var(--spacing-2);
+  line-height: 1.2;
+}
+
+.pricing-card__subtitle {
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-6);
+  min-height: 34px;  /* Ensure consistent card height */
+  line-height: 1.4;
+}
+
+/* ===================================== */
+/* PRICE DISPLAY */
+/* ===================================== */
+
+.pricing-card__price {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin: var(--pricing-price-margin-top) 0 var(--pricing-price-margin-bottom);
+  color: var(--color-text-primary);
+}
+
+/* Annual price (larger, primary) */
+.pricing-card__price-annual {
+  font-size: var(--font-size-4xl);  /* 36px */
+  font-weight: var(--font-weight-black);
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+/* Price note ("roční předplatné") */
+.pricing-card__price-note {
+  font-size: var(--font-size-xs);  /* 12px */
+  color: var(--color-text-tertiary);
+  line-height: 1.2;
+}
+
+/* Monthly price (smaller, alternative) */
+.pricing-card__price-monthly {
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-secondary);
+  line-height: 1.2;
+}
+
+/* Simple price display (for ZDARMA) */
+.pricing-card__price-amount {
+  font-size: var(--font-size-4xl);  /* 36px */
+  font-weight: var(--font-weight-black);
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+.pricing-card__price-period {
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-tertiary);
+  line-height: 1.2;
+  margin-left: 4px;
+}
+
+/* ===================================== */
+/* SAVINGS BADGE */
+/* ===================================== */
+
+.pricing-card__savings {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--pricing-savings-padding);
+  margin-bottom: var(--spacing-4);
+  
+  background: rgba(214, 162, 58, 0.1);  /* Gold tint */
+  border: 1px solid rgba(214, 162, 58, 0.2);
+  border-radius: var(--pricing-savings-radius);
+  
+  font-size: var(--pricing-savings-font-size);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent-light);
+  line-height: 1;
+}
+
+/* ===================================== */
+/* FEATURES LIST */
+/* ===================================== */
+
+.pricing-card__features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex: 1;  /* Take remaining space */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pricing-card__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pricing-feature-gap);
+  padding: var(--pricing-feature-padding-y) 0;
+  border-bottom: var(--pricing-feature-border-style);
+  
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
+.pricing-card__feature:last-child {
+  border-bottom: none;
+}
+
+/* Feature icon (checkmark SVG) */
+.pricing-card__feature-icon {
+  flex-shrink: 0;
+  width: var(--pricing-feature-icon-size);
+  height: var(--pricing-feature-icon-size);
+  margin-top: 2px;  /* Align with first line of text */
+}
+
+/* Gold dot bullet (alternative to checkmark) */
+.pricing-card__feature-bullet {
+  flex-shrink: 0;
+  width: var(--pricing-feature-bullet-size);
+  height: var(--pricing-feature-bullet-size);
+  border-radius: 50%;
+  background: var(--pricing-feature-bullet-color);
+  margin-top: 5px;  /* Align with first line of text */
+}
+
+/* Locked feature styling */
+.pricing-card__feature--locked {
+  opacity: 0.6;
+  text-decoration: line-through;
+  color: var(--color-text-tertiary);
+}
+
+/* ===================================== */
+/* CTA BUTTON */
+/* ===================================== */
+
+.pricing-card__cta {
+  margin-top: var(--spacing-4);
+  width: 100%;
+}
+
+/* Ensure button takes full width */
+.pricing-card .button--primary,
+.pricing-card .button--ghost {
+  width: 100%;
+}
+
+/* ===================================== */
+/* ERROR MESSAGE */
+/* ===================================== */
+
+.pricing-card__error {
+  margin-top: var(--spacing-2);
+  padding: var(--spacing-2);
+  background: rgba(239, 68, 68, 0.1);  /* Error red tint */
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-error-light);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ===================================== */
+/* RESPONSIVE TWEAKS */
+/* ===================================== */
+
+/* Narrow mobile (< 390px) */
+@media (max-width: 390px) {
+  .pricing-card__title {
+    font-size: var(--font-size-xl);  /* 20px */
+  }
+  
+  .pricing-card__price-annual,
+  .pricing-card__price-amount {
+    font-size: var(--font-size-3xl);  /* 30px */
+  }
+  
+  .pricing-card__badge {
+    top: var(--spacing-3);
+    right: var(--spacing-3);
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+}
+
+/* Desktop: Max width constraint */
+@media (min-width: 1280px) {
+  .pricing-card {
+    max-width: var(--pricing-card-max-width);
+  }
+}
+
+/* ===================================== */
+/* ACCESSIBILITY */
+/* ===================================== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .pricing-card {
+    border: 2px solid var(--color-border);
+  }
+  
+  .pricing-card--highlighted {
+    border: 2px solid var(--color-accent);
+  }
+}
+
+/* Reduced transparency for better readability */
+@media (prefers-reduced-transparency: reduce) {
+  .pricing-card {
+    background: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  
+  .pricing-card--highlighted {
+    background: var(--color-surface-elevated);
+  }
+}

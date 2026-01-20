@@ -23,6 +23,13 @@ import {
 } from '../api/exercises';
 import type { Exercise } from '../types/exercises';
 
+// Difficulty labels
+const difficultyLabels: Record<number, string> = {
+  3: 'Snadné',
+  2: 'Tak akorát',
+  1: 'Náročné',
+};
+
 export interface ExerciseListProps {
   onStartExercise: (exercise: Exercise) => void;
   onCreateCustom: () => void;
@@ -40,6 +47,7 @@ export function ExerciseList({
   onEditExercise,
 }: ExerciseListProps) {
   const [activeTab, setActiveTab] = useState<TabType>('presets');
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const { plan } = useMembership();
   
   // Mood labels Czech mapping
@@ -305,7 +313,41 @@ export function ExerciseList({
                           {moodLabels[session.mood_after as MoodType] || session.mood_after}
                         </span>
                       )}
+                      
+                      {/* NEW: Difficulty badge */}
+                      {session.difficulty_rating && (
+                        <span className="badge badge--difficulty">
+                          {difficultyLabels[session.difficulty_rating]}
+                        </span>
+                      )}
+                      
+                      {/* NEW: Notes badge (clickable with tooltip) */}
+                      {session.notes && (
+                        <button
+                          className="badge badge--notes"
+                          onClick={() => setSelectedNoteId(
+                            selectedNoteId === session.id ? null : session.id
+                          )}
+                          title="Zobrazit poznámku"
+                        >
+                          <NavIcon name="file-text" size={12} />
+                          Poznámka
+                        </button>
+                      )}
                     </div>
+                    
+                    {/* Tooltip for notes */}
+                    {selectedNoteId === session.id && session.notes && (
+                      <div className="note-tooltip">
+                        <p>{session.notes}</p>
+                        <button 
+                          className="note-tooltip__close"
+                          onClick={() => setSelectedNoteId(null)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

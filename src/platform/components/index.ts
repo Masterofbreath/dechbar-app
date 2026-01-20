@@ -53,6 +53,9 @@ export type { EmptyStateProps } from './EmptyState';
 export { LoadingSkeleton } from './LoadingSkeleton';
 export type { LoadingSkeletonProps } from './LoadingSkeleton';
 
+export { EmailInputModal } from './EmailInputModal';
+export type { EmailInputModalProps } from './EmailInputModal';
+
 // Mood Icons
 export { CelebrationIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from './icons/mood';
 export type { 

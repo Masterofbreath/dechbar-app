@@ -1,0 +1,22 @@
+/* ============================================================
+   Session Engine Modal - Accessibility
+   Reduced motion support for accessibility
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .session-engine-modal__content {
+    animation: none;
+  }
+  
+  .celebration__icon {
+    animation: none;
+  }
+  
+  .countdown-circle {
+    animation: none;
+  }
+  
+  .breathing-circle {
+    transition: none !important;
+  }
+}

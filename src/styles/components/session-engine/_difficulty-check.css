@@ -1,0 +1,56 @@
+/* ============================================================
+   Session Engine Modal - Difficulty Check
+   Post-session difficulty rating buttons
+   ============================================================ */
+
+.difficulty-check {
+  margin-bottom: 24px;
+}
+
+.difficulty-check__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.difficulty-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.difficulty-button {
+  padding: 16px 12px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+  text-align: center;
+}
+
+.difficulty-button:hover {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-accent);
+}
+
+.difficulty-button--active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  /* Bílý text na active */
+  color: var(--color-text-inverse);
+  font-weight: 600;
+}
+
+/* Hover na active - text zůstává bílý */
+.difficulty-button--active:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent-light);
+  color: var(--color-text-inverse);
+}

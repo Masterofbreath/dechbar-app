@@ -1,0 +1,134 @@
+/* ============================================================
+   Session Engine Modal - Mood Check
+   Post-session mood slider with gradient colors
+   ============================================================ */
+
+.mood-check {
+  margin-bottom: 24px;
+}
+
+.mood-check__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em; /* Visual Brand Book: tight letter-spacing */
+}
+
+/* Mood Slider (replaces mood buttons) */
+.mood-slider {
+  width: 100%;
+}
+
+.mood-slider__emojis {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 24px;
+  padding: 0 8px;
+}
+
+/* Clickable emoji buttons */
+.mood-slider__emoji-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  font-size: 24px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+  border-radius: 50%;
+}
+
+.mood-slider__emoji-btn:hover {
+  transform: scale(1.2);
+  opacity: 1;
+  /* ODSTRANIT teal background - scale stačí (Less is More) */
+}
+
+.mood-slider__emoji-btn:active {
+  transform: scale(1.1);
+}
+
+.mood-slider__input {
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(90deg, 
+    #EF4444 0%,    /* Red - stressed */
+    #F59E0B 25%,   /* Orange - tired */
+    #A0A0A0 50%,   /* Gray - neutral */
+    #6ADBE0 75%,   /* Teal - calm */
+    #10B981 100%   /* Green - energized */
+  );
+  border-radius: 4px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.mood-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 36px; /* Zvětšeno z 32px */
+  height: 36px;
+  background: var(--color-accent); /* Gold thumb */
+  border: 4px solid var(--color-background); /* Silnější border */
+  border-radius: 50%;
+  cursor: pointer;
+  
+  /* Gold glow effect */
+  box-shadow: 
+    0 2px 8px var(--overlay-black-light),
+    0 0 16px var(--glow-accent-shadow-subtle); /* GOLD GLOW */
+  
+  transition: all 0.2s ease;
+}
+
+.mood-slider__input::-webkit-slider-thumb:hover {
+  transform: scale(1.15); /* Větší scale */
+  
+  /* Intenzivnější glow na hover */
+  box-shadow: 
+    0 4px 12px var(--overlay-black-subtle),
+    0 0 20px var(--glow-accent-shadow-medium);
+}
+
+.mood-slider__input::-moz-range-thumb {
+  width: 36px; /* Zvětšeno z 32px */
+  height: 36px;
+  background: var(--color-accent);
+  border: 4px solid var(--color-background); /* Silnější border */
+  border-radius: 50%;
+  cursor: pointer;
+  
+  /* Gold glow effect */
+  box-shadow: 
+    0 2px 8px var(--overlay-black-light),
+    0 0 16px var(--glow-accent-shadow-subtle);
+  
+  transition: all 0.2s ease;
+}
+
+.mood-slider__input::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 
+    0 4px 12px var(--overlay-black-subtle),
+    0 0 20px var(--glow-accent-shadow-medium);
+}
+
+.mood-slider__labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  padding: 0 8px;
+}
+
+/* ============================================================
+   Mood Emoji Styling
+   ============================================================ */
+.mood-emoji {
+  font-size: 20px;
+  line-height: 1;
+  display: inline-block;
+}

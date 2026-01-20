@@ -166,6 +166,7 @@
 }
 
 .session-card {
+  position: relative; /* Container for absolute tooltip */
   padding: 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -229,6 +230,149 @@
 }
 
 /* ============================================================
+   Badge Styles (Session History)
+   ============================================================ */
+.badge--difficulty {
+  background: rgba(214, 162, 58, 0.1);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+}
+
+.badge--notes {
+  background: rgba(44, 190, 198, 0.1); /* Teal background */
+  color: var(--color-primary); /* Teal text */
+  border: 1px solid var(--color-primary); /* Teal border */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.badge--notes svg {
+  color: var(--color-primary); /* TEAL ICON - visible! */
+}
+
+.badge--notes:hover {
+  background: var(--color-primary); /* Full teal background */
+  color: var(--color-background); /* Dark text on teal */
+}
+
+.badge--notes:hover svg {
+  color: var(--color-background); /* Dark icon on teal */
+}
+
+.note-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  
+  min-width: 200px;
+  max-width: 320px;
+  padding: 12px 16px;
+  
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  
+  font-size: 14px;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  
+  z-index: 100;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+/* Arrow dole (ukazuje na badge) */
+.note-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--color-surface-elevated);
+}
+
+.note-tooltip p {
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.note-tooltip__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+}
+
+.note-tooltip__close:hover {
+  color: var(--color-text-primary);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Mobile - modal místo tooltip */
+@media (max-width: 768px) {
+  .note-tooltip {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    bottom: auto;
+    
+    width: calc(100% - 32px);
+    max-width: 400px;
+    
+    /* Modal styling */
+    padding: 24px;
+    background: var(--color-surface-elevated);
+    box-shadow: var(--shadow-xl);
+    border-radius: var(--radius-xl);
+    z-index: 10000;
+  }
+  
+  /* Odstranit arrow na mobile */
+  .note-tooltip::after {
+    display: none;
+  }
+  
+  /* Overlay pro mobile */
+  .note-tooltip::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    animation: overlayFadeIn 0.2s ease;
+  }
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================================
    Accessibility
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
@@ -239,5 +383,9 @@
   .exercise-card,
   .session-card {
     transition: none;
+  }
+  
+  .note-tooltip {
+    animation: none;
   }
 }

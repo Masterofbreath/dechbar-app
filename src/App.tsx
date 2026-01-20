@@ -26,6 +26,9 @@ import { useNavigation, useKeyboardShortcuts } from '@/platform/hooks';
 import { LandingPage } from '@/modules/public-web/pages/LandingPage';
 import { SciencePage } from '@/modules/public-web/pages/SciencePage';
 
+// Checkout Pages (Stripe integration)
+import { CheckoutSuccessPage } from '@/pages/CheckoutSuccessPage';
+
 // MVP0 Module - Core Pages
 import { 
   DnesPage, 
@@ -163,6 +166,18 @@ function App() {
         <Route 
           path="/reset-password" 
           element={<ResetPasswordPage />} 
+        />
+
+        {/* Checkout success page (public, redirect from Stripe) */}
+        <Route 
+          path="/checkout/success" 
+          element={<CheckoutSuccessPage />} 
+        />
+
+        {/* Checkout cancel page (public, redirect from Stripe) */}
+        <Route 
+          path="/checkout/cancel" 
+          element={<Navigate to="/?cancelled=true" replace />} 
         />
 
         {/* ========================================

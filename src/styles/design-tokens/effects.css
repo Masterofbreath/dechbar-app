@@ -186,6 +186,32 @@
         rgba(0, 0, 0, 0.2) 0%,
         rgba(0, 0, 0, 0.1) 100%
     );
+    
+    /* ===================================== */
+    /* PRICING-SPECIFIC GLASS EFFECTS */
+    /* ===================================== */
+    
+    /* Pricing card glass backgrounds */
+    --glass-pricing-card: rgba(30, 30, 30, 0.6);
+    --glass-pricing-card-hover: rgba(30, 30, 30, 0.8);
+    --glass-pricing-card-highlighted: rgba(42, 42, 42, 0.7);
+    
+    /* Billing toggle glass */
+    --glass-billing-toggle: rgba(30, 30, 30, 0.5);
+    --glass-billing-toggle-border: rgba(255, 255, 255, 0.18);
+    
+    /* Pricing card gradient backgrounds */
+    --gradient-pricing-card: linear-gradient(
+        135deg,
+        rgba(30, 30, 30, 0.8) 0%,
+        rgba(30, 30, 30, 0.6) 100%
+    );
+    
+    --gradient-pricing-card-highlighted: linear-gradient(
+        135deg,
+        rgba(42, 42, 42, 0.9) 0%,
+        rgba(42, 42, 42, 0.7) 100%
+    );
 }
 
 

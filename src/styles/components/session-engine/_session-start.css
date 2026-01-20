@@ -1,0 +1,56 @@
+/* ============================================================
+   Session Engine Modal - Start Screen
+   Initial screen before session begins
+   ============================================================ */
+
+.session-start {
+  text-align: center;
+}
+
+/* Close button uses global .close-button class */
+
+.session-start__icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: 20px;
+  color: var(--color-background);
+}
+
+.session-start__title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.session-start__description {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+}
+
+.session-start__meta {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.session-start__button {
+  margin-top: 8px;
+}

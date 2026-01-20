@@ -16,6 +16,11 @@ export { useMembership, useModuleAccess } from './membership';
 export { useModules, useModule, useUserModules } from './modules';
 export type { Module, UserModule, ModuleManifest } from './modules';
 
+// Payments
+export { useCheckout, formatPrice, formatSavingsBadge, calculateSavings } from './payments';
+export type { BillingInterval, CheckoutStatus, ModulePricing } from './payments';
+export { CHECKOUT_URLS, MODULE_IDS } from './payments';
+
 // API
 export { supabase, usePublicStats } from './api';
 export type { PublicStats } from './api';
@@ -34,7 +39,8 @@ export {
   Card,
   Logo,
   NavIcon,
-  KPDisplay
+  KPDisplay,
+  EmailInputModal
 } from './components';
 export type { 
   ButtonProps, 
@@ -45,7 +51,8 @@ export type {
   CardProps,
   LogoProps,
   NavIconProps,
-  KPDisplayProps
+  KPDisplayProps,
+  EmailInputModalProps
 } from './components';
 
 // Icons

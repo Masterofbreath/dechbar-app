@@ -1,0 +1,10 @@
+/* ============================================================
+   Session Engine Modal - States Wrapper
+   Container for smooth cross-fade between session states
+   ============================================================ */
+
+.session-states-wrapper {
+  position: relative;
+  min-height: 550px;
+  width: 100%;
+}

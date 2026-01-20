@@ -27,8 +27,8 @@ export type { ExerciseCardProps } from './ExerciseCard';
 export { ExerciseList } from './ExerciseList';
 export type { ExerciseListProps } from './ExerciseList';
 
-export { SessionEngineModal } from './SessionEngineModal';
-export type { SessionEngineModalProps } from './SessionEngineModal';
+export { SessionEngineModal } from './session-engine';
+export type { SessionEngineModalProps } from './session-engine';
 
 export { SafetyQuestionnaire } from './SafetyQuestionnaire';
 export type { SafetyQuestionnaireProps } from './SafetyQuestionnaire';

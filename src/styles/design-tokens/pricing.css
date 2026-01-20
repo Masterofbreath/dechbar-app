@@ -1,0 +1,190 @@
+/**
+ * Design Tokens: Pricing Components
+ * 
+ * Pricing-specific design tokens for cards, toggles, and badges.
+ * All values reference base design tokens for consistency.
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/DesignTokens
+ */
+
+:root {
+  /* ===================================== */
+  /* PRICING CARD DIMENSIONS */
+  /* ===================================== */
+  
+  /* Card widths per breakpoint */
+  --pricing-card-width-mobile: 100%;
+  --pricing-card-width-tablet: 340px;
+  --pricing-card-width-desktop: 380px;
+  --pricing-card-max-width: 420px;
+  
+  /* Card height */
+  --pricing-card-min-height: 520px;
+  --pricing-card-min-height-mobile: 480px;
+  
+  /* ===================================== */
+  /* PRICING CARD SPACING */
+  /* ===================================== */
+  
+  /* Card padding */
+  --pricing-card-padding: var(--spacing-6);           /* 24px */
+  --pricing-card-padding-mobile: var(--spacing-4);    /* 16px */
+  
+  /* Feature list spacing */
+  --pricing-feature-gap: var(--spacing-3);            /* 12px */
+  --pricing-feature-padding-y: var(--spacing-2);      /* 8px */
+  
+  /* Price section spacing */
+  --pricing-price-margin-top: var(--spacing-4);       /* 16px */
+  --pricing-price-margin-bottom: var(--spacing-4);    /* 16px */
+  
+  /* ===================================== */
+  /* BADGE STYLING */
+  /* ===================================== */
+  
+  /* Badge dimensions */
+  --pricing-badge-radius: var(--radius-full);         /* 9999px */
+  --pricing-badge-padding: 6px 12px;
+  --pricing-badge-font-size: 11px;
+  
+  /* Savings badge */
+  --pricing-savings-radius: var(--radius-md);         /* 12px */
+  --pricing-savings-padding: var(--spacing-2) var(--spacing-3); /* 8px 12px */
+  --pricing-savings-font-size: 12px;
+  
+  /* ===================================== */
+  /* BILLING TOGGLE */
+  /* ===================================== */
+  
+  /* Toggle dimensions */
+  --billing-toggle-height: 48px;
+  --billing-toggle-gap: 8px;
+  --billing-toggle-padding: 6px;
+  --billing-toggle-radius: var(--radius-full);        /* 9999px */
+  
+  /* Toggle button */
+  --billing-toggle-button-padding: 8px 12px;
+  --billing-toggle-button-padding-mobile: 8px 10px;
+  --billing-toggle-button-padding-narrow: 8px 8px;
+  
+  /* Toggle button font sizes */
+  --billing-toggle-font-size: 14px;
+  --billing-toggle-font-size-mobile: 13px;
+  --billing-toggle-font-size-narrow: 12px;
+  
+  /* ===================================== */
+  /* PRICING GRID */
+  /* ===================================== */
+  
+  /* Grid layout */
+  --pricing-grid-gap: var(--spacing-6);               /* 24px */
+  --pricing-grid-gap-mobile: var(--spacing-4);        /* 16px */
+  --pricing-grid-columns-desktop: 3;
+  --pricing-grid-columns-tablet: 2;
+  --pricing-grid-columns-mobile: 1;
+  
+  /* ===================================== */
+  /* FEATURE LIST STYLING */
+  /* ===================================== */
+  
+  /* Feature bullet */
+  --pricing-feature-bullet-size: 10px;
+  --pricing-feature-bullet-color: var(--color-accent);
+  
+  /* Feature icon (checkmark) */
+  --pricing-feature-icon-size: 20px;
+  --pricing-feature-icon-stroke: 2px;
+  --pricing-feature-icon-color: var(--color-primary);
+  
+  /* Feature border */
+  --pricing-feature-border-style: 1px dashed rgba(255, 255, 255, 0.08);
+  
+  /* ===================================== */
+  /* TRANSITIONS & ANIMATIONS */
+  /* ===================================== */
+  
+  /* Card hover effects */
+  --pricing-card-transition: all 0.3s var(--apple-ease);
+  --pricing-card-hover-transform: translateY(-2px);
+  --pricing-card-active-transform: scale(0.99);
+  
+  /* Badge animations */
+  --pricing-badge-pulse-duration: 2s;
+  --pricing-badge-pulse-scale: 1.02;
+  
+  /* Toggle slider animation */
+  --billing-toggle-slider-transition: transform 0.26s ease, width 0.26s ease;
+}
+
+/* ===================================== */
+/* RESPONSIVE OVERRIDES */
+/* ===================================== */
+
+/* Tablet (768px - 1279px) */
+@media (min-width: 768px) and (max-width: 1279px) {
+  :root {
+    --pricing-grid-gap: var(--spacing-5);  /* 20px */
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  :root {
+    --pricing-card-padding: var(--spacing-4);
+    --pricing-grid-gap: var(--spacing-4);
+  }
+}
+
+/* Narrow mobile (< 390px) */
+@media (max-width: 390px) {
+  :root {
+    --pricing-card-padding: var(--spacing-3);  /* 12px */
+    --pricing-grid-gap: var(--spacing-3);      /* 12px */
+  }
+}
+
+/* ===================================== */
+/* USAGE EXAMPLES (for reference) */
+/* ===================================== */
+
+/*
+Pricing Card Example:
+--------------------
+.pricing-card {
+  padding: var(--pricing-card-padding);
+  min-height: var(--pricing-card-min-height);
+  transition: var(--pricing-card-transition);
+}
+
+.pricing-card:hover {
+  transform: var(--pricing-card-hover-transform);
+}
+
+Feature List Example:
+--------------------
+.pricing-feature {
+  padding: var(--pricing-feature-padding-y) 0;
+  gap: var(--pricing-feature-gap);
+  border-bottom: var(--pricing-feature-border-style);
+}
+
+.pricing-feature__bullet {
+  width: var(--pricing-feature-bullet-size);
+  height: var(--pricing-feature-bullet-size);
+  background: var(--pricing-feature-bullet-color);
+}
+
+Billing Toggle Example:
+----------------------
+.billing-toggle {
+  height: var(--billing-toggle-height);
+  gap: var(--billing-toggle-gap);
+  border-radius: var(--billing-toggle-radius);
+}
+
+.billing-toggle__button {
+  padding: var(--billing-toggle-button-padding);
+  font-size: var(--billing-toggle-font-size);
+}
+*/

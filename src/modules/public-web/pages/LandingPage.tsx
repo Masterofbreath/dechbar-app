@@ -22,6 +22,8 @@
  * @subpackage Modules/PublicWeb
  */
 
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/landing/Header';
 import { HeroSection } from '../components/landing/HeroSection';
 import { SciencePillars } from '../components/landing/SciencePillars';
@@ -32,8 +34,51 @@ import { FinalCTASection } from '../components/landing/FinalCTASection';
 import { Footer } from '../components/landing/Footer';
 
 export function LandingPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [showCancelToast, setShowCancelToast] = useState(false);
+
+  // Detect ?cancelled=true from Stripe redirect
+  useEffect(() => {
+    if (searchParams.get('cancelled') === 'true') {
+      setShowCancelToast(true);
+      
+      // Auto-dismiss after 3 seconds
+      const timer = setTimeout(() => {
+        setShowCancelToast(false);
+        // Clean URL (remove query param)
+        navigate('/', { replace: true });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, navigate]);
+
   return (
     <div className="landing-page">
+      {/* Payment Cancel Toast - Apple-style lightweight banner */}
+      {showCancelToast && (
+        <div className="payment-cancel-toast">
+          <div className="payment-cancel-toast__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+              <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" strokeWidth="2"/>
+              <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" strokeWidth="2"/>
+            </svg>
+          </div>
+          <p className="payment-cancel-toast__text">
+            Žádná platba nebyla provedena. Tvá karta nebyla zatížena.
+          </p>
+          <button 
+            className="payment-cancel-toast__close"
+            onClick={() => setShowCancelToast(false)}
+            aria-label="Zavřít"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Header - sticky navigation with glassmorphism */}
       <Header />
 

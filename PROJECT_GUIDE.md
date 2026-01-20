@@ -478,6 +478,7 @@ src/modules/studio/types.ts
 │  - useMembership()                      │
 │  - useModuleAccess()                    │
 │  - useModules() ← DB pricing (SSoT)    │
+│  - useCheckout() ← Stripe payments      │
 │  - Shared components                    │
 └─────────────────────────────────────────┘
             ↓ (Platform API)
@@ -683,8 +684,19 @@ Fast development         Team testing            Live users
 
 - [ ] Studio module implementation
 - [ ] Authentication UI
-- [ ] Payment integration
 - [ ] Design system components
+
+### Recently Completed ✅
+
+- [x] **Stripe Payment Integration** (January 2026)
+  - Premium pricing cards UI with glassmorphism design
+  - Billing toggle (Monthly ↔ Annual) with animated slider
+  - Stripe Checkout integration for SMART and AI COACH memberships
+  - Checkout Success/Cancel pages with Czech messaging
+  - Supabase Edge Functions for payment processing
+  - Webhook handling for subscription lifecycle
+  - Comprehensive testing guide and deployment scripts
+  - See: `docs/STRIPE_INTEGRATION_GUIDE.md` and `docs/development/STRIPE_TESTING_GUIDE.md`
 
 ### Planned 📋
 
@@ -764,10 +776,30 @@ See [docs/architecture/05_SECURITY.md](docs/architecture/05_SECURITY.md)
 - View/edit in Supabase Dashboard
 - App loads prices via `useModules()` hook
 - Changes are live immediately
+- Stripe Price IDs stored in `modules.pricing` JSONB column
+
+**Current Pricing (as of January 2026):**
+- SMART: 249 Kč/month or 1,500 Kč/year (125 Kč/month)
+- AI COACH: 490 Kč/month or 2,940 Kč/year (245 Kč/month)
+- Annual plans offer 50% savings
+
+### How Payment Flow Works:
+
+1. User selects billing interval (Monthly/Annual) using BillingToggle
+2. User clicks CTA button on pricing card (e.g., "Začít →")
+3. `useCheckout()` hook initiates Stripe Checkout session via Edge Function
+4. User is redirected to Stripe Checkout page
+5. User enters payment details and confirms
+6. Stripe processes payment and fires webhook
+7. Edge Function `stripe-webhooks` receives event and updates `memberships` table
+8. User is redirected to `/checkout/success` page
+9. User gains access to paid module via `useModuleAccess()` hook
+
+**See:** `docs/STRIPE_INTEGRATION_GUIDE.md` for complete implementation details
 
 ### How Modules Work:
 
-1. User purchases module (stored in `user_modules` table)
+1. User purchases module (stored in `user_modules` table for lifetime) or membership (stored in `memberships` table for subscriptions)
 2. User navigates to module route (e.g., `/studio`)
 3. App checks access via `useModuleAccess('studio', userId)`
 4. If access granted → module loads (lazy loading)

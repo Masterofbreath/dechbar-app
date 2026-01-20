@@ -1,0 +1,138 @@
+/* ============================================================
+   Session Engine Modal - Completed Screen
+   Post-session celebration and gold celebration styles
+   ============================================================ */
+
+.session-completed {
+  text-align: center;
+}
+
+.celebration {
+  margin-bottom: 32px;
+}
+
+.celebration__icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: celebrationBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes celebrationBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.celebration__title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.celebration__message {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px 0;
+}
+
+.celebration__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--glow-primary-shadow-light);
+  border-radius: 12px;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   Actions
+   ============================================================ */
+.session-completed__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================================
+   GOLD CELEBRATION STYLES (New Design)
+   ============================================================ */
+   
+/* Gold celebration header */
+.completion-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.completion-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-accent); /* GOLD */
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+  
+  /* Subtle gold glow */
+  text-shadow: 0 0 20px var(--glow-accent-text);
+}
+
+.completion-subtitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Stats grid with gold accent */
+.completion-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.stat-item--gold {
+  border-color: var(--color-accent);
+  background: linear-gradient(
+    135deg,
+    var(--glow-accent-bg-subtle) 0%,
+    var(--glow-accent-bg-faint) 100%
+  );
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.stat-item--gold .stat-value {
+  color: var(--color-accent); /* GOLD */
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}

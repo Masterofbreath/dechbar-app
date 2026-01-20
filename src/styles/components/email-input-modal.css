@@ -1,0 +1,97 @@
+/**
+ * EmailInputModal - Guest Checkout Specific Styles
+ * 
+ * Uses global modal base styles (.modal-overlay, .modal-card, .modal-close)
+ * Only defines email-specific input styling.
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+/* Form Container */
+.email-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Input Wrapper */
+.email-modal-input-wrapper {
+  position: relative;
+}
+
+/* Email Input Field - matches platform Input component style */
+.email-modal-input {
+  width: 100%;
+  padding: var(--spacing-4);
+  font-size: var(--font-size-base);  /* 16px */
+  font-family: var(--font-family-base);
+  background: var(--color-surface);  /* #1E1E1E */
+  border: 1px solid var(--color-border);  /* #2A2A2A */
+  border-radius: var(--radius-lg);  /* 12px */
+  color: var(--color-text-primary);  /* #E0E0E0 */
+  transition: all 0.2s ease;
+}
+
+.email-modal-input::placeholder {
+  color: var(--color-text-tertiary);  /* #707070 */
+}
+
+.email-modal-input:focus {
+  outline: none;
+  border-color: var(--color-primary);  /* Teal */
+  box-shadow: 0 0 0 3px var(--glow-primary-subtle);  /* Teal glow */
+}
+
+.email-modal-input--error {
+  border-color: var(--color-error);  /* Red */
+}
+
+.email-modal-input--error:focus {
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);  /* Red glow */
+}
+
+.email-modal-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Error Message */
+.email-modal-error {
+  margin-top: var(--spacing-2);
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-error);
+  text-align: left;
+}
+
+/* Submit Button Spacing */
+.email-modal-submit {
+  margin-top: var(--spacing-2);
+}
+
+/* ===================================
+   RESPONSIVE - Mobile
+   =================================== */
+
+@media (max-width: 390px) {
+  .email-modal-input {
+    font-size: var(--font-size-lg);  /* 18px for better mobile UX */
+    padding: var(--spacing-5);  /* 20px - touch-friendly */
+    min-height: 56px;  /* Touch target size */
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .email-modal-input {
+    border-width: 2px;
+  }
+  
+  .email-modal-input:focus {
+    border-width: 2px;
+  }
+}

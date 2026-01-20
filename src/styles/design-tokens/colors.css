@@ -127,6 +127,74 @@
 }
 
 /* ===================================== */
+/* BREATHING & GLOW EFFECTS (Session Engine) */
+/* Pre-calculated opacity variants for performance */
+/* ===================================== */
+:root {
+  /* ============================================
+     TEAL PRIMARY GLOWS (44, 190, 198)
+     Used for: Breathing circle, focus states
+     ============================================ */
+  
+  /* Background glows (radial gradients) */
+  --glow-primary-bg-strong: rgba(44, 190, 198, 0.4);     /* 40% - gradient center */
+  --glow-primary-bg-medium: rgba(44, 190, 198, 0.2);     /* 20% - gradient mid */
+  --glow-primary-bg-subtle: rgba(44, 190, 198, 0.05);    /* 5% - gradient edge */
+  
+  /* Shadow glows (box-shadow effects) */
+  --glow-primary-shadow-strong: rgba(44, 190, 198, 0.3);   /* 30% - outer glow */
+  --glow-primary-shadow-medium: rgba(44, 190, 198, 0.2);   /* 20% - mid glow */
+  --glow-primary-shadow-subtle: rgba(44, 190, 198, 0.15);  /* 15% - subtle glow */
+  --glow-primary-shadow-light: rgba(44, 190, 198, 0.1);    /* 10% - very subtle */
+  --glow-primary-shadow-faint: rgba(44, 190, 198, 0.08);   /* 8% - barely visible */
+  
+  /* ============================================
+     TEAL LIGHT GLOWS (106, 219, 224)
+     Used for: Inhale phase, active states
+     ============================================ */
+  --glow-primary-light-subtle: rgba(106, 219, 224, 0.15);  /* 15% - light teal shadow */
+  --glow-primary-light-medium: rgba(106, 219, 224, 0.10);  /* 10% - light teal mid */
+  --glow-primary-light-faint: rgba(106, 219, 224, 0.08);   /* 8% - light teal faint */
+  
+  /* ============================================
+     TEAL DARK GLOWS (21, 147, 154)
+     Used for: Exhale phase, rest states
+     ============================================ */
+  --glow-primary-dark-subtle: rgba(21, 147, 154, 0.15);    /* 15% - dark teal shadow */
+  --glow-primary-dark-medium: rgba(21, 147, 154, 0.10);    /* 10% - dark teal mid */
+  --glow-primary-dark-faint: rgba(21, 147, 154, 0.08);     /* 8% - dark teal faint */
+  
+  /* ============================================
+     GOLD ACCENT GLOWS (214, 162, 58)
+     Used for: Progress, highlights, premium effects
+     ============================================ */
+  
+  /* Background tints */
+  --glow-accent-bg-strong: rgba(214, 162, 58, 0.1);        /* 10% - background tint */
+  --glow-accent-bg-subtle: rgba(214, 162, 58, 0.05);       /* 5% - subtle bg */
+  --glow-accent-bg-faint: rgba(214, 162, 58, 0.02);        /* 2% - barely visible */
+  
+  /* Shadow glows */
+  --glow-accent-shadow-strong: rgba(214, 162, 58, 0.6);    /* 60% - strong glow */
+  --glow-accent-shadow-medium: rgba(214, 162, 58, 0.5);    /* 50% - medium glow */
+  --glow-accent-shadow-subtle: rgba(214, 162, 58, 0.3);    /* 30% - subtle glow */
+  --glow-accent-shadow-fade: rgba(214, 162, 58, 0.8);      /* 80% - gradient fade */
+  
+  /* Text effects */
+  --glow-accent-text: rgba(214, 162, 58, 0.3);             /* 30% - text shadow */
+  
+  /* ============================================
+     BLACK OVERLAYS & SHADOWS
+     Used for: Modals, dropdowns, elevation
+     ============================================ */
+  --overlay-black-opaque: rgba(0, 0, 0, 0.98);     /* 98% - nearly opaque modal */
+  --overlay-black-strong: rgba(0, 0, 0, 0.95);     /* 95% - modal backdrop */
+  --overlay-black-medium: rgba(0, 0, 0, 0.5);      /* 50% - modal shadow */
+  --overlay-black-subtle: rgba(0, 0, 0, 0.4);      /* 40% - hover shadow */
+  --overlay-black-light: rgba(0, 0, 0, 0.3);       /* 30% - shadow medium */
+}
+
+/* ===================================== */
 /* LEGACY COLOR COMPATIBILITY */
 /* Temporary: Map old gold to new accent for backward compatibility */
 /* TODO: Remove after all components updated to use accent */

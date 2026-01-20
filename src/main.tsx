@@ -19,7 +19,7 @@ import './styles/components/loading-skeleton.css' // LoadingSkeleton component
 import './styles/components/locked-feature-modal.css' // Universal paywall
 import './styles/components/exercise-card.css' // Exercise card component
 import './styles/components/exercise-list.css' // Exercise list with tabs
-import './styles/components/session-engine-modal.css' // Session engine modal
+import './styles/components/session-engine/index.css' // Session engine modal (modular)
 import './styles/components/safety-questionnaire.css' // Safety questionnaire
 import './styles/layouts/app-layout.css'    // AppLayout wrapper
 import './styles/pages/dnes.css'            // DNES dashboard
