@@ -11,7 +11,7 @@
 
 import { useEffect } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
-import { loadStripe, StripeEmbeddedCheckoutOptions } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import type { BillingInterval } from './types';
 
 // Load Stripe.js (cached after first load)
@@ -92,7 +92,7 @@ export function PaymentModal({
     return null;
   }
 
-  const options: StripeEmbeddedCheckoutOptions = {
+  const options = {
     clientSecret,
     onComplete: () => {
       console.log('✅ Payment completed');

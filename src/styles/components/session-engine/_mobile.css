@@ -4,6 +4,12 @@
    ============================================================ */
 
 @media (width <= 768px) {
+  /* Container - vypnout flex layouting pro fullscreen modal */
+  .session-engine-modal {
+    display: block !important;
+    padding: 0 !important;
+  }
+  
   /* FULL SCREEN SESSION ENGINE - překryje top/bottom navigation */
   .session-engine-modal__content {
     position: fixed !important;
@@ -16,17 +22,18 @@
     margin: 0 !important;
     padding: 0 !important;  /* Safe-area padding přesunuto na wrapper */
     
+    /* Flex container pro session states s flex: 1 */
+    display: flex !important;
+    flex-direction: column !important;
+    
     /* Zajistit nejvyšší vrstvu (nad navigation i overlay) */
     z-index: 10002 !important;
     background: var(--color-background) !important;
   }
   
-  /* Overlay - dark background za modal contentem */
-  .session-engine-modal__overlay {
-    opacity: 1 !important;
-    pointer-events: none !important;
-    background: var(--color-background);
-    z-index: 10001 !important;
+  /* Overlay - SKRYTÝ na mobile (fullscreen modal má vlastní background) */
+  .session-engine-modal .session-engine-modal__overlay {
+    display: none !important;  /* Odstraněno - není potřeba na fullscreen modalu */
   }
   
   /* States wrapper - full height flexbox container */
@@ -46,30 +53,20 @@
       max(20px, env(safe-area-inset-left));
   }
   
-  /* Session countdown - zrušit absolute positioning */
-  .session-countdown {
-    position: static !important;
-    width: 100% !important;
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0 !important;
-    padding: 0 !important;
-  }
-  
-  /* Session active - zrušit absolute positioning */
+  /* Countdown & Active - HYBRID: Relative container pro absolute kruh + flex pro ostatní */
+  .session-countdown,
   .session-active {
-    position: static !important;
+    position: relative !important;  /* Pro absolute kruh */
     width: 100% !important;
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: center !important;
-    gap: 0 !important;
-    padding: 0 !important;
+    justify-content: flex-start !important;  /* NE center - prvky se rozmístí samy */
+    gap: 0 !important;  /* Žádný gap - používáme marginy */
+    padding: 0 20px !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
   
   /* Session Start Screen - vertikální centrování */
@@ -82,6 +79,8 @@
     align-items: center !important;
     justify-content: center !important;
     padding: 0 20px !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
   
   /* MoodBeforePick - vertikální i horizontální centrování */
@@ -96,14 +95,17 @@
     padding: 0 20px !important;
   }
   
-  /* Session header - nad circle */
+  /* Session header - Flex item PŘED kruhem */
   .session-header,
   .session-active__header {
+    position: static !important;
     width: 100% !important;
-    margin-bottom: 24px !important;
+    margin: 0 0 auto !important;  /* margin-bottom: auto = přilepí se nahoru */
+    padding-top: 80px !important;   /* Spacing od horního okraje */
     min-height: auto !important;
     text-align: center !important;
-    order: -2 !important;
+    order: initial !important;
+    z-index: 1 !important;  /* Pod kruhem (aby kruh byl vždy vidět) */
   }
   
   .session-exercise-name,
@@ -117,6 +119,14 @@
     font-size: 14px !important;
   }
   
+  /* Close button - FIXED top-right */
+  .session-engine-modal__close {
+    position: fixed !important;
+    top: max(16px, env(safe-area-inset-top)) !important;
+    right: max(16px, env(safe-area-inset-right)) !important;
+    z-index: 20 !important;  /* Nad vším */
+  }
+  
   /* Phase indicator - horní roh */
   .phase-indicator {
     position: fixed !important;
@@ -127,12 +137,16 @@
     padding: 4px 8px !important;
   }
   
-  /* Breathing circle - vycentrovat */
+  /* Breathing circle - ABSOLUTE CENTER (anchor point - vždy uprostřed) */
   .breathing-circle-container {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
-    margin: 0 auto 24px !important;
-    order: -1 !important;
+    margin: 0 !important;
+    z-index: 10 !important;  /* Nad headerem */
   }
   
   .breathing-circle {
@@ -145,12 +159,16 @@
     font-size: 24px !important;
   }
   
-  /* Countdown circle container */
+  /* Countdown circle container - ABSOLUTE CENTER (stejné jako breathing) */
   .countdown-circle-container {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
-    margin: 0 auto 24px !important;
-    order: -1 !important;
+    margin: 0 !important;
+    z-index: 10 !important;  /* Nad headerem */
   }
   
   .countdown-circle {
@@ -162,12 +180,15 @@
     font-size: 56px !important;
   }
   
-  /* Timer - pod kruhem */
-  .session-active__timer {
+  /* Timer - Flex item PO kruhu */
+  .session-timer {
+    position: static !important;
     width: 100% !important;
-    margin: 0 0 16px !important;
+    margin: auto 0 0 !important;  /* margin-top: auto = přilepí se dolů */
+    padding-bottom: 100px !important;  /* Spacing od dolního okraje */
     text-align: center !important;
-    order: 0 !important;
+    order: initial !important;
+    z-index: 1 !important;  /* Pod kruhem */
   }
   
   .timer-seconds {
@@ -178,25 +199,28 @@
     font-size: 12px !important;
   }
   
-  /* Next phase info - pod timerem */
+  /* Next phase info - Flex item mezi timerem a dolním okrajem */
   .session-active__next {
+    position: static !important;
     width: 100% !important;
-    margin: 0 0 16px !important;
+    margin: 12px 0 0 !important;  /* Malý spacing nad */
     text-align: center !important;
     font-size: 13px !important;
-    order: 1 !important;
+    order: initial !important;
+    z-index: 1 !important;  /* Pod kruhem */
   }
   
-  /* Instrukce - strategicky umístěné */
+  /* Instrukce - normální flow v flexboxu */
   .session-active__instructions {
-    width: 100% !important;
-    max-width: calc(100% - 32px) !important;
-    margin: 16px auto 0 !important;
+    position: static !important;
+    width: calc(100% - 32px) !important;
+    max-width: 100% !important;
+    margin: 0 !important;
     padding: 12px 16px !important;
     font-size: 13px !important;
     line-height: 1.4 !important;
     text-align: center !important;
-    order: 2 !important;
+    order: initial !important;
     
     /* ZACHOVAT gold box styling */
     background: var(--glow-accent-bg-strong) !important;
@@ -204,15 +228,16 @@
     border-radius: 12px !important;
   }
   
-  /* Progress bar - úplně dole (fixed positioning) */
+  /* Progress bar - úplně dole (FIXED - mimo flow pro správné centrování) */
   .session-progress {
-    position: absolute !important;
+    position: fixed !important;
     bottom: max(20px, env(safe-area-inset-bottom)) !important;
     left: 16px !important;
     right: 16px !important;
     width: auto !important;
     height: 4px !important;
     border-radius: 2px !important;
+    z-index: 5 !important;  /* Pod phase indicator (10), nad contentem */
   }
   
   /* Start screen - kompaktnější na mobile */
@@ -310,10 +335,12 @@ body.session-active .app-layout__bottom-nav {
 /* Ensure modal is truly fullscreen on mobile */
 @media (width <= 768px) {
   body.session-active .session-engine-modal {
-    z-index: 10001; /* Above everything */
+    z-index: 10001 !important; /* Above everything */
+    display: block !important;  /* Vypnout flex layouting */
+    padding: 0 !important;      /* Odstranit padding offset */
   }
   
   body.session-active .session-engine-modal__overlay {
-    background: var(--color-background); /* Dark background */
+    display: none !important;  /* Už je skrytý výše, ale pro jistotu */
   }
 }
