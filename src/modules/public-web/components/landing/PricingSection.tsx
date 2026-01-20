@@ -160,40 +160,50 @@ export function PricingSection() {
             />
 
             {/* SMART TIER */}
-            <PricingCard 
-              moduleId={PRICING_DATA.smart.moduleId}
-              priceId={getPriceId('smart')}
-              billingInterval={billingInterval}
-              title={PRICING_DATA.smart.title}
-              subtitle={PRICING_DATA.smart.subtitle}
-              price={getPricingForInterval(PRICING_DATA.smart).price}
-              period={getPricingForInterval(PRICING_DATA.smart).period}
-              priceAnnual={'priceAnnual' in getPricingForInterval(PRICING_DATA.smart) ? getPricingForInterval(PRICING_DATA.smart).priceAnnual : undefined}
-              badge={PRICING_DATA.smart.badge}
-              savingsBadge={'savingsBadge' in getPricingForInterval(PRICING_DATA.smart) ? getPricingForInterval(PRICING_DATA.smart).savingsBadge : undefined}
-              features={PRICING_DATA.smart.features}
-              ctaText={PRICING_DATA.smart.ctaText}
-              ctaVariant={PRICING_DATA.smart.ctaVariant}
-              highlighted={PRICING_DATA.smart.highlighted}
-            />
+            {(() => {
+              const smartPricing = getPricingForInterval(PRICING_DATA.smart);
+              return (
+                <PricingCard 
+                  moduleId={PRICING_DATA.smart.moduleId}
+                  priceId={getPriceId('smart')}
+                  billingInterval={billingInterval}
+                  title={PRICING_DATA.smart.title}
+                  subtitle={PRICING_DATA.smart.subtitle}
+                  price={smartPricing.price}
+                  period={smartPricing.period}
+                  priceAnnual={'priceAnnual' in smartPricing ? smartPricing.priceAnnual : undefined}
+                  badge={PRICING_DATA.smart.badge}
+                  savingsBadge={'savingsBadge' in smartPricing ? smartPricing.savingsBadge : undefined}
+                  features={PRICING_DATA.smart.features}
+                  ctaText={PRICING_DATA.smart.ctaText}
+                  ctaVariant={PRICING_DATA.smart.ctaVariant}
+                  highlighted={PRICING_DATA.smart.highlighted}
+                />
+              );
+            })()}
 
             {/* AI COACH TIER */}
-            <PricingCard 
-              moduleId={PRICING_DATA.aiCoach.moduleId}
-              priceId={getPriceId('ai-coach')}
-              billingInterval={billingInterval}
-              title={PRICING_DATA.aiCoach.title}
-              subtitle={PRICING_DATA.aiCoach.subtitle}
-              price={getPricingForInterval(PRICING_DATA.aiCoach).price}
-              period={getPricingForInterval(PRICING_DATA.aiCoach).period}
-              priceAnnual={'priceAnnual' in getPricingForInterval(PRICING_DATA.aiCoach) ? getPricingForInterval(PRICING_DATA.aiCoach).priceAnnual : undefined}
-              badge={PRICING_DATA.aiCoach.badge}
-              savingsBadge={'savingsBadge' in getPricingForInterval(PRICING_DATA.aiCoach) ? getPricingForInterval(PRICING_DATA.aiCoach).savingsBadge : undefined}
-              features={PRICING_DATA.aiCoach.features}
-              ctaText={PRICING_DATA.aiCoach.ctaText}
-              ctaVariant={PRICING_DATA.aiCoach.ctaVariant}
-              highlighted={PRICING_DATA.aiCoach.highlighted}
-            />
+            {(() => {
+              const aiCoachPricing = getPricingForInterval(PRICING_DATA.aiCoach);
+              return (
+                <PricingCard 
+                  moduleId={PRICING_DATA.aiCoach.moduleId}
+                  priceId={getPriceId('ai-coach')}
+                  billingInterval={billingInterval}
+                  title={PRICING_DATA.aiCoach.title}
+                  subtitle={PRICING_DATA.aiCoach.subtitle}
+                  price={aiCoachPricing.price}
+                  period={aiCoachPricing.period}
+                  priceAnnual={'priceAnnual' in aiCoachPricing ? aiCoachPricing.priceAnnual : undefined}
+                  badge={PRICING_DATA.aiCoach.badge}
+                  savingsBadge={'savingsBadge' in aiCoachPricing ? aiCoachPricing.savingsBadge : undefined}
+                  features={PRICING_DATA.aiCoach.features}
+                  ctaText={PRICING_DATA.aiCoach.ctaText}
+                  ctaVariant={PRICING_DATA.aiCoach.ctaVariant}
+                  highlighted={PRICING_DATA.aiCoach.highlighted}
+                />
+              );
+            })()}
           </div>
         </div>
       </section>
