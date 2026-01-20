@@ -3,14 +3,11 @@
    Mobile-first responsive styles and immersive mode
    ============================================================ */
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   /* FULL SCREEN SESSION ENGINE - překryje top/bottom navigation */
   .session-engine-modal__content {
     position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
+    inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
     max-width: none !important;
@@ -19,14 +16,17 @@
     margin: 0 !important;
     padding: 0 !important;  /* Safe-area padding přesunuto na wrapper */
     
-    /* Zajistit nejvyšší vrstvu (nad navigation) */
-    z-index: 10001 !important;
+    /* Zajistit nejvyšší vrstvu (nad navigation i overlay) */
+    z-index: 10002 !important;
+    background: var(--color-background) !important;
   }
   
-  /* Overlay - téměř neprůhledný na mobile */
+  /* Overlay - dark background za modal contentem */
   .session-engine-modal__overlay {
-    opacity: 0.98 !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
     background: var(--color-background);
+    z-index: 10001 !important;
   }
   
   /* States wrapper - full height flexbox container */
@@ -192,7 +192,7 @@
     width: 100% !important;
     max-width: calc(100% - 32px) !important;
     margin: 16px auto 0 !important;
-    padding: 10px 14px !important;
+    padding: 12px 16px !important;
     font-size: 13px !important;
     line-height: 1.4 !important;
     text-align: center !important;
@@ -252,7 +252,7 @@
 }
 
 /* Landscape mobile (iPhone SE landscape: 667x375) */
-@media (max-width: 768px) and (max-height: 600px) and (orientation: landscape) {
+@media (width <= 768px) and (height <= 600px) and (orientation: landscape) {
   .session-engine-modal__content {
     overflow-y: auto !important;
   }
@@ -308,12 +308,12 @@ body.session-active .app-layout__bottom-nav {
 }
 
 /* Ensure modal is truly fullscreen on mobile */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   body.session-active .session-engine-modal {
     z-index: 10001; /* Above everything */
   }
   
   body.session-active .session-engine-modal__overlay {
-    background: var(--overlay-black-opaque); /* Nearly opaque */
+    background: var(--color-background); /* Dark background */
   }
 }

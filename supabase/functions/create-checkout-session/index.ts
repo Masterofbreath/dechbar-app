@@ -55,7 +55,7 @@ serve(async (req) => {
     }
 
     // Get request body
-    const { price_id, interval, module_id, email } = await req.json();
+    const { price_id, interval, module_id, email, ui_mode } = await req.json();
 
     // Validate required fields
     if (!price_id || !interval || !module_id) {
@@ -136,11 +136,12 @@ serve(async (req) => {
 
     // Determine success/cancel URLs based on environment
     const baseUrl = Deno.env.get('VITE_APP_URL') || 'http://localhost:5173';
-    const successUrl = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${baseUrl}/checkout/cancel`;
+    
+    // Determine if embedded or hosted mode
+    const isEmbedded = ui_mode === 'embedded';
 
-    // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    // Build session configuration
+    const sessionConfig: Record<string, unknown> = {
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [
@@ -150,8 +151,6 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
       metadata: {
         user_id: userId || 'guest',
         module_id,
@@ -168,26 +167,52 @@ serve(async (req) => {
           is_guest: userId ? 'false' : 'true',
         },
       },
-    });
+    };
 
-    console.log(`✅ Checkout session created: ${session.id} for ${userId ? 'user ' + userId : 'guest ' + userEmail}`);
+    if (isEmbedded) {
+      // Embedded Checkout
+      sessionConfig.ui_mode = 'embedded';
+      sessionConfig.return_url = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+    } else {
+      // Hosted Checkout (fallback)
+      sessionConfig.success_url = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+      sessionConfig.cancel_url = `${baseUrl}/checkout/cancel`;
+    }
 
-    return new Response(
-      JSON.stringify({ 
-        url: session.url,
-        session_id: session.id,
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    // Create Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
-  } catch (error: any) {
+    console.log(`✅ Checkout session created: ${session.id} for ${userId ? 'user ' + userId : 'guest ' + userEmail} (${isEmbedded ? 'embedded' : 'hosted'})`);
+
+    // Return appropriate response based on mode
+    if (isEmbedded) {
+      return new Response(
+        JSON.stringify({ 
+          clientSecret: session.client_secret,
+          session_id: session.id,
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    } else {
+      return new Response(
+        JSON.stringify({ 
+          url: session.url,
+          session_id: session.id,
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+  } catch (error: unknown) {
     console.error('❌ Checkout session error:', error);
     
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to create checkout session' 
+        error: (error as Error).message || 'Failed to create checkout session' 
       }),
       { 
         status: 500, 

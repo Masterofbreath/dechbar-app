@@ -17,8 +17,22 @@ export { useModules, useModule, useUserModules } from './modules';
 export type { Module, UserModule, ModuleManifest } from './modules';
 
 // Payments
-export { useCheckout, formatPrice, formatSavingsBadge, calculateSavings } from './payments';
-export type { BillingInterval, CheckoutStatus, ModulePricing } from './payments';
+export { 
+  useCheckout, 
+  useEmbeddedCheckout, 
+  PaymentModal, 
+  formatPrice, 
+  formatSavingsBadge, 
+  calculateSavings 
+} from './payments';
+export type { 
+  BillingInterval, 
+  CheckoutStatus, 
+  ModulePricing,
+  EmbeddedCheckoutSessionResponse,
+  EmbeddedCheckoutSessionRequest,
+  PaymentModalState
+} from './payments';
 export { CHECKOUT_URLS, MODULE_IDS } from './payments';
 
 // API

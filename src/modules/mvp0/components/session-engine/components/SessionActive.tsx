@@ -44,64 +44,63 @@ export function SessionActive({
         </span>
       )}
       
-      <div className="session-states-wrapper">
-        <div className="session-active active">
-          {/* Header se jménem cvičení */}
-          <div className="session-header">
-            <h3 className="session-exercise-name">{exercise.name}</h3>
-            {currentPhase.name && (
-              <p className="session-instruction">{currentPhase.name}</p>
+      {/* Přímo session-active bez wrapperu */}
+      <div className="session-active active">
+        {/* Header se jménem cvičení */}
+        <div className="session-header">
+          <h3 className="session-exercise-name">{exercise.name}</h3>
+          {currentPhase.name && (
+            <p className="session-instruction">{currentPhase.name}</p>
+          )}
+        </div>
+      
+        {/* Breathing circle with instruction inside */}
+        <div className="breathing-circle-container">
+          <div
+            ref={circleRef}
+            className="breathing-circle"
+            aria-label="Dechový pacer"
+          >
+            {/* Breathing instruction inside circle */}
+            {currentInstruction && (
+              <div className="breathing-instruction">
+                {currentInstruction}
+              </div>
             )}
           </div>
-        
-          {/* Breathing circle with instruction inside */}
-          <div className="breathing-circle-container">
-            <div
-              ref={circleRef}
-              className="breathing-circle"
-              aria-label="Dechový pacer"
-            >
-              {/* Breathing instruction inside circle */}
-              {currentInstruction && (
-                <div className="breathing-instruction">
-                  {currentInstruction}
-                </div>
-              )}
-            </div>
-          </div>
-        
-          {/* Timer below circle */}
-          <div className="session-timer">
-            <span className="timer-seconds">{phaseTimeRemaining}</span>
-            <span className="timer-label">sekund</span>
-          </div>
-        
-          {/* Instructions (if present) */}
-          {currentPhase.instructions && (
-            <div className="session-active__instructions">
-              <NavIcon name="info" size={16} />
-              <span>{currentPhase.instructions}</span>
-            </div>
-          )}
-        
-          {/* Next phase preview */}
-          {currentPhaseIndex < totalPhases - 1 && (
-            <div className="session-active__next">
-              <span className="next-label">Další:</span>
-              <span className="next-name">
-                {exercise.breathing_pattern.phases[currentPhaseIndex + 1].name}
-              </span>
-            </div>
-          )}
         </div>
-        
-        {/* Gold progress bar */}
-        <div className="session-progress">
-          <div 
-            className="session-progress__fill" 
-            style={{ width: `${sessionProgress}%` }}
-          />
+      
+        {/* Timer below circle */}
+        <div className="session-timer">
+          <span className="timer-seconds">{phaseTimeRemaining}</span>
+          <span className="timer-label">sekund</span>
         </div>
+      
+        {/* Instructions (if present) */}
+        {currentPhase.instructions && (
+          <div className="session-active__instructions">
+            <NavIcon name="info" size={16} />
+            <span>{currentPhase.instructions}</span>
+          </div>
+        )}
+      
+        {/* Next phase preview */}
+        {currentPhaseIndex < totalPhases - 1 && (
+          <div className="session-active__next">
+            <span className="next-label">Další:</span>
+            <span className="next-name">
+              {exercise.breathing_pattern.phases[currentPhaseIndex + 1].name}
+            </span>
+          </div>
+        )}
+      </div>
+      
+      {/* Progress bar zůstává mimo session-active */}
+      <div className="session-progress">
+        <div 
+          className="session-progress__fill" 
+          style={{ width: `${sessionProgress}%` }}
+        />
       </div>
     </>
   );

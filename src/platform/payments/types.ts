@@ -67,3 +67,30 @@ export interface CheckoutError {
   message: string;
   code?: string;
 }
+
+/**
+ * Embedded Checkout Session Response
+ * Contains clientSecret instead of redirect URL
+ */
+export interface EmbeddedCheckoutSessionResponse {
+  clientSecret: string;
+  session_id: string;
+}
+
+/**
+ * Embedded Checkout Session Request
+ */
+export interface EmbeddedCheckoutSessionRequest extends CheckoutSessionRequest {
+  ui_mode: 'embedded';
+}
+
+/**
+ * Payment Modal State
+ */
+export interface PaymentModalState {
+  isOpen: boolean;
+  clientSecret: string | null;
+  moduleTitle: string;
+  price: string;
+  interval: BillingInterval;
+}

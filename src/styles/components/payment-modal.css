@@ -1,0 +1,101 @@
+/**
+ * Payment Modal - Apple Premium Style
+ * 
+ * Styling for Stripe Embedded Checkout modal with dark theme.
+ * Stripe Elements automatically styled to match DechBar brand.
+ * 
+ * Visual Brand Book compliance:
+ * - Dark-first (#121212 background, #2A2A2A surface)
+ * - Teal primary (#2CBEC6) for focus/active states
+ * - Gold accent (#F8CA00) for premium elements
+ * - Glassmorphism (backdrop-filter: blur)
+ * - Premium shadows (Apple-style depth)
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+/* Payment Modal Specific Styling */
+.payment-modal {
+  max-width: 520px;  /* Wider for payment form */
+  padding: var(--spacing-6) var(--spacing-5);  /* 32px 20px */
+}
+
+/* Logo Section */
+.payment-modal__logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-5);  /* 20px */
+}
+
+.payment-modal__logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgb(44 190 198 / 20%));  /* Teal glow */
+}
+
+/* Stripe Embedded Checkout Wrapper */
+.payment-modal__stripe-wrapper {
+  margin-top: var(--spacing-5);  /* 20px */
+  margin-bottom: var(--spacing-4);  /* 16px */
+}
+
+/* Stripe Elements - Dark Theme Configuration */
+.payment-modal__stripe-wrapper iframe {
+  /* Stripe iframe automatically inherits these CSS variables */
+  --colorPrimary: #2CBEC6;  /* Teal - focus/active states */
+  --colorBackground: #1E1E1E;  /* Dark surface */
+  --colorText: #E0E0E0;  /* Off-white text */
+  --colorDanger: #EF4444;  /* Red - errors */
+  --borderRadius: 12px;
+  --fontFamily: 'Inter', -apple-system, blinkmacsystemfont, sans-serif;
+  
+  /* Remove iframe border */
+  border: none;
+  width: 100%;
+}
+
+/* Security Badge */
+.payment-modal__security {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);  /* 8px */
+  margin-top: var(--spacing-4);  /* 16px */
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-secondary);  /* #A0A0A0 */
+}
+
+.payment-modal__security svg {
+  color: var(--color-success);  /* Green lock icon */
+}
+
+/* Mobile Responsive */
+@media (width <= 768px) {
+  .payment-modal {
+    max-width: 100%;
+    padding: var(--spacing-5) var(--spacing-4);  /* 20px 16px */
+  }
+  
+  .payment-modal__logo {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .payment-modal__logo-wrapper {
+    margin-bottom: var(--spacing-4);  /* 16px */
+  }
+}
+
+/* Loading State - Stripe takes 1-2s to load */
+.payment-modal__stripe-wrapper:empty::before {
+  content: 'Načítám platební formulář...';
+  display: block;
+  text-align: center;
+  padding: var(--spacing-6) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}

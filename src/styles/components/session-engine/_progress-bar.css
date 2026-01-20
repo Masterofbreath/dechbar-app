@@ -5,11 +5,12 @@
 
 .session-progress {
   position: absolute;
+
   /* Posunuto níže (0→8px) aby nekřížil instructions */
   bottom: 8px;
   left: 0;
   width: 100%;
-  height: 3px;
+  height: 4px; /* Visual Brand Book: 4px base unit system */
   background: var(--glow-accent-bg-strong); /* Light gold bg */
   border-radius: 0 0 24px 24px; /* Match modal radius */
   overflow: hidden;

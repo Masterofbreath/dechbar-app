@@ -9,6 +9,10 @@
 
 // Hooks
 export { useCheckout } from './useCheckout';
+export { useEmbeddedCheckout } from './useEmbeddedCheckout';
+
+// Components
+export { PaymentModal } from './PaymentModal';
 
 // Types
 export type {
@@ -16,6 +20,9 @@ export type {
   CheckoutStatus,
   CheckoutSessionResponse,
   CheckoutSessionRequest,
+  EmbeddedCheckoutSessionResponse,
+  EmbeddedCheckoutSessionRequest,
+  PaymentModalState,
   PriceInfo,
   ModulePricing,
   CheckoutError,

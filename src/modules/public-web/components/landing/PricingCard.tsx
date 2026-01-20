@@ -10,7 +10,7 @@
 
 import { useState } from 'react';
 import { Button, EmailInputModal } from '@/platform';
-import { useCheckout } from '@/platform/payments';
+import { useEmbeddedCheckout, PaymentModal } from '@/platform/payments';
 import { useAuth } from '@/platform/auth/useAuth';
 import type { BillingInterval } from './BillingToggle';
 
@@ -52,7 +52,17 @@ export function PricingCard({
   onFreeTierCTA,
 }: PricingCardProps) {
   const { user } = useAuth();
-  const { createCheckoutSession, isLoading, error } = useCheckout();
+  const { 
+    openPaymentModal, 
+    closePaymentModal, 
+    clientSecret, 
+    isModalOpen,
+    moduleTitle: modalModuleTitle,
+    price: modalPrice,
+    interval: modalInterval,
+    isLoading,
+    error 
+  } = useEmbeddedCheckout();
   const [localLoading, setLocalLoading] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
@@ -63,24 +73,30 @@ export function PricingCard({
       return;
     }
 
-    // Paid tiers: Check authentication
+    // Paid tiers: Check price ID
     if (!priceId) {
       console.error('No priceId provided for paid tier');
       return;
     }
 
-    // Authenticated user: Direct to Stripe
+    // Authenticated user: Open payment modal directly
     if (user) {
       setLocalLoading(true);
       try {
-        await createCheckoutSession(priceId, billingInterval, moduleId);
+        await openPaymentModal(
+          priceId, 
+          billingInterval, 
+          moduleId,
+          title,  // Module title for modal
+          price   // Display price for modal
+        );
       } catch (err) {
-        console.error('Checkout failed:', err);
+        console.error('Payment modal failed:', err);
       } finally {
         setLocalLoading(false);
       }
     } else {
-      // Guest: Show email modal
+      // Guest: Show email modal first
       setIsEmailModalOpen(true);
     }
   };
@@ -88,10 +104,17 @@ export function PricingCard({
   const handleEmailSubmit = async (email: string) => {
     setLocalLoading(true);
     try {
-      await createCheckoutSession(priceId!, billingInterval, moduleId, email);
+      await openPaymentModal(
+        priceId!, 
+        billingInterval, 
+        moduleId,
+        title,
+        price,
+        email  // Guest email
+      );
       setIsEmailModalOpen(false);
     } catch (err) {
-      console.error('Checkout failed:', err);
+      console.error('Payment modal failed:', err);
       throw err;  // Re-throw for modal error handling
     } finally {
       setLocalLoading(false);
@@ -193,6 +216,16 @@ export function PricingCard({
       onClose={() => setIsEmailModalOpen(false)}
       onSubmit={handleEmailSubmit}
       isLoading={isButtonLoading}
+    />
+
+    {/* Payment Modal (Embedded Checkout) */}
+    <PaymentModal
+      isOpen={isModalOpen}
+      onClose={closePaymentModal}
+      clientSecret={clientSecret}
+      moduleTitle={modalModuleTitle}
+      price={modalPrice}
+      interval={modalInterval}
     />
     </>
   );
