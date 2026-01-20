@@ -36,7 +36,9 @@ export const CheckoutSuccessPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--color-background)' }}>
         <Card className="max-w-md w-full text-center p-8">
-          <Loader size="lg" className="mb-6" />
+          <div className="mb-6">
+            <Loader size="lg" />
+          </div>
           <h1 className="text-2xl font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>
             Zpracovávám platbu...
           </h1>

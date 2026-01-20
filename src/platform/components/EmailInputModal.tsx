@@ -10,7 +10,7 @@
  * @subpackage Platform/Components
  */
 
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button } from './Button';
 
 export interface EmailInputModalProps {

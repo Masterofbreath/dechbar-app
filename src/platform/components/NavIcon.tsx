@@ -19,7 +19,7 @@ export interface NavIconProps {
         'sun' | 'refresh' | 'moon' | 'lightbulb' | 'sparkles' | 'chevron-right' |
         'close' | 'user' | 'credit-card' | 'info' | 'logout' | 'lock' |
         'clock' | 'edit' | 'trash' | 'x' | 'wind' | 'layers' | 'bar-chart' | 'target' | 
-        'zap' | 'circle' | 'check';
+        'zap' | 'circle' | 'check' | 'file-text' | 'chevron-up' | 'chevron-down';
   
   /**
    * Size in pixels
@@ -255,6 +255,21 @@ export function NavIcon({
     ),
     'check': (
       <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    'file-text': (
+      <>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="14 2 14 8 20 8" strokeLinecap="round" strokeLinejoin="round" />
+        <line x1="16" y1="13" x2="8" y2="13" strokeLinecap="round" strokeLinejoin="round" />
+        <line x1="16" y1="17" x2="8" y2="17" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="10 9 9 9 8 9" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'chevron-up': (
+      <path d="M18 15l-6-6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    'chevron-down': (
+      <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
     ),
   };
   

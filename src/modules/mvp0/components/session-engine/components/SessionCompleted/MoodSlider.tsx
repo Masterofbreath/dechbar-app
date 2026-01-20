@@ -41,7 +41,7 @@ export function MoodSlider({ value, onChange }: MoodSliderProps) {
       <div className="mood-slider">
         {/* Emoji row above slider - CLICKABLE */}
         <div className="mood-slider__emojis">
-          {MOOD_OPTIONS.map((opt, index) => (
+          {MOOD_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               type="button"

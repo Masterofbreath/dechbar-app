@@ -41,7 +41,7 @@ const PRICING_DATA = {
       'Ranní + večerní rituály',
       '3 vlastní cvičení',
       'Audio průvodce',
-    ],
+    ] as string[],
     ctaText: 'Začít zdarma',
     ctaVariant: 'ghost' as const,
     highlighted: false,
@@ -56,7 +56,7 @@ const PRICING_DATA = {
       'Sledování KP v čase',
       '150+ audio programů',
       'Neomezené vlastní cvičení',
-    ],
+    ] as string[],
     ctaText: 'Začít →',
     ctaVariant: 'primary' as const,
     highlighted: true,
@@ -83,7 +83,7 @@ const PRICING_DATA = {
       'Neomezený počet zpráv s AI',
       'Pokročilá analýza dýchání',
       'Prioritní podpora',
-    ],
+    ] as string[],
     ctaText: 'Získat AI Coache →',
     ctaVariant: 'primary' as const,
     highlighted: false,
@@ -168,9 +168,9 @@ export function PricingSection() {
               subtitle={PRICING_DATA.smart.subtitle}
               price={getPricingForInterval(PRICING_DATA.smart).price}
               period={getPricingForInterval(PRICING_DATA.smart).period}
-              priceAnnual={getPricingForInterval(PRICING_DATA.smart).priceAnnual}
+              priceAnnual={'priceAnnual' in getPricingForInterval(PRICING_DATA.smart) ? getPricingForInterval(PRICING_DATA.smart).priceAnnual : undefined}
               badge={PRICING_DATA.smart.badge}
-              savingsBadge={billingInterval === 'annual' ? getPricingForInterval(PRICING_DATA.smart).savingsBadge : undefined}
+              savingsBadge={'savingsBadge' in getPricingForInterval(PRICING_DATA.smart) ? getPricingForInterval(PRICING_DATA.smart).savingsBadge : undefined}
               features={PRICING_DATA.smart.features}
               ctaText={PRICING_DATA.smart.ctaText}
               ctaVariant={PRICING_DATA.smart.ctaVariant}
@@ -186,9 +186,9 @@ export function PricingSection() {
               subtitle={PRICING_DATA.aiCoach.subtitle}
               price={getPricingForInterval(PRICING_DATA.aiCoach).price}
               period={getPricingForInterval(PRICING_DATA.aiCoach).period}
-              priceAnnual={getPricingForInterval(PRICING_DATA.aiCoach).priceAnnual}
+              priceAnnual={'priceAnnual' in getPricingForInterval(PRICING_DATA.aiCoach) ? getPricingForInterval(PRICING_DATA.aiCoach).priceAnnual : undefined}
               badge={PRICING_DATA.aiCoach.badge}
-              savingsBadge={billingInterval === 'annual' ? getPricingForInterval(PRICING_DATA.aiCoach).savingsBadge : undefined}
+              savingsBadge={'savingsBadge' in getPricingForInterval(PRICING_DATA.aiCoach) ? getPricingForInterval(PRICING_DATA.aiCoach).savingsBadge : undefined}
               features={PRICING_DATA.aiCoach.features}
               ctaText={PRICING_DATA.aiCoach.ctaText}
               ctaVariant={PRICING_DATA.aiCoach.ctaVariant}

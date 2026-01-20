@@ -422,7 +422,7 @@ export function SessionEngineModal({
                 phaseTimeRemaining={phaseTimeRemaining}
                 currentInstruction={currentInstruction}
                 sessionProgress={sessionProgress}
-                circleRef={circleRef}
+                circleRef={circleRef as React.RefObject<HTMLDivElement>}
                 onClose={handleClose}
               />
             )}
