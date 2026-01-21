@@ -74,7 +74,7 @@
 }
 
 /* Mobile Responsive */
-@media (width <= 768px) {
+@media (max-width: 768px) {
   .payment-modal {
     max-width: 100%;
     padding: var(--spacing-5) var(--spacing-4);  /* 20px 16px */
