@@ -327,8 +327,8 @@
 /* ============================================================
    Mobile Immersive Mode (Hide Nav During Session)
    ============================================================ */
-body.session-active .app-layout__header,
-body.session-active .app-layout__bottom-nav {
+body.session-active .top-nav,
+body.session-active .bottom-nav {
   display: none !important;
 }
 
@@ -342,5 +342,16 @@ body.session-active .app-layout__bottom-nav {
   
   body.session-active .session-engine-modal__overlay {
     display: none !important;  /* Už je skrytý výše, ale pro jistotu */
+  }
+  
+  /* Z-index a visibility pojistka pro navigation */
+  body.session-active .top-nav {
+    z-index: -1 !important;
+    visibility: hidden !important;
+  }
+  
+  body.session-active .bottom-nav {
+    z-index: -1 !important;
+    visibility: hidden !important;
   }
 }
