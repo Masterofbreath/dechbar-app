@@ -148,7 +148,7 @@ export function useEmbeddedCheckout(): UseEmbeddedCheckoutReturn {
 
       setError({
         message: errorMessage,
-        code: err.code,
+        code: (err as Error & { code?: string }).code,
       });
     } finally {
       setIsLoading(false);
