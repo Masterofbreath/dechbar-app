@@ -1,0 +1,190 @@
+/* ============================================================
+   Demo Bottom Navigation Styles
+   Dark-First Premium Design (Brand Book 2.0)
+   
+   CRITICAL: Matches real app structure - 4 tabs with FAB
+   Tab order: Dnes, Cvičit (FAB), Akademie, Pokrok
+   Active state: TEAL (not gold!)
+   ============================================================ */
+
+/* ============================================================
+   Base Navigation
+   ============================================================ */
+
+.demo-bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--color-surface); /* #1E1E1E */
+  border-top: 1px solid var(--color-border); /* #2A2A2A */
+  display: flex;
+  align-items: flex-end; /* Align tabs to bottom, FAB floats above */
+  z-index: 100;
+}
+
+/* ============================================================
+   Navigation Tabs (Base)
+   ============================================================ */
+
+.demo-bottom-nav__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  height: 64px; /* Full height for regular tabs */
+  position: relative;
+}
+
+/* ============================================================
+   Tab Icons
+   ============================================================ */
+
+.demo-bottom-nav__icon {
+  color: var(--color-text-secondary); /* #A0A0A0 */
+  transition: color 0.2s ease;
+}
+
+.demo-bottom-nav__label {
+  color: var(--color-text-secondary); /* #A0A0A0 */
+  font-size: 11px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+/* ============================================================
+   FAB (Floating Action Button) - Cvičit Tab
+   MUST come before active states due to CSS specificity
+   ============================================================ */
+
+.demo-bottom-nav__tab--fab {
+  position: relative;
+  padding-top: 0; /* Remove top padding, FAB floats above */
+}
+
+.demo-bottom-nav__fab-icon {
+  position: absolute;
+  top: -24px; /* Float 24px above bottom nav */
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent); /* #D6A23A - Gold */
+  color: var(--color-background); /* Dark text on gold */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 0 24px rgb(214 162 58 / 40%),
+    0 4px 16px rgb(0 0 0 / 30%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+}
+
+/* FAB - GOLD always (active or not) - Primary CTA emphasis */
+.demo-bottom-nav__tab--fab .demo-bottom-nav__fab-icon {
+  background: var(--color-accent); /* #D6A23A - GOLD always */
+  box-shadow: 
+    0 0 24px rgb(214 162 58 / 40%),
+    0 4px 16px rgb(0 0 0 / 30%);
+}
+
+/* FAB label positioning (below FAB) - GOLD always */
+.demo-bottom-nav__tab--fab .demo-bottom-nav__label {
+  margin-top: 36px; /* Space for floating FAB */
+  color: var(--color-accent); /* #D6A23A - GOLD always */
+}
+
+/* FAB hover effect */
+.demo-bottom-nav__tab--fab:hover .demo-bottom-nav__fab-icon {
+  transform: scale(1.08);
+  box-shadow: 
+    0 0 32px rgb(214 162 58 / 50%),
+    0 6px 20px rgb(0 0 0 / 40%);
+}
+
+/* FAB active press */
+.demo-bottom-nav__tab--fab:active .demo-bottom-nav__fab-icon {
+  transform: scale(0.95);
+}
+
+/* ============================================================
+   Active State
+   Regular tabs: TEAL (Brand Book 2.0)
+   MUST come after FAB states due to CSS specificity
+   ============================================================ */
+
+/* Regular tabs - TEAL when active */
+.demo-bottom-nav__tab--active:not(.demo-bottom-nav__tab--fab) .demo-bottom-nav__icon,
+.demo-bottom-nav__tab--active:not(.demo-bottom-nav__tab--fab) .demo-bottom-nav__label {
+  color: var(--color-primary); /* #2CBEC6 - Teal */
+}
+
+/* ============================================================
+   Disabled State (Akademie, Pokrok)
+   ============================================================ */
+
+.demo-bottom-nav__tab--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.demo-bottom-nav__tab--disabled:hover {
+  background: transparent;
+}
+
+/* ============================================================
+   Focus State (Accessibility) - Highest specificity first
+   ============================================================ */
+
+.demo-bottom-nav__tab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* ============================================================
+   Active State (Press Effect)
+   ============================================================ */
+
+.demo-bottom-nav__tab:not(.demo-bottom-nav__tab--disabled):active {
+  transform: scale(0.98);
+}
+
+/* ============================================================
+   Hover States (Non-disabled tabs)
+   ============================================================ */
+
+.demo-bottom-nav__tab:not(.demo-bottom-nav__tab--disabled, .demo-bottom-nav__tab--fab):hover {
+  background: rgb(255 255 255 / 5%);
+}
+
+.demo-bottom-nav__tab:not(.demo-bottom-nav__tab--disabled, .demo-bottom-nav__tab--fab):hover .demo-bottom-nav__icon,
+.demo-bottom-nav__tab:not(.demo-bottom-nav__tab--disabled, .demo-bottom-nav__tab--fab):hover .demo-bottom-nav__label {
+  color: var(--color-text-primary); /* #E0E0E0 */
+}
+
+/* ============================================================
+   Accessibility
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-bottom-nav__tab,
+  .demo-bottom-nav__icon,
+  .demo-bottom-nav__label,
+  .demo-bottom-nav__fab-icon {
+    transition: none;
+  }
+  
+  .demo-bottom-nav__tab:active,
+  .demo-bottom-nav__tab--fab:hover .demo-bottom-nav__fab-icon {
+    transform: none;
+  }
+}

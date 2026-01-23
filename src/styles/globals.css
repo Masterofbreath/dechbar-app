@@ -59,6 +59,12 @@
 @import url('./components/loader.css');
 @import url('./components/oauth-icons.css');
 
+/* Demo Mockup Components */
+@import url('./components/demo-app.css');
+@import url('./components/demo-top-nav.css');
+@import url('./components/demo-bottom-nav.css');
+@import url('./components/locked-exercise-modal.css');
+
 /* ===================================
    IMPORT LAYOUT STYLES
    =================================== */

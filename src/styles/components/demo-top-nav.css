@@ -1,0 +1,130 @@
+/* ============================================================
+   Demo Top Navigation Styles
+   Minimalist Top Navigation (Brand Book 2.0: Balanced Minimal)
+   
+   Replicates real TopNav but simplified for demo:
+   - Avatar + KP Display (left)
+   - Bell + Settings (right, disabled)
+   ============================================================ */
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+
+.demo-top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 var(--spacing-4); /* 16px horizontal */
+  background: transparent; /* Transparent by default */
+  position: absolute; /* Positioned within demo container */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 101; /* Above demo content */
+}
+
+/* ============================================================
+   Left Section (Avatar + KP)
+   ============================================================ */
+
+.demo-top-nav__left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3); /* 12px */
+}
+
+/* ============================================================
+   Avatar (Fake User)
+   ============================================================ */
+
+.demo-top-nav__avatar-button {
+  padding: 0;
+  min-width: 44px; /* Touch target */
+  min-height: 44px; /* Touch target */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default; /* Not clickable in demo */
+  opacity: 0.9; /* Slightly muted to show it's demo */
+}
+
+.demo-top-nav__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary); /* Teal ring */
+  display: block;
+}
+
+.demo-top-nav__avatar--placeholder {
+  background: var(--color-surface); /* #1E1E1E */
+  color: var(--color-text-primary); /* #E0E0E0 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   Right Section (Bell + Settings) - Liquid Glass Pill (Disabled)
+   ============================================================ */
+
+.demo-top-nav__right {
+  display: flex;
+  align-items: center;
+  gap: 0; /* Buttons touch inside pill */
+  
+  /* Liquid glass pill - matches real TopNav */
+  background: rgb(30 30 30 / 3%);
+  border: 1.5px solid rgb(255 255 255 / 10%);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  padding: 4px; /* Inner padding for buttons */
+  opacity: 0.5; /* Muted to show disabled state */
+}
+
+/* ============================================================
+   Bell + Settings Buttons (Disabled)
+   ============================================================ */
+
+.demo-top-nav__bell-button,
+.demo-top-nav__settings-button {
+  padding: 7px; /* 38x38 touch target */
+  color: var(--color-text-secondary); /* #A0A0A0 */
+  min-width: 38px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: not-allowed; /* Disabled in demo */
+}
+
+/* ============================================================
+   Mobile Responsive
+   ============================================================ */
+
+/* Very narrow screens - tighter spacing */
+@media (width <= 375px) {
+  .demo-top-nav {
+    padding: 0 var(--spacing-3); /* Reduce from 4 */
+  }
+  
+  .demo-top-nav__left {
+    gap: var(--spacing-2); /* Tighter */
+  }
+}
+
+/* ============================================================
+   Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-top-nav__avatar-button {
+    transition: none;
+  }
+}

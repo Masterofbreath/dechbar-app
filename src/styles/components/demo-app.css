@@ -1,0 +1,221 @@
+/* ============================================================
+   Demo App Container Styles
+   Dark-First Premium Design (Brand Book 2.0)
+   ============================================================ */
+
+/* ============================================================
+   Main Demo Container (inside SVG foreignObject)
+   ============================================================ */
+
+.demo-app {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  background: var(--color-background);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   Content Area (Scrollable)
+   ============================================================ */
+
+.demo-app__content {
+  flex: 1;
+  overflow: hidden auto;
+  -webkit-overflow-scrolling: touch; /* iOS smooth scroll */
+  padding-top: 64px; /* Space for top nav */
+  padding-bottom: 64px; /* Space for bottom nav */
+}
+
+/* Override .dnes-page padding for demo context (prevent overflow) */
+.demo-app__content .dnes-page {
+  padding-left: var(--spacing-3); /* 12px instead of 24px - ultra tight */
+  padding-right: var(--spacing-3); /* 12px instead of 24px */
+}
+
+/* Override protocols grid for demo (ensure it fits in 375px - 24px padding = 351px) */
+.demo-app__content .dnes-page__protocols {
+  gap: 6px; /* 6px instead of 12px - tighter */
+}
+
+/* Override protocol buttons - ultra compact for demo */
+.demo-app__content .preset-protocol-button {
+  padding: 8px 4px; /* Ultra tight horizontal padding */
+  min-height: 105px; /* Fixed height */
+  aspect-ratio: auto; /* Override default aspect ratio */
+}
+
+.demo-app__content .preset-protocol-button__icon {
+  width: 24px; /* Smaller icon */
+  height: 24px;
+  margin-bottom: 6px; /* NEW! FIX #6: Spacing mezi ikonou a textem */
+}
+
+.demo-app__content .preset-protocol-button__label {
+  font-size: 14px; /* Smaller text */
+  letter-spacing: 0.03em;
+}
+
+.demo-app__content .preset-protocol-button__duration {
+  font-size: 10px; /* Smaller duration */
+}
+
+/* ============================================================
+   Cvičit View Overrides (exercise grid + tabs + empty state)
+   ============================================================ */
+
+/* Force exercise grid to single column (obdélníky pod sebou) */
+.demo-app__content .exercise-grid {
+  grid-template-columns: 1fr !important; /* Always 1 column in demo */
+  gap: 12px;
+}
+
+/* Compact tabs for 375px demo context */
+.demo-app__content .exercise-list__tabs {
+  gap: 4px; /* Zmenšit z 8px */
+  padding: 3px; /* Zmenšit z 4px */
+}
+
+.demo-app__content .tab {
+  padding: 8px; /* Zmenšit z 10px 16px */
+  font-size: 13px; /* Zmenšit z 15px */
+  min-height: 40px; /* Zmenšit z 44px */
+  gap: 4px; /* Zmenšit z 6px */
+}
+
+.demo-app__content .tab__badge {
+  min-width: 18px; /* Zmenšit z 20px */
+  height: 18px; /* Zmenšit z 20px */
+  font-size: 10px; /* Zmenšit z 11px */
+}
+
+/* FIX #1: EmptyState - Compact padding (button viditelný na první dobrou) */
+.demo-app__content .empty-state {
+  padding: var(--spacing-4) var(--spacing-6); /* 16px 24px (místo 48px) */
+  min-height: auto; /* Remove 50vh */
+}
+
+.demo-app__content .empty-state__icon {
+  display: none; /* Hide empty icon (no emoji) */
+}
+
+/* FIX #4: Cvicit page subtitle - zmenšit font (žádné lámání textu) */
+.demo-app__content .cvicit-page__subtitle {
+  font-size: 14px; /* Zmenšit z 16px */
+  line-height: 1.4;
+}
+
+/* FIX #5: KP Display - locked look (disabled state) */
+.demo-app__content .kp-display {
+  cursor: not-allowed !important;
+  opacity: 0.7;
+  pointer-events: none; /* Disable click */
+}
+
+/* Hide scrollbar but keep functionality */
+.demo-app__content::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.demo-app__content {
+  scrollbar-width: none; /* Firefox */
+}
+
+/* ============================================================
+   Demo Container Wrapper (scales to fit in SVG)
+   ============================================================ */
+
+.demo-app-container {
+  width: 375px;
+  height: 812px;
+  transform: scale(0.693); /* 260/375 = perfect fit in SVG */
+  transform-origin: top left;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Loading States
+   ============================================================ */
+
+.demo-loading-skeleton,
+.demo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-pulse {
+  background: var(--color-surface);
+  border-radius: 8px;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.demo-placeholder__breathing {
+  width: 100px;
+  height: 100px;
+}
+
+/* ============================================================
+   Responsive Scaling (Mobile to Desktop)
+   ============================================================ */
+
+/* Desktop (1024px+): Full size */
+@media (width >= 1024px) {
+  .demo-app-container {
+    transform: scale(0.693);
+  }
+}
+
+/* Tablet (768px - 1023px): Slightly smaller */
+@media (width <= 1023px) {
+  .hero-mockup__phone {
+    transform: scale(0.8);
+  }
+}
+
+/* Mobile (480px - 767px): More compact */
+@media (width <= 767px) {
+  .hero-mockup__phone {
+    transform: scale(0.7);
+  }
+}
+
+/* Small mobile (< 480px): Smallest */
+@media (width <= 479px) {
+  .hero-mockup__phone {
+    transform: scale(0.6);
+  }
+}
+
+/* ============================================================
+   Accessibility
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-pulse {
+    animation: none;
+  }
+  
+  .demo-placeholder__breathing circle animate {
+    display: none;
+  }
+}
