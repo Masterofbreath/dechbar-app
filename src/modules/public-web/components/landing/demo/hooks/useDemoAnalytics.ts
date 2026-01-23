@@ -22,7 +22,7 @@ export function useDemoAnalytics() {
     
     // Google Analytics (if available)
     if (typeof window !== 'undefined' && (window as Window & { gtag?: (...args: unknown[]) => void }).gtag) {
-      (window as Window & { gtag: (...args: unknown[]) => void }).gtag('event', 'demo_interaction', {
+      ((window as unknown) as Window & { gtag: (...args: unknown[]) => void }).gtag('event', 'demo_interaction', {
         action: event.action,
         view: event.view,
         exercise_name: event.exercise?.name,

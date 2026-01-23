@@ -25,13 +25,21 @@ export const PRESET_EXERCISES: Exercise[] = [
     duration: 420, // 7 min
     total_duration_seconds: 420, // MVp0 compatibility
     description: 'Ranní aktivační protokol pro energický start dne',
-    category: 'preset',
-    subcategory: 'morning',
-    difficulty: 'beginner',
+    category: 'preset' as const,
+    subcategory: 'morning' as const,
+    difficulty: 'beginner' as const,
     icon: 'sun',
     tags: ['morning', 'energy', 'activation'],
     locked: false,
     phase_count: 1,
+    // MVp0 required fields
+    created_by: null,
+    is_public: true,
+    required_tier: null,
+    deleted_at: null,
+    contraindications: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
     breathing_pattern: {
       version: '1.0',
       type: 'simple',
@@ -63,13 +71,21 @@ export const PRESET_EXERCISES: Exercise[] = [
     duration: 300, // 5 min
     total_duration_seconds: 300, // MVp0 compatibility
     description: 'Reset stresu během dne',
-    category: 'preset',
-    subcategory: 'stress',
-    difficulty: 'beginner',
+    category: 'preset' as const,
+    subcategory: 'stress' as const,
+    difficulty: 'beginner' as const,
     icon: 'refresh',
     tags: ['stress', 'calm', 'reset'],
     locked: false,
     phase_count: 1,
+    // MVp0 required fields
+    created_by: null,
+    is_public: true,
+    required_tier: null,
+    deleted_at: null,
+    contraindications: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
     breathing_pattern: {
       version: '1.0',
       type: 'simple',
@@ -101,13 +117,21 @@ export const PRESET_EXERCISES: Exercise[] = [
     duration: 600, // 10 min
     total_duration_seconds: 600, // MVp0 compatibility
     description: 'Večerní relaxační protokol pro kvalitní spánek',
-    category: 'preset',
-    subcategory: 'evening',
-    difficulty: 'beginner',
+    category: 'preset' as const,
+    subcategory: 'evening' as const,
+    difficulty: 'beginner' as const,
     icon: 'moon',
     tags: ['evening', 'sleep', 'relaxation'],
     locked: false,
     phase_count: 1,
+    // MVp0 required fields
+    created_by: null,
+    is_public: true,
+    required_tier: null,
+    deleted_at: null,
+    contraindications: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
     breathing_pattern: {
       version: '1.0',
       type: 'simple',
@@ -144,13 +168,21 @@ export const PRESET_EXERCISES: Exercise[] = [
     duration: 300, // 5 min
     total_duration_seconds: 300, // MVp0 compatibility
     description: 'Klasická technika 4-4-4-4 pro okamžité uklidnění a focus',
-    category: 'preset',
-    subcategory: 'focus',
-    difficulty: 'beginner',
+    category: 'preset' as const,
+    subcategory: 'focus' as const,
+    difficulty: 'beginner' as const,
     icon: 'square',
     tags: ['soustředění', 'klid', 'snížení stresu'],
     locked: false,
     phase_count: 1,
+    // MVp0 required fields
+    created_by: null,
+    is_public: true,
+    required_tier: null,
+    deleted_at: null,
+    contraindications: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
     breathing_pattern: {
       version: '1.0',
       type: 'simple',
@@ -182,13 +214,21 @@ export const PRESET_EXERCISES: Exercise[] = [
     duration: 420, // 7 min
     total_duration_seconds: 420, // MVp0 compatibility
     description: 'Prodloužený výdech pro rychlé uklidnění',
-    category: 'preset',
-    subcategory: 'stress',
-    difficulty: 'beginner',
+    category: 'preset' as const,
+    subcategory: 'stress' as const,
+    difficulty: 'beginner' as const,
     icon: 'circle',
     tags: ['klid', 'snížení stresu', 'úleva od úzkosti'],
     locked: false,
     phase_count: 1,
+    // MVp0 required fields
+    created_by: null,
+    is_public: true,
+    required_tier: null,
+    deleted_at: null,
+    contraindications: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
     breathing_pattern: {
       version: '1.0',
       type: 'simple',
@@ -220,13 +260,21 @@ export const PRESET_EXERCISES: Exercise[] = [
     duration: 300, // 5 min (OPRAVENO z 3 min)
     total_duration_seconds: 300, // MVp0 compatibility (OPRAVENO z 180)
     description: 'Optimální rytmus pro srdeční variabilitu (HRV)',
-    category: 'preset',
-    subcategory: 'focus',
-    difficulty: 'beginner', // OPRAVENO z 'intermediate'
+    category: 'preset' as const,
+    subcategory: 'focus' as const,
+    difficulty: 'beginner' as const, // OPRAVENO z 'intermediate'
     icon: 'heart',
     tags: ['koherence', 'hrv', 'soustředění'],
     locked: false,
     phase_count: 1,
+    // MVp0 required fields
+    created_by: null,
+    is_public: true,
+    required_tier: null,
+    deleted_at: null,
+    contraindications: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
     breathing_pattern: {
       version: '1.0',
       type: 'simple',

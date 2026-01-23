@@ -35,11 +35,45 @@ export function DemoDnesView({ onExerciseClick }: DemoDnesViewProps) {
     name: 'SMART CVIČENÍ',
     duration: 480, // 8 min
     description: 'Personalizované cvičení na základě tvého pokroku',
-    category: 'preset',
-    subcategory: 'focus',
-    difficulty: 'intermediate',
+    category: 'preset' as const,
+    subcategory: 'focus' as const,
+    difficulty: 'intermediate' as const,
     tags: ['smart', 'ai', 'personalized'],
-    locked: true
+    locked: true,
+    // MVp0 required fields
+    total_duration_seconds: 480,
+    phase_count: 1,
+    created_by: null,
+    is_public: true,
+    required_tier: 'SMART' as const,
+    deleted_at: null,
+    contraindications: [],
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+    breathing_pattern: {
+      version: '1.0',
+      type: 'simple' as const,
+      phases: [{
+        order: 1,
+        type: 'breathing' as const,
+        name: 'SMART Protocol',
+        description: 'AI-optimized pattern',
+        pattern: {
+          inhale_seconds: 4,
+          hold_after_inhale_seconds: 4,
+          exhale_seconds: 6,
+          hold_after_exhale_seconds: 2
+        },
+        duration_seconds: 480,
+        cycles_count: 30
+      }],
+      metadata: {
+        total_duration_seconds: 480,
+        phase_count: 1,
+        difficulty: 'intermediate' as const,
+        tags: ['smart', 'ai', 'personalized']
+      }
+    }
   };
   
   return (
@@ -68,7 +102,7 @@ export function DemoDnesView({ onExerciseClick }: DemoDnesViewProps) {
               protocol={exercise.id as 'rano' | 'reset' | 'noc'}
               icon={exercise.icon as 'sun' | 'refresh' | 'moon'}
               label={exercise.name}
-              duration={`${Math.round(exercise.duration / 60)} min`}
+              duration={`${Math.round((exercise.duration || exercise.total_duration_seconds) / 60)} min`}
               onClick={() => onExerciseClick(exercise)}
             />
           ))}
