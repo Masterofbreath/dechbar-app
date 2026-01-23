@@ -47,29 +47,7 @@ export function useKPMeasurementEngine({
   const startTimeRef = useRef<Date>(new Date());
   const { showToast } = useToast();
   
-  const timer = useKPTimer({
-    attemptsCount,
-    onComplete: (results) => {
-      handleMeasurementComplete(results);
-    },
-    onAttemptComplete: (attemptNumber, value) => {
-      console.log(`Attempt ${attemptNumber} complete: ${value}s`);
-    },
-  });
-  
-  // Auto-start measuring when hook initializes
-  useEffect(() => {
-    timer.start();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  
-  // Sync engine phase with timer state
-  useEffect(() => {
-    if (timer.state.phase === 'awaiting_next' && enginePhase !== 'awaiting_next') {
-      setEnginePhase('awaiting_next');
-    }
-  }, [timer.state.phase, enginePhase]);
-  
+  // MOVED BEFORE useKPTimer to fix temporal dead zone error
   const handleMeasurementComplete = (results: number[]) => {
     const endTime = new Date();
     const durationMs = endTime.getTime() - startTimeRef.current.getTime();
@@ -99,6 +77,30 @@ export function useKPMeasurementEngine({
       showToast('Hotovo! KP uložena.', 'success');
     }, 2000);
   };
+  
+  // NOW useKPTimer can safely use handleMeasurementComplete
+  const timer = useKPTimer({
+    attemptsCount,
+    onComplete: (results) => {
+      handleMeasurementComplete(results);
+    },
+    onAttemptComplete: (attemptNumber, value) => {
+      console.log(`Attempt ${attemptNumber} complete: ${value}s`);
+    },
+  });
+  
+  // Auto-start measuring when hook initializes
+  useEffect(() => {
+    timer.start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
+  // Sync engine phase with timer state
+  useEffect(() => {
+    if (timer.state.phase === 'awaiting_next' && enginePhase !== 'awaiting_next') {
+      setEnginePhase('awaiting_next');
+    }
+  }, [timer.state.phase, enginePhase]);
   
   // Return STATE + ACTIONS (ne UI)
   return {

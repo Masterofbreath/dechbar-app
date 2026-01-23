@@ -321,13 +321,22 @@ export function KPCenter() {
               </h3>
               
               <ol className="kp-center__instructions-list">
-                <li>3 klidné nádechy a výdechy</li>
-                <li>Výdech + zádrž (spustí se stopky)</li>
-                <li>Ucpat nos + zavřít oči</li>
-                <li>Čekat na první signál (bránice/polknutí/myšlenka)</li>
-                <li>Zastavit měření při prvním signálu</li>
+                <li>Proveď tři normální nádechy a výdechy</li>
+                <li>Po třetím výdechu zadrž dech a spusť stopky</li>
+                <li>Zacpi nos a zavři oči</li>
+                <li>
+                  Čekej na první signál potřeby se nadechnout
+                  <br />
+                  <span className="kp-center__instructions-detail">
+                    (Kopnutí bránice, potřeba polknout či myšlenka na nádech)
+                  </span>
+                </li>
+                <li>Zastav měření při prvním signálu</li>
+                <li className="kp-center__instructions-check">
+                  <strong>Kontrola:</strong> První nádech po zastavení by měl být tichý a jemný.
+                </li>
                 <li className="kp-center__instructions-tip">
-                  <strong>Tip:</strong> Pro nejpřesnější výsledky měř ráno hned po probuzení (4-9h).
+                  <strong>Tip:</strong> Pro nejpřesnější výsledky a uložení relevantní hodnoty měř KP ráno hned po probuzení.
                 </li>
               </ol>
               
