@@ -1,0 +1,88 @@
+/* ============================================================
+   KP Measurement Engine Styles
+   Paused state and preparing state
+   ============================================================ */
+
+/* ============================================================
+   Preparing State
+   ============================================================ */
+.kp-engine-preparing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  height: 100%;
+}
+
+.kp-engine-preparing__title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+}
+
+.kp-engine-preparing__instruction {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin-bottom: 32px;
+  max-width: 280px;
+}
+
+/* ============================================================
+   Paused State
+   ============================================================ */
+.kp-engine-paused {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  height: 100%;
+}
+
+.kp-engine-paused__title {
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -2px;
+  margin-bottom: 8px;
+}
+
+.kp-engine-paused__subtitle {
+  font-size: 16px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 32px;
+}
+
+/* ============================================================
+   Countdown
+   ============================================================ */
+.kp-engine-paused__countdown {
+  margin-top: 32px;
+}
+
+.kp-engine-paused__countdown p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+.kp-engine-paused__countdown-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: -1px;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (width >= 768px) {
+  .kp-engine-preparing,
+  .kp-engine-paused {
+    padding: 64px 32px;
+  }
+}

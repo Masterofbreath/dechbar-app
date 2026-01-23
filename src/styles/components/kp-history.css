@@ -1,0 +1,141 @@
+/* ============================================================
+   KP History Styles
+   Timeline of past measurements
+   ============================================================ */
+
+.kp-history {
+  width: 100%;
+}
+
+.kp-history__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   List
+   ============================================================ */
+.kp-history__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================================
+   Item
+   ============================================================ */
+.kp-history__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--color-surface);
+  border-radius: 12px;
+  border-left: 4px solid var(--color-primary);
+}
+
+.kp-history__item--low {
+  border-left-color: var(--color-error);
+}
+
+.kp-history__item--normal {
+  border-left-color: var(--color-primary);
+}
+
+.kp-history__item--good {
+  border-left-color: var(--color-primary);
+}
+
+.kp-history__item--excellent {
+  border-left-color: var(--color-accent);
+}
+
+/* ============================================================
+   Date
+   ============================================================ */
+.kp-history__date {
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  flex: 1;
+}
+
+/* ============================================================
+   Value Container
+   ============================================================ */
+.kp-history__value-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.kp-history__value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.kp-history__trend {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kp-history__trend--positive {
+  color: var(--color-success);
+}
+
+.kp-history__trend--negative {
+  color: var(--color-error);
+}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+.kp-history__badges {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.kp-history__badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kp-history__badge--first {
+  background: rgb(214 162 58 / 20%);
+  color: var(--color-accent);
+}
+
+.kp-history__badge--invalid {
+  background: rgb(239 68 68 / 20%);
+  color: var(--color-error);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (width <= 480px) {
+  .kp-history__item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .kp-history__date {
+    flex-basis: 100%;
+  }
+  
+  .kp-history__value-container {
+    justify-content: flex-start;
+  }
+  
+  .kp-history__badges {
+    justify-content: flex-start;
+  }
+}

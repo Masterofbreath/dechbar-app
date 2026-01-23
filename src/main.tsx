@@ -12,6 +12,11 @@ import './styles/components/bottom-nav.css' // BOTTOM NAV styles
 import './styles/components/kp-display.css' // KP Display widget
 import './styles/components/notification-center.css' // Notification Center
 import './styles/components/kp-center.css' // KP Center
+import './styles/components/kp-onboarding.css' // KP Onboarding
+import './styles/components/kp-timer.css' // KP Timer
+import './styles/components/kp-result.css' // KP Result
+import './styles/components/kp-history.css' // KP History
+import './styles/components/kp-measurement-engine.css' // KP Measurement Engine
 import './styles/components/settings-drawer.css' // Settings Drawer
 import './styles/components/confirm-modal.css' // ConfirmModal component
 import './styles/components/toast.css' // Toast notifications

@@ -1,0 +1,108 @@
+/* ============================================================
+   KP Result Styles
+   Display result after measurement (special UX for first)
+   ============================================================ */
+
+.kp-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px 24px;
+  text-align: center;
+}
+
+/* ============================================================
+   Trophy (First Measurement)
+   ============================================================ */
+.kp-result__trophy-container {
+  color: var(--color-accent);
+  margin-bottom: 24px;
+}
+
+.kp-result__trophy {
+  filter: drop-shadow(0 4px 12px rgb(214 162 58 / 30%));
+}
+
+/* ============================================================
+   Title
+   ============================================================ */
+.kp-result__title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+}
+
+.kp-result__title--first {
+  color: var(--color-accent);
+}
+
+/* ============================================================
+   Value
+   ============================================================ */
+.kp-result__value {
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -2px;
+  margin-bottom: 12px;
+}
+
+.kp-result__value--first {
+  color: var(--color-accent);
+}
+
+/* ============================================================
+   Trend
+   ============================================================ */
+.kp-result__trend {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.kp-result__trend--positive {
+  color: var(--color-success);
+}
+
+.kp-result__trend--negative {
+  color: var(--color-error);
+}
+
+/* ============================================================
+   Message & Attempts
+   ============================================================ */
+.kp-result__message {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin-bottom: 24px;
+  max-width: 300px;
+}
+
+.kp-result__attempts {
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 32px;
+}
+
+/* ============================================================
+   Actions
+   ============================================================ */
+.kp-result__actions {
+  width: 100%;
+  max-width: 320px;
+  margin-top: auto;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (width >= 768px) {
+  .kp-result {
+    padding: 64px 32px 32px;
+  }
+  
+  .kp-result__value {
+    font-size: 80px;
+  }
+}
