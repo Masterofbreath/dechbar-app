@@ -18,6 +18,7 @@ import { DemoCvicitView } from './views/DemoCvicitView';
 import { DemoTopNav } from './components/DemoTopNav';
 import { DemoBottomNav } from './components/DemoBottomNav';
 import { LockedExerciseModal } from './components/LockedExerciseModal';
+import { ToastProvider } from '@/platform/components/Toast';
 import { useDemoAnalytics } from './hooks/useDemoAnalytics';
 import type { DemoView, DemoState } from './types/demo.types';
 import type { Exercise } from '@/shared/exercises/types';
@@ -53,7 +54,11 @@ export function DemoApp() {
   /**
    * Handle exercise click - opens conversion modal
    */
-  const handleExerciseClick = (exercise: Exercise) => {
+  const handleExerciseClick = (exercise: Exercise, event?: React.MouseEvent) => {
+    // Prevent scroll jump on mobile
+    event?.preventDefault();
+    event?.stopPropagation();
+    
     setState(prev => ({
       ...prev,
       selectedExercise: exercise,
@@ -134,35 +139,37 @@ export function DemoApp() {
   };
   
   return (
-    <div className="demo-app">
-      {/* Top navigation (fixed) */}
-      <DemoTopNav />
-      
-      {/* Content area (scrollable, with padding for top nav) */}
-      <div className="demo-app__content">
-        {state.activeView === 'dnes' && (
-          <DemoDnesView onExerciseClick={handleExerciseClick} />
-        )}
+    <ToastProvider>
+      <div className="demo-app">
+        {/* Top navigation (fixed) */}
+        <DemoTopNav />
         
-        {state.activeView === 'cvicit' && (
-          <DemoCvicitView onExerciseClick={handleExerciseClick} />
-        )}
+        {/* Content area (scrollable, with padding for top nav) */}
+        <div className="demo-app__content">
+          {state.activeView === 'dnes' && (
+            <DemoDnesView onExerciseClick={handleExerciseClick} />
+          )}
+          
+          {state.activeView === 'cvicit' && (
+            <DemoCvicitView onExerciseClick={handleExerciseClick} />
+          )}
+        </div>
+        
+        {/* Bottom navigation (fixed) */}
+        <DemoBottomNav 
+          activeView={state.activeView} 
+          onViewChange={handleViewChange} 
+        />
+        
+        {/* Conversion modal */}
+        <LockedExerciseModal
+          isOpen={state.isModalOpen}
+          onClose={handleModalClose}
+          exercise={state.selectedExercise}
+          onGoogleAuth={handleGoogleAuth}
+          onEmailSubmit={handleEmailSubmit}
+        />
       </div>
-      
-      {/* Bottom navigation (fixed) */}
-      <DemoBottomNav 
-        activeView={state.activeView} 
-        onViewChange={handleViewChange} 
-      />
-      
-      {/* Conversion modal */}
-      <LockedExerciseModal
-        isOpen={state.isModalOpen}
-        onClose={handleModalClose}
-        exercise={state.selectedExercise}
-        onGoogleAuth={handleGoogleAuth}
-        onEmailSubmit={handleEmailSubmit}
-      />
-    </div>
+    </ToastProvider>
   );
 }

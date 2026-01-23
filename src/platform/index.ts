@@ -65,7 +65,6 @@ export type {
   CardProps,
   LogoProps,
   NavIconProps,
-  KPDisplayProps,
   EmailInputModalProps
 } from './components';
 

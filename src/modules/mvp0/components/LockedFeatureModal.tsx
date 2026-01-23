@@ -14,7 +14,7 @@
  */
 
 import { Card } from '@/platform/components';
-import { useScrollLock } from '@/platform/hooks';
+import { useScrollLock, useSwipeToDismiss } from '@/platform/hooks';
 
 export interface LockedFeatureModalProps {
   /**
@@ -60,6 +60,12 @@ export function LockedFeatureModal({
   // Lock scroll when modal is open
   useScrollLock(isOpen);
   
+  // Swipe to dismiss
+  const { handlers, style } = useSwipeToDismiss({ 
+    onDismiss: onClose,
+    enabled: isOpen
+  });
+  
   if (!isOpen) return null;
   
   return (
@@ -73,6 +79,8 @@ export function LockedFeatureModal({
       <Card 
         className="locked-feature-modal" 
         onClick={(e) => e.stopPropagation()}
+        {...handlers}
+        style={style}
       >
         {/* Lock Icon */}
         <div className="locked-feature__icon" aria-hidden="true">

@@ -135,6 +135,7 @@
   transform-origin: top left;
   border-radius: 30px;
   overflow: hidden;
+  pointer-events: auto; /* Enable clicks inside demo */
 }
 
 /* ============================================================

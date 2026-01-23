@@ -45,11 +45,19 @@
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
+  touch-action: manipulation; /* Remove 300ms delay on mobile */
 }
 
 .tab:hover {
   color: var(--color-text-primary);
   background: rgba(255, 255, 255, 0.05);
+}
+
+/* Instant visual feedback on tap */
+.tab:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+  transition: transform 0.1s ease, opacity 0.1s ease;
 }
 
 .tab--active {
@@ -80,12 +88,19 @@
 }
 
 .tab-content {
-  animation: fadeIn 0.3s ease;
+  animation: fade-in 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ============================================================
@@ -282,7 +297,7 @@
   line-height: 1.5;
   
   z-index: 100;
-  animation: tooltipFadeIn 0.2s ease;
+  animation: tooltip-fade-in 0.2s ease;
 }
 
 /* Arrow dole (ukazuje na badge) */
@@ -317,11 +332,12 @@
   color: var(--color-text-primary);
 }
 
-@keyframes tooltipFadeIn {
+@keyframes tooltip-fade-in {
   from {
     opacity: 0;
     transform: translateX(-50%) translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -363,13 +379,18 @@
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: -1;
-    animation: overlayFadeIn 0.2s ease;
+    animation: overlay-fade-in 0.2s ease;
   }
 }
 
-@keyframes overlayFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ============================================================

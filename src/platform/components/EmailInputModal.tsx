@@ -12,6 +12,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { Button } from './Button';
+import { useSwipeToDismiss } from '@/platform/hooks';
 
 export interface EmailInputModalProps {
   isOpen: boolean;
@@ -28,6 +29,12 @@ export function EmailInputModal({
 }: EmailInputModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  
+  // Swipe to dismiss
+  const { handlers, style } = useSwipeToDismiss({ 
+    onDismiss: onClose,
+    enabled: isOpen
+  });
 
   const validateEmail = (email: string): boolean => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -62,6 +69,8 @@ export function EmailInputModal({
       <div 
         className="modal-card"
         onClick={(e) => e.stopPropagation()}
+        {...handlers}
+        style={style}
       >
         {/* Close button - using global modal-close class */}
         <button 

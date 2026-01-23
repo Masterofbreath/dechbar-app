@@ -48,6 +48,11 @@
   justify-content: center;
   cursor: default; /* Not clickable in demo */
   opacity: 0.9; /* Slightly muted to show it's demo */
+  
+  /* Explicit button reset - prevents default button styles */
+  border: none;
+  background: transparent;
+  position: relative;
 }
 
 .demo-top-nav__avatar {
@@ -79,13 +84,12 @@
   gap: 0; /* Buttons touch inside pill */
   
   /* Liquid glass pill - matches real TopNav */
-  background: rgb(30 30 30 / 3%);
-  border: 1.5px solid rgb(255 255 255 / 10%);
+  background: rgb(30 30 30 / 12%);
+  border: 1.5px solid rgb(255 255 255 / 15%);
   border-radius: var(--radius-full);
   backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
   padding: 4px; /* Inner padding for buttons */
-  opacity: 0.5; /* Muted to show disabled state */
+  opacity: 0.75; /* Muted to show disabled state, but visible */
 }
 
 /* ============================================================
@@ -95,13 +99,22 @@
 .demo-top-nav__bell-button,
 .demo-top-nav__settings-button {
   padding: 7px; /* 38x38 touch target */
-  color: var(--color-text-secondary); /* #A0A0A0 */
+  color: var(--color-text-primary); /* Světlejší barva pro lepší viditelnost */
   min-width: 38px;
   min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: not-allowed; /* Disabled in demo */
+  background: transparent;
+  border: none;
+}
+
+/* Hover state pro lepší UX (i když je disabled) */
+.demo-top-nav__bell-button:hover,
+.demo-top-nav__settings-button:hover {
+  color: var(--color-text-primary);
+  opacity: 0.7;
 }
 
 /* ============================================================

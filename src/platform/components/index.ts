@@ -38,7 +38,6 @@ export { NavIcon } from './NavIcon';
 export type { NavIconProps } from './NavIcon';
 
 export { KPDisplay } from './KPDisplay';
-export type { KPDisplayProps } from './KPDisplay';
 
 export { NotificationCenter } from './NotificationCenter';
 export type { Notification } from './NotificationCenter';
@@ -55,6 +54,9 @@ export type { LoadingSkeletonProps } from './LoadingSkeleton';
 
 export { EmailInputModal } from './EmailInputModal';
 export type { EmailInputModalProps } from './EmailInputModal';
+
+export { Tooltip } from './Tooltip';
+export type { TooltipProps } from './Tooltip';
 
 // Mood Icons
 export { CelebrationIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from './icons/mood';

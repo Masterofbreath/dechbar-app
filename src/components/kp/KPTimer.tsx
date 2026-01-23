@@ -1,16 +1,16 @@
 /**
  * KPTimer - Visual Timer for KP Measurement
  * 
- * Circular progress bar s breathing animation + large time display.
- * STOP button pro zastavení měření.
+ * Static breathing circle + large time display.
+ * "Zastavit měření" button.
  * 
  * @package DechBar_App
  * @subpackage Components/KP
  * @since 0.3.0
  */
 
-import { useEffect, useState } from 'react';
 import { Button } from '@/platform/components';
+import { StaticBreathingCircle } from './StaticBreathingCircle';
 import { formatTimer } from '@/utils/kp';
 
 export interface KPTimerProps {
@@ -47,17 +47,6 @@ export interface KPTimerProps {
  * />
  */
 export function KPTimer({ elapsed, currentAttempt, totalAttempts, onStop }: KPTimerProps) {
-  const [breathScale, setBreathScale] = useState(1);
-  
-  // Breathing animation (pulsing circle)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBreathScale(prev => prev === 1 ? 1.1 : 1);
-    }, 2000); // 2s cycle (slow, calm)
-    
-    return () => clearInterval(interval);
-  }, []);
-  
   const formattedTime = formatTimer(elapsed);
   
   return (
@@ -68,24 +57,14 @@ export function KPTimer({ elapsed, currentAttempt, totalAttempts, onStop }: KPTi
         <p className="kp-timer__instruction">Zadrž dech do prvního signálu</p>
       </div>
       
-      {/* Breathing Circle + Time */}
+      {/* Static Breathing Circle + Time */}
       <div className="kp-timer__circle-container">
-        {/* Animated breathing circle */}
-        <div 
-          className="kp-timer__circle"
-          style={{ 
-            transform: `scale(${breathScale})`,
-            transition: 'transform 2s ease-in-out',
-          }}
-        >
-          {/* Time Display */}
-          <div className="kp-timer__time">
-            {formattedTime}
-          </div>
-        </div>
+        <StaticBreathingCircle>
+          <div className="kp-timer__time">{formattedTime}</div>
+        </StaticBreathingCircle>
       </div>
       
-      {/* STOP Button */}
+      {/* Stop Button */}
       <div className="kp-timer__stop-container">
         <Button 
           variant="primary" 
@@ -93,13 +72,13 @@ export function KPTimer({ elapsed, currentAttempt, totalAttempts, onStop }: KPTi
           onClick={onStop}
           className="kp-timer__stop-button"
         >
-          STOP
+          Zastavit měření
         </Button>
       </div>
       
       {/* Hint */}
       <p className="kp-timer__hint">
-        Zastav při prvním pocitu potřeby nadechnout
+        Stop při prvním signálu od těla
       </p>
     </div>
   );

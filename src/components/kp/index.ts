@@ -6,16 +6,18 @@
  * @since 0.3.0
  */
 
-export { KPOnboarding } from './KPOnboarding';
+export { StaticBreathingCircle } from './StaticBreathingCircle';
 export { KPTimer } from './KPTimer';
 export { KPResult } from './KPResult';
 export { KPHistory } from './KPHistory';
-export { KPSettingsPanel } from './KPSettingsPanel';
 export { KPMeasurementEngine } from './KPMeasurementEngine';
 
-export type { KPOnboardingProps } from './KPOnboarding';
+// Deprecated (will be used in global onboarding / Settings module):
+// export { KPOnboarding } from './KPOnboarding';
+// export { KPSettingsPanel } from './KPSettingsPanel';
+
+export type { StaticBreathingCircleProps } from './StaticBreathingCircle';
 export type { KPTimerProps } from './KPTimer';
 export type { KPResultProps } from './KPResult';
 export type { KPHistoryProps } from './KPHistory';
-export type { KPSettingsPanelProps } from './KPSettingsPanel';
 export type { KPMeasurementEngineProps } from './KPMeasurementEngine';

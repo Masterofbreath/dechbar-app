@@ -18,18 +18,18 @@ import { useKPMeasurements } from '@/platform/api';
 import { CloseButton, ConfirmModal } from '@/components/shared';
 import { Button, TextLink } from '@/platform/components';
 import { 
-  KPOnboarding, 
+  StaticBreathingCircle,
   KPMeasurementEngine, 
   KPHistory,
 } from '@/components/kp';
 import type { SaveKPData } from '@/platform/api';
-import { formatSeconds, formatTrend, isMorningWindow } from '@/utils/kp';
+import { formatSeconds, formatTrend, isMorningWindow, getKPMeasurementsCount } from '@/utils/kp';
 import { useToast } from '@/hooks/useToast';
 
 /**
- * View modes for KPCenter
+ * View modes for KPCenter (simplified)
  */
-type ViewMode = 'dashboard' | 'onboarding' | 'measuring' | 'instructions';
+type ViewMode = 'ready' | 'measuring';
 
 /**
  * KPCenter Component
@@ -39,30 +39,14 @@ export function KPCenter() {
   const { currentKP, measurements, saveKP, isSaving } = useKPMeasurements();
   const { showToast } = useToast();
   
-  // Local storage pro onboarding
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(() => {
-    return localStorage.getItem('kp-onboarding-seen') === 'true';
-  });
-  
   const [showInstructions, setShowInstructions] = useState(false);
   const [showMorningWarningModal, setShowMorningWarningModal] = useState(false);
   
-  // Determine initial view mode based on onboarding state
-  const getInitialViewMode = (): ViewMode => {
-    if (!hasSeenOnboarding) return 'onboarding';
-    return 'dashboard';
-  };
+  // Always start in 'ready' mode (simplified flow)
+  const [viewMode, setViewMode] = useState<ViewMode>('ready');
   
-  const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode());
-  
-  /**
-   * Handle onboarding complete
-   */
-  const handleOnboardingComplete = () => {
-    setHasSeenOnboarding(true);
-    localStorage.setItem('kp-onboarding-seen', 'true');
-    setViewMode('dashboard');
-  };
+  // Get user preference from Settings (default 3x)
+  const attemptsCount = getKPMeasurementsCount();
   
   /**
    * Handle start measurement
@@ -90,7 +74,7 @@ export function KPCenter() {
   const handleMeasurementComplete = async (data: SaveKPData) => {
     try {
       await saveKP(data);
-      setViewMode('dashboard');
+      setViewMode('ready'); // Return to ready view
       
       // Toast notification zobrazí se automaticky v KPMeasurementEngine
     } catch (error) {
@@ -119,44 +103,13 @@ export function KPCenter() {
       <div className="kp-center" onClick={e => e.stopPropagation()}>
         <CloseButton onClick={closeKPDetail} />
         
-        {/* Onboarding View */}
-        {viewMode === 'onboarding' && (
-          <KPOnboarding onComplete={handleOnboardingComplete} />
-        )}
-        
-        {/* Measuring View */}
-        {viewMode === 'measuring' && (
-          <KPMeasurementEngine 
-            onComplete={handleMeasurementComplete}
-            previousKP={previousKP}
-            isFirst={isFirstMeasurement}
-          />
-        )}
-        
-        {/* Instructions View */}
-        {viewMode === 'instructions' && (
-          <div className="kp-center__instructions">
-            <h2>Jak měřit KP?</h2>
-            <ol>
-              <li>3 klidné nádechy a výdechy</li>
-              <li>Výdech + zádrž (spustí se stopky)</li>
-              <li>Ucpat nos + zavřít oči</li>
-              <li>Čekat na první signál (bránice, polknutí, myšlenka)</li>
-              <li>Otevřít oči + zastavit</li>
-            </ol>
-            <Button onClick={() => setViewMode('dashboard')}>
-              Zpět
-            </Button>
-          </div>
-        )}
-        
-        {/* Dashboard View */}
-        {viewMode === 'dashboard' && (
+        {/* Ready View - Static Circle + Start Button */}
+        {viewMode === 'ready' && (
           <>
             <h2 className="kp-center__title">Kontrolní pauza</h2>
             
-            {/* Current KP Display */}
-            {currentKP !== null ? (
+            {/* Current KP Display (if exists) */}
+            {currentKP !== null && (
               <div className="kp-center__current">
                 <div className="kp-center__value">{formatSeconds(currentKP)}</div>
                 {previousKP !== null && (
@@ -165,26 +118,31 @@ export function KPCenter() {
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="kp-center__empty">
-                <p>Zatím nemáš změřenou KP</p>
-              </div>
             )}
             
-            {/* CTA Button */}
-            <Button 
-              variant="primary" 
-              fullWidth 
-              onClick={handleStartMeasurement}
-              disabled={isSaving}
-            >
-              Začít měření
-            </Button>
+            {/* Static Breathing Circle + Start Button */}
+            <div className="kp-center__measurement-area">
+              <StaticBreathingCircle>
+                <div className="kp-center__circle-placeholder">
+                  {currentKP !== null ? formatSeconds(currentKP) : '--'}
+                </div>
+              </StaticBreathingCircle>
+              
+              <Button 
+                variant="primary" 
+                size="lg"
+                fullWidth 
+                onClick={handleStartMeasurement}
+                disabled={isSaving}
+              >
+                Začít měření
+              </Button>
+            </div>
             
-            {/* Instructions Link */}
+            {/* Help Link (collapsible) */}
             <div className="kp-center__help">
               <TextLink onClick={() => setShowInstructions(!showInstructions)}>
-                {showInstructions ? 'Skrýt instrukce' : 'Jak měřit?'}
+                {showInstructions ? 'Skrýt instrukce' : 'Jak měřit kontrolní pauzu?'}
               </TextLink>
             </div>
             
@@ -195,8 +153,8 @@ export function KPCenter() {
                   <li>3 klidné nádechy a výdechy</li>
                   <li>Výdech + zádrž (spustí se stopky)</li>
                   <li>Ucpat nos + zavřít oči</li>
-                  <li>Čekat na první signál</li>
-                  <li>Otevřít oči + zastavit</li>
+                  <li>Čekat na první signál (bránice/polknutí/myšlenka)</li>
+                  <li>Zastavit měření při prvním signálu</li>
                 </ol>
               </div>
             )}
@@ -206,6 +164,16 @@ export function KPCenter() {
               <KPHistory measurements={measurements} validOnly={true} limit={5} />
             </div>
           </>
+        )}
+        
+        {/* Measuring View */}
+        {viewMode === 'measuring' && (
+          <KPMeasurementEngine 
+            attemptsCount={attemptsCount}
+            onComplete={handleMeasurementComplete}
+            previousKP={previousKP}
+            isFirst={isFirstMeasurement}
+          />
         )}
       </div>
       

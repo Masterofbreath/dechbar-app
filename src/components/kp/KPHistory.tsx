@@ -51,6 +51,7 @@ export function KPHistory({
   if (limited.length === 0) {
     return (
       <EmptyState
+        icon=""
         title="Zatím nemáš historii měření"
         message="Nadechni se k prvnímu testu!"
       />

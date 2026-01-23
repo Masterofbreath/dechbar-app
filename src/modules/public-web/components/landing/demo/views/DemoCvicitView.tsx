@@ -14,7 +14,8 @@
 
 import { useState } from 'react';
 import { ExerciseCard } from '@/modules/mvp0/components/ExerciseCard';
-import { EmptyState, Button, NavIcon, CalmIcon, EnergeticIcon } from '@/platform/components';
+import { EmptyState, Button, NavIcon, CalmIcon, EnergeticIcon, Tooltip } from '@/platform/components';
+import { useHaptic } from '@/platform/services/haptic';
 import { DEMO_CVICIT_EXERCISES, DEMO_HISTORY_SESSIONS } from '../data/demoExercises';
 import type { Exercise } from '@/shared/exercises/types';
 
@@ -32,6 +33,13 @@ type CvicitTab = 'doporucene' | 'vlastni' | 'historie';
  */
 export function DemoCvicitView({ onExerciseClick }: DemoCvicitViewProps) {
   const [activeTab, setActiveTab] = useState<CvicitTab>('doporucene');
+  const { trigger } = useHaptic();
+  
+  // Handle tab change with haptic feedback
+  const handleTabChange = (tab: CvicitTab) => {
+    trigger('light');
+    setActiveTab(tab);
+  };
   
   // Mood icon mapping (matches real app)
   const moodIconMap = {
@@ -55,7 +63,7 @@ export function DemoCvicitView({ onExerciseClick }: DemoCvicitViewProps) {
         <div className="exercise-list__tabs" role="tablist">
           <button 
             className={`tab ${activeTab === 'doporucene' ? 'tab--active' : ''}`}
-            onClick={() => setActiveTab('doporucene')}
+            onClick={() => handleTabChange('doporucene')}
             role="tab"
             aria-selected={activeTab === 'doporucene'}
             type="button"
@@ -65,7 +73,7 @@ export function DemoCvicitView({ onExerciseClick }: DemoCvicitViewProps) {
           
           <button 
             className={`tab ${activeTab === 'vlastni' ? 'tab--active' : ''}`}
-            onClick={() => setActiveTab('vlastni')}
+            onClick={() => handleTabChange('vlastni')}
             role="tab"
             aria-selected={activeTab === 'vlastni'}
             type="button"
@@ -75,7 +83,7 @@ export function DemoCvicitView({ onExerciseClick }: DemoCvicitViewProps) {
           
           <button 
             className={`tab ${activeTab === 'historie' ? 'tab--active' : ''}`}
-            onClick={() => setActiveTab('historie')}
+            onClick={() => handleTabChange('historie')}
             role="tab"
             aria-selected={activeTab === 'historie'}
             type="button"
@@ -189,15 +197,14 @@ export function DemoCvicitView({ onExerciseClick }: DemoCvicitViewProps) {
                           </span>
                         )}
                         
-                        {/* Notes badge - NEW! (visual only with easter egg tooltip) */}
+                        {/* Notes badge - Click-to-show tooltip (NO emoji) */}
                         {session.notes && (
-                          <span 
-                            className="badge badge--notes"
-                            title="💎 Easter egg pro zvědavé! Poznámky ti pomůžou sledovat pokrok a pocity po cvičení."
-                          >
-                            <NavIcon name="file-text" size={12} />
-                            Poznámka
-                          </span>
+                          <Tooltip content="Poznámky ti pomůžou sledovat pokrok a pocity po cvičení.">
+                            <span className="badge badge--notes">
+                              <NavIcon name="file-text" size={12} />
+                              Poznámka
+                            </span>
+                          </Tooltip>
                         )}
                       </div>
                     </div>

@@ -1,29 +1,30 @@
 /**
- * KPMeasurementEngine - Main Measurement Flow Controller
+ * KPMeasurementEngine - Main Measurement Flow Controller (Simplified)
  * 
  * Orchestruje celý flow měření:
- * 1. Settings (1x vs 3x)
- * 2. Preparing (3 nádechy)
- * 3. Measuring (timer běží)
- * 4. Paused (15s countdown mezi pokusy)
- * 5. Result (zobrazení výsledku)
+ * 1. Measuring (timer běží) - AUTO-START
+ * 2. Paused (15s countdown mezi pokusy)
+ * 3. Result (zobrazení výsledku)
  * 
  * @package DechBar_App
  * @subpackage Components/KP
  * @since 0.3.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useKPTimer } from '@/hooks/kp';
 import { calculateAverage, detectDeviceType, validateKPMeasurement } from '@/utils/kp';
 import { useToast } from '@/hooks/useToast';
 import type { SaveKPData } from '@/platform/api';
-import { KPSettingsPanel } from './KPSettingsPanel';
 import { KPTimer } from './KPTimer';
 import { KPResult } from './KPResult';
-import { Button } from '@/platform/components';
 
 export interface KPMeasurementEngineProps {
+  /**
+   * Number of attempts (from Settings / localStorage)
+   */
+  attemptsCount: 1 | 3;
+  
   /**
    * Callback po dokončení měření s daty pro uložení
    */
@@ -41,11 +42,9 @@ export interface KPMeasurementEngineProps {
 }
 
 /**
- * Engine phase states
+ * Engine phase states (simplified - removed 'settings', 'preparing')
  */
 type EnginePhase = 
-  | 'settings'    // Výběr 1x vs 3x
-  | 'preparing'   // Příprava (instrukce)
   | 'measuring'   // Měření probíhá
   | 'paused'      // Pauza mezi pokusy
   | 'result';     // Výsledek
@@ -54,13 +53,13 @@ type EnginePhase =
  * KPMeasurementEngine Component
  */
 export function KPMeasurementEngine({ 
+  attemptsCount, // Now from props (Settings/localStorage)
   onComplete, 
   previousKP = null,
   isFirst = false,
 }: KPMeasurementEngineProps) {
-  const [enginePhase, setEnginePhase] = useState<EnginePhase>('settings');
-  const [attemptsCount, setAttemptsCount] = useState<1 | 3>(3);
-  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [enginePhase, setEnginePhase] = useState<EnginePhase>('measuring');
+  const startTimeRef = useRef<Date>(new Date()); // Use ref instead of state
   const { showToast } = useToast();
   
   const timer = useKPTimer({
@@ -75,28 +74,19 @@ export function KPMeasurementEngine({
   });
   
   /**
-   * Handle settings confirmed
+   * Auto-start measuring when component mounts
    */
-  const handleSettingsConfirm = (count: 1 | 3) => {
-    setAttemptsCount(count);
-    setEnginePhase('preparing');
-  };
-  
-  /**
-   * Handle start measurement
-   */
-  const handleStartMeasurement = () => {
-    setStartTime(new Date());
-    setEnginePhase('measuring');
+  useEffect(() => {
     timer.start();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
   
   /**
    * Handle measurement complete (all attempts done)
    */
   const handleMeasurementComplete = (results: number[]) => {
     const endTime = new Date();
-    const durationMs = startTime ? endTime.getTime() - startTime.getTime() : 0;
+    const durationMs = endTime.getTime() - startTimeRef.current.getTime();
     
     // Vypočítat průměr
     const average = calculateAverage(results);
@@ -139,31 +129,6 @@ export function KPMeasurementEngine({
   
   // Render current phase
   switch (enginePhase) {
-    case 'settings':
-      return (
-        <KPSettingsPanel 
-          onStart={handleSettingsConfirm}
-          defaultAttempts={3}
-        />
-      );
-    
-    case 'preparing':
-      return (
-        <div className="kp-engine-preparing">
-          <h2 className="kp-engine-preparing__title">Připrav se</h2>
-          <p className="kp-engine-preparing__instruction">
-            Udělej 3 klidné nádechy a výdechy
-          </p>
-          <Button 
-            variant="primary" 
-            size="lg"
-            onClick={handleStartMeasurement}
-          >
-            Jsem ready
-          </Button>
-        </div>
-      );
-    
     case 'measuring':
       return (
         <KPTimer 
@@ -179,7 +144,7 @@ export function KPMeasurementEngine({
       return (
         <div className="kp-engine-paused">
           <h2 className="kp-engine-paused__title">
-            {formatSeconds(lastAttemptValue)}
+            {lastAttemptValue}s
           </h2>
           <p className="kp-engine-paused__subtitle">
             {timer.currentAttempt}/{timer.totalAttempts} hotovo

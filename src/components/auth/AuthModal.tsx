@@ -14,6 +14,7 @@ import { RegisterView } from './RegisterView';
 import { ForgotPasswordView } from './ForgotPasswordView';
 import { CloseButton } from '@/components/shared/CloseButton';
 import { Logo, useScrollLock, useFocusTrap } from '@/platform';
+import { useSwipeToDismiss } from '@/platform/hooks';
 
 export interface AuthModalProps {
   isOpen: boolean;
@@ -33,6 +34,12 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
 
   // ✅ Custom focus trap (replaces react-focus-lock, -3KB bundle size)
   const modalCardRef = useFocusTrap(isOpen);
+  
+  // ✅ Swipe to dismiss
+  const { handlers, style } = useSwipeToDismiss({ 
+    onDismiss: onClose,
+    enabled: isOpen
+  });
 
   // Reset view when modal opens
   useEffect(() => {
@@ -88,6 +95,8 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
       <div 
         ref={modalCardRef}
         className={`modal-card ${isSuccessState ? 'modal-card--success' : ''}`}
+        {...handlers}
+        style={style}
       >
           {/* Close button */}
           <CloseButton onClick={onClose} />

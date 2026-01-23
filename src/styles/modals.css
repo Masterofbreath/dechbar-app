@@ -466,3 +466,57 @@ Premium Modal (with gold accent):
     transform: translateY(20px) scale(0.95);
   }
 }
+
+/* ============================================
+   MOBILE BOTTOM SHEET (iOS Style) - GLOBAL
+   Affects ALL modals in application
+   ============================================ */
+
+@media (max-width: 640px) {
+  .modal-overlay {
+    align-items: flex-end; /* Bottom-anchored */
+    padding: 0;
+  }
+  
+  .modal-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh; /* Not fullscreen - maintain context */
+    border-radius: 24px 24px 0 0; /* iOS rounded top */
+    padding-top: 2rem; /* Space for swipe handle */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Override desktop animations */
+    animation: modal-slide-up-mobile 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  
+  /* iOS-style swipe handle indicator */
+  .modal-card::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background: var(--color-text-tertiary);
+    border-radius: 2px;
+    opacity: 0.4;
+    z-index: 10;
+  }
+  
+  /* Close button repositioning for mobile */
+  .modal-close {
+    top: 1.5rem; /* Slightly lower to avoid handle */
+  }
+}
+
+@keyframes modal-slide-up-mobile {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,64 @@
+/* ============================================================
+   Static Breathing Circle Styles
+   Vizuálně stejný jako breathing circle, ale bez animací
+   Používá se pro KP měření (zádrž dechu)
+   ============================================================ */
+
+.static-breathing-circle-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.static-breathing-circle {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    var(--glow-primary-bg-strong) 0%,
+    var(--glow-primary-bg-medium) 50%,
+    var(--glow-primary-bg-subtle) 100%
+  );
+  border: 3px solid var(--color-primary);
+  box-shadow: 
+    0 0 20px var(--glow-primary-shadow-strong),
+    0 0 40px var(--glow-primary-shadow-medium),
+    inset 0 0 30px var(--glow-primary-shadow-subtle);
+  
+  /* NO transition, NO will-change (static) */
+  /* NO color variants (vždy teal) */
+  
+  /* Center content (timer/placeholder) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Content inside circle */
+.static-breathing-circle__content {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (width >= 768px) {
+  .static-breathing-circle-container {
+    width: 320px;
+    height: 320px;
+  }
+  
+  .static-breathing-circle {
+    width: 220px;
+    height: 220px;
+  }
+}

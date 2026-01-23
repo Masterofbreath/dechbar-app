@@ -1,8 +1,8 @@
 /**
  * useKPTimer - Timer State Machine for KP Measurement
  * 
- * State machine řídící celý flow měření:
- * idle -> preparing -> measuring -> paused (15s) -> measuring -> ... -> completed
+ * State machine řídící celý flow měření (simplified):
+ * idle -> measuring -> paused (15s) -> measuring -> ... -> completed
  * 
  * @package DechBar_App
  * @subpackage Hooks/KP
@@ -12,11 +12,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 /**
- * Timer phase states
+ * Timer phase states (simplified - removed 'preparing')
  */
 export type TimerPhase = 
   | 'idle'           // Neaktivní
-  | 'preparing'      // Příprava (3 nádechy countdown)
   | 'measuring'      // Měření probíhá (stopky běží)
   | 'paused'         // Pauza mezi pokusy (15s countdown)
   | 'completed';     // Všechny pokusy dokončeny
@@ -194,22 +193,22 @@ export function useKPTimer({
   }, [state, attemptsCount, onComplete, onAttemptComplete, clearIntervals, startMeasuring]);
   
   /**
-   * Start timer (initial call)
+   * Start timer (initial call - begins measuring immediately)
    */
   const start = useCallback(() => {
     if (state.phase !== 'idle') return;
     
     // Připravit state
     setState({
-      phase: 'preparing',
+      phase: 'idle', // Will transition to measuring immediately
       elapsed: 0,
       currentAttempt: 0,
       attempts: Array(attemptsCount).fill(null),
       pauseCountdown: 0,
     });
     
-    // Auto-start measuring po 500ms (uživatel má čas se připravit)
-    setTimeout(() => startMeasuring(), 500);
+    // Start measuring okamžitě
+    startMeasuring();
   }, [state.phase, attemptsCount, startMeasuring]);
   
   /**

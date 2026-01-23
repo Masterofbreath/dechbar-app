@@ -12,3 +12,5 @@ export { useNavigation } from './useNavigation';
 export type { NavTab } from './useNavigation';
 export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useFocusTrap } from './useFocusTrap';
+export { useSwipeToDismiss } from './useSwipeToDismiss';
+export type { UseSwipeToDismissOptions } from './useSwipeToDismiss';

@@ -12,9 +12,10 @@
  * @subpackage PublicWeb/Demo
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/platform/components';
-import { useScrollLock } from '@/platform/hooks';
+import { useScrollLock, useSwipeToDismiss } from '@/platform/hooks';
+import { useHaptic } from '@/platform/services/haptic';
 import type { Exercise } from '@/shared/exercises/types';
 
 export interface LockedExerciseModalProps {
@@ -46,8 +47,22 @@ export function LockedExerciseModal({
 }: LockedExerciseModalProps) {
   const [email, setEmail] = useState('');
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const { trigger } = useHaptic();
   
   useScrollLock(isOpen);
+  
+  // Swipe to dismiss
+  const { handlers, style } = useSwipeToDismiss({ 
+    onDismiss: onClose,
+    enabled: isOpen
+  });
+  
+  // Trigger haptic when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      trigger('medium');
+    }
+  }, [isOpen, trigger]);
   
   if (!isOpen || !exercise) return null;
   
@@ -81,7 +96,7 @@ export function LockedExerciseModal({
       aria-labelledby="locked-exercise-title"
     >
       {/* ✅ Global .modal-card structure for consistency */}
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()} {...handlers} style={style}>
         {/* Close button - global positioning */}
         <button 
           className="modal-close" 
@@ -144,33 +159,46 @@ export function LockedExerciseModal({
           
           {/* Secondary: Email form */}
           {showEmailForm && (
-            <form
-              className="locked-exercise-modal__email-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (email) {
-                  onEmailSubmit(email);
-                }
-              }}
-            >
-              <input
-                type="email"
-                placeholder="tvuj@email.cz"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="locked-exercise-modal__email-input"
-                required
-                autoFocus
-              />
-              <Button 
-                variant="primary" 
-                size="lg" 
-                fullWidth 
-                type="submit"
+            <>
+              <button
+                className="locked-exercise-modal__back-button"
+                onClick={() => {
+                  trigger('light');
+                  setShowEmailForm(false);
+                }}
+                type="button"
               >
-                Začít cvičit →
-              </Button>
-            </form>
+                ← Zpět na Google registraci
+              </button>
+              
+              <form
+                className="locked-exercise-modal__email-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (email) {
+                    onEmailSubmit(email);
+                  }
+                }}
+              >
+                <input
+                  type="email"
+                  placeholder="tvuj@email.cz"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="locked-exercise-modal__email-input"
+                  required
+                  autoFocus
+                />
+                <Button 
+                  variant="primary" 
+                  size="lg" 
+                  fullWidth 
+                  type="submit"
+                >
+                  Začít cvičit →
+                </Button>
+              </form>
+            </>
           )}
         </div>
         

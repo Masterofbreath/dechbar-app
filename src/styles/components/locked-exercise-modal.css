@@ -58,6 +58,28 @@
 }
 
 /* ============================================================
+   Back Button (Return to Google registration)
+   ============================================================ */
+
+.locked-exercise-modal__back-button {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.locked-exercise-modal__back-button:hover {
+  color: var(--color-primary); /* Teal on hover */
+}
+
+/* ============================================================
    Email Form (Secondary registration path)
    ============================================================ */
 

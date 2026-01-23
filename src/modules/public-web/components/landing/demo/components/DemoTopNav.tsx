@@ -13,7 +13,7 @@
  */
 
 import { NavIcon } from '@/platform/components';
-import { KPDisplay } from '@/platform/components';
+import { useToast } from '@/platform/components/Toast';
 import { DEMO_USER } from '../data/demoUser';
 
 /* 
@@ -91,6 +91,8 @@ import { DEMO_USER } from '../data/demoUser';
  * <DemoTopNav />
  */
 export function DemoTopNav() {
+  const { show } = useToast();
+  
   // Fake user data
   const avatarInitial = DEMO_USER.name.charAt(0).toUpperCase();
   const kpValue = DEMO_USER.bolt_score; // Will be renamed to kpScore later
@@ -99,39 +101,45 @@ export function DemoTopNav() {
     <nav className="demo-top-nav" role="banner">
       {/* Left: Avatar + KP */}
       <div className="demo-top-nav__left">
-        <div
+        <button
           className="demo-top-nav__avatar-button"
-          title="Profil dostupný po registraci"
-          style={{ cursor: 'not-allowed' }}
+          onClick={() => show('Profil dostupný po registraci', { icon: '🔒' })}
+          type="button"
+          aria-label="Profil (dostupný po registraci)"
         >
           <div className="demo-top-nav__avatar demo-top-nav__avatar--placeholder">
             {avatarInitial}
           </div>
-        </div>
+        </button>
         
-        <div title="Měření KP dostupné po registraci">
-          <KPDisplay 
-            kpValue={kpValue} 
-            onClick={() => {}}
-          />
+        <div onClick={() => show('Měření KP dostupné po registraci', { icon: '🔒' })}>
+          {/* KP Display - fake value shown via custom HTML */}
+          <div className="kp-display kp-display--good">
+            <span className="kp-display__label">KP</span>
+            <span className="kp-display__value">{kpValue}s</span>
+          </div>
         </div>
       </div>
       
       {/* Right: Bell + Settings (disabled) */}
       <div className="demo-top-nav__right">
-        <div 
+        <button
           className="demo-top-nav__bell-button"
-          title="Notifikace dostupné po registraci"
+          onClick={() => show('Notifikace dostupné po registraci', { icon: '🔒' })}
+          type="button"
+          aria-label="Notifikace (dostupné po registraci)"
         >
           <NavIcon name="bell" size={24} />
-        </div>
+        </button>
         
-        <div 
+        <button
           className="demo-top-nav__settings-button"
-          title="Nastavení dostupné po registraci"
+          onClick={() => show('Nastavení dostupné po registraci', { icon: '🔒' })}
+          type="button"
+          aria-label="Nastavení (dostupné po registraci)"
         >
           <NavIcon name="settings" size={24} />
-        </div>
+        </button>
       </div>
     </nav>
   );
