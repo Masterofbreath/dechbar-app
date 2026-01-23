@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useKPTimer } from '@/hooks/kp';
-import { calculateAverage, detectDeviceType, validateKPMeasurement } from '@/utils/kp';
+import { calculateAverage } from '@/utils/kp';
 import { useToast } from '@/hooks/useToast';
 import type { SaveKPData } from '@/platform/api';
 import { Button } from '@/platform/components';

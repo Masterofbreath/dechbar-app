@@ -19,6 +19,18 @@
 }
 
 /* ============================================================
+   Content Area - Fixní výška pro stabilitu
+   ============================================================ */
+.kp-center__content {
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* ============================================================
    Title
    ============================================================ */
 .kp-center__title {
@@ -104,7 +116,7 @@
 }
 
 /* ============================================================
-   Collapsible Instructions
+   Collapsible Instructions (DEPRECATED - v3)
    ============================================================ */
 .kp-center__instructions-inline {
   padding: var(--spacing-4) var(--spacing-6);
@@ -135,6 +147,139 @@
 
 .kp-center__instructions-tip strong {
   font-weight: var(--font-weight-semibold);
+}
+
+/* ============================================================
+   Instructions Fullscreen (v3 - NEW)
+   ============================================================ */
+.kp-center__instructions-fullscreen {
+  padding: var(--spacing-8) var(--spacing-6);
+  max-width: 500px;
+  width: 100%;
+}
+
+.kp-center__instructions-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+  text-align: center;
+}
+
+.kp-center__instructions-list {
+  list-style: decimal;
+  padding-left: var(--spacing-5);
+  margin: 0 0 var(--spacing-8) 0;
+}
+
+.kp-center__instructions-list li {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-3) 0;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Measuring View - Circle obsah (v3 - NEW)
+   ============================================================ */
+.kp-center__timer {
+  font-size: 64px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -2px;
+  text-align: center;
+}
+
+.kp-center__intermediate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.kp-center__intermediate-value {
+  font-size: 48px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -2px;
+}
+
+.kp-center__intermediate-progress {
+  font-size: var(--font-size-base);
+  color: var(--color-text-tertiary);
+}
+
+.kp-center__final {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.kp-center__final-value {
+  font-size: 64px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -2px;
+}
+
+.kp-center__final-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Progress indicator */
+.kp-center__progress-indicator {
+  padding: 0 var(--spacing-6) var(--spacing-4);
+  text-align: center;
+}
+
+.kp-center__progress-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Instructions & hints */
+.kp-center__instruction {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.kp-center__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin-top: var(--spacing-4);
+}
+
+/* Actions */
+.kp-center__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  width: 100%;
+}
+
+.kp-center__finish-early {
+  opacity: 0.7;
+  font-size: var(--font-size-sm);
+}
+
+.kp-center__finish-early:hover {
+  opacity: 1;
+}
+
+/* Attempts display */
+.kp-center__attempts {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: var(--spacing-4);
 }
 
 /* ============================================================

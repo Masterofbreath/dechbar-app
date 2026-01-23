@@ -12,23 +12,192 @@
  * @since 0.3.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigation } from '@/platform/hooks';
 import { useKPMeasurements } from '@/platform/api';
+import { useKPMeasurementEngine } from '@/hooks/kp';
 import { CloseButton } from '@/components/shared';
 import { Button, TextLink } from '@/platform/components';
 import { 
   StaticBreathingCircle,
-  KPMeasurementEngine,
 } from '@/components/kp';
 import type { SaveKPData } from '@/platform/api';
-import { formatSeconds, formatTrend, getKPMeasurementsCount } from '@/utils/kp';
+import { formatSeconds, formatTrend, formatTimer, formatAttempts, getKPMeasurementsCount } from '@/utils/kp';
 import { useToast } from '@/hooks/useToast';
 
 /**
- * View modes for KPCenter (simplified)
+ * View modes for KPCenter (v3 - stable layout)
  */
-type ViewMode = 'ready' | 'measuring';
+type ViewMode = 'ready' | 'instructions' | 'measuring';
+
+/**
+ * MeasuringView - Renders measurement UI in stable layout
+ * Circle VŽDY na stejné pozici, mění se pouze OBSAH uvnitř
+ */
+interface MeasuringViewProps {
+  attemptsCount: 1 | 3;
+  onComplete: (data: SaveKPData) => void;
+  previousKP: number | null;
+  isFirst: boolean;
+}
+
+function MeasuringView({ 
+  attemptsCount, 
+  onComplete, 
+  previousKP, 
+  isFirst,
+}: MeasuringViewProps) {
+  const engine = useKPMeasurementEngine({
+    attemptsCount,
+    onComplete,
+    previousKP,
+    isFirst,
+  });
+  
+  // Helper: Render obsah UVNITŘ circle
+  const renderCircleContent = () => {
+    switch (engine.phase) {
+      case 'measuring':
+        return (
+          <div className="kp-center__timer">
+            {formatTimer(engine.elapsed)}
+          </div>
+        );
+      
+      case 'awaiting_next':
+        return (
+          <div className="kp-center__intermediate">
+            <div className="kp-center__intermediate-value">
+              {engine.lastAttemptValue}s
+            </div>
+            <div className="kp-center__intermediate-progress">
+              {engine.currentAttempt}/{engine.totalAttempts}
+            </div>
+          </div>
+        );
+      
+      case 'result':
+        return (
+          <div className="kp-center__final">
+            <div className="kp-center__final-value">
+              {engine.averageKP}s
+            </div>
+            <div className="kp-center__final-label">Průměr</div>
+          </div>
+        );
+      
+      default:
+        return <div className="kp-center__circle-placeholder">--</div>;
+    }
+  };
+  
+  // Helper: Render button POD circle
+  const renderButton = () => {
+    switch (engine.phase) {
+      case 'measuring':
+        return (
+          <>
+            <p className="kp-center__instruction">
+              Zadrž dech do prvního signálu
+            </p>
+            <Button 
+              variant="primary" 
+              size="lg"
+              fullWidth
+              onClick={engine.stop}
+            >
+              Zastavit měření
+            </Button>
+            <p className="kp-center__hint">
+              Stop při prvním signálu od těla
+            </p>
+          </>
+        );
+      
+      case 'awaiting_next': {
+        const isLastAttempt = engine.currentAttempt >= engine.totalAttempts;
+        return (
+          <div className="kp-center__actions">
+            {!isLastAttempt ? (
+              <>
+                <Button 
+                  variant="primary" 
+                  fullWidth 
+                  size="lg"
+                  onClick={engine.continueNext}
+                >
+                  Další měření
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  fullWidth 
+                  size="md"
+                  onClick={engine.finishEarly}
+                  className="kp-center__finish-early"
+                >
+                  Hotovo (ukončit měření)
+                </Button>
+              </>
+            ) : (
+              <Button 
+                variant="primary" 
+                fullWidth 
+                size="lg"
+                onClick={engine.finishEarly}
+              >
+                Hotovo
+              </Button>
+            )}
+          </div>
+        );
+      }
+      
+      case 'result':
+        return (
+          <>
+            {/* Zobrazit jednotlivé pokusy */}
+            {engine.attempts.length > 1 && (
+              <p className="kp-center__attempts">
+                Měření: {formatAttempts(engine.attempts)}
+              </p>
+            )}
+            <Button 
+              variant="secondary" 
+              fullWidth
+              onClick={() => onComplete({} as SaveKPData)} 
+            >
+              Zavřít
+            </Button>
+          </>
+        );
+      
+      default:
+        return null;
+    }
+  };
+  
+  return (
+    <>
+      {/* Progress indicator (pokud measuring nebo awaiting) */}
+      {(engine.phase === 'measuring' || engine.phase === 'awaiting_next') && (
+        <div className="kp-center__progress-indicator">
+          <p className="kp-center__progress-text">
+            Měření {engine.currentAttempt}/{engine.totalAttempts}
+          </p>
+        </div>
+      )}
+      
+      {/* Measurement Area - VŽDY stejná struktura */}
+      <div className="kp-center__measurement-area">
+        <StaticBreathingCircle>
+          {renderCircleContent()}
+        </StaticBreathingCircle>
+        
+        {renderButton()}
+      </div>
+    </>
+  );
+}
 
 /**
  * KPCenter Component
@@ -38,13 +207,21 @@ export function KPCenter() {
   const { currentKP, measurements, saveKP, isSaving } = useKPMeasurements();
   const { showToast } = useToast();
   
-  const [showInstructions, setShowInstructions] = useState(false);
-  
   // Always start in 'ready' mode (simplified flow)
   const [viewMode, setViewMode] = useState<ViewMode>('ready');
   
   // Get user preference from Settings (default 3x)
   const attemptsCount = getKPMeasurementsCount();
+  
+  /**
+   * Reset viewMode when modal closes
+   * Fixes: Auto-start bug when reopening modal
+   */
+  useEffect(() => {
+    if (!isKPDetailOpen) {
+      setViewMode('ready');
+    }
+  }, [isKPDetailOpen]);
   
   /**
    * Handle start measurement (simplified - no warnings)
@@ -124,39 +301,79 @@ export function KPCenter() {
               </Button>
             </div>
             
-            {/* Help Link (collapsible) */}
+            {/* Help Link */}
             <div className="kp-center__help">
-              <TextLink onClick={() => setShowInstructions(!showInstructions)}>
-                {showInstructions ? 'Skrýt instrukce' : 'Jak měřit kontrolní pauzu?'}
+              <TextLink onClick={() => setViewMode('instructions')}>
+                Jak měřit kontrolní pauzu?
               </TextLink>
             </div>
-            
-            {/* Collapsible Instructions */}
-            {showInstructions && (
-              <div className="kp-center__instructions-inline">
-                <ol>
-                  <li>3 klidné nádechy a výdechy</li>
-                  <li>Výdech + zádrž (spustí se stopky)</li>
-                  <li>Ucpat nos + zavřít oči</li>
-                  <li>Čekat na první signál (bránice/polknutí/myšlenka)</li>
-                  <li>Zastavit měření při prvním signálu</li>
-                  <li className="kp-center__instructions-tip">
-                    <strong>Tip:</strong> Pro nejpřesnější výsledky měř ráno hned po probuzení (4-9h).
-                  </li>
-                </ol>
-              </div>
-            )}
           </>
         )}
         
-        {/* Measuring View */}
+        {/* Instructions View - Fullscreen (nahradí circle) */}
+        {viewMode === 'instructions' && (
+          <>
+            <h2 className="kp-center__title">Kontrolní pauza</h2>
+            
+            <div className="kp-center__instructions-fullscreen">
+              <h3 className="kp-center__instructions-title">
+                Jak měřit kontrolní pauzu?
+              </h3>
+              
+              <ol className="kp-center__instructions-list">
+                <li>3 klidné nádechy a výdechy</li>
+                <li>Výdech + zádrž (spustí se stopky)</li>
+                <li>Ucpat nos + zavřít oči</li>
+                <li>Čekat na první signál (bránice/polknutí/myšlenka)</li>
+                <li>Zastavit měření při prvním signálu</li>
+                <li className="kp-center__instructions-tip">
+                  <strong>Tip:</strong> Pro nejpřesnější výsledky měř ráno hned po probuzení (4-9h).
+                </li>
+              </ol>
+              
+              <Button 
+                variant="primary" 
+                fullWidth
+                size="lg"
+                onClick={() => setViewMode('ready')}
+              >
+                Zpět k měření
+              </Button>
+            </div>
+          </>
+        )}
+        
+        {/* Measuring View - Circle zůstává, mění se OBSAH */}
         {viewMode === 'measuring' && (
-          <KPMeasurementEngine 
-            attemptsCount={attemptsCount}
-            onComplete={handleMeasurementComplete}
-            previousKP={previousKP}
-            isFirst={isFirstMeasurement}
-          />
+          <>
+            <h2 className="kp-center__title">Kontrolní pauza</h2>
+            
+            {/* Current KP Display (if exists) */}
+            {currentKP !== null && (
+              <div className="kp-center__current">
+                <div className="kp-center__value">{formatSeconds(currentKP)}</div>
+                {previousKP !== null && (
+                  <div className={`kp-center__trend kp-center__trend--${trend >= 0 ? 'positive' : 'negative'}`}>
+                    {formatTrend(trend)}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <MeasuringView 
+              attemptsCount={attemptsCount}
+              onComplete={handleMeasurementComplete}
+              previousKP={previousKP}
+              isFirst={isFirstMeasurement}
+            />
+            
+            {/* Footer - Help Link */}
+            <div className="kp-center__help">
+              <TextLink onClick={() => setViewMode('instructions')}>
+                Jak měřit kontrolní pauzu?
+              </TextLink>
+            </div>
+          </>
         )}
       </div>
     </div>
