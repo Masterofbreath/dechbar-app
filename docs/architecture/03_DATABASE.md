@@ -70,7 +70,7 @@ profiles ← memberships (členství: ZDARMA, SMART, AI_COACH)
 
 | ID | Name | Price | Type | Description |
 |----|------|-------|------|-------------|
-| `membership-smart` | SMART | 249 Kč/měsíc | subscription | Inteligentní doporučení - BOLT tracking, smart tréninky, 50+ programů |
+| `membership-smart` | SMART | 249 Kč/měsíc | subscription | Inteligentní doporučení - kontrolní pauza tracking, smart tréninky, 50+ programů |
 | `membership-ai-coach` | AI COACH | 490 Kč/měsíc | subscription | Tvůj osobní AI trenér - AI personalizace, pokročilé analýzy, 100+ programů |
 
 **Lifetime Products:**
@@ -150,7 +150,7 @@ profiles ← memberships (členství: ZDARMA, SMART, AI_COACH)
 | Plan | Type | Features |
 |------|------|----------|
 | **ZDARMA** | lifetime | Základní přístup, omezené funkce |
-| **SMART** | subscription | BOLT tracking, smart doporučení, 50+ programů |
+| **SMART** | subscription | kontrolní pauza tracking, smart doporučení, 50+ programů |
 | **AI_COACH** | subscription | AI coach, pokročilé analýzy, 100+ programů |
 
 **Indexes:**
@@ -215,7 +215,7 @@ user_roles:
   2. 'teacher' (manuálně přidělen)
 
 -- Výsledný přístup:
--- ✅ SMART membership funkce (BOLT tracking, smart doporučení, 50+ programů)
+-- ✅ SMART membership funkce (kontrolní pauza tracking, smart doporučení, 50+ programů)
 -- ✅ DechBar STUDIO (vytváření vlastních cvičení)
 -- ✅ Výzvy (21-denní programy)
 -- ✅ Teacher oprávnění (tvorba kurzů)
@@ -441,7 +441,7 @@ Tabulky, které přidáme později:
 Dechová cvičení (vytvořená uživateli i defaultní)
 
 #### `exercise_sessions`
-Historie provedených cvičení (BOLT skóre, HRV, ...)
+Historie provedených cvičení (kontrolní pauza skóre, HRV, ...)
 
 #### `achievements`
 Gamifikace - dosažené úspěchy

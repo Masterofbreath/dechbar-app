@@ -45,7 +45,7 @@ This document defines **exact language** to use (and avoid) on the DechBar landi
 - Not self-taught guru
 - Safety reassurance
 
-✅ **"BOLT skóre"** / **"KP (Kontrolní pauza)"**
+✅ **"kontrolní pauza skóre"** / **"KP (Kontrolní pauza)"**
 - Unique differentiator
 - Objective measurement
 - Czech research term (Patrick McKeown)
@@ -124,7 +124,7 @@ Based on actual Czech forum discussions (Reddit r/czech, eMimino, Modrý koník)
 ✅ **Methodology:**
 - "Buteyko metoda" (Buteyko method)
 - "Oxygen Advantage" (method name)
-- "Kontrolní pauza" / "BOLT skóre"
+- "Kontrolní pauza" / "kontrolní pauza skóre"
 - "Kadence dýchání" (breath cadence)
 
 ✅ **Evidence:**
@@ -200,7 +200,7 @@ Based on Czech linguistic analysis, these words trigger immediate skepticism:
 **Alternative:** Use concrete, specific language:
 - ✅ "Spi o hodinu déle"
 - ✅ "Sniž stres o 40%"
-- ✅ "Zlepši BOLT o 10 sekund"
+- ✅ "Zlepši kontrolní pauza o 10 sekund"
 
 ---
 
@@ -243,7 +243,7 @@ Based on Czech linguistic analysis, these words trigger immediate skepticism:
 
 Examples:
 - ✅ "První česká aplikace pro funkční dýchání"
-- ✅ "První aplikace pro měření BOLT skóre v ČR"
+- ✅ "První aplikace pro měření kontrolní pauza skóre v ČR"
 
 ### Formula 2: Promise + Proof
 ```
@@ -311,7 +311,7 @@ Example:
 - Zero-risk appeal
 - Arrow indicates progress
 
-✅ **"Změř své BOLT skóre →"**
+✅ **"Změř své kontrolní pauza skóre →"**
 - Specific action
 - Engagement tool
 - Educational
@@ -346,7 +346,7 @@ Example:
 ✅ **"1150+ dýchačů"** (not "členů komunity" - too vague)
 ✅ **"100+ cvičení"** (concrete volume)
 ✅ **"4.8★ hodnocení"** (social proof)
-✅ **"Průměrné zlepšení BOLT: +12 sekund"** (specific metric)
+✅ **"Průměrné zlepšení kontrolní pauza: +12 sekund"** (specific metric)
 ✅ **"Od 0 Kč"** (accessibility signal)
 
 ### Qualitative (Authority)
@@ -401,7 +401,7 @@ Example:
 - Not "meditací", not "cvičení" (too generic)
 - "Programů" = structured, professional
 
-✅ **"BOLT skóre tracking"**
+✅ **"kontrolní pauza skóre tracking"**
 - Unique feature
 - Technical but understandable
 
@@ -442,7 +442,7 @@ Example:
 ❌ **"Brzy uvidíš změny"** → ✅ Use: "Viditelné výsledky za 21 dní"  
 ❌ **"Rychle a snadno"** → ✅ Use: "5 minut denně"  
 ❌ **"Pro každého"** → ✅ Use: "Pro začátečníky i pokročilé"  
-❌ **"Zaručený úspěch"** → ✅ Use: "Průměrné zlepšení BOLT: +12 sekund"
+❌ **"Zaručený úspěch"** → ✅ Use: "Průměrné zlepšení kontrolní pauza: +12 sekund"
 
 ---
 
@@ -469,7 +469,7 @@ Example:
 
 ✅ **Concrete Results:**
 ```
-"Za 3 týdny mé BOLT skóre vzrostlo z 15 na 28 sekund. 
+"Za 3 týdny mé kontrolní pauza skóre vzrostlo z 15 na 28 sekund. 
 Spím o hodinu déle a bez probouzení."
 — Jan K., developer, Praha
 ```
@@ -509,7 +509,7 @@ Czech users ask specific, practical questions:
 
 ✅ **"Jak rychlo uvidím výsledky?"**
 - Concrete expectation
-- Answer: "První změny (lepší spánek) během 7 dní. Měřitelné BOLT zlepšení za 3 týdny."
+- Answer: "První změny (lepší spánek) během 7 dní. Měřitelné kontrolní pauza zlepšení za 3 týdny."
 
 ✅ **"Je to vhodné pro začátečníky?"**
 - Safety concern
@@ -532,7 +532,7 @@ Czech users ask specific, practical questions:
 ✅ **Short Sentences** (per VBB "Less is More"):
 ```
 ✅ "Měř. Cvič. Zlepšuj."
-❌ "Změř si své BOLT skóre, procvič své dýchání pomocí 
+❌ "Změř si své kontrolní pauza skóre, procvič své dýchání pomocí 
     našich programů a sleduj jak se tvé zdraví zlepšuje."
 ```
 
@@ -569,7 +569,7 @@ Czech users ask specific, practical questions:
 
 ✅ **Feature-Based:**
 ```
-"DechBar měří BOLT skóre. Sleduj objektivní zlepšení."
+"DechBar měří kontrolní pauza skóre. Sleduj objektivní zlepšení."
 → Implies: Others don't have this
 ```
 
@@ -636,7 +636,7 @@ Zvyš energii bez kávy."
 
 ✅ **After (specific):**
 ```
-"1150+ aktivních uživatelů. Průměrné zlepšení BOLT: +12 sekund za 3 týdny."
+"1150+ aktivních uživatelů. Průměrné zlepšení kontrolní pauza: +12 sekund za 3 týdny."
 ```
 
 ---
@@ -653,7 +653,7 @@ Zvyš energii bez kávy."
 ### Science Section
 - ✅ Bohrův efekt
 - ✅ Oxid dusnatý (NO)
-- ✅ BOLT skóre
+- ✅ kontrolní pauza skóre
 - ✅ CO₂ tolerance
 - ✅ Vědecky podloženo
 
@@ -681,7 +681,7 @@ Zvyš energii bez kávy."
 ### Primary Keywords
 
 ✅ "funkční dýchání" (exact match)  
-✅ "BOLT skóre" (own this term)  
+✅ "kontrolní pauza skóre" (own this term)  
 ✅ "dechová cvičení aplikace"  
 ✅ "buteyko metoda"  
 ✅ "aplikace na dýchání"
@@ -708,13 +708,13 @@ Zvyš energii bez kávy."
 
 Subject Lines (Test variants):
 - ✅ "🌬️ Vítej v DechBaru! Tvůj první nádech čeká"
-- ✅ "✅ Účet aktivní. Změř své BOLT skóre za 60 sekund"
+- ✅ "✅ Účet aktivní. Změř své kontrolní pauza skóre za 60 sekund"
 - ✅ "První krok hotový. Teď začni cvičit →"
 
 Body Copy:
 - Use "dechový vibe" (30-50%) - appropriate in email
 - Celebrate registration: "Super! Tvůj účet je připravený."
-- Offer 2 paths: BOLT test + App download
+- Offer 2 paths: KP měření + App download
 - Friendly, warm tone
 
 ---

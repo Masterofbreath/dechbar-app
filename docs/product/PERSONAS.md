@@ -149,7 +149,7 @@ DechBar serves two primary personas in the Czech market, each with distinct pain
    - Answer: 5 minutes/day. Measurable results in 21 days.
 
 4. **"Does it actually work?"**
-   - Answer: Average BOLT improvement +12 seconds in 3 weeks. 1150+ users.
+   - Answer: Average kontrolní pauza improvement +12 seconds in 3 weeks. 1150+ users.
 
 5. **"Is it worth paying for?"**
    - Answer: Free tier available. Premium unlocks measurement + 100+ programs.
@@ -159,7 +159,7 @@ DechBar serves two primary personas in the Czech market, each with distinct pain
 **Headlines:**
 - ✅ "Měř svůj pokrok. Cvič 5 minut denně. Zlepši výkon."
 - ✅ "První aplikace, která trackuje tvou kapacitu dechu."
-- ✅ "BOLT skóre: Objektivní metrika tvého zdraví."
+- ✅ "kontrolní pauza skóre: Objektivní metrika tvého zdraví."
 
 **Body Copy:**
 - Short sentences. Bullet points. Data.
@@ -167,7 +167,7 @@ DechBar serves two primary personas in the Czech market, each with distinct pain
 - Technical but accessible ("CO₂ tolerance", ne "čakry")
 
 **CTAs:**
-- ✅ "Změř své BOLT skóre →"
+- ✅ "Změř své kontrolní pauza skóre →"
 - ✅ "Začít zdarma →"
 - ✅ "Stáhnout aplikaci →"
 
@@ -307,7 +307,7 @@ DechBar serves two primary personas in the Czech market, each with distinct pain
    - Answer: No technical knowledge needed. Just headphones and willingness to breathe.
 
 3. **"I tried breathing exercises before, didn't help."**
-   - Answer: Our approach is different - we measure your progress objectively (BOLT score).
+   - Answer: Our approach is different - we measure your progress objectively (KP).
 
 4. **"Is it safe? Can I hurt myself?"**
    - Answer: Certified instructor. All exercises designed for safety. Start gentle.
@@ -353,7 +353,7 @@ DechBar serves two primary personas in the Czech market, each with distinct pain
 | **Tech Savviness** | High | Medium-Low |
 | **Content Preference** | Bullets, graphs, video | Stories, testimonials, how-to |
 | **Temperament** | Cholerik/Sangvinik | Melancholik/Flegmatik |
-| **CTA Response** | "Změř BOLT skóre" | "Začít zdarma" |
+| **CTA Response** | "Změř kontrolní pauza skóre" | "Začít zdarma" |
 | **Social Proof** | Numbers, data | Personal stories |
 
 ---
@@ -382,7 +382,7 @@ Subtext: "Vědecky podloženo. Jednoduše použitelné."
 Two columns (desktop) or sequential (mobile):
 
 **Column 1 (Optimalizér):**
-- ✅ "Měř svůj BOLT skóre"
+- ✅ "Měř svůj kontrolní pauza skóre"
 - ✅ "Sleduj pokrok v čase"
 - ✅ "100+ programů"
 
@@ -480,22 +480,22 @@ From eMimino, Modrý koník, wellness forums:
 - Googles: "aplikace na sledování dechu"
 - Finds: DechBar landing page
 - Scans: 30 seconds (headline, trust signals, data)
-- Decision driver: "BOLT skóre tracking" + "První česká"
+- Decision driver: "kontrolní pauza skóre tracking" + "První česká"
 
 **Trial (Day 1-7):**
 - Signs up: Magic Link (easy, no password friction)
-- First action: BOLT test (loves instant data)
+- First action: KP měření (loves instant data)
 - Explores: 2-3 different programs
-- Tracks: Checks BOLT improvement daily
+- Tracks: Checks kontrolní pauza improvement daily
 
 **Conversion (Week 2-3):**
-- Sees: BOLT score improved +5 seconds
+- Sees: KP improved +5 seconds
 - Thinks: "This actually works!"
 - Upgrades: Buys STARTER or PRO (annual for discount)
 
 **Retention (Month 1+):**
 - Daily habit: Morning RESET (5 min before work)
-- Shares: Screenshots of BOLT progress on LinkedIn
+- Shares: Screenshots of kontrolní pauza progress on LinkedIn
 - Loyal: Recommends to colleagues
 
 **Lifetime Value:** 990-2,940 Kč (lifetime purchase or annual PRO)
@@ -531,7 +531,7 @@ From eMimino, Modrý koník, wellness forums:
 
 ### Must-Have for Optimalizér
 
-1. **BOLT Score Tracking** (critical differentiator)
+1. **kontrolní pauza Score Tracking** (critical differentiator)
 2. **Progress Graphs** (visual data)
 3. **Session History** (track consistency)
 4. **Performance Metrics** (avg heart rate, session count)
@@ -569,7 +569,7 @@ From eMimino, Modrý koník, wellness forums:
 - Blog posts (data-driven)
 - Infographics (shareable)
 - Video (efficiency tips, results)
-- Case studies (before/after BOLT scores)
+- Case studies (before/after KPs)
 
 ### Health Seeker Channels
 
@@ -592,7 +592,7 @@ From eMimino, Modrý koník, wellness forums:
 
 ### Optimalizér Triggers
 
-1. **Data/Proof** - "Průměrné zlepšení BOLT: +12 sekund"
+1. **Data/Proof** - "Průměrné zlepšení kontrolní pauza: +12 sekund"
 2. **Efficiency** - "5 minut denně"
 3. **ROI** - "Lepší spánek = vyšší produktivita"
 4. **Social Proof** - "1150+ uživatelů"
@@ -642,7 +642,7 @@ graph LR
     Hero --> Seek[Health Seeker Messaging]
     
     Opt --> OptHead["Měř. Cvič. Zlepšuj."]
-    Opt --> OptCTA["Změř BOLT / Začít"]
+    Opt --> OptCTA["Změř kontrolní pauza / Začít"]
     Opt --> OptProof[Data + Numbers]
     
     Seek --> SeekHead["Jednoduché. Vědecké."]
@@ -683,7 +683,7 @@ graph LR
 
 ### Optimalizér
 
-- **Activation:** Uses BOLT test within 24 hours
+- **Activation:** Uses KP měření within 24 hours
 - **Engagement:** Tracks progress weekly
 - **Conversion:** Upgrades within 14 days
 - **Retention:** 60%+ after 30 days

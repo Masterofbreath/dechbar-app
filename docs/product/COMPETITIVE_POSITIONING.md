@@ -17,7 +17,7 @@ DechBar enters the Czech wellness market as the **first application dedicated ex
 ```
 
 **Unique Value Proposition:**
-- ONLY app measuring breathing capacity (BOLT/KP score)
+- ONLY app measuring breathing capacity (kontrolní pauza/KP score)
 - Science-first approach (Bohr effect, nitric oxide, CO2 tolerance)
 - Czech certification + local authority
 - Data-driven optimization (not just relaxation)
@@ -31,7 +31,7 @@ DechBar enters the Czech wellness market as the **first application dedicated ex
 | **Category** | Meditation | Mental Health | Lifestyle | Functional Breathing |
 | **Primary Focus** | Mindfulness | Therapy | Holistic Health | Respiratory Optimization |
 | **Approach** | Guided meditation | Professional therapy | Influencer content | Science + measurement |
-| **Differentiation** | "První CZ meditační" | "Psycholog v kapse" | Cold exposure + breathing | **BOLT tracking** |
+| **Differentiation** | "První CZ meditační" | "Psycholog v kapse" | Cold exposure + breathing | **kontrolní pauza tracking** |
 | **Measurement** | Mood tracking | Therapy progress | Subjective logs | **Objective metrics** |
 | **Pricing Model** | Freemium | Subscription | Courses | Freemium + Lifetime |
 | **Target Audience** | Stress/anxiety | Mental health issues | Wellness enthusiasts | Performance optimizers |
@@ -64,7 +64,7 @@ DechBar enters the Czech wellness market as the **first application dedicated ex
 
 **Our Advantage:**
 - **Category difference:** We're NOT meditation, we're breathing optimization
-- **Measurement:** We track BOLT score objectively, they track mood subjectively
+- **Measurement:** We track KP objectively, they track mood subjectively
 - **Specificity:** Narrow focus on breathing = deeper expertise
 - **Pricing:** Lifetime options vs. endless subscription
 
@@ -98,7 +98,7 @@ DechBar enters the Czech wellness market as the **first application dedicated ex
 - **Prevention vs. Treatment:** We prevent burnout, they treat it
 - **Physiological vs. Psychological:** We change biology, they change mindset
 - **Self-sufficient:** No therapist dependency
-- **Concrete metrics:** BOLT score vs. subjective therapy progress
+- **Concrete metrics:** KP vs. subjective therapy progress
 
 **How to position against:**
 ```
@@ -129,7 +129,7 @@ DechBar enters the Czech wellness market as the **first application dedicated ex
 
 **Our Advantage:**
 - **Technology:** Professional app vs. static website
-- **Measurement:** BOLT tracking vs. subjective logs
+- **Measurement:** kontrolní pauza tracking vs. subjective logs
 - **Accessibility:** Freemium app vs. expensive courses
 - **Scalability:** Science-based vs. influencer-dependent
 - **Positioning:** Tech-wellbeing vs. lifestyle guru
@@ -157,7 +157,7 @@ DechBar enters the Czech wellness market as the **first application dedicated ex
 ❌ **Dedicated functional breathing app with measurement**  
 ❌ **Objective respiratory health tracking**  
 ❌ **Science-first breathing optimization**  
-❌ **BOLT/KP score tracking tool**  
+❌ **kontrolní pauza/KP score tracking tool**  
 ❌ **Czech-certified breathing instruction app**
 
 **This is our BLUE OCEAN.**
@@ -196,7 +196,7 @@ or
 ```
 Pro lidi, kteří chtějí optimalizovat své zdraví s pomocí dat,
 je DechBar první česká aplikace pro funkční dýchání,
-která měří váš pokrok pomocí BOLT skóre a poskytuje 100+ 
+která měří váš pokrok pomocí kontrolní pauza skóre a poskytuje 100+ 
 vědecky podložených dechových cvičení od certifikovaného 
 instruktora,
 
@@ -223,9 +223,9 @@ a nic pořádně.
 ### 1. Measurement (Quantified Self)
 
 **Them:** Subjective tracking (mood, feelings, journaling)  
-**Us:** Objective metric (BOLT score - seconds, measurable, comparable)
+**Us:** Objective metric (KP - seconds, measurable, comparable)
 
-**Message:** "Měř, co je měřitelné. BOLT skóre je objektivní ukazatel zdraví tvého dechu."
+**Message:** "Měř, co je měřitelné. kontrolní pauza skóre je objektivní ukazatel zdraví tvého dechu."
 
 ### 2. Category Specificity
 
@@ -276,7 +276,7 @@ a nic pořádně.
 - Trust
 - Anti-"ezo"
 
-✅ **"BOLT skóre - objektivní metrika zdraví"**
+✅ **"kontrolní pauza skóre - objektivní metrika zdraví"**
 - Unique differentiator
 - Quantified Self appeal
 - Measurable progress
@@ -305,7 +305,7 @@ a nic pořádně.
 
 | Advantage | Why It Matters | Proof Point |
 |-----------|----------------|-------------|
-| **BOLT Measurement** | Only app tracking respiratory capacity | Proprietary Session Engine |
+| **kontrolní pauza Measurement** | Only app tracking respiratory capacity | Proprietary Session Engine |
 | **Category Creation** | No direct competition | "První pro funkční dýchání" |
 | **Czech Certification** | Local authority + trust | Certified instructor |
 | **Science Detail** | Educates WHY, not just HOW | Bohr effect, NO, CO2 explained |
@@ -325,7 +325,7 @@ a nic pořádně.
 **Tactics:**
 1. Launch as "První česká aplikace"
 2. Target tech-wellbeing optimizers first (early adopters)
-3. Build case studies with measurable results (BOLT improvements)
+3. Build case studies with measurable results (kontrolní pauza improvements)
 4. Partner with physiotherapists (not influencers)
 5. Content marketing: "Věda za DechBarem" blog series
 6. SEO: Own "funkční dýchání" keyword in CZ
@@ -352,7 +352,7 @@ a nic pořádně.
 
 **Our Response:**
 - "We've been doing ONLY breathing since day 1. They're adding it as an afterthought."
-- Emphasize our measurement superiority (BOLT score)
+- Emphasize our measurement superiority (KP)
 - Highlight depth of content (100+ programs vs. their 10)
 
 ### If VOS Adds Breathing Exercises
@@ -380,14 +380,14 @@ a nic pořádně.
 
 ### Value Props (3 pillars)
 
-1. **"Měř svůj pokrok"** - BOLT skóre tracking
+1. **"Měř svůj pokrok"** - kontrolní pauza skóre tracking
 2. **"Cvič s 100+ programy"** - Ready-to-use content
 3. **"Viditelné výsledky"** - Data-driven improvement
 
 ### Social Proof
 
 - "1150+ aktivních dýchačů v ČR a SK"
-- "Průměrné zlepšení BOLT: +12 sekund za 3 týdny"
+- "Průměrné zlepšení kontrolní pauza: +12 sekund za 3 týdny"
 - "4.8★ hodnocení v App Store"
 
 ### Differentiation Statements
@@ -421,7 +421,7 @@ DechBar měří tvoje výsledky."
 "Snižte nemocnost zaměstnanců o 30% pomocí 
 5 minut denního dechového tréninku.
 
-Měřitelné: BOLT skóre tracking + zdravotní analytics.
+Měřitelné: kontrolní pauza skóre tracking + zdravotní analytics.
 Škálovatelné: Onboarding 100+ lidí za den.
 ROI: 249 Kč/měsíc/zaměstnanec."
 ```
@@ -434,7 +434,7 @@ ROI: 249 Kč/měsíc/zaměstnanec."
 
 **Primary:**
 - "funkční dýchání" (exact match our category)
-- "BOLT skóre" (we own this measurement)
+- "kontrolní pauza skóre" (we own this measurement)
 - "dechová cvičení aplikace" (broad + specific)
 
 **Secondary:**
@@ -452,11 +452,11 @@ ROI: 249 Kč/měsíc/zaměstnanec."
 ### Content Strategy
 
 **Blog topics that differentiate:**
-1. "Co je BOLT skóre a proč ho měřit"
+1. "Co je kontrolní pauza skóre a proč ho měřit"
 2. "Bohrův efekt: Proč více dýchání ≠ více kyslíku"
 3. "Funkční dýchání vs. Meditace: Jaký je rozdíl?"
 4. "Nosní dýchání: Proč 18% navíc kyslíku"
-5. "Změř se: BOLT test krok za krokem"
+5. "Změř se: KP měření krok za krokem"
 
 ---
 
@@ -465,7 +465,7 @@ ROI: 249 Kč/měsíc/zaměstnanec."
 ### Risk #1: "Another wellness app" perception
 
 **Mitigation:**
-- Lead with measurement (BOLT score) everywhere
+- Lead with measurement (KP) everywhere
 - Science-first messaging (Bohr effect visible)
 - Avoid generic wellness language
 - Show data, not just claims
@@ -499,7 +499,7 @@ ROI: 249 Kč/měsíc/zaměstnanec."
 
 **Must Communicate (Top 3):**
 
-1. **BOLT Measurement** - Unique, measurable, differentiating
+1. **kontrolní pauza Measurement** - Unique, measurable, differentiating
 2. **First Czech App** - Category creation, local pride
 3. **100+ Programs** - Volume + ready-to-use value
 
@@ -528,7 +528,7 @@ pozorovat dech, nebo lifestyle programů (5PZ), které
 kombinují dýchání s dalšími praktikami,
 
 DechBar poskytuje hloubkovou optimalizaci dýchání 
-prostřednictvím objektivního měření (BOLT skóre), 
+prostřednictvím objektivního měření (kontrolní pauza skóre), 
 100+ vědecky navržených cvičení a certifikované 
 instrukce.
 
@@ -543,10 +543,10 @@ Jsme nástroj pro měřitelnou biologickou optimalizaci.
 When creating marketing materials:
 
 - [ ] Lead with "První česká aplikace pro funkční dýchání"
-- [ ] Emphasize BOLT measurement (unique differentiator)
+- [ ] Emphasize KP měření (unique differentiator)
 - [ ] Use science language (Bohrův efekt, oxid dusnatý)
 - [ ] Avoid "ezo" blacklist words
-- [ ] Show data (1150+ users, +12s BOLT improvement)
+- [ ] Show data (1150+ users, +12s kontrolní pauza improvement)
 - [ ] Position as category creator, not competitor
 - [ ] Czech-first for 2026, but architecture for global 2027
 

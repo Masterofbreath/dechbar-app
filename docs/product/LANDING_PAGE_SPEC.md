@@ -142,7 +142,7 @@ energii i odolnost vůči stresu.
 **Pillar 3:**
 - Icon: Chart (24x24 SVG)
 - Title: "Sleduj pokrok"
-- Description: "BOLT skóre = objektivní metrika zdraví"
+- Description: "kontrolní pauza skóre = objektivní metrika zdraví"
 
 **Specs:**
 - Layout: 3-column grid (desktop), 1-column (mobile)
@@ -179,7 +179,7 @@ Jak DechBar funguje
 **Step 1: Změř**
 - Number badge: "1"
 - Title: "Změř"
-- Description: "Zjisti své BOLT skóre během 60 sekund. Získej výchozí hodnotu pro tracking."
+- Description: "Zjisti své kontrolní pauza skóre během 60 sekund. Získej výchozí hodnotu pro tracking."
 - Screenshot placeholder: Stopwatch/timer UI
 
 **Step 2: Cvič**
@@ -233,7 +233,7 @@ nástroj, který mohu svým klientům doporučit."
 3 metrics in grid:
 
 1. **"1150+ aktivních uživatelů"**
-2. **"Průměrné zlepšení BOLT: +12 sekund (3 týdny)"**
+2. **"Průměrné zlepšení kontrolní pauza: +12 sekund (3 týdny)"**
 3. **"4.8★ hodnocení v App Store"**
 
 **Specs:**
@@ -269,7 +269,7 @@ Začni zdarma. Upgrade, když uvidíš výsledky.
   - ✅ 3 základní dechová cvičení
   - ✅ Ranní, polední a večerní protokol
   - ✅ Audio instrukce
-  - ❌ BOLT skóre tracking
+  - ❌ kontrolní pauza skóre tracking
   - ❌ Pokročilé programy
 - CTA: "Začít zdarma →" (Ghost button)
 
@@ -280,7 +280,7 @@ Začni zdarma. Upgrade, když uvidíš výsledky.
 - Savings Badge: "Ušetříš 1,494 Kč při ročním předplatném"
 - Features:
   - ✅ Všechno z ZDARMA
-  - ✅ BOLT skóre tracking
+  - ✅ kontrolní pauza skóre tracking
   - ✅ Grafy a statistiky pokroku
   - ✅ 50+ audio programů
   - ❌ AI doporučení
@@ -334,7 +334,7 @@ A: Ne. Stačí telefon a 5 minut denně. Vše ostatní je v tobě.
 **Q2: Jak rychle uvidím výsledky?**
 ```
 A: První změny (lepší spánek, větší klid) během 7 dní. 
-Měřitelné zlepšení BOLT skóre za 3 týdny.
+Měřitelné zlepšení kontrolní pauza skóre za 3 týdny.
 ```
 
 **Q3: Je to vhodné pro začátečníky?**
@@ -354,10 +354,10 @@ A: Základní verze je zdarma. Prémiové tarify od 125 Kč/měsíc
 A: Ano. Všechna cvičení si můžeš stáhnout a cvičit bez internetu.
 ```
 
-**Q6: Co je BOLT skóre?**
+**Q6: Co je kontrolní pauza skóre?**
 ```
 A: Objektivní metrika tvé schopnosti tolerovat CO₂. Čím vyšší 
-BOLT, tím zdravější dýchání. Průměr populace: 20 sekund. 
+kontrolní pauza, tím zdravější dýchání. Průměr populace: 20 sekund. 
 Optimum: 40+ sekund.
 ```
 
@@ -388,7 +388,7 @@ pro pokročilé sledování srdečního tepu (HRV).
 
 <meta name="description" content="Měř svůj pokrok. Cvič s certifikovaným instruktorem. Zlepši spánek, sniž stres, zvyš energii. Měřitelné výsledky za 21 dní. Od 0 Kč." />
 
-<meta name="keywords" content="funkční dýchání, BOLT skóre, dechová cvičení, aplikace na dýchání, česká aplikace, buteyko metoda, jak zlepšit spánek, proti stresu, dechbar" />
+<meta name="keywords" content="funkční dýchání, kontrolní pauza skóre, dechová cvičení, aplikace na dýchání, česká aplikace, buteyko metoda, jak zlepšit spánek, proti stresu, dechbar" />
 
 <!-- Open Graph -->
 <meta property="og:title" content="DechBar - První česká aplikace pro funkční dýchání" />
@@ -680,7 +680,7 @@ const PILLARS: Pillar[] = [
   {
     icon: 'chart',
     title: 'Sleduj pokrok',
-    description: 'BOLT skóre = objektivní metrika zdraví',
+    description: 'kontrolní pauza skóre = objektivní metrika zdraví',
   },
 ];
 
@@ -723,7 +723,7 @@ const STEPS = [
   {
     number: 1,
     title: 'Změř',
-    description: 'Zjisti své BOLT skóre během 60 sekund. Získej výchozí hodnotu pro tracking.',
+    description: 'Zjisti své kontrolní pauza skóre během 60 sekund. Získej výchozí hodnotu pro tracking.',
     screenshot: 'measure-placeholder',
   },
   {
@@ -803,7 +803,7 @@ export function TrustSection({ showEndorsement = true }: TrustSectionProps) {
           <div className="data-metric">
             <div className="data-metric__number">+12s</div>
             <div className="data-metric__label">
-              průměrné zlepšení BOLT (3 týdny)
+              průměrné zlepšení kontrolní pauza (3 týdny)
             </div>
           </div>
           
@@ -1032,7 +1032,7 @@ const SciencePage = lazy(() => import('./pages/SciencePage'));
 ### Primary Keywords (Czech)
 
 1. **"funkční dýchání"** (exact match - category ownership)
-2. **"BOLT skóre"** (unique term - own it)
+2. **"kontrolní pauza skóre"** (unique term - own it)
 3. **"dechová cvičení aplikace"** (broad + specific)
 4. **"aplikace na dýchání"** (simple search term)
 5. **"buteyko metoda"** (method-specific)
@@ -1119,7 +1119,7 @@ analytics.track('Email_Submitted', {
 
 **Test 2: CTA Text**
 - A: "Začít zdarma →" (current)
-- B: "Změř své BOLT skóre →"
+- B: "Změř své kontrolní pauza skóre →"
 
 **Test 3: Hero Layout**
 - A: 2-column (text left, mockup right)
@@ -1190,7 +1190,7 @@ All text must meet 4.5:1 minimum contrast:
 </main>
 
 <!-- Image alt text -->
-<img src="mockup.png" alt="DechBar aplikace zobrazující BOLT skóre tracking" />
+<img src="mockup.png" alt="DechBar aplikace zobrazující kontrolní pauza skóre tracking" />
 
 <!-- ARIA for interactive elements -->
 <button aria-expanded="false" aria-controls="faq-1">
@@ -1218,7 +1218,7 @@ All text must meet 4.5:1 minimum contrast:
 - Format: PNG or WebP
 - Size: 390x844px (iPhone 14 Pro aspect)
 - Content:
-  1. BOLT test screen
+  1. KP měření screen
   2. Exercise selection screen
   3. Progress graph screen
 - Optimization: < 100 KB each
@@ -1310,7 +1310,7 @@ First Session Completed
 
 1. Localization (SK, EN, DE)
 2. A/B test full page variants
-3. Add interactive BOLT test (try before register)
+3. Add interactive KP měření (try before register)
 4. Add case studies section (deep dives on user results)
 5. Add press mentions (if we get media coverage)
 

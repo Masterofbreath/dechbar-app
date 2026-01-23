@@ -29,7 +29,7 @@ Pricing shown below is REFERENCE ONLY - check database for current values.
   - Monthly: 249 Kč/měsíc
   - Annual: 125 Kč/měsíc (1,499 Kč ročně, úspora 1,488 Kč)
 - **Features:**
-  - BOLT skóre tracking
+  - kontrolní pauza skóre tracking
   - Smart doporučení tréninků
   - Grafy a statistiky pokroku
   - 50+ audio programů

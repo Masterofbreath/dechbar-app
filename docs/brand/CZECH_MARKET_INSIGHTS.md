@@ -59,7 +59,7 @@ From eMimino.cz forum analysis:
 > "If I can measure it, I can improve it."
 
 **Implication for DechBar:**
-- BOLT score tracking is our KILLER FEATURE
+- KP tracking is our KILLER FEATURE
 - Must prominently display in hero section
 - Graphs, data visualization critical for retention
 - "Gamification" through metrics (not badges/stars)
@@ -135,7 +135,7 @@ energii a odolnost vůči stresu."
 
 **Implication:**
 - Lead with sleep/stress benefits (high demand)
-- BOLT/breathing is the METHOD, not the benefit headline
+- kontrolní pauza/breathing is the METHOD, not the benefit headline
 - SEO content: "Jak zlepšit spánek pomocí dýchání"
 
 ---
@@ -306,7 +306,7 @@ Balance needed:
    WITH: "Vědecky podloženo" (professional backing)
 
 ✅ Data-driven but accessible
-   "BOLT skóre tracking" (technical)
+   "kontrolní pauza skóre tracking" (technical)
    WITH: "Objektivní metrika tvého zdraví" (explained)
 ```
 
@@ -382,7 +382,7 @@ Balance needed:
    - 5PZ has breathing, but it's website/courses, not app
    - OPPORTUNITY: Category creation
 
-2. **Objective Measurement** (no one tracks BOLT)
+2. **Objective Measurement** (no one tracks kontrolní pauza)
    - Wellness apps track mood (subjective)
    - Fitness apps track activity (different domain)
    - OPPORTUNITY: Quantified breathing health
@@ -417,7 +417,7 @@ Viditelné výsledky za 21 dní."
 
 **Layer 3: Body Copy (30 seconds attention)**
 - Benefits: Sleep, stress, energy (concrete, not "balance")
-- Science: 3 pillars (Bohr, NO, BOLT)
+- Science: 3 pillars (Bohr, NO, kontrolní pauza)
 - Social proof: 1150+ users, +12s avg improvement
 
 **Layer 4: Deep Dive (60+ seconds attention)**
@@ -458,7 +458,7 @@ Viditelné výsledky za 21 dní."
 
 6. **Data Transparency**
    - Show real improvement numbers
-   - "Průměrné zlepšení BOLT: +12 sekund"
+   - "Průměrné zlepšení kontrolní pauza: +12 sekund"
    - Honesty builds trust
 
 ---
@@ -527,7 +527,7 @@ Viditelné výsledky za 21 dní."
 
 ✅ **Feature Specificity:**
 ```
-"Sleduj své BOLT skóre a měř objektivní zlepšení"
+"Sleduj své kontrolní pauza skóre a měř objektivní zlepšení"
 → Implies: Others don't measure objectively
 ```
 
@@ -574,7 +574,7 @@ Target people searching for competitors:
 
 **Alternative/Secondary CTAs:**
 
-✅ "Změř své BOLT skóre →" (engagement-focused)  
+✅ "Změř své kontrolní pauza skóre →" (engagement-focused)  
 ✅ "Stáhnout aplikaci →" (direct to app)  
 ✅ "Vyzkoušej první cvičení →" (experience-focused)
 
@@ -616,7 +616,7 @@ From app store reviews and forum discussions:
    - Answer with: Transparent pricing, free tier details
 
 3. **"Funguje to opravdu?"**
-   - Answer with: Data (average BOLT improvement), testimonials
+   - Answer with: Data (average kontrolní pauza improvement), testimonials
 
 4. **"Nemám čas na další aplikaci"**
    - Answer with: "5 minut denně" - concrete time commitment
@@ -628,7 +628,7 @@ From app store reviews and forum discussions:
    - Answer with: "Certifikovaný instruktor. Všechna cvičení navržena pro bezpečnost."
 
 7. **"Jak je to jiné než YouTube videa?"**
-   - Answer with: "Systematické sledování pokroku. Personalizace. Měření BOLT skóre."
+   - Answer with: "Systematické sledování pokroku. Personalizace. Měření kontrolní pauza skóre."
 
 ---
 
@@ -648,7 +648,7 @@ Q: Potřebuji nějaké vybavení?
 A: Ne. Stačí telefon a 5 minut denně. Vše ostatní je v tobě.
 
 Q: Jak rychle uvidím výsledky?
-A: První změny (lepší spánek, větší klid) během 7 dní. Měřitelné zlepšení BOLT skóre za 3 týdny.
+A: První změny (lepší spánek, větší klid) během 7 dní. Měřitelné zlepšení kontrolní pauza skóre za 3 týdny.
 ```
 
 ---
@@ -661,7 +661,7 @@ A: První změny (lepší spánek, větší klid) během 7 dní. Měřitelné zl
 
 ✅ Option A (Direct):
 ```
-"✅ Účet aktivní. Změř své BOLT skóre za 60 sekund"
+"✅ Účet aktivní. Změř své kontrolní pauza skóre za 60 sekund"
 ```
 
 ✅ Option B (Warm):
@@ -676,7 +676,7 @@ A: První změny (lepší spánek, větší klid) během 7 dní. Měřitelné zl
 
 **Body Copy:**
 - Celebrate registration: "Super! Tvůj účet je připravený."
-- Offer 2 paths: BOLT test + App download
+- Offer 2 paths: KP měření + App download
 - Use "dechový vibe" (30-50% - appropriate in email)
 - Short paragraphs, clear CTAs
 
@@ -716,7 +716,7 @@ A: První změny (lepší spánek, větší klid) během 7 dní. Měřitelné zl
 
 **Variant B (Action-Specific):**
 ```
-"Změř své BOLT skóre →"
+"Změř své kontrolní pauza skóre →"
 ```
 
 **Variant C (Outcome-Focused):**
@@ -802,7 +802,7 @@ const LANDING_COPY = {
 ### Do's
 
 ✅ Lead with "První česká aplikace"  
-✅ Emphasize BOLT measurement  
+✅ Emphasize KP měření  
 ✅ Use concrete benefits with timeframes  
 ✅ Show data and numbers  
 ✅ Maintain science-first positioning  
