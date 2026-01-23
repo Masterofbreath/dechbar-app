@@ -156,13 +156,14 @@ export function useKPTimer({
       onComplete?.(validResults);
     } else {
       // Start 15s pauzy před dalším pokusem
-      setState(prev => ({
-        ...prev,
+      const nextAttemptNum = state.currentAttempt + 1;
+      setState({
         phase: 'paused',
+        elapsed: 0,
         attempts: newAttempts,
-        currentAttempt: prev.currentAttempt + 1,
+        currentAttempt: nextAttemptNum,
         pauseCountdown: 15,
-      }));
+      });
       
       // Countdown pauzy
       pauseIntervalRef.current = setInterval(() => {
