@@ -15,15 +15,14 @@
 import { useState } from 'react';
 import { useNavigation } from '@/platform/hooks';
 import { useKPMeasurements } from '@/platform/api';
-import { CloseButton, ConfirmModal } from '@/components/shared';
+import { CloseButton } from '@/components/shared';
 import { Button, TextLink } from '@/platform/components';
 import { 
   StaticBreathingCircle,
-  KPMeasurementEngine, 
-  KPHistory,
+  KPMeasurementEngine,
 } from '@/components/kp';
 import type { SaveKPData } from '@/platform/api';
-import { formatSeconds, formatTrend, isMorningWindow, getKPMeasurementsCount } from '@/utils/kp';
+import { formatSeconds, formatTrend, getKPMeasurementsCount } from '@/utils/kp';
 import { useToast } from '@/hooks/useToast';
 
 /**
@@ -40,7 +39,6 @@ export function KPCenter() {
   const { showToast } = useToast();
   
   const [showInstructions, setShowInstructions] = useState(false);
-  const [showMorningWarningModal, setShowMorningWarningModal] = useState(false);
   
   // Always start in 'ready' mode (simplified flow)
   const [viewMode, setViewMode] = useState<ViewMode>('ready');
@@ -49,23 +47,10 @@ export function KPCenter() {
   const attemptsCount = getKPMeasurementsCount();
   
   /**
-   * Handle start measurement
+   * Handle start measurement (simplified - no warnings)
    */
   const handleStartMeasurement = () => {
-    // Check morning window
-    if (!isMorningWindow()) {
-      showToast(
-        'Pro relevantní data měř ráno hned po probuzení (4-9h)',
-        'warning'
-      );
-      
-      // Počkat 3s než zobrazí modal
-      setTimeout(() => {
-        setShowMorningWarningModal(true);
-      }, 3000);
-    } else {
-      setViewMode('measuring');
-    }
+    setViewMode('measuring');
   };
   
   /**
@@ -155,14 +140,12 @@ export function KPCenter() {
                   <li>Ucpat nos + zavřít oči</li>
                   <li>Čekat na první signál (bránice/polknutí/myšlenka)</li>
                   <li>Zastavit měření při prvním signálu</li>
+                  <li className="kp-center__instructions-tip">
+                    <strong>Tip:</strong> Pro nejpřesnější výsledky měř ráno hned po probuzení (4-9h).
+                  </li>
                 </ol>
               </div>
             )}
-            
-            {/* History */}
-            <div className="kp-center__history">
-              <KPHistory measurements={measurements} validOnly={true} limit={5} />
-            </div>
           </>
         )}
         
@@ -176,21 +159,6 @@ export function KPCenter() {
           />
         )}
       </div>
-      
-      {/* Morning Warning Modal */}
-      <ConfirmModal
-        isOpen={showMorningWarningModal}
-        onClose={() => setShowMorningWarningModal(false)}
-        onConfirm={() => {
-          setShowMorningWarningModal(false);
-          setViewMode('measuring');
-        }}
-        title="Vzorové měření"
-        message="Můžeš pokračovat jako vzorové měření, ale neuloží se do statistik."
-        confirmText="Pokračovat"
-        cancelText="Zrušit"
-        variant="warning"
-      />
     </div>
   );
 }

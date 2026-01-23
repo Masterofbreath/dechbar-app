@@ -1,8 +1,8 @@
 /**
  * useKPTimer - Timer State Machine for KP Measurement
  * 
- * State machine řídící celý flow měření (simplified):
- * idle -> measuring -> paused (15s) -> measuring -> ... -> completed
+ * State machine řídící celý flow měření (v2 - user control):
+ * idle -> measuring -> awaiting_next -> measuring -> ... -> completed
  * 
  * @package DechBar_App
  * @subpackage Hooks/KP
@@ -12,12 +12,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 /**
- * Timer phase states (simplified - removed 'preparing')
+ * Timer phase states (v2 - user control)
  */
 export type TimerPhase = 
   | 'idle'           // Neaktivní
   | 'measuring'      // Měření probíhá (stopky běží)
-  | 'paused'         // Pauza mezi pokusy (15s countdown)
+  | 'awaiting_next'  // Čeká na user akci (místo auto-countdown)
   | 'completed';     // Všechny pokusy dokončeny
 
 /**
@@ -154,43 +154,17 @@ export function useKPTimer({
       const validResults = newAttempts.filter((a): a is number => a !== null);
       onComplete?.(validResults);
     } else {
-      // Start 15s pauzy před dalším pokusem
+      // Přejít do 'awaiting_next' - čeká na user akci (manual start)
       const nextAttemptNum = state.currentAttempt + 1;
       setState({
-        phase: 'paused',
+        phase: 'awaiting_next',
         elapsed: 0,
         attempts: newAttempts,
         currentAttempt: nextAttemptNum,
-        pauseCountdown: 15,
+        pauseCountdown: 0,
       });
-      
-      // Countdown pauzy
-      pauseIntervalRef.current = setInterval(() => {
-        setState(prev => {
-          const newCountdown = prev.pauseCountdown - 1;
-          
-          // Auto-start dalšího měření po countdown
-          if (newCountdown <= 0) {
-            clearInterval(pauseIntervalRef.current!);
-            pauseIntervalRef.current = null;
-            
-            // Auto-start dalšího pokusu
-            setTimeout(() => startMeasuring(), 100);
-            
-            return {
-              ...prev,
-              pauseCountdown: 0,
-            };
-          }
-          
-          return {
-            ...prev,
-            pauseCountdown: newCountdown,
-          };
-        });
-      }, 1000);
     }
-  }, [state, attemptsCount, onComplete, onAttemptComplete, clearIntervals, startMeasuring]);
+  }, [state, attemptsCount, onComplete, onAttemptComplete, clearIntervals]);
   
   /**
    * Start timer (initial call - begins measuring immediately)
@@ -226,6 +200,34 @@ export function useKPTimer({
   }, [attemptsCount, clearIntervals]);
   
   /**
+   * Continue to next measurement (manual user action)
+   */
+  const continueNext = useCallback(() => {
+    if (state.phase !== 'awaiting_next') return;
+    
+    // Spustit další měření
+    startMeasuring();
+  }, [state.phase, startMeasuring]);
+  
+  /**
+   * Finish measurements early (user doesn't want full count)
+   */
+  const finishEarly = useCallback(() => {
+    if (state.phase !== 'awaiting_next') return;
+    
+    // Ukončit měření předčasně
+    setState(prev => ({
+      ...prev,
+      phase: 'completed',
+    }));
+    
+    // Callback s dosavadními výsledky
+    const validResults = state.attempts
+      .filter((a): a is number => a !== null);
+    onComplete?.(validResults);
+  }, [state, onComplete]);
+  
+  /**
    * Cleanup on unmount
    */
   useEffect(() => {
@@ -239,6 +241,8 @@ export function useKPTimer({
     start,
     stop,
     reset,
+    continueNext,
+    finishEarly,
     currentAttempt: state.currentAttempt + 1, // 1-based for UI
     totalAttempts: attemptsCount,
   };

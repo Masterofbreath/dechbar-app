@@ -31,7 +31,7 @@
 }
 
 /* ============================================================
-   Paused State
+   Paused State (deprecated - kept for fallback)
    ============================================================ */
 .kp-engine-paused {
   display: flex;
@@ -58,7 +58,7 @@
 }
 
 /* ============================================================
-   Countdown
+   Countdown (deprecated - kept for fallback)
    ============================================================ */
 .kp-engine-paused__countdown {
   margin-top: var(--spacing-8);
@@ -78,11 +78,37 @@
 }
 
 /* ============================================================
+   Intermediate Result (awaiting_next) - NEW
+   ============================================================ */
+.kp-engine-intermediate-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12) var(--spacing-6);
+  text-align: center;
+  height: 100%;
+  gap: var(--spacing-6);
+}
+
+/* "Hotovo (ukončit měření)" button - méně prominent */
+.kp-result__finish-early {
+  margin-top: var(--spacing-4);
+  opacity: 0.7;
+  font-size: var(--font-size-sm);
+}
+
+.kp-result__finish-early:hover {
+  opacity: 1;
+}
+
+/* ============================================================
    Responsive
    ============================================================ */
 @media (width >= 768px) {
   .kp-engine-preparing,
-  .kp-engine-paused {
+  .kp-engine-paused,
+  .kp-engine-intermediate-result {
     padding: var(--spacing-16) var(--spacing-8);
   }
 }

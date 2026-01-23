@@ -1,10 +1,10 @@
 /**
- * KPMeasurementEngine - Main Measurement Flow Controller (Simplified)
+ * KPMeasurementEngine - Main Measurement Flow Controller (V2 - User Control)
  * 
  * Orchestruje celý flow měření:
  * 1. Measuring (timer běží) - AUTO-START
- * 2. Paused (15s countdown mezi pokusy)
- * 3. Result (zobrazení výsledku)
+ * 2. Awaiting Next (intermediate result - čeká na user)
+ * 3. Result (zobrazení finálního výsledku)
  * 
  * @package DechBar_App
  * @subpackage Components/KP
@@ -16,6 +16,7 @@ import { useKPTimer } from '@/hooks/kp';
 import { calculateAverage, detectDeviceType, validateKPMeasurement } from '@/utils/kp';
 import { useToast } from '@/hooks/useToast';
 import type { SaveKPData } from '@/platform/api';
+import { Button } from '@/platform/components';
 import { KPTimer } from './KPTimer';
 import { KPResult } from './KPResult';
 
@@ -42,12 +43,12 @@ export interface KPMeasurementEngineProps {
 }
 
 /**
- * Engine phase states (simplified - removed 'settings', 'preparing')
+ * Engine phase states (v2 - user control)
  */
 type EnginePhase = 
-  | 'measuring'   // Měření probíhá
-  | 'paused'      // Pauza mezi pokusy
-  | 'result';     // Výsledek
+  | 'measuring'      // Měření probíhá
+  | 'awaiting_next'  // Intermediate result - čeká na user
+  | 'result';        // Finální výsledek
 
 /**
  * KPMeasurementEngine Component
@@ -80,6 +81,24 @@ export function KPMeasurementEngine({
     timer.start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
+  
+  /**
+   * Sync engine phase with timer state (awaiting_next)
+   */
+  useEffect(() => {
+    if (timer.state.phase === 'awaiting_next' && enginePhase !== 'awaiting_next') {
+      setEnginePhase('awaiting_next');
+    }
+  }, [timer.state.phase, enginePhase]);
+  
+  /**
+   * Sync engine phase with timer state (awaiting_next)
+   */
+  useEffect(() => {
+    if (timer.state.phase === 'awaiting_next' && enginePhase !== 'awaiting_next') {
+      setEnginePhase('awaiting_next');
+    }
+  }, [timer.state.phase, enginePhase]);
   
   /**
    * Handle measurement complete (all attempts done)
@@ -122,11 +141,6 @@ export function KPMeasurementEngine({
     }, 2000);
   };
   
-  /**
-   * Sync engine phase with timer state
-   * Removed: Causes cascading renders. Phase sync handled in timer callbacks.
-   */
-  
   // Render current phase
   switch (enginePhase) {
     case 'measuring':
@@ -139,21 +153,57 @@ export function KPMeasurementEngine({
         />
       );
     
-    case 'paused': {
+    case 'awaiting_next': {
+      // Intermediate result - zobrazit aktuální pokus + button "Další měření"
       const lastAttemptValue = timer.state.attempts[timer.state.currentAttempt - 1] || 0;
+      const isLastAttempt = timer.currentAttempt >= timer.totalAttempts;
+      
       return (
-        <div className="kp-engine-paused">
-          <h2 className="kp-engine-paused__title">
-            {lastAttemptValue}s
-          </h2>
-          <p className="kp-engine-paused__subtitle">
+        <div className="kp-engine-intermediate-result">
+          {/* Velké číslo - hodnota právě dokončeného pokusu */}
+          <div className="kp-result__value">{lastAttemptValue}s</div>
+          
+          {/* Progress indicator */}
+          <p className="kp-result__subtitle">
             {timer.currentAttempt}/{timer.totalAttempts} hotovo
           </p>
-          <div className="kp-engine-paused__countdown">
-            <p>Další měření za</p>
-            <div className="kp-engine-paused__countdown-value">
-              {timer.state.pauseCountdown}s
-            </div>
+          
+          {/* CTA - Další měření nebo Hotovo */}
+          <div className="kp-result__actions">
+            {!isLastAttempt ? (
+              // Pokud není poslední pokus → "Další měření"
+              <>
+                <Button 
+                  variant="primary" 
+                  fullWidth 
+                  size="lg"
+                  onClick={() => timer.continueNext()}
+                >
+                  Další měření
+                </Button>
+                
+                {/* Optional: možnost ukončit předčasně */}
+                <Button 
+                  variant="ghost" 
+                  fullWidth 
+                  size="md"
+                  onClick={() => timer.finishEarly()}
+                  className="kp-result__finish-early"
+                >
+                  Hotovo (ukončit měření)
+                </Button>
+              </>
+            ) : (
+              // Poslední pokus → "Hotovo"
+              <Button 
+                variant="primary" 
+                fullWidth 
+                size="lg"
+                onClick={() => timer.finishEarly()}
+              >
+                Hotovo
+              </Button>
+            )}
           </div>
         </div>
       );
