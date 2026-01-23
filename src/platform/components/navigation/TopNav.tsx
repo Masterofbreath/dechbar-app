@@ -44,7 +44,7 @@ export interface TopNavProps {
  */
 export function TopNav({ transparent = false, showKP = true, className = '' }: TopNavProps) {
   const { user } = useAuth();
-  const { openProfile, openSettings, openKPDetail, openNotifications, unreadNotifications } = useNavigation();
+  const { openProfile, openSettings, openNotifications, unreadNotifications } = useNavigation();
   
   const navClass = [
     'top-nav',
@@ -56,9 +56,6 @@ export function TopNav({ transparent = false, showKP = true, className = '' }: T
   const avatarUrl = user?.avatar_url;
   const userName = user?.full_name || user?.email || '';
   const avatarInitial = userName.charAt(0).toUpperCase() || '?';
-  
-  // Mock KP value (TODO: Replace with real data from Supabase)
-  const currentKP = 35; // seconds
   
   return (
     <nav className={navClass} role="banner">
@@ -83,12 +80,7 @@ export function TopNav({ transparent = false, showKP = true, className = '' }: T
           )}
         </button>
         
-        {showKP && (
-          <KPDisplay 
-            kpValue={currentKP} 
-            onClick={openKPDetail}
-          />
-        )}
+        {showKP && <KPDisplay />}
       </div>
       
       {/* Right: Bell + Settings */}
