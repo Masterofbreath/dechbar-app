@@ -21,6 +21,7 @@ import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { Loader, NotificationCenter, KPCenter, SettingsDrawer } from '@/platform/components';
 import { AppLayout } from '@/platform/layouts';
 import { useNavigation, useKeyboardShortcuts } from '@/platform/hooks';
+import { Toast } from '@/components/shared';
 
 // Public Web Module - Landing Page + Science Page (eager load, not lazy)
 import { LandingPage } from '@/modules/public-web/pages/LandingPage';
@@ -46,7 +47,7 @@ function DeepLinkRouter() {
   useEffect(() => {
     if (!isNativeApp()) return;
 
-    let listener: any;
+    let listener: { remove: () => void } | undefined;
 
     const setupDeepLink = async () => {
       listener = await CapacitorApp.addListener('appUrlOpen', (event) => {
@@ -145,6 +146,7 @@ function App() {
   return (
     <BrowserRouter>
       <DeepLinkRouter />
+      <Toast />
       <Routes>
         {/* ========================================
             PUBLIC ROUTES (No auth required)

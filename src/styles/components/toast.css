@@ -1,0 +1,178 @@
+/* ============================================================
+   Toast Notification Styles
+   Global toast system (success, error, info, warning)
+   ============================================================ */
+
+/* ============================================================
+   CSS Variables
+   ============================================================ */
+:root {
+  /* Colors */
+  --toast-success-bg: rgb(16 185 129 / 95%);    /* Green */
+  --toast-success-color: #FFF;
+  --toast-error-bg: rgb(239 68 68 / 95%);       /* Red */
+  --toast-error-color: #FFF;
+  --toast-info-bg: rgb(44 190 198 / 95%);       /* Teal */
+  --toast-info-color: #121212;
+  --toast-warning-bg: rgb(245 158 11 / 95%);    /* Orange */
+  --toast-warning-color: #121212;
+  
+  /* Sizing */
+  --toast-padding: 16px 20px;
+  --toast-border-radius: 12px;
+  --toast-max-width: 400px;
+  --toast-min-height: 56px;
+  
+  /* Animation */
+  --toast-transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+.toast {
+  position: fixed;
+  z-index: 10001; /* Above modals */
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: var(--toast-padding);
+  min-height: var(--toast-min-height);
+  max-width: var(--toast-max-width);
+  
+  /* Appearance */
+  border-radius: var(--toast-border-radius);
+  backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+  
+  /* Animation */
+  transition: var(--toast-transition);
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  cursor: pointer;
+}
+
+/* Visible state */
+.toast--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ============================================================
+   Positioning (Mobile vs Desktop)
+   ============================================================ */
+
+/* Mobile: Bottom center */
+.toast {
+  bottom: calc(72px + env(safe-area-inset-bottom) + 16px); /* Above bottom nav */
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: calc(100% - 32px);
+}
+
+.toast--visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Desktop: Top right */
+@media (width >= 768px) {
+  .toast {
+    inset: 80px 24px auto auto; /* Below top nav */
+    transform: translateY(-20px);
+    width: auto;
+  }
+  
+  .toast--visible {
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   Variants
+   ============================================================ */
+
+/* Success (Teal/Green) */
+.toast--success {
+  background: var(--toast-success-bg);
+  color: var(--toast-success-color);
+}
+
+/* Error (Red) */
+.toast--error {
+  background: var(--toast-error-bg);
+  color: var(--toast-error-color);
+}
+
+/* Info (Teal) */
+.toast--info {
+  background: var(--toast-info-bg);
+  color: var(--toast-info-color);
+}
+
+/* Warning (Orange) */
+.toast--warning {
+  background: var(--toast-warning-bg);
+  color: var(--toast-warning-color);
+}
+
+/* ============================================================
+   Toast Elements
+   ============================================================ */
+
+.toast__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast__message {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Interactions
+   ============================================================ */
+
+.toast:hover {
+  opacity: 0.95;
+}
+
+.toast:active {
+  transform: translateX(-50%) scale(0.98);
+}
+
+@media (width >= 768px) {
+  .toast:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ============================================================
+   Accessibility
+   ============================================================ */
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: opacity 0.2s ease;
+  }
+  
+  .toast--visible {
+    transform: translateX(-50%) translateY(0);
+  }
+  
+  @media (width >= 768px) {
+    .toast--visible {
+      transform: translateY(0);
+    }
+  }
+}
