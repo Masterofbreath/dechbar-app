@@ -37,21 +37,15 @@ type ViewMode = 'ready' | 'instructions' | 'measuring';
 interface MeasuringViewProps {
   attemptsCount: 1 | 3;
   onComplete: (data: SaveKPData) => void;
-  previousKP: number | null;
-  isFirst: boolean;
 }
 
 function MeasuringView({ 
   attemptsCount, 
-  onComplete, 
-  previousKP, 
-  isFirst,
+  onComplete,
 }: MeasuringViewProps) {
   const engine = useKPMeasurementEngine({
     attemptsCount,
     onComplete,
-    previousKP,
-    isFirst,
   });
   
   // Helper: Render obsah UVNITŘ circle
@@ -372,8 +366,6 @@ export function KPCenter() {
             <MeasuringView 
               attemptsCount={attemptsCount}
               onComplete={handleMeasurementComplete}
-              previousKP={previousKP}
-              isFirst={isFirstMeasurement}
             />
             
             {/* Footer - Help Link */}

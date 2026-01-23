@@ -10,6 +10,7 @@
   position: relative;
   width: 100%;
   max-width: 600px;
+  min-height: 650px;
   max-height: 85vh;
   background: var(--color-background);
   border-radius: var(--radius-2xl);
@@ -180,8 +181,8 @@
 .kp-center__instructions-list li {
   font-size: var(--font-size-base);
   color: var(--color-text-secondary);
-  padding: var(--spacing-3) 0;
-  line-height: 1.6;
+  padding: var(--spacing-2) 0;
+  line-height: 1.5;
 }
 
 /* Instructions - Detail text (sub-explanation) */
@@ -195,8 +196,8 @@
 
 /* Instructions - Check item (validation tip) */
 .kp-center__instructions-check {
-  margin-top: var(--spacing-4);
-  padding-top: var(--spacing-4);
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
   border-top: 1px solid var(--color-border-subtle);
   color: var(--color-success);
 }

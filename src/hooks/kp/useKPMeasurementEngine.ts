@@ -29,8 +29,6 @@ export type EnginePhase =
 export interface UseKPMeasurementEngineOptions {
   attemptsCount: 1 | 3;
   onComplete: (data: SaveKPData) => void;
-  previousKP?: number | null;
-  isFirst?: boolean;
 }
 
 /**
@@ -41,7 +39,7 @@ export interface UseKPMeasurementEngineOptions {
  */
 export function useKPMeasurementEngine({ 
   attemptsCount, 
-  onComplete, 
+  onComplete,
 }: UseKPMeasurementEngineOptions) {
   const [enginePhase, setEnginePhase] = useState<EnginePhase>('measuring');
   const startTimeRef = useRef<Date>(new Date());
