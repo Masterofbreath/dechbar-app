@@ -34,20 +34,35 @@ export function KPDisplay() {
     openKPDetail();
   };
   
-  // Don't show if loading or no data yet
-  if (isLoading || displayValue === 0) {
-    return null;
-  }
+  // Helper: Get display text based on state
+  const getDisplayText = () => {
+    if (isLoading) return '...';
+    if (displayValue === 0) return '?';
+    return `${displayValue}s`;
+  };
+  
+  // Helper: Get display status class
+  const getDisplayStatus = () => {
+    if (isLoading || displayValue === 0) return 'unknown';
+    return status;
+  };
+  
+  // Helper: Get aria label
+  const getAriaLabel = () => {
+    if (isLoading) return 'Kontrolní pauza: načítání';
+    if (displayValue === 0) return 'Kontrolní pauza: zatím neměřeno';
+    return `Kontrolní pauza: ${displayValue} sekund`;
+  };
   
   return (
     <button 
-      className={`kp-display kp-display--${status}`}
+      className={`kp-display kp-display--${getDisplayStatus()}`}
       onClick={handleClick}
-      aria-label={`Kontrolní pauza: ${displayValue} sekund`}
+      aria-label={getAriaLabel()}
       type="button"
     >
       <span className="kp-display__label">KP</span>
-      <span className="kp-display__value">{displayValue}s</span>
+      <span className="kp-display__value">{getDisplayText()}</span>
     </button>
   );
 }

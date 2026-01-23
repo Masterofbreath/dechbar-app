@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 32px 24px 24px;
+  padding: var(--spacing-8) var(--spacing-6) var(--spacing-6);
   overflow: hidden;
 }
 
@@ -17,22 +17,22 @@
 .kp-onboarding__progress {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 32px;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-8);
 }
 
 .kp-onboarding__progress-dot {
-  width: 8px;
-  height: 8px;
+  width: var(--spacing-2);
+  height: var(--spacing-2);
   border-radius: 50%;
-  background: var(--color-surface-light);
+  background: var(--color-surface-elevated);
   transition: all 0.3s ease;
 }
 
 .kp-onboarding__progress-dot--active {
   background: var(--color-primary);
-  width: 24px;
-  border-radius: 4px;
+  width: var(--spacing-6);
+  border-radius: var(--radius-sm);
 }
 
 /* ============================================================
@@ -51,7 +51,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 16px;
+  padding: 0 var(--spacing-4);
 }
 
 /* ============================================================
@@ -59,7 +59,7 @@
    ============================================================ */
 .kp-onboarding__icon {
   color: var(--color-primary);
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-6);
 }
 
 .kp-onboarding__icon--warning {
@@ -70,9 +70,9 @@
    Typography
    ============================================================ */
 .kp-onboarding__title {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 24px;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-6);
   color: var(--color-text-primary);
 }
 
@@ -86,8 +86,8 @@
 }
 
 .kp-onboarding__list li {
-  padding: 12px 0;
-  font-size: 16px;
+  padding: var(--spacing-3) 0;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   border-bottom: 1px solid var(--color-border);
 }
@@ -104,9 +104,9 @@
 
 .kp-onboarding__steps li {
   counter-increment: step-counter;
-  padding: 12px 0 12px 32px;
+  padding: var(--spacing-3) 0 var(--spacing-3) var(--spacing-8);
   position: relative;
-  font-size: 15px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -119,13 +119,13 @@
   position: absolute;
   left: 0;
   top: 10px;
-  width: 20px;
-  height: 20px;
+  width: var(--spacing-5);
+  height: var(--spacing-5);
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-text-primary);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,10 +133,10 @@
 
 .kp-onboarding__substeps {
   list-style: disc;
-  margin-top: 8px;
-  padding-left: 20px;
+  margin-top: var(--spacing-2);
+  padding-left: var(--spacing-5);
   color: var(--color-text-tertiary);
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 /* ============================================================
@@ -145,14 +145,14 @@
 .kp-onboarding__content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-4);
   width: 100%;
   max-width: 360px;
 }
 
 .kp-onboarding__tip {
-  padding: 16px;
-  border-radius: 12px;
+  padding: var(--spacing-4);
+  border-radius: var(--radius-md);
   text-align: left;
 }
 
@@ -173,14 +173,14 @@
 
 .kp-onboarding__tip strong {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
+  margin-bottom: var(--spacing-2);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
 .kp-onboarding__tip p {
-  margin: 4px 0;
-  font-size: 14px;
+  margin: var(--spacing-1) 0;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -189,9 +189,9 @@
    ============================================================ */
 .kp-onboarding__nav {
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-3);
   margin-top: auto;
-  padding-top: 24px;
+  padding-top: var(--spacing-6);
 }
 
 .kp-onboarding__skip {
@@ -203,10 +203,10 @@
    ============================================================ */
 @media (width >= 768px) {
   .kp-onboarding {
-    padding: 48px 32px 32px;
+    padding: var(--spacing-12) var(--spacing-8) var(--spacing-8);
   }
   
   .kp-onboarding__title {
-    font-size: 28px;
+    font-size: var(--font-size-3xl);
   }
 }

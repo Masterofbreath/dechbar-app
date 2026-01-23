@@ -1,178 +1,129 @@
-/* ============================================================
-   Toast Notification Styles
-   Global toast system (success, error, info, warning)
-   ============================================================ */
+/**
+ * Toast Notifications - Apple Style
+ * 
+ * Bottom-anchored toast with dark glassmorphism.
+ * Slide-up animation, auto-dismiss after 2s.
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
 
-/* ============================================================
-   CSS Variables
-   ============================================================ */
-:root {
-  /* Colors */
-  --toast-success-bg: rgb(16 185 129 / 95%);    /* Green */
-  --toast-success-color: #FFF;
-  --toast-error-bg: rgb(239 68 68 / 95%);       /* Red */
-  --toast-error-color: #FFF;
-  --toast-info-bg: rgb(44 190 198 / 95%);       /* Teal */
-  --toast-info-color: #121212;
-  --toast-warning-bg: rgb(245 158 11 / 95%);    /* Orange */
-  --toast-warning-color: #121212;
-  
-  /* Sizing */
-  --toast-padding: 16px 20px;
-  --toast-border-radius: 12px;
-  --toast-max-width: 400px;
-  --toast-min-height: 56px;
-  
-  /* Animation */
-  --toast-transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
+/* ===================================
+   Toast Container
+   =================================== */
 
-/* ============================================================
-   Base Styles
-   ============================================================ */
 .toast {
   position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 1rem);
+  left: 1rem;
+  right: 1rem;
   z-index: 10001; /* Above modals */
+  
+  /* Dark glassmorphism */
+  background: rgb(42 42 42 / 95%);
+  backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  
+  /* Border & shadows */
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 24px rgb(0 0 0 / 40%),
+    0 0 0 0.5px rgb(255 255 255 / 10%) inset;
   
   /* Layout */
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: var(--toast-padding);
-  min-height: var(--toast-min-height);
-  max-width: var(--toast-max-width);
-  
-  /* Appearance */
-  border-radius: var(--toast-border-radius);
-  backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
   
   /* Animation */
-  transition: var(--toast-transition);
-  opacity: 0;
-  transform: translateY(20px);
-  pointer-events: none;
-  cursor: pointer;
+  animation: toast-slide-up 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-/* Visible state */
-.toast--visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-/* ============================================================
-   Positioning (Mobile vs Desktop)
-   ============================================================ */
-
-/* Mobile: Bottom center */
-.toast {
-  bottom: calc(72px + env(safe-area-inset-bottom) + 16px); /* Above bottom nav */
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  width: calc(100% - 32px);
-}
-
-.toast--visible {
-  transform: translateX(-50%) translateY(0);
-}
-
-/* Desktop: Top right */
-@media (width >= 768px) {
-  .toast {
-    inset: 80px 24px auto auto; /* Below top nav */
-    transform: translateY(-20px);
-    width: auto;
+@keyframes toast-slide-up {
+  from {
+    transform: translateY(calc(100% + 2rem));
+    opacity: 0;
   }
-  
-  .toast--visible {
+
+  to {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
-/* ============================================================
-   Variants
-   ============================================================ */
-
-/* Success (Teal/Green) */
-.toast--success {
-  background: var(--toast-success-bg);
-  color: var(--toast-success-color);
-}
-
-/* Error (Red) */
-.toast--error {
-  background: var(--toast-error-bg);
-  color: var(--toast-error-color);
-}
-
-/* Info (Teal) */
-.toast--info {
-  background: var(--toast-info-bg);
-  color: var(--toast-info-color);
-}
-
-/* Warning (Orange) */
-.toast--warning {
-  background: var(--toast-warning-bg);
-  color: var(--toast-warning-color);
-}
-
-/* ============================================================
-   Toast Elements
-   ============================================================ */
+/* ===================================
+   Toast Icon
+   =================================== */
 
 .toast__icon {
+  font-size: 20px;
+  line-height: 1;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
+
+/* ===================================
+   Toast Message
+   =================================== */
 
 .toast__message {
   flex: 1;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--font-size-base); /* 16px */
+  font-weight: var(--font-weight-medium); /* 500 */
+  color: var(--color-text-primary); /* #E0E0E0 */
   line-height: 1.4;
 }
 
-/* ============================================================
-   Interactions
-   ============================================================ */
+/* ===================================
+   Responsive
+   =================================== */
 
-.toast:hover {
-  opacity: 0.95;
-}
-
-.toast:active {
-  transform: translateX(-50%) scale(0.98);
-}
-
-@media (width >= 768px) {
-  .toast:active {
-    transform: scale(0.98);
+/* Small screens - tighter padding */
+@media (width <= 390px) {
+  .toast {
+    left: 0.75rem;
+    right: 0.75rem;
+    padding: 0.875rem 1rem;
+  }
+  
+  .toast__message {
+    font-size: var(--font-size-sm); /* 14px */
   }
 }
 
-/* ============================================================
-   Accessibility
-   ============================================================ */
+/* Landscape mobile - move up to avoid bottom nav */
+@media (height <= 600px) and (orientation: landscape) {
+  .toast {
+    bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+  }
+}
 
-/* Reduced Motion */
+/* ===================================
+   Accessibility
+   =================================== */
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .toast {
-    transition: opacity 0.2s ease;
+    animation: toast-fade-in 0.2s ease-out;
   }
   
-  .toast--visible {
-    transform: translateX(-50%) translateY(0);
-  }
-  
-  @media (width >= 768px) {
-    .toast--visible {
-      transform: translateY(0);
+  @keyframes toast-fade-in {
+    from {
+      opacity: 0;
     }
+
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* High contrast */
+@media (prefers-contrast: high) {
+  .toast {
+    border-width: 2px;
+    border-color: var(--color-text-tertiary);
   }
 }

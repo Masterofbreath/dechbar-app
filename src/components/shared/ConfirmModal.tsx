@@ -51,11 +51,29 @@ export function ConfirmModal({
     onClose();
   };
 
-  // Icon per variant
-  const icon = {
-    danger: '⚠️',
-    warning: '⚠️',
-    info: 'ℹ️'
+  // Icon SVG per variant (custom SVG, no emoji)
+  const iconSVG = {
+    danger: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+      </svg>
+    ),
+    warning: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+      </svg>
+    ),
+    info: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+    )
   }[variant];
 
   return (
@@ -68,7 +86,7 @@ export function ConfirmModal({
         aria-describedby="confirm-message"
       >
         <div className="confirm-modal__icon" aria-hidden="true">
-          {icon}
+          {iconSVG}
         </div>
         
         <h2 id="confirm-title" className="confirm-modal__title">

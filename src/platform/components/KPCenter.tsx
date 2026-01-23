@@ -15,7 +15,7 @@
 import { useState } from 'react';
 import { useNavigation } from '@/platform/hooks';
 import { useKPMeasurements } from '@/platform/api';
-import { CloseButton } from '@/components/shared';
+import { CloseButton, ConfirmModal } from '@/components/shared';
 import { Button, TextLink } from '@/platform/components';
 import { 
   KPOnboarding, 
@@ -45,6 +45,7 @@ export function KPCenter() {
   });
   
   const [showInstructions, setShowInstructions] = useState(false);
+  const [showMorningWarningModal, setShowMorningWarningModal] = useState(false);
   
   // Determine initial view mode based on onboarding state
   const getInitialViewMode = (): ViewMode => {
@@ -74,15 +75,9 @@ export function KPCenter() {
         'warning'
       );
       
-      // Počkat 3s než zobrazí options
+      // Počkat 3s než zobrazí modal
       setTimeout(() => {
-        const confirmContinue = window.confirm(
-          'Můžeš pokračovat jako vzorové měření, ale neuloží se do statistik.\n\nChceš pokračovat?'
-        );
-        
-        if (confirmContinue) {
-          setViewMode('measuring');
-        }
+        setShowMorningWarningModal(true);
       }, 3000);
     } else {
       setViewMode('measuring');
@@ -213,6 +208,21 @@ export function KPCenter() {
           </>
         )}
       </div>
+      
+      {/* Morning Warning Modal */}
+      <ConfirmModal
+        isOpen={showMorningWarningModal}
+        onClose={() => setShowMorningWarningModal(false)}
+        onConfirm={() => {
+          setShowMorningWarningModal(false);
+          setViewMode('measuring');
+        }}
+        title="Vzorové měření"
+        message="Můžeš pokračovat jako vzorové měření, ale neuloží se do statistik."
+        confirmText="Pokračovat"
+        cancelText="Zrušit"
+        variant="warning"
+      />
     </div>
   );
 }
