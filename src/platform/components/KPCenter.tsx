@@ -213,6 +213,7 @@ export function KPCenter() {
    */
   useEffect(() => {
     if (!isKPDetailOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setViewMode('ready');
     }
   }, [isKPDetailOpen]);
@@ -250,7 +251,6 @@ export function KPCenter() {
   
   const previousKP = getPreviousKP();
   const trend = currentKP && previousKP ? currentKP - previousKP : 0;
-  const isFirstMeasurement = measurements.length === 0;
   
   if (!isKPDetailOpen) return null;
   
@@ -307,13 +307,9 @@ export function KPCenter() {
         {/* Instructions View - Fullscreen (nahradí circle) */}
         {viewMode === 'instructions' && (
           <>
-            <h2 className="kp-center__title">Kontrolní pauza</h2>
+            <h2 className="kp-center__title">Kontrolní pauza - návod</h2>
             
             <div className="kp-center__instructions-fullscreen">
-              <h3 className="kp-center__instructions-title">
-                Jak měřit kontrolní pauzu?
-              </h3>
-              
               <ol className="kp-center__instructions-list">
                 <li>Proveď tři normální nádechy a výdechy</li>
                 <li>Po třetím výdechu zadrž dech a spusť stopky</li>

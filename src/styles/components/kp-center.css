@@ -160,8 +160,13 @@
    ============================================================ */
 .kp-center__instructions-fullscreen {
   padding: var(--spacing-8) var(--spacing-6);
-  max-width: 500px;
+  max-width: 550px;
   width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 500px;
 }
 
 .kp-center__instructions-title {
@@ -181,8 +186,8 @@
 .kp-center__instructions-list li {
   font-size: var(--font-size-base);
   color: var(--color-text-secondary);
-  padding: var(--spacing-2) 0;
-  line-height: 1.5;
+  padding: var(--spacing-3) 0;
+  line-height: 1.6;
 }
 
 /* Instructions - Detail text (sub-explanation) */

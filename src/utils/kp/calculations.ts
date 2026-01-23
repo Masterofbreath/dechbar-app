@@ -30,7 +30,7 @@ export function calculateAverage(attempts: (number | null)[]): number {
   const validAttempts = attempts.filter((a): a is number => a !== null);
   
   if (validAttempts.length === 0) {
-    throw new Error('No valid attempts to calculate average');
+    return 0; // Bezpečná výchozí hodnota místo error
   }
   
   const sum = validAttempts.reduce((acc, val) => acc + val, 0);

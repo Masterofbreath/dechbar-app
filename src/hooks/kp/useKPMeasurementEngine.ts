@@ -107,7 +107,9 @@ export function useKPMeasurementEngine({
     currentAttempt: timer.currentAttempt,
     totalAttempts: timer.totalAttempts,
     attempts: timer.state.attempts,
-    lastAttemptValue: timer.state.attempts[timer.state.currentAttempt - 1] || 0,
+    lastAttemptValue: timer.state.currentAttempt > 0 
+      ? (timer.state.attempts[timer.state.currentAttempt - 1] ?? 0)
+      : 0,
     averageKP: calculateAverage(
       timer.state.attempts.filter((a): a is number => a !== null)
     ),
