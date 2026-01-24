@@ -87,6 +87,18 @@
   margin-bottom: var(--spacing-1);  /* ✅ Menší gap */
 }
 
+/* Animation for result message */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ============================================================
    Current KP Display
    ============================================================ */
@@ -339,7 +351,7 @@
    Measuring View - Circle obsah (v3 - NEW)
    ============================================================ */
 .kp-center__timer {
-  font-size: 64px;
+  font-size: 48px;  /* ✅ Optimalizováno z 64px → 48px */
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   letter-spacing: -2px;
@@ -354,7 +366,7 @@
 }
 
 .kp-center__intermediate-value {
-  font-size: 64px;  /* ✅ Větší (bylo 48px) - jako timer */
+  font-size: 48px;  /* ✅ Optimalizováno z 64px → 48px */
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   letter-spacing: -2px;
@@ -367,7 +379,7 @@
 }
 
 .kp-center__final-value {
-  font-size: 64px;
+  font-size: 48px;  /* ✅ Optimalizováno z 64px → 48px */
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   letter-spacing: -2px;

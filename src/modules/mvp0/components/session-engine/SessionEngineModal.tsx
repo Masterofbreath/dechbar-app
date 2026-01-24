@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useScrollLock } from '@/platform/hooks';
-import { ConfirmModal } from '@/components/shared';
+import { ConfirmModal, CloseButton } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
@@ -33,6 +33,7 @@ export interface SessionEngineModalProps {
   exercise: Exercise;
   isOpen?: boolean;
   onClose: () => void;
+  skipFlow?: boolean; // NEW: Skip SessionStartScreen + MoodBeforePick
 }
 
 /**
@@ -42,6 +43,7 @@ export function SessionEngineModal({
   exercise,
   isOpen = true,
   onClose,
+  skipFlow = false, // NEW: Default false (preserve existing behavior)
 }: SessionEngineModalProps) {
   // =====================================================
   // STATE
@@ -88,6 +90,14 @@ export function SessionEngineModal({
       document.body.classList.remove('immersive-mode');
     };
   }, [isOpen]);
+  
+  // Auto-start countdown for direct protocol start (skipFlow)
+  useEffect(() => {
+    if (skipFlow && sessionState === 'idle') {
+      startCountdown();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipFlow, sessionState]);
   
   // =====================================================
   // SESSION FLOW: State Machine
@@ -379,7 +389,19 @@ export function SessionEngineModal({
       <div className="session-engine-modal__overlay" onClick={handleClose} />
       
       <div className="session-engine-modal__content">
-        {/* IDLE: Start screen */}
+        {/* ✅ Close button - globální pro countdown/active/completed states */}
+        {(sessionState === 'countdown' || sessionState === 'active' || sessionState === 'completed') && (
+          <CloseButton onClick={handleClose} className="session-engine-modal__close" />
+        )}
+        
+        {/* ✅ Phase indicator - globální pro active state (levý horní roh) */}
+        {sessionState === 'active' && currentPhase && totalPhases > 1 && (
+          <span className="phase-indicator">
+            FÁZE {currentPhaseIndex + 1}/{totalPhases}
+          </span>
+        )}
+        
+        {/* IDLE: Start screen (má vlastní close button) */}
         {sessionState === 'idle' && (
           <SessionStartScreen
             exercise={exercise}
@@ -423,7 +445,6 @@ export function SessionEngineModal({
                 currentInstruction={currentInstruction}
                 sessionProgress={sessionProgress}
                 circleRef={circleRef as React.RefObject<HTMLDivElement>}
-                onClose={handleClose}
               />
             )}
           </div>

@@ -1,7 +1,7 @@
 /**
  * SessionCountdown - 5-4-3-2-1 countdown screen
  * 
- * Preparation phase with breathing tip
+ * Preparation phase with protocol description
  * 
  * @package DechBar_App
  * @subpackage MVP0/Components/SessionEngine
@@ -29,6 +29,11 @@ export function SessionCountdown({ exercise, countdownNumber, isActive }: Sessio
       <BreathingCircle variant="static" size={280}>
         <span className="countdown-number">{countdownNumber}</span>
       </BreathingCircle>
+      
+      {/* Protocol description below circle */}
+      <p className="session-countdown__description">
+        {exercise.description}
+      </p>
     </div>
   );
 }

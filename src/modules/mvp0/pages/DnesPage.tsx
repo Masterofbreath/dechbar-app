@@ -36,6 +36,7 @@ export function DnesPage() {
   const { user } = useAuth();
   const { data: exercises, isLoading, error } = useExercises();
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [skipFlow, setSkipFlow] = useState(false); // NEW: Track if direct start
   
   // Handle protocol button clicks - open SessionEngineModal
   function handleProtocolClick(protocolName: string) {
@@ -62,6 +63,7 @@ export function DnesPage() {
     
     if (exercise) {
       console.log('✅ [DnesPage] Cvičení nalezeno:', exercise.name, `(${exercise.id})`);
+      setSkipFlow(true); // NEW: Enable direct start for preset protocols
       setSelectedExercise(exercise);
     } else {
       console.error('❌ [DnesPage] Cvičení nenalezeno:', protocolName);
@@ -127,7 +129,11 @@ export function DnesPage() {
       {selectedExercise && (
         <SessionEngineModal
           exercise={selectedExercise}
-          onClose={() => setSelectedExercise(null)}
+          skipFlow={skipFlow} // NEW: Pass skipFlow flag
+          onClose={() => {
+            setSelectedExercise(null);
+            setSkipFlow(false); // Reset on close
+          }}
         />
       )}
     </div>

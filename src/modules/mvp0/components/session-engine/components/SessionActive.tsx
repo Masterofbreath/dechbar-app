@@ -8,7 +8,6 @@
  */
 
 import { NavIcon } from '@/platform/components';
-import { CloseButton } from '@/components/shared';
 import { BreathingCircle } from '@/components/shared/BreathingCircle';
 import type { Exercise, ExercisePhase } from '../../../types/exercises';
 
@@ -21,7 +20,6 @@ interface SessionActiveProps {
   currentInstruction: string;
   sessionProgress: number;
   circleRef: React.RefObject<HTMLDivElement>;
-  onClose: () => void;
 }
 
 export function SessionActive({
@@ -33,7 +31,6 @@ export function SessionActive({
   currentInstruction,
   sessionProgress,
   circleRef,
-  onClose,
 }: SessionActiveProps) {
   // Map instruction text to circle state for color transitions
   const getCircleState = (instruction: string): 'inhale' | 'exhale' | 'hold' => {
@@ -43,23 +40,29 @@ export function SessionActive({
     return 'hold'; // Default
   };
 
+  // Detect special phases
+  const isFinalPhase = currentPhaseIndex === totalPhases - 1;
+  const isBuzzingPhase = 
+    currentPhase.name === 'Nosní bzučení' || 
+    currentPhase.name === 'Bzučení';
+
   return (
     <>
-      {/* Close button & phase indicator */}
-      <CloseButton onClick={onClose} className="session-engine-modal__close" ariaLabel="Zavřít" />
-      {totalPhases > 1 && (
-        <span className="phase-indicator">
-          FÁZE {currentPhaseIndex + 1}/{totalPhases}
-        </span>
-      )}
-      
       {/* Přímo session-active bez wrapperu */}
       <div className="session-active active">
         {/* Header se jménem cvičení */}
         <div className="session-header">
           <h3 className="session-exercise-name">{exercise.name}</h3>
           {currentPhase.name && (
-            <p className="session-instruction">{currentPhase.name}</p>
+            <p className="session-instruction">
+              {/* ✅ Dynamický text pro speciální fáze */}
+              {isFinalPhase 
+                ? 'Doznění – dýchej podle sebe'
+                : isBuzzingPhase
+                  ? 'Bzučení – při výdechu jemně bzuč.'
+                  : currentPhase.name
+              }
+            </p>
           )}
         </div>
       
@@ -73,19 +76,28 @@ export function SessionActive({
           {/* Breathing instruction inside circle */}
           {currentInstruction && (
             <div className="breathing-instruction">
-              {currentInstruction}
+              {/* ✅ Dynamický obsah kruhu pro speciální fáze */}
+              {isFinalPhase ? (
+                'VOLNĚ'
+              ) : isBuzzingPhase ? (
+                <>
+                  {currentInstruction}
+                  <span className="breathing-hint">(bzzz)</span>
+                </>
+              ) : (
+                currentInstruction
+              )}
             </div>
           )}
         </BreathingCircle>
       
-        {/* Timer below circle */}
-        <div className="session-timer">
-          <span className="timer-seconds">{phaseTimeRemaining}</span>
-          <span className="timer-label">sekund</span>
-        </div>
+      {/* Timer below circle */}
+      <div className="session-timer">
+        <span className="timer-seconds">{phaseTimeRemaining} s</span>
+      </div>
       
-        {/* Instructions (if present) */}
-        {currentPhase.instructions && (
+        {/* Instructions - SKRYTO pro poslední fázi a bzučení fázi ✅ */}
+        {currentPhase.instructions && !isFinalPhase && !isBuzzingPhase && (
           <div className="session-active__instructions">
             <NavIcon name="info" size={16} />
             <span>{currentPhase.instructions}</span>

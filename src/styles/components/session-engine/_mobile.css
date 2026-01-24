@@ -159,6 +159,12 @@
     font-size: 24px !important;
   }
   
+  /* Breathing hint - mobile responsive */
+  .breathing-hint {
+    font-size: 14px !important;
+    margin-top: 2px !important;
+  }
+  
   /* Countdown circle container - ABSOLUTE CENTER (stejné jako breathing) */
   .countdown-circle-container {
     position: absolute !important;
@@ -184,7 +190,7 @@
   .session-timer {
     position: static !important;
     width: 100% !important;
-    margin: auto 0 0 !important;  /* margin-top: auto = přilepí se dolů */
+    margin: auto 0 3px !important;  /* ✅ margin-bottom: 3px (kompaktní spacing k "Další:") */
     padding-bottom: 100px !important;  /* Spacing od dolního okraje */
     text-align: center !important;
     order: initial !important;
@@ -203,7 +209,7 @@
   .session-active__next {
     position: static !important;
     width: 100% !important;
-    margin: 12px 0 0 !important;  /* Malý spacing nad */
+    margin: 3px 0 0 !important;  /* ✅ margin-top: 3px (kompaktní spacing od timeru) */
     text-align: center !important;
     font-size: 13px !important;
     order: initial !important;

@@ -15,9 +15,8 @@
   color: var(--color-accent);
   font-size: 14px;
   font-weight: 500;
-  margin-top: 32px;
-  /* Zvýšeno z 16px na 32px aby nekřížil progress bar */
-  margin-bottom: 32px;
+  margin-top: 24px;     /* ✅ Kompaktnější (32px → 24px) */
+  margin-bottom: 24px;  /* ✅ Proporcionální spacing */
 }
 
 .session-active__next {
@@ -27,6 +26,8 @@
   gap: 8px;
   font-size: 14px;
   color: var(--color-text-tertiary);
+  margin-top: 3px;      /* ✅ Minimální spacing od timeru (těsná vizuální skupina) */
+  margin-bottom: 16px;  /* ✅ Safe buffer k progress baru (eliminuje kolize) */
 }
 
 .next-label {

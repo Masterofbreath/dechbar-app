@@ -107,6 +107,60 @@
 }
 
 /* ============================================================
+   Content Inside Circle
+   Styling for children elements rendered inside the circle
+   ============================================================ */
+
+/* Breathing instruction (Session Engine - animated variant) */
+.breathing-instruction {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);  /* Teal #2CBEC6 */
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  pointer-events: none;
+  text-align: center;
+}
+
+/* Breathing hint - smaller text below main instruction (e.g. "(bzzz)") */
+.breathing-hint {
+  display: block;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+  opacity: 0.8;
+  letter-spacing: 0.05em;
+  text-transform: none; /* Don't uppercase hints */
+}
+
+/* Timer BELOW circle (Session Engine) */
+.session-timer {
+  text-align: center;
+  margin-top: 24px;
+  margin-bottom: 3px;   /* ✅ Minimální spacing k "Další:" (kompaktní feel) */
+}
+
+.timer-seconds {
+  display: block;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.timer-label {
+  display: block;
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ============================================================
    Mobile Responsiveness
    Absolute centering for fullscreen immersive mode
    ============================================================ */

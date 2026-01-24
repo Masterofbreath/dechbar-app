@@ -71,6 +71,18 @@
   animation: tipFadeIn 600ms ease-in-out;
 }
 
+/* Countdown-specific description styling (protocol context) */
+.session-countdown__description {
+  margin-top: 24px;
+  max-width: 420px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  text-align: center;
+  opacity: 0.8;
+  animation: tipFadeIn 600ms ease-in-out 0.3s both;  /* Delay 0.3s for smoother entrance */
+}
+
 @keyframes tipFadeIn {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }

@@ -6,8 +6,8 @@
 .session-progress {
   position: absolute;
 
-  /* Posunuto níže (0→8px) aby nekřížil instructions */
-  bottom: 8px;
+  /* Extra buffer pro eliminaci kolizí (8px → 12px) */
+  bottom: 12px;
   left: 0;
   width: 100%;
   height: 4px; /* Visual Brand Book: 4px base unit system */

@@ -474,16 +474,16 @@ Premium Modal (with gold accent):
 
 @media (max-width: 640px) {
   .modal-overlay {
-    align-items: flex-end; /* Bottom-anchored */
-    padding: 0;
+    align-items: center;  /* ✅ Centered for confirm modals (was: flex-end) */
+    padding: 0.5rem;      /* ✅ Safe spacing (was: 0) */
   }
   
   .modal-card {
     width: 100%;
-    max-width: 100%;
-    max-height: 90vh; /* Not fullscreen - maintain context */
-    border-radius: 24px 24px 0 0; /* iOS rounded top */
-    padding-top: 2rem; /* Space for swipe handle */
+    max-width: 400px;     /* ✅ Max width for better centering */
+    max-height: 90vh;     /* Not fullscreen - maintain context */
+    border-radius: 24px;  /* ✅ All corners rounded (not bottom sheet) */
+    padding-top: 2rem;    /* Space for swipe handle */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     
@@ -491,7 +491,7 @@ Premium Modal (with gold accent):
     animation: modal-slide-up-mobile 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
   
-  /* iOS-style swipe handle indicator */
+  /* iOS-style swipe handle indicator (optional - can be removed for centered modals) */
   .modal-card::before {
     content: '';
     position: absolute;
