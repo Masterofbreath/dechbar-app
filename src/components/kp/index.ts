@@ -6,7 +6,6 @@
  * @since 0.3.0
  */
 
-export { StaticBreathingCircle } from './StaticBreathingCircle';
 export { KPTimer } from './KPTimer';
 export { KPResult } from './KPResult';
 export { KPHistory } from './KPHistory';
@@ -16,7 +15,6 @@ export { KPMeasurementEngine } from './KPMeasurementEngine';
 // export { KPOnboarding } from './KPOnboarding';
 // export { KPSettingsPanel } from './KPSettingsPanel';
 
-export type { StaticBreathingCircleProps } from './StaticBreathingCircle';
 export type { KPTimerProps } from './KPTimer';
 export type { KPResultProps } from './KPResult';
 export type { KPHistoryProps } from './KPHistory';
