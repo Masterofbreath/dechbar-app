@@ -10,7 +10,7 @@
  */
 
 import { Button } from '@/platform/components';
-import { StaticBreathingCircle } from './StaticBreathingCircle';
+import { BreathingCircle } from '@/components/shared/BreathingCircle';
 import { formatTimer } from '@/utils/kp';
 
 export interface KPTimerProps {
@@ -59,9 +59,9 @@ export function KPTimer({ elapsed, currentAttempt, totalAttempts, onStop }: KPTi
       
       {/* Static Breathing Circle + Time */}
       <div className="kp-timer__circle-container">
-        <StaticBreathingCircle>
+        <BreathingCircle variant="static" size={280}>
           <div className="kp-timer__time">{formattedTime}</div>
-        </StaticBreathingCircle>
+        </BreathingCircle>
       </div>
       
       {/* Stop Button */}
