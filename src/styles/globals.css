@@ -49,6 +49,7 @@
 @import url('./components/input.css');
 @import url('./components/checkbox.css');
 @import url('./components/close-button.css');
+@import url('./components/mini-tip.css');
 @import url('./components/pricing-card.css');
 @import url('./components/billing-toggle.css');
 @import url('./components/email-input-modal.css');

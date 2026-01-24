@@ -17,12 +17,13 @@ import { useNavigation } from '@/platform/hooks';
 import { useKPMeasurements } from '@/platform/api';
 import { useKPMeasurementEngine } from '@/hooks/kp';
 import { CloseButton } from '@/components/shared';
+import { MiniTip } from './shared/MiniTip';
 import { Button, TextLink } from '@/platform/components';
 import { 
   StaticBreathingCircle,
 } from '@/components/kp';
 import type { SaveKPData } from '@/platform/api';
-import { formatSeconds, formatTrend, formatTimer, formatAttempts, getKPMeasurementsCount } from '@/utils/kp';
+import { formatSeconds, formatTrend, formatTimer, getKPMeasurementsCount } from '@/utils/kp';
 import { useToast } from '@/hooks/useToast';
 
 /**
@@ -37,16 +38,60 @@ type ViewMode = 'ready' | 'instructions' | 'measuring';
 interface MeasuringViewProps {
   attemptsCount: 1 | 3;
   onComplete: (data: SaveKPData) => void;
+  onClose: () => void;  // ✅ Pro zavření modalu
 }
 
 function MeasuringView({ 
   attemptsCount, 
   onComplete,
+  onClose,
 }: MeasuringViewProps) {
   const engine = useKPMeasurementEngine({
     attemptsCount,
     onComplete,
   });
+  
+  // ✅ Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignorovat pokud user píše do inputu
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      switch (e.key) {
+        case ' ': // Space = Start/Stop
+          e.preventDefault();
+          if (engine.phase === 'measuring') {
+            engine.stop();
+          }
+          break;
+          
+        case 'Enter': // Enter = Continue next / Finish
+          e.preventDefault();
+          if (engine.phase === 'awaiting_next') {
+            const isLastAttempt = engine.currentAttempt >= engine.totalAttempts;
+            if (isLastAttempt) {
+              engine.finishEarly();
+            } else {
+              engine.continueNext();
+            }
+          } else if (engine.phase === 'result') {
+            onClose();
+          }
+          break;
+          
+        case 'Escape': // Esc = Close modal (jen v result view)
+          if (engine.phase === 'result') {
+            onClose();
+          }
+          break;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [engine, onClose]);
   
   // Helper: Render obsah UVNITŘ circle
   const renderCircleContent = () => {
@@ -60,23 +105,15 @@ function MeasuringView({
       
       case 'awaiting_next':
         return (
-          <div className="kp-center__intermediate">
-            <div className="kp-center__intermediate-value">
-              {engine.lastAttemptValue}s
-            </div>
-            <div className="kp-center__intermediate-progress">
-              {engine.currentAttempt}/{engine.totalAttempts}
-            </div>
+          <div className="kp-center__intermediate-value">
+            {engine.lastAttemptValue}s
           </div>
         );
       
       case 'result':
         return (
-          <div className="kp-center__final">
-            <div className="kp-center__final-value">
-              {engine.averageKP}s
-            </div>
-            <div className="kp-center__final-label">Průměr</div>
+          <div className="kp-center__final-value">
+            {engine.averageKP}s
           </div>
         );
       
@@ -102,67 +139,69 @@ function MeasuringView({
             >
               Zastavit měření
             </Button>
-            <p className="kp-center__hint">
-              Stop při prvním signálu od těla
-            </p>
           </>
         );
       
       case 'awaiting_next': {
         const isLastAttempt = engine.currentAttempt >= engine.totalAttempts;
+        
+        // ✅ Dynamický text podle pokusu
+        const getButtonText = () => {
+          if (isLastAttempt) return 'Hotovo';
+          
+          // currentAttempt je nyní 0-based během measuring, 1-based po stop()
+          // Po prvním stop(): currentAttempt = 1, chceme "Začít druhé měření"
+          const nextAttempt = engine.currentAttempt + 1;
+          if (nextAttempt === 2) return 'Začít druhé měření';
+          if (nextAttempt === 3) return 'Začít poslední měření';
+          return 'Další měření';  // Fallback
+        };
+        
+        // Debug handler pro "Další měření"
+        const handleContinueNext = () => {
+          console.log('[DEBUG] Další měření clicked');
+          console.log('[DEBUG] Engine phase:', engine.phase);
+          console.log('[DEBUG] Current attempt:', engine.currentAttempt);
+          console.log('[DEBUG] Total attempts:', engine.totalAttempts);
+          console.log('[DEBUG] Is last attempt:', isLastAttempt);
+          console.log('[DEBUG] Next attempt will be:', engine.currentAttempt + 1);
+          engine.continueNext();
+        };
+        
         return (
-          <div className="kp-center__actions">
-            {!isLastAttempt ? (
-              <>
-                <Button 
-                  variant="primary" 
-                  fullWidth 
-                  size="lg"
-                  onClick={engine.continueNext}
-                >
-                  Další měření
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  fullWidth 
-                  size="md"
-                  onClick={engine.finishEarly}
-                  className="kp-center__finish-early"
-                >
-                  Hotovo (ukončit měření)
-                </Button>
-              </>
-            ) : (
-              <Button 
-                variant="primary" 
-                fullWidth 
-                size="lg"
-                onClick={engine.finishEarly}
-              >
-                Hotovo
-              </Button>
+          <>
+            {/* Help Link - "Ukončit měření" jen po prvním měření */}
+            {!isLastAttempt && engine.currentAttempt === 1 && (
+              <div className="kp-center__help">
+                <TextLink onClick={engine.finishEarly}>
+                  Ukončit měření
+                </TextLink>
+              </div>
             )}
-          </div>
+            
+            {/* Primary button - VŽDY na stejné pozici */}
+            <Button 
+              variant="primary" 
+              fullWidth 
+              size="lg"
+              onClick={isLastAttempt ? engine.finishEarly : handleContinueNext}
+            >
+              {getButtonText()}
+            </Button>
+          </>
         );
       }
       
       case 'result':
         return (
-          <>
-            {/* Zobrazit jednotlivé pokusy */}
-            {engine.attempts.length > 1 && (
-              <p className="kp-center__attempts">
-                Měření: {formatAttempts(engine.attempts)}
-              </p>
-            )}
-            <Button 
-              variant="secondary" 
-              fullWidth
-              onClick={() => onComplete({} as SaveKPData)} 
-            >
-              Zavřít
-            </Button>
-          </>
+          <Button 
+            variant="primary"
+            size="lg"
+            fullWidth
+            onClick={onClose}
+          >
+            Zavřít
+          </Button>
         );
       
       default:
@@ -173,13 +212,36 @@ function MeasuringView({
   return (
     <>
       {/* Progress indicator (pokud measuring nebo awaiting) */}
-      {(engine.phase === 'measuring' || engine.phase === 'awaiting_next') && (
-        <div className="kp-center__progress-indicator">
-          <p className="kp-center__progress-text">
-            Měření {engine.currentAttempt}/{engine.totalAttempts}
+      {(engine.phase === 'measuring' || engine.phase === 'awaiting_next') && (() => {
+        // Při awaiting_next zobrazit dokončený pokus, při measuring aktuální
+        const displayAttempt = engine.phase === 'awaiting_next' 
+          ? engine.currentAttempt 
+          : engine.currentAttempt + 1;
+        
+        return (
+          <div className="kp-center__progress-indicator">
+            <p className="kp-center__progress-text">
+              Měření {displayAttempt}/{engine.totalAttempts}
+            </p>
+          </div>
+        );
+      })()}
+      
+      {/* ✅ Result message (když phase === 'result') - NAD measurement area */}
+      {engine.phase === 'result' && (() => {
+        const validCount = engine.attempts.filter((a): a is number => a !== null).length;
+        const isSingleMeasurement = validCount === 1;
+        
+        return (
+          <p className="kp-center__result-message">
+            <strong>Máš změřeno!</strong>
+            {isSingleMeasurement 
+              ? 'Toto je tvůj výsledek z jednoho měření. Pro přesnější hodnotu proveď tři měření.'
+              : 'Toto číslo je průměr ze všech tří měření. Trénuj, změř znovu za týden a sleduj svůj pokrok.'
+            }
           </p>
-        </div>
-      )}
+        );
+      })()}
       
       {/* Measurement Area - VŽDY stejná struktura */}
       <div className="kp-center__measurement-area">
@@ -188,6 +250,23 @@ function MeasuringView({
         </StaticBreathingCircle>
         
         {renderButton()}
+        
+        {/* ✅ Tip POD tlačítkem (stejně jako v instructions) - pouze pro result view */}
+        {engine.phase === 'result' && (() => {
+          // Detekce času měření: Zobraz tip pokud NENÍ mezi 4:00-8:59 (ideální čas)
+          // Tip zobrazujeme: 9:00-23:59 + 0:00-3:59
+          const now = new Date();
+          const hour = now.getHours();
+          const shouldShowTimeTip = hour >= 9 || hour < 4;
+          
+          if (!shouldShowTimeTip) return null;
+          
+          return (
+            <MiniTip variant="absolute">
+              <strong>Tip:</strong> Pro nejpřesnější výsledky měř KP ráno hned po probuzení.
+            </MiniTip>
+          );
+        })()}
       </div>
     </>
   );
@@ -264,25 +343,34 @@ export function KPCenter() {
           <>
             <h2 className="kp-center__title">Kontrolní pauza</h2>
             
-            {/* Current KP Display (if exists) */}
-            {currentKP !== null && (
-              <div className="kp-center__current">
-                <div className="kp-center__value">{formatSeconds(currentKP)}</div>
-                {previousKP !== null && (
-                  <div className={`kp-center__trend kp-center__trend--${trend >= 0 ? 'positive' : 'negative'}`}>
-                    {formatTrend(trend)}
-                  </div>
-                )}
-              </div>
-            )}
+            {/* ✅ Popis KP */}
+            <p className="kp-center__description">
+              Změř svou dechovou kondici a sleduj svůj pokrok.
+            </p>
             
             {/* Static Breathing Circle + Start Button */}
             <div className="kp-center__measurement-area">
               <StaticBreathingCircle>
-                <div className="kp-center__circle-placeholder">
-                  {currentKP !== null ? formatSeconds(currentKP) : '--'}
-                </div>
+                {currentKP !== null ? (
+                  <>
+                    <div className="kp-center__circle-value">{formatSeconds(currentKP)}</div>
+                    {previousKP !== null && (
+                      <div className={`kp-center__circle-trend kp-center__circle-trend--${trend >= 0 ? 'positive' : 'negative'}`}>
+                        {formatTrend(trend)}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="kp-center__circle-empty">--</div>
+                )}
               </StaticBreathingCircle>
+              
+              {/* Help Link - NAD buttonem */}
+              <div className="kp-center__help">
+                <TextLink onClick={() => setViewMode('instructions')}>
+                  Jak měřit?
+                </TextLink>
+              </div>
               
               <Button 
                 variant="primary" 
@@ -294,20 +382,13 @@ export function KPCenter() {
                 Začít měření
               </Button>
             </div>
-            
-            {/* Help Link */}
-            <div className="kp-center__help">
-              <TextLink onClick={() => setViewMode('instructions')}>
-                Jak měřit kontrolní pauzu?
-              </TextLink>
-            </div>
           </>
         )}
         
         {/* Instructions View - Fullscreen (nahradí circle) */}
         {viewMode === 'instructions' && (
           <>
-            <h2 className="kp-center__title">Kontrolní pauza - návod</h2>
+            <h2 className="kp-center__title">Kontrolní pauza - jak měřit?</h2>
             
             <div className="kp-center__instructions-fullscreen">
               <ol className="kp-center__instructions-list">
@@ -323,10 +404,7 @@ export function KPCenter() {
                 </li>
                 <li>Zastav měření při prvním signálu</li>
                 <li className="kp-center__instructions-check">
-                  <strong>Kontrola:</strong> První nádech po zastavení by měl být tichý a jemný.
-                </li>
-                <li className="kp-center__instructions-tip">
-                  <strong>Tip:</strong> Pro nejpřesnější výsledky a uložení relevantní hodnoty měř KP ráno hned po probuzení.
+                  <strong>Kontrola:</strong> První nádech po zádrži by měl být tichý a jemný.
                 </li>
               </ol>
               
@@ -338,6 +416,10 @@ export function KPCenter() {
               >
                 Zpět k měření
               </Button>
+              
+              <MiniTip variant="absolute">
+                <strong>Tip:</strong> Pro nejpřesnější výsledky měř KP ráno hned po probuzení.
+              </MiniTip>
             </div>
           </>
         )}
@@ -347,29 +429,11 @@ export function KPCenter() {
           <>
             <h2 className="kp-center__title">Kontrolní pauza</h2>
             
-            {/* Current KP Display (if exists) */}
-            {currentKP !== null && (
-              <div className="kp-center__current">
-                <div className="kp-center__value">{formatSeconds(currentKP)}</div>
-                {previousKP !== null && (
-                  <div className={`kp-center__trend kp-center__trend--${trend >= 0 ? 'positive' : 'negative'}`}>
-                    {formatTrend(trend)}
-                  </div>
-                )}
-              </div>
-            )}
-            
             <MeasuringView 
               attemptsCount={attemptsCount}
               onComplete={handleMeasurementComplete}
+              onClose={closeKPDetail}
             />
-            
-            {/* Footer - Help Link */}
-            <div className="kp-center__help">
-              <TextLink onClick={() => setViewMode('instructions')}>
-                Jak měřit kontrolní pauzu?
-              </TextLink>
-            </div>
           </>
         )}
       </div>

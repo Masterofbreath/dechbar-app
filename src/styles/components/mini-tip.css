@@ -1,0 +1,75 @@
+/**
+ * MiniTip Component Styles
+ * 
+ * Lightweight tip/hint component for contextual guidance.
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ * @since 0.2.1
+ */
+
+/* ============================================================
+   Base Styles (všechny varianty)
+   ============================================================ */
+.mini-tip {
+  /* Typography */
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-tertiary);  /* Jemná šedá */
+  text-align: center;
+  line-height: 1.5;
+  
+  /* Visual */
+  opacity: 0.8;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  
+  /* Layout */
+  width: 100%;
+  max-width: 520px;  /* Stejné jako instructions */
+}
+
+/* Zlatý akcent pro <strong> */
+.mini-tip strong {
+  color: var(--color-accent);  /* Gold */
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ============================================================
+   Variant: Absolute (pro measurement-area, instructions)
+   ============================================================ */
+.mini-tip--absolute {
+  position: absolute;
+  bottom: 8px;  /* POD buttonem (button je na 40px) */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   Variant: Static (pro cards, normal flow)
+   ============================================================ */
+.mini-tip--static {
+  position: static;
+  margin-top: var(--spacing-4);  /* 16px gap nad tipem */
+}
+
+/* ============================================================
+   Mobile Responsiveness
+   ============================================================ */
+@media (width <= 767px) {
+  .mini-tip {
+    font-size: var(--font-size-xs);  /* Menší na mobilu */
+    max-width: 90%;
+  }
+}
+
+/* ============================================================
+   Accessibility: Reduced Motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .mini-tip {
+    transition: none;
+  }
+}
