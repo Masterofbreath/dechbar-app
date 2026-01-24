@@ -82,10 +82,10 @@ export function SessionEngineModal({
   // Hide nav on mobile (immersive mode)
   useEffect(() => {
     if (isOpen && window.innerWidth <= 768) {
-      document.body.classList.add('session-active');
+      document.body.classList.add('immersive-mode');
     }
     return () => {
-      document.body.classList.remove('session-active');
+      document.body.classList.remove('immersive-mode');
     };
   }, [isOpen]);
   

@@ -323,35 +323,3 @@
     font-size: 12px !important;
   }
 }
-
-/* ============================================================
-   Mobile Immersive Mode (Hide Nav During Session)
-   ============================================================ */
-body.session-active .top-nav,
-body.session-active .bottom-nav {
-  display: none !important;
-}
-
-/* Ensure modal is truly fullscreen on mobile */
-@media (max-width: 768px) {
-  body.session-active .session-engine-modal {
-    z-index: 10001 !important; /* Above everything */
-    display: block !important;  /* Vypnout flex layouting */
-    padding: 0 !important;      /* Odstranit padding offset */
-  }
-  
-  body.session-active .session-engine-modal__overlay {
-    display: none !important;  /* Už je skrytý výše, ale pro jistotu */
-  }
-  
-  /* Z-index a visibility pojistka pro navigation */
-  body.session-active .top-nav {
-    z-index: -1 !important;
-    visibility: hidden !important;
-  }
-  
-  body.session-active .bottom-nav {
-    z-index: -1 !important;
-    visibility: hidden !important;
-  }
-}
