@@ -181,6 +181,27 @@
     padding: 0 20px !important;
     z-index: 5 !important;
   }
+  
+  /* Touch target optimization - ensure all buttons meet iOS standard (48x48px min) */
+  .button {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 24px !important;
+  }
+  
+  /* Touch feedback */
+  .button:active,
+  .text-link:active,
+  .close-button:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Larger tap area for links */
+  .text-link {
+    padding: 8px 12px;
+    margin: -8px -12px;
+  }
 }
 
 /* Landscape mobile (iPhone SE landscape: 667x375) */
