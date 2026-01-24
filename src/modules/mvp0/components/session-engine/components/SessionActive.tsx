@@ -41,7 +41,9 @@ export function SessionActive({
   };
 
   // Detect special phases
-  const isFinalPhase = currentPhaseIndex === totalPhases - 1;
+  const isFinalPhase = 
+    currentPhase.name === 'Doznění' || 
+    currentPhase.name.toLowerCase().includes('doznění');
   const isBuzzingPhase = 
     currentPhase.name === 'Nosní bzučení' || 
     currentPhase.name === 'Bzučení';

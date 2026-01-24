@@ -71,7 +71,14 @@
   animation: tipFadeIn 600ms ease-in-out;
 }
 
-/* Countdown-specific description styling (protocol context) */
+/* Countdown-specific tip styling (for regular exercises with MiniTip component) */
+.session-countdown__tip {
+  margin-top: 24px;
+  max-width: 420px;
+  animation: tipFadeIn 600ms ease-in-out 0.3s both;  /* Delay 0.3s for smoother entrance */
+}
+
+/* Protocol description styling (for preset protocols: RÁNO, RESET, NOC) */
 .session-countdown__description {
   margin-top: 24px;
   max-width: 420px;
