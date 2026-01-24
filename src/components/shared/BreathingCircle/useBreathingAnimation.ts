@@ -5,7 +5,7 @@
  * with cubic-bezier easing
  * 
  * @package DechBar_App
- * @subpackage MVP0/Components/SessionEngine/Hooks
+ * @subpackage Components/Shared/BreathingCircle
  */
 
 import { useRef, useCallback } from 'react';

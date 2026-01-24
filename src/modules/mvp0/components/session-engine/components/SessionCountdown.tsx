@@ -7,6 +7,7 @@
  * @subpackage MVP0/Components/SessionEngine
  */
 
+import { BreathingCircle } from '@/components/shared/BreathingCircle';
 import type { Exercise } from '../../../types/exercises';
 
 interface SessionCountdownProps {
@@ -24,12 +25,10 @@ export function SessionCountdown({ exercise, countdownNumber, isActive }: Sessio
         <p className="session-instruction">Připrav se na první nádech</p>
       </div>
       
-      {/* Container - stejná velikost jako breathing-circle-container */}
-      <div className="countdown-circle-container">
-        <div className="countdown-circle">
-          <span className="countdown-number">{countdownNumber}</span>
-        </div>
-      </div>
+      {/* Countdown circle using shared component */}
+      <BreathingCircle variant="static" size={280}>
+        <span className="countdown-number">{countdownNumber}</span>
+      </BreathingCircle>
     </div>
   );
 }

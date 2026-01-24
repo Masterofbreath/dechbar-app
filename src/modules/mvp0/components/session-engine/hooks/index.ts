@@ -6,4 +6,3 @@
  */
 
 export { useAudioCues } from './useAudioCues';
-export { useBreathingAnimation } from './useBreathingAnimation';

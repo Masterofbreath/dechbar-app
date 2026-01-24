@@ -108,10 +108,10 @@
 
 .button--primary:hover:not(:disabled) {
   background: var(--button-primary-bg-hover);  /* Lighter gold */
-  transform: translateY(-2px);
+  transform: translateY(-1px);  /* Jemnější, Apple-like (bylo -2px) */
   box-shadow: 
-    0 6px 20px rgba(214, 162, 58, 0.4),  /* Stronger glow */
-    0 4px 8px rgba(0, 0, 0, 0.3);
+    0 5px 16px rgba(214, 162, 58, 0.3),  /* Menší glow (bylo 0.4) */
+    0 3px 6px rgba(0, 0, 0, 0.25);
 }
 
 .button--primary:active:not(:disabled) {
@@ -132,8 +132,8 @@
 .button--secondary:hover:not(:disabled) {
   background: var(--button-secondary-bg-hover);  /* Elevated #2A2A2A */
   border-color: var(--button-secondary-border-hover);  /* Teal border */
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: none;  /* Žádný skok, jen změna barvy */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .button--secondary:active:not(:disabled) {
@@ -354,14 +354,14 @@
 }
 
 .button:active::before {
-  width: 300px;
-  height: 300px;
+  width: 200px;  /* Menší ripple (bylo 300px) */
+  height: 200px;
 }
 
 /* Gold glow on primary button hover (premium touch) */
 .button--primary:hover:not(:disabled) {
   box-shadow: var(--button-primary-shadow-hover),
-              0 0 40px rgba(214, 162, 58, 0.2);  /* Subtle glow */
+              0 0 20px rgba(214, 162, 58, 0.15);  /* Subtle glow (bylo 40px/0.2) */
 }
 
 /* ===================================

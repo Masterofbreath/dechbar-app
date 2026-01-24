@@ -66,26 +66,15 @@ export function LockedExerciseModal({
   
   if (!isOpen || !exercise) return null;
   
-  // Personalized exercise adjective
-  const exerciseAdjective = {
-    'rano': 'Ranní',
-    'reset': 'Resetující',
-    'noc': 'Večerní',
-    'box': 'Box Breathing',
-    'calm': 'Uklidňující',
-    'coherence': 'Harmonizující',
-    'smart-demo': 'SMART' // For demo SMART exercise
-  }[exercise.id] || exercise.name;
-  
-  // Special headline for SMART exercise
+  // Special case for SMART exercise
   const isSmartExercise = exercise.id === 'smart-demo';
   const headline = isSmartExercise 
     ? 'SMART CVIČENÍ potřebuje SMART tarif'
-    : `${exerciseAdjective} cvičení je připraveno`;
+    : 'Cvičení je připraveno';
   
   const subtitle = isSmartExercise
     ? 'Personalizované cvičení na základě tvého pokroku. Začni dnes. Upgraduj kdykoliv.'
-    : 'Stačí ti tří kliky.';
+    : 'Zaregistruj se a můžeš začít.';
   
   return (
     <div 
@@ -140,8 +129,8 @@ export function LockedExerciseModal({
                 <img 
                   src="/assets/images/icons/oauth/google.svg" 
                   alt=""
-                  width="20"
-                  height="20"
+                  width="24"
+                  height="24"
                   aria-hidden="true"
                 />
                 <span>Registruj se přes Google</span>
@@ -152,7 +141,7 @@ export function LockedExerciseModal({
                 onClick={() => setShowEmailForm(true)}
                 type="button"
               >
-                Nebo zadej email
+                Nebo pokračuj s emailem
               </button>
             </>
           )}
@@ -202,9 +191,9 @@ export function LockedExerciseModal({
           )}
         </div>
         
-        {/* Trust signals - NO EMOJI, premium text */}
+        {/* Trust signals - Clean bulletpoints (Apple-style) */}
         <p className="locked-exercise-modal__trust">
-          Registrace za 30 sekund • uvnitř 1150+ členů
+          Zdarma • Bez závazků • 1150+ členů
         </p>
       </div>
     </div>

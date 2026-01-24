@@ -15,10 +15,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useScrollLock } from '@/platform/hooks';
 import { ConfirmModal } from '@/components/shared';
+import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
 import { useAudioCues } from './hooks/useAudioCues';
-import { useBreathingAnimation } from './hooks/useBreathingAnimation';
 import {
   SessionStartScreen,
   SessionCountdown,

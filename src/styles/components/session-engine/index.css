@@ -18,7 +18,7 @@
 @import './_completed.css';
 
 /* Session components */
-@import './_breathing-circle.css';
+/* NOTE: _breathing-circle.css removed - using shared component */
 @import './_instructions.css';
 @import './_progress-bar.css';
 

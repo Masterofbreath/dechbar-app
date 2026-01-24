@@ -9,6 +9,7 @@
 
 import { NavIcon } from '@/platform/components';
 import { CloseButton } from '@/components/shared';
+import { BreathingCircle } from '@/components/shared/BreathingCircle';
 import type { Exercise, ExercisePhase } from '../../../types/exercises';
 
 interface SessionActiveProps {
@@ -34,6 +35,14 @@ export function SessionActive({
   circleRef,
   onClose,
 }: SessionActiveProps) {
+  // Map instruction text to circle state for color transitions
+  const getCircleState = (instruction: string): 'inhale' | 'exhale' | 'hold' => {
+    if (instruction === 'NÁDECH') return 'inhale';
+    if (instruction === 'VÝDECH') return 'exhale';
+    if (instruction === 'ZADRŽ') return 'hold';
+    return 'hold'; // Default
+  };
+
   return (
     <>
       {/* Close button & phase indicator */}
@@ -55,20 +64,19 @@ export function SessionActive({
         </div>
       
         {/* Breathing circle with instruction inside */}
-        <div className="breathing-circle-container">
-          <div
-            ref={circleRef}
-            className="breathing-circle"
-            aria-label="Dechový pacer"
-          >
-            {/* Breathing instruction inside circle */}
-            {currentInstruction && (
-              <div className="breathing-instruction">
-                {currentInstruction}
-              </div>
-            )}
-          </div>
-        </div>
+        <BreathingCircle
+          variant="animated"
+          size={280}
+          state={getCircleState(currentInstruction)}
+          circleRef={circleRef}
+        >
+          {/* Breathing instruction inside circle */}
+          {currentInstruction && (
+            <div className="breathing-instruction">
+              {currentInstruction}
+            </div>
+          )}
+        </BreathingCircle>
       
         {/* Timer below circle */}
         <div className="session-timer">

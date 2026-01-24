@@ -1,0 +1,130 @@
+/* ============================================================
+   Shared Breathing Circle Component
+   Unified component for breathing visualizations
+   Used by: Session Engine (animated), KP Center (static)
+   ============================================================ */
+
+/**
+ * Container - Dynamic sizing via CSS variable
+ * Desktop default: 280px, Mobile: 220px, Compact: 180px
+ */
+.breathing-circle-container {
+  position: relative;
+  width: var(--circle-size, 280px);
+  height: var(--circle-size, 280px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * Circle - Base styles
+ * Radial gradient + 3-layer glow effect
+ */
+.breathing-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* Calculate 64% of container size for inner circle */
+  width: calc(var(--circle-size, 280px) * 0.64);
+  height: calc(var(--circle-size, 280px) * 0.64);
+  margin-left: calc(var(--circle-size, 280px) * 0.64 / -2);
+  margin-top: calc(var(--circle-size, 280px) * 0.64 / -2);
+  border-radius: 50%;
+  
+  /* Radial gradient background */
+  background: radial-gradient(
+    circle at center,
+    var(--glow-primary-bg-strong) 0%,
+    var(--glow-primary-bg-medium) 50%,
+    var(--glow-primary-bg-subtle) 100%
+  );
+  
+  /* Default border + glow */
+  border: 3px solid var(--color-primary);
+  box-shadow: 
+    0 0 20px var(--glow-primary-shadow-strong),
+    0 0 40px var(--glow-primary-shadow-medium),
+    inset 0 0 30px var(--glow-primary-shadow-subtle);
+  
+  /* Center children (timer, instruction, etc.) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* ============================================================
+   Variant: Animated (Session Engine)
+   RAF-based scale animation + color transitions
+   ============================================================ */
+.breathing-circle--animated {
+  transform: scale(1);
+  transform-origin: center;
+  will-change: transform;
+  
+  /* Smooth color transitions (800ms for calm feel) */
+  transition: 
+    border-color 800ms ease-in-out,
+    box-shadow 800ms ease-in-out;
+}
+
+/* ============================================================
+   Variant: Static (KP Measurement)
+   No animations, no transitions
+   ============================================================ */
+.breathing-circle--static {
+  /* No will-change optimization needed */
+  /* No transitions (instant state changes) */
+}
+
+/* ============================================================
+   Color States (Animated variant only)
+   Light teal = Inhale (energy in)
+   Dark teal = Exhale/Hold (calm out)
+   ============================================================ */
+
+/* Light teal - Inhale */
+.breathing-circle--inhale,
+.breathing-circle--hold-in {
+  border-color: var(--color-primary-light); /* #6ADBE0 */
+  box-shadow: 
+    0 0 20px var(--glow-primary-light-subtle),
+    0 0 40px var(--glow-primary-light-medium),
+    inset 0 0 20px var(--glow-primary-light-faint);
+}
+
+/* Dark teal - Exhale/Hold */
+.breathing-circle--exhale,
+.breathing-circle--hold,
+.breathing-circle--hold-out {
+  border-color: var(--color-primary-dark); /* #15939A */
+  box-shadow: 
+    0 0 20px var(--glow-primary-dark-subtle),
+    0 0 40px var(--glow-primary-dark-medium),
+    inset 0 0 20px var(--glow-primary-dark-faint);
+}
+
+/* ============================================================
+   Mobile Responsiveness
+   Absolute centering for fullscreen immersive mode
+   ============================================================ */
+@media (max-width: 768px) {
+  .breathing-circle-container {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+}
+
+/* ============================================================
+   Accessibility: Reduced Motion
+   Disable animations for users with motion sensitivity
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .breathing-circle--animated {
+    transition: none !important;
+  }
+}

@@ -93,10 +93,17 @@ export function useKPMeasurementEngine({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
-  // Sync engine phase with timer state
+  // Sync engine phase with timer state (bidirectional!)
   useEffect(() => {
+    // Sync awaiting_next
     if (timer.state.phase === 'awaiting_next' && enginePhase !== 'awaiting_next') {
+      console.log('[Engine] Syncing to awaiting_next');
       setEnginePhase('awaiting_next');
+    }
+    // ✅ Sync measuring zpět (fix race condition!)
+    if (timer.state.phase === 'measuring' && enginePhase !== 'measuring') {
+      console.log('[Engine] Syncing to measuring');
+      setEnginePhase('measuring');
     }
   }, [timer.state.phase, enginePhase]);
   
