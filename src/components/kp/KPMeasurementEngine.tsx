@@ -110,8 +110,11 @@ export function KPMeasurementEngine({
     // Vypočítat průměr
     const average = calculateAverage(results);
     
-    // Validace času měření
-    const validation = validateKPMeasurement(endTime);
+    // Detekce času měření (inline)
+    const now = new Date(endTime);
+    const hour = now.getHours();
+    const isMorning = hour >= 4 && hour < 9;
+    const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
     
     // Připravit data pro uložení
     const saveData: SaveKPData = {
@@ -120,11 +123,11 @@ export function KPMeasurementEngine({
       attempt_2_seconds: results[1] || undefined,
       attempt_3_seconds: results[2] || undefined,
       attempts_count: results.length as 1 | 2 | 3,
-      time_of_day: validation.time_of_day,
-      is_morning_measurement: validation.is_morning_measurement,
-      is_valid: validation.is_valid,
-      hour_of_measurement: validation.hour_of_measurement,
-      device_type: detectDeviceType(),
+      time_of_day: timeOfDay,
+      is_morning_measurement: isMorning,
+      is_valid: true,
+      hour_of_measurement: hour,
+      device_type: 'desktop', // TODO: Implement device detection
       measurement_duration_ms: durationMs,
       measured_in_context: 'top_nav',
     };

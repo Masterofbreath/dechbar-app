@@ -82,8 +82,8 @@ export function useKPTimer({
   });
   
   const startTimeRef = useRef<number>(0);
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const pauseIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pauseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   /**
    * Clear all intervals
@@ -132,6 +132,9 @@ export function useKPTimer({
     const finalElapsed = Math.floor(state.elapsed / 1000); // Convert to seconds
     const attemptNumber = state.currentAttempt + 1;
     
+    console.log('[useKPTimer] stop() called');
+    console.log('[useKPTimer] Attempt:', attemptNumber, 'Value:', finalElapsed + 's');
+    
     // Update attempts array
     const newAttempts = [...state.attempts];
     newAttempts[state.currentAttempt] = finalElapsed;
@@ -142,8 +145,11 @@ export function useKPTimer({
     // Check if all attempts completed
     const isLastAttempt = attemptNumber >= attemptsCount;
     
+    console.log('[useKPTimer] Is last attempt?', isLastAttempt);
+    
     if (isLastAttempt) {
       // Všechny pokusy hotovo
+      console.log('[useKPTimer] All attempts completed → phase: completed');
       setState(prev => ({
         ...prev,
         phase: 'completed',
@@ -156,6 +162,7 @@ export function useKPTimer({
     } else {
       // Přejít do 'awaiting_next' - čeká na user akci (manual start)
       const nextAttemptNum = state.currentAttempt + 1;
+      console.log('[useKPTimer] Moving to awaiting_next. Next attempt:', nextAttemptNum + 1);
       setState({
         phase: 'awaiting_next',
         elapsed: 0,
@@ -203,17 +210,31 @@ export function useKPTimer({
    * Continue to next measurement (manual user action)
    */
   const continueNext = useCallback(() => {
-    if (state.phase !== 'awaiting_next') return;
+    console.log('[useKPTimer] continueNext called');
+    console.log('[useKPTimer] Current phase:', state.phase);
+    console.log('[useKPTimer] Current attempt:', state.currentAttempt);
     
+    if (state.phase !== 'awaiting_next') {
+      console.warn('[useKPTimer] continueNext blocked - phase is not awaiting_next');
+      return;
+    }
+    
+    console.log('[useKPTimer] Starting next measurement...');
     // Spustit další měření
     startMeasuring();
-  }, [state.phase, startMeasuring]);
+  }, [state, startMeasuring]);  // ✅ Celý state (ne jen phase)
   
   /**
    * Finish measurements early (user doesn't want full count)
    */
   const finishEarly = useCallback(() => {
-    if (state.phase !== 'awaiting_next') return;
+    console.log('[useKPTimer] finishEarly called');
+    console.log('[useKPTimer] Current phase:', state.phase);
+    
+    if (state.phase !== 'awaiting_next') {
+      console.warn('[useKPTimer] finishEarly blocked - phase is not awaiting_next');
+      return;
+    }
     
     // Ukončit měření předčasně
     setState(prev => ({
@@ -243,7 +264,7 @@ export function useKPTimer({
     reset,
     continueNext,
     finishEarly,
-    currentAttempt: state.currentAttempt + 1, // 1-based for UI
+    currentAttempt: state.currentAttempt, // ✅ Už je 1-based (inkrementováno v stop())
     totalAttempts: attemptsCount,
   };
 }

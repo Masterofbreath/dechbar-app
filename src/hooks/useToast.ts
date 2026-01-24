@@ -36,7 +36,7 @@ interface ToastStore {
 /**
  * Auto-hide timeout ref (stored outside component)
  */
-let autoHideTimeout: NodeJS.Timeout | null = null;
+let autoHideTimeout: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * Toast store

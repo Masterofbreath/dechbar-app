@@ -29,7 +29,7 @@ function getToastIcon(variant: 'success' | 'error' | 'info' | 'warning') {
     case 'info':
       return <NavIcon name="info" size={20} />;
     case 'warning':
-      return <NavIcon name="alert-triangle" size={20} />;
+      return <NavIcon name="x" size={20} />;
   }
 }
 
