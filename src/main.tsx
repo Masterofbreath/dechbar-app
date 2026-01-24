@@ -12,7 +12,7 @@ import './styles/components/bottom-nav.css' // BOTTOM NAV styles
 import './styles/components/kp-display.css' // KP Display widget
 import './styles/components/notification-center.css' // Notification Center
 import './styles/components/kp-center.css' // KP Center
-import './styles/components/kp-static-circle.css' // KP Static Circle
+// import './styles/components/kp-static-circle.css' // Removed - using shared BreathingCircle
 import './styles/components/kp-onboarding.css' // KP Onboarding
 import './styles/components/kp-timer.css' // KP Timer
 import './styles/components/kp-result.css' // KP Result
