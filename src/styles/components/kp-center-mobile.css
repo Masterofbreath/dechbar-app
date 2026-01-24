@@ -1,0 +1,211 @@
+/* ============================================================
+   KP Center Mobile Styles
+   Fullscreen immersive mode for mobile devices
+   Based on Session Engine mobile patterns
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* Modal container - fullscreen */
+  .kp-center {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 10002 !important;
+    background: var(--color-background) !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Overlay - no padding on mobile */
+  .modal-overlay {
+    padding: 0 !important;
+  }
+  
+  /* Content area - full height with safe areas */
+  .kp-center__measurement-area {
+    position: relative !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 
+      max(24px, env(safe-area-inset-top))
+      max(20px, env(safe-area-inset-right))
+      max(24px, env(safe-area-inset-bottom))
+      max(20px, env(safe-area-inset-left)) !important;
+  }
+  
+  /* Close button - fixed top-right */
+  .close-button {
+    position: fixed !important;
+    top: max(16px, env(safe-area-inset-top)) !important;
+    right: max(16px, env(safe-area-inset-right)) !important;
+    z-index: 20 !important;
+  }
+  
+  /* Progress indicator - fixed top-left */
+  .kp-center__progress-indicator {
+    position: fixed !important;
+    top: max(16px, env(safe-area-inset-top)) !important;
+    left: max(16px, env(safe-area-inset-left)) !important;
+    z-index: 10 !important;
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+  
+  /* Title - fixed top center */
+  .kp-center__title {
+    position: fixed !important;
+    top: max(60px, env(safe-area-inset-top) + 44px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 20px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 1 !important;
+  }
+  
+  /* Description - below title */
+  .kp-center__description {
+    position: fixed !important;
+    top: max(95px, env(safe-area-inset-top) + 79px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 1 !important;
+  }
+  
+  /* Breathing circle - absolute center (via shared component CSS) */
+  /* Already handled in breathing-circle.css */
+  
+  /* Actions - fixed bottom center */
+  .kp-center__actions,
+  .kp-center__measurement-area > .button {
+    position: fixed !important;
+    bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 auto !important;
+    width: auto !important;
+    max-width: 420px !important;
+    padding: 0 20px !important;
+    z-index: 5 !important;
+  }
+  
+  /* Instruction text - above button */
+  .kp-center__instruction {
+    position: fixed !important;
+    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  /* Help link - above button (same position as instruction) */
+  .kp-center__help {
+    position: fixed !important;
+    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  /* Result message - above circle */
+  .kp-center__result-message {
+    position: fixed !important;
+    top: max(120px, env(safe-area-inset-top) + 104px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    z-index: 1 !important;
+  }
+  
+  /* Instructions fullscreen */
+  .kp-center__instructions-fullscreen {
+    position: relative !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 
+      max(80px, env(safe-area-inset-top) + 64px)
+      max(20px, env(safe-area-inset-right))
+      max(100px, env(safe-area-inset-bottom) + 80px)
+      max(20px, env(safe-area-inset-left)) !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Instructions list */
+  .kp-center__instructions-list {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    margin-bottom: 32px !important;
+  }
+  
+  /* Instructions button */
+  .kp-center__instructions-fullscreen > .button {
+    position: fixed !important;
+    bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 auto !important;
+    width: auto !important;
+    max-width: 420px !important;
+    padding: 0 20px !important;
+    z-index: 5 !important;
+  }
+}
+
+/* Landscape mobile (iPhone SE landscape: 667x375) */
+@media (max-width: 768px) and (max-height: 600px) and (orientation: landscape) {
+  .kp-center {
+    overflow-y: auto !important;
+  }
+  
+  .kp-center__measurement-area {
+    padding: 16px 20px !important;
+  }
+  
+  /* Breathing circle - smaller in landscape */
+  .breathing-circle-container {
+    width: 180px !important;
+    height: 180px !important;
+  }
+  
+  .kp-center__title {
+    font-size: 18px !important;
+    top: max(16px, env(safe-area-inset-top)) !important;
+  }
+  
+  .kp-center__actions,
+  .kp-center__measurement-area > .button {
+    bottom: max(20px, env(safe-area-inset-bottom) + 8px) !important;
+  }
+}

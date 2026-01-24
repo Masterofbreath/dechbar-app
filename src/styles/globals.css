@@ -64,6 +64,7 @@
 @import url('./components/oauth-icons.css');
 @import url('./components/toast.css');
 @import url('./components/tooltip.css');
+@import url('./components/kp-center-mobile.css');
 
 /* Demo Mockup Components */
 @import url('./components/demo-app.css');
