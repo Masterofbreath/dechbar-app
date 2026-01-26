@@ -475,6 +475,7 @@ Premium Modal (with gold accent):
 @media (max-width: 640px) {
   .modal-overlay {
     align-items: center;  /* ✅ Centered for confirm modals (was: flex-end) */
+    justify-content: center;  /* ✅ Ensure perfect centering */
     padding: 0.5rem;      /* ✅ Safe spacing (was: 0) */
   }
   
@@ -491,7 +492,18 @@ Premium Modal (with gold accent):
     animation: modal-slide-up-mobile 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
   
-  /* iOS-style swipe handle indicator (optional - can be removed for centered modals) */
+  /* Confirmation/Alert modals - perfect centering without swipe handle */
+  .modal-card--confirm,
+  .modal-card[role="alertdialog"] {
+    padding-top: 1.5rem !important;  /* ✅ Same as other sides - no swipe handle space */
+  }
+  
+  .modal-card--confirm::before,
+  .modal-card[role="alertdialog"]::before {
+    display: none !important;  /* ✅ Hide swipe handle for centered modals */
+  }
+  
+  /* iOS-style swipe handle indicator (for bottom sheet modals) */
   .modal-card::before {
     content: '';
     position: absolute;

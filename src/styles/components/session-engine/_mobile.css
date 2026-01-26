@@ -137,11 +137,11 @@
     padding: 4px 8px !important;
   }
   
-  /* Breathing circle - ABSOLUTE CENTER (anchor point - vždy uprostřed) */
+  /* Breathing circle - FIXED VIEWPORT CENTER (stejné jako KP modal) */
   .breathing-circle-container {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
+    position: fixed !important;     /* ✅ Changed from absolute - viewport reference */
+    top: 50vh !important;           /* ✅ 50% viewport height */
+    left: 50vw !important;          /* ✅ 50% viewport width */
     transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
@@ -165,11 +165,11 @@
     margin-top: 2px !important;
   }
   
-  /* Countdown circle container - ABSOLUTE CENTER (stejné jako breathing) */
+  /* Countdown circle container - FIXED VIEWPORT CENTER (stejné jako breathing) */
   .countdown-circle-container {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
+    position: fixed !important;     /* ✅ Changed from absolute - viewport reference */
+    top: 50vh !important;           /* ✅ 50% viewport height */
+    left: 50vw !important;          /* ✅ 50% viewport width */
     transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
@@ -279,6 +279,18 @@
   .session-start__button {
     width: 100% !important;
     max-width: 320px !important;
+  }
+  
+  /* Completed screen actions - také 75% width */
+  .session-completed__actions {
+    position: static !important;
+    width: 75% !important;
+    max-width: 320px !important;
+    margin: 0 auto !important;
+  }
+  
+  .session-completed__actions > .button {
+    width: 100% !important;
   }
 }
 

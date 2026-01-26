@@ -7,6 +7,7 @@ import './styles/components/input.css'      // Premium Input component styles
 import './styles/components/button.css'     // Premium Button component styles
 import './styles/components/icon-button.css' // Premium IconButton component styles
 import './styles/components/checkbox.css'   // Premium Checkbox component styles
+import './styles/components/fullscreen-modal-mobile.css'  // ✅ Shared mobile fullscreen patterns
 import './styles/components/top-nav.css'    // TOP NAV styles
 import './styles/components/bottom-nav.css' // BOTTOM NAV styles
 import './styles/components/kp-display.css' // KP Display widget

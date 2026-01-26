@@ -73,7 +73,168 @@ CREATE TABLE exercises (
 
 **Examples:** Box Breathing, Calm, Coherence
 
-### Current Implementation
+---
+
+## Component Architecture
+
+### UI Entry Points
+
+#### 1. Dnes Page (Protocols)
+
+**Component:** `PresetProtocolButton`
+
+**Location:** `src/modules/mvp0/components/PresetProtocolButton.tsx`
+
+**Behavior:**
+```
+User clicks "RÁNO" button
+  ↓
+DnesPage.handleProtocolClick('RÁNO')
+  ↓
+setSkipFlow(true)
+  ↓
+Opens SessionEngineModal with skipFlow=true
+  ↓
+Direct countdown start (no intro screens)
+  ↓
+Countdown shows protocol description
+  ↓
+Active session begins
+```
+
+**Architecture:**
+```
+┌─────────────────┐
+│   Dnes Page     │
+└────────┬────────┘
+         │
+    ┌────▼─────────────┐
+    │ PresetProtocol   │ (UI button only)
+    │    Button        │
+    └────┬─────────────┘
+         │ skipFlow=true
+         │
+         ▼
+┌─────────────────────────┐
+│  SessionEngineModal     │ (Shared engine)
+│   (orchestrator)        │
+└─────────────────────────┘
+         │
+    ┌────▼──────────┐
+    │   Countdown   │ → Protocol Description
+    │   (5-4-3)     │    "Ranní aktivace s..."
+    └───────────────┘
+```
+
+#### 2. Cvičit Page (Exercises)
+
+**Component:** `ExerciseCard`
+
+**Location:** `src/modules/mvp0/components/ExerciseCard.tsx`
+
+**Behavior:**
+```
+User clicks "Box Breathing" card
+  ↓
+CvicitPage opens SessionEngineModal (no skipFlow)
+  ↓
+SessionStartScreen (exercise details)
+  ↓
+User clicks "Začít cvičení"
+  ↓
+MoodBeforePick (emoji selection)
+  ↓
+Countdown shows rotating tips
+  ↓
+Active session begins
+```
+
+**Architecture:**
+```
+┌─────────────────┐
+│  Cvičit Page    │
+└────────┬────────┘
+         │
+    ┌────▼──────────┐
+    │  Exercise     │ (Clickable card)
+    │    Card       │
+    └────┬──────────┘
+         │ skipFlow=false (default)
+         │
+         ▼
+┌─────────────────────────┐
+│  SessionEngineModal     │
+└─────────────────────────┘
+         │
+    ┌────▼──────────────┐
+    │ SessionStartScreen │ → Exercise details
+    └────┬───────────────┘
+         │
+    ┌────▼──────────────┐
+    │  MoodBeforePick   │ → Emoji mood
+    └────┬───────────────┘
+         │
+    ┌────▼──────────┐
+    │   Countdown   │ → Rotating Tips
+    │   (5-4-3)     │    "Dýchej břichem..."
+    └───────────────┘
+```
+
+### Shared Components
+
+#### SessionEngineModal
+**Location:** `src/modules/mvp0/components/session-engine/SessionEngineModal.tsx`
+
+**Props:**
+```typescript
+interface SessionEngineModalProps {
+  exercise: Exercise;
+  skipFlow?: boolean;  // NEW (2026-01-24): Direct countdown for protocols
+  onClose: () => void;
+}
+```
+
+**Behavior:**
+- Orchestrator for all breathing exercises (protocols + regular)
+- Manages state machine: idle → countdown → active → completed
+- Conditionally skips intro screens when `skipFlow=true`
+- Renders sub-components based on session state
+
+#### SessionCountdown
+**Location:** `src/modules/mvp0/components/session-engine/components/SessionCountdown.tsx`
+
+**Content Logic:**
+```typescript
+{isProtocol(exercise) ? (
+  // PROTOCOLS: Show contextual description
+  <p className="session-countdown__description">
+    {exercise.description}
+  </p>
+) : (
+  // EXERCISES: Show rotating tips
+  <MiniTip variant="static">
+    <strong>Tip:</strong> {currentTip}
+  </MiniTip>
+)}
+```
+
+#### BreathingCircle (Shared Component)
+**Location:** `src/components/shared/BreathingCircle/`
+
+**Variants:**
+- `animated` - Used in SessionActive (RAF animation)
+- `static` - Used in SessionCountdown and KP measurement
+
+**Purpose:**
+- Single source of truth for breathing circle visuals
+- Shared between Exercise System and KP measurement
+- Ensures visual consistency
+
+---
+
+## Current Implementation
+
+### Protocol Detection (Temporary)
 
 **Protocol Detection (Temporary):**
 ```typescript

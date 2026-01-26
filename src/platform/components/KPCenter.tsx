@@ -36,6 +36,7 @@ export function KPCenter() {
   
   // Always start in 'ready' mode (simplified flow)
   const [viewMode, setViewMode] = useState<ViewMode>('ready');
+  const [isClosing, setIsClosing] = useState(false);
   
   // Get user preference from Settings (default 3x)
   const attemptsCount = getKPMeasurementsCount();
@@ -97,12 +98,39 @@ export function KPCenter() {
   const previousKP = getPreviousKP();
   const trend = currentKP && previousKP ? currentKP - previousKP : 0;
   
+  /**
+   * Handle close with touch event cleanup
+   */
+  const handleClose = () => {
+    setIsClosing(true);
+    
+    // Force blur all focused elements
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    
+    // Force click on body to clear hover states
+    document.body.click();
+    
+    // Add closing class for CSS force reset
+    document.body.classList.add('kp-closing');
+    
+    setTimeout(() => {
+      closeKPDetail();
+      setIsClosing(false);
+      
+      setTimeout(() => {
+        document.body.classList.remove('kp-closing');
+      }, 50);
+    }, 300);
+  };
+  
   if (!isKPDetailOpen) return null;
   
   return (
-    <div className="modal-overlay" onClick={closeKPDetail}>
+    <div className="modal-overlay" onClick={handleClose}>
       <div className="kp-center" onClick={e => e.stopPropagation()}>
-        <CloseButton onClick={closeKPDetail} />
+        <CloseButton onClick={handleClose} />
         
         {/* Ready View */}
         {viewMode === 'ready' && (

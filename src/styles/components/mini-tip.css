@@ -41,7 +41,7 @@
    ============================================================ */
 .mini-tip--absolute {
   position: absolute;
-  bottom: 8px;  /* POD buttonem (button je na 40px) */
+  bottom: 110px;  /* ✅ NAD buttonem: 40px (button) + 48px (height) + 22px (gap) */
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -62,6 +62,17 @@
   .mini-tip {
     font-size: var(--font-size-xs);  /* Menší na mobilu */
     max-width: 90%;
+  }
+  
+  /* Fixed positioning on mobile for consistency */
+  .mini-tip--absolute {
+    position: fixed !important;
+    bottom: max(110px, calc(env(safe-area-inset-bottom) + 90px)) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 85% !important;         /* Slightly wider than buttons (75%) */
+    max-width: 380px !important;
+    z-index: 4 !important;         /* Below buttons (z-index: 5) */
   }
 }
 

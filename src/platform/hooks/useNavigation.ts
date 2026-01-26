@@ -41,10 +41,6 @@ interface NavigationState {
   // Notification state
   unreadNotifications: number;
   setUnreadNotifications: (count: number) => void;
-  
-  // FAB pressed state (for animation feedback)
-  isFABPressed: boolean;
-  setFABPressed: (pressed: boolean) => void;
 }
 
 /**
@@ -82,8 +78,4 @@ export const useNavigation = create<NavigationState>((set) => ({
   // Notification state
   unreadNotifications: 0,
   setUnreadNotifications: (count) => set({ unreadNotifications: count }),
-  
-  // FAB animation
-  isFABPressed: false,
-  setFABPressed: (pressed) => set({ isFABPressed: pressed }),
 }));

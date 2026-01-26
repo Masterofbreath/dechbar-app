@@ -42,36 +42,20 @@
       max(20px, env(safe-area-inset-left)) !important;
   }
   
-  /* Close button - fixed top-right */
-  .close-button {
-    position: fixed !important;
-    top: max(16px, env(safe-area-inset-top)) !important;
-    right: max(16px, env(safe-area-inset-right)) !important;
-    z-index: 20 !important;
-  }
+  /* ✅ CloseButton positioning MOVED to fullscreen-modal-mobile.css */
   
-  /* Progress indicator - fixed top-left */
+  /* Progress indicator - above circle (same position as result message) */
   .kp-center__progress-indicator {
     position: fixed !important;
-    top: max(16px, env(safe-area-inset-top)) !important;
-    left: max(16px, env(safe-area-inset-left)) !important;
-    z-index: 10 !important;
-    font-size: 11px !important;
-    padding: 4px 8px !important;
-  }
-  
-  /* Title - fixed top center */
-  .kp-center__title {
-    position: fixed !important;
-    top: max(60px, env(safe-area-inset-top) + 44px) !important;
+    top: max(70px, env(safe-area-inset-top) + 54px) !important;  /* ✅ Nad kruhem, pod title */
     left: 0 !important;
     right: 0 !important;
     text-align: center !important;
-    font-size: 20px !important;
     padding: 0 20px !important;
-    margin: 0 !important;
     z-index: 1 !important;
   }
+  
+  /* ✅ Title positioning MOVED to fullscreen-modal-mobile.css */
   
   /* Description - below title */
   .kp-center__description {
@@ -89,18 +73,31 @@
   /* Breathing circle - absolute center (via shared component CSS) */
   /* Already handled in breathing-circle.css */
   
-  /* Actions - fixed bottom center */
+  /* Touch target optimization - ensure all buttons meet iOS standard (48x48px min) */
+  /* MUST come before more specific .button selectors for proper specificity */
+  .button {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 24px !important;
+  }
+  
+  /* Actions - fixed bottom center, 75% width */
   .kp-center__actions,
   .kp-center__measurement-area > .button {
     position: fixed !important;
     bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    margin: 0 auto !important;
-    width: auto !important;
-    max-width: 420px !important;
-    padding: 0 20px !important;
+    left: 50% !important;          /* ✅ Center horizontally */
+    transform: translateX(-50%) !important;  /* ✅ Perfect centering */
+    width: 75% !important;         /* ✅ User request: 75% width */
+    max-width: 320px !important;   /* ✅ Reduced from 420px */
+    padding: 0 !important;         /* ✅ No padding on container */
     z-index: 5 !important;
+  }
+  
+  /* Ensure button fills container */
+  .kp-center__actions > .button,
+  .kp-center__measurement-area > .button {
+    width: 100% !important;
   }
   
   /* Instruction text - above button */
@@ -119,7 +116,7 @@
   /* Help link - above button (same position as instruction) */
   .kp-center__help {
     position: fixed !important;
-    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
+    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;  /* ✅ Consistent with MiniTip */
     left: 0 !important;
     right: 0 !important;
     text-align: center !important;
@@ -155,9 +152,9 @@
     align-items: center !important;
     justify-content: center !important;
     padding: 
-      max(80px, env(safe-area-inset-top) + 64px)
+      max(80px, env(safe-area-inset-top) + 64px)  /* ✅ VARIANTA D: Z 50px → 80px (+30px aggressive) */
       max(20px, env(safe-area-inset-right))
-      max(100px, env(safe-area-inset-bottom) + 80px)
+      max(140px, env(safe-area-inset-bottom) + 120px)  /* ✅ VARIANTA D: Z 100px → 140px (+40px pro MiniTip!) */
       max(20px, env(safe-area-inset-left)) !important;
     overflow-y: auto !important;
   }
@@ -169,24 +166,67 @@
     margin-bottom: 32px !important;
   }
   
-  /* Instructions button */
+  /* ✅ Instructions spacing MOVED to fullscreen-modal-mobile.css */
+  
+  /* Instructions button - 75% width for consistency */
   .kp-center__instructions-fullscreen > .button {
     position: fixed !important;
     bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    margin: 0 auto !important;
-    width: auto !important;
-    max-width: 420px !important;
-    padding: 0 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 75% !important;         /* ✅ Consistent with other buttons */
+    max-width: 320px !important;   /* ✅ Reduced from 420px */
+    padding: 0 !important;
     z-index: 5 !important;
   }
   
-  /* Touch target optimization - ensure all buttons meet iOS standard (48x48px min) */
-  .button {
-    min-height: 48px !important;
-    min-width: 48px !important;
-    padding: 12px 24px !important;
+  .kp-center__instructions-fullscreen > .button > * {
+    width: 100% !important;
+  }
+  
+  /* MiniTip v instrukcích - nad tlačítkem */
+  .kp-center__instructions-fullscreen .mini-tip {
+    position: fixed !important;
+    bottom: max(120px, env(safe-area-inset-bottom) + 100px) !important;  /* ✅ Nad buttonem (který je na 40px) */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 85% !important;
+    max-width: 320px !important;
+    z-index: 4 !important;  /* Pod buttonem (button má z-index: 5) */
+  }
+  
+  /* KP Timer - Větší font pro "XXs" formát (konzistentní s výsledky) */
+  .kp-center__timer {
+    font-size: 56px !important;  /* ✅ Zvětšeno z 48px - formát "35s" je kratší než "00:35" */
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  /* KP Intermediate Value - Stejná velikost jako timer (konzistence) */
+  .kp-center__intermediate-value {
+    font-size: 56px !important;  /* ✅ Konzistence s timer během měření */
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  /* KP Final Value - Stejná velikost jako timer (konzistence) */
+  .kp-center__final-value {
+    font-size: 56px !important;  /* ✅ Konzistence s timer během měření */
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  /* Progress indicator text - visible above circle */
+  .kp-center__progress-text {
+    font-size: 14px !important;  /* ✅ Zmenšeno z 16px - menší než result message */
+    font-weight: 500 !important;  /* ✅ Medium weight */
+    color: var(--color-text-secondary) !important;  /* ✅ Viditelnější než tertiary */
+  }
+  
+  /* Larger tap area for links */
+  .text-link {
+    padding: 8px 12px;
+    margin: -8px -12px;
   }
   
   /* Touch feedback */
@@ -195,12 +235,6 @@
   .close-button:active {
     transform: scale(0.98);
     transition: transform 0.1s ease;
-  }
-  
-  /* Larger tap area for links */
-  .text-link {
-    padding: 8px 12px;
-    margin: -8px -12px;
   }
 }
 

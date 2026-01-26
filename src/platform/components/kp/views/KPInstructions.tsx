@@ -26,7 +26,7 @@ export function KPInstructions({ onBack }: KPInstructionsProps) {
           <li>Po třetím výdechu zadrž dech a spusť stopky</li>
           <li>Zacpi nos a zavři oči</li>
           <li>
-            Čekej na první signál potřeby se nadechnout
+            Čekej na první signál potřeby nádechu
             <br />
             <span className="kp-center__instructions-detail">
               (Kopnutí bránice, potřeba polknout či myšlenka na nádech)

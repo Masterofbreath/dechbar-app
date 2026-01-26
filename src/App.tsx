@@ -26,6 +26,7 @@ import { Toast } from '@/components/shared';
 // Public Web Module - Landing Page + Science Page (eager load, not lazy)
 import { LandingPage } from '@/modules/public-web/pages/LandingPage';
 import { SciencePage } from '@/modules/public-web/pages/SciencePage';
+import { ChallengePage } from '@/modules/public-web/pages/ChallengePage';
 
 // Checkout Pages (Stripe integration)
 import { CheckoutSuccessPage } from '@/pages/CheckoutSuccessPage';
@@ -84,16 +85,18 @@ function DeepLinkRouter() {
   return null; // This component doesn't render anything
 }
 
-// Navigation Router Component - Renders current tab content
-function NavigationRouter() {
-  const { currentTab, isProfileOpen, closeProfile } = useNavigation();
-  
-  // ✅ Global keyboard shortcuts (Cmd+K, Cmd+,, Esc, 1-4)
-  // Must be inside Router context
+// Global Keyboard Shortcuts - Must be inside Router context
+function GlobalKeyboardShortcuts() {
   useKeyboardShortcuts();
+  return null;
+}
+
+// Global Modals Component - Renders all modals OUTSIDE AppLayout
+// This ensures proper z-index stacking (modals above navigation)
+function GlobalModals() {
+  const { isProfileOpen, closeProfile } = useNavigation();
   
-  // Render modals
-  const renderModals = () => (
+  return (
     <>
       <NotificationCenter />
       <KPCenter />
@@ -107,6 +110,12 @@ function NavigationRouter() {
       )}
     </>
   );
+}
+
+// Navigation Router Component - Renders current tab content ONLY
+// Modals are rendered separately in GlobalModals component
+function NavigationRouter() {
+  const { currentTab } = useNavigation();
   
   // Render current tab content
   const renderContent = () => {
@@ -124,12 +133,7 @@ function NavigationRouter() {
     }
   };
   
-  return (
-    <>
-      {renderContent()}
-      {renderModals()}
-    </>
-  );
+  return renderContent();
 }
 
 function App() {
@@ -146,6 +150,7 @@ function App() {
   return (
     <BrowserRouter>
       <DeepLinkRouter />
+      <GlobalKeyboardShortcuts />
       <Toast />
       <Routes>
         {/* ========================================
@@ -162,6 +167,12 @@ function App() {
         <Route 
           path="/veda" 
           element={<SciencePage />} 
+        />
+
+        {/* Challenge page - Březnová Dechová Výzva 2026 (public) */}
+        <Route 
+          path="/vyzva" 
+          element={<ChallengePage />} 
         />
 
         {/* Reset password page (public, accessed from email link) */}
@@ -192,9 +203,12 @@ function App() {
           path="/app" 
           element={
             <ProtectedRoute>
-              <AppLayout>
-                <NavigationRouter />
-              </AppLayout>
+              <>
+                <AppLayout>
+                  <NavigationRouter />
+                </AppLayout>
+                <GlobalModals />
+              </>
             </ProtectedRoute>
           } 
         />

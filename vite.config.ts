@@ -10,4 +10,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    allowedHosts: [
+      'cerebellar-celestine-debatingly.ngrok-free.dev', // Current ngrok URL
+      '.ngrok-free.dev', // All ngrok domains
+      '.ngrok.io', // Legacy ngrok domains
+    ],
+  },
 })

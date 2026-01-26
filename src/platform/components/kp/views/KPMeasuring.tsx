@@ -14,7 +14,7 @@ import { BreathingCircle } from '@/components/shared/BreathingCircle';
 import { MiniTip } from '../../shared/MiniTip';
 import { Button, TextLink } from '@/platform/components';
 import type { SaveKPData } from '@/platform/api';
-import { formatTimer } from '@/utils/kp';
+import { formatTimerSeconds } from '@/utils/kp';
 
 export interface KPMeasuringProps {
   attemptsCount: 1 | 3;
@@ -80,7 +80,7 @@ export function KPMeasuring({
       case 'measuring':
         return (
           <div className="kp-center__timer">
-            {formatTimer(engine.elapsed)}
+            {formatTimerSeconds(engine.elapsed)}
           </div>
         );
       

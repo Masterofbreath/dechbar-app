@@ -39,6 +39,7 @@
 
 /* Public Web Module */
 @import url('../modules/public-web/styles/landing.css');
+@import url('../modules/public-web/styles/challenge.css');
 @import url('../modules/public-web/styles/animations.css');
 
 /* ===================================
@@ -92,6 +93,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===================================
+   MOBILE TOUCH OPTIMIZATION
+   =================================== */
+
+/* Disable tap highlight on ALL interactive elements (mobile) */
+button,
+a,
+input,
+textarea,
+select,
+[role="button"],
+[tabindex] {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in inputs */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
 
 /* ===================================
    GLOBAL RESETS & BASE STYLES

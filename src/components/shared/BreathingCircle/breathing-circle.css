@@ -162,14 +162,15 @@
 
 /* ============================================================
    Mobile Responsiveness
-   Absolute centering for fullscreen immersive mode
+   Fixed viewport centering for fullscreen immersive mode
    ============================================================ */
 @media (max-width: 768px) {
   .breathing-circle-container {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
+    position: fixed !important;    /* ✅ Changed from absolute - viewport reference */
+    top: 50vh !important;          /* ✅ 50% viewport height, not parent */
+    left: 50vw !important;         /* ✅ 50% viewport width, not parent */
     transform: translate(-50%, -50%) !important;
+    z-index: 2 !important;         /* Above content, below buttons/overlays */
   }
 }
 

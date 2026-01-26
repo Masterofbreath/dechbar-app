@@ -1,11 +1,13 @@
 /**
  * BottomNav Component - Main App Navigation
  * 
- * 4-tab navigation with FAB (Floating Action Button):
+ * 4-tab navigation with dynamic FAB styling:
  * - Dnes (Home)
- * - Cvičit (FAB - gold, elevated)
+ * - Cvičit (Exercise)
  * - Akademie (Education)
  * - Pokrok (Progress)
+ * 
+ * Active tab receives gold FAB treatment (elevated, larger icon, gold circle).
  * 
  * @package DechBar_App
  * @subpackage Platform/Components/Navigation
@@ -22,7 +24,6 @@ interface NavItem {
   id: NavTab;
   icon: 'home' | 'dumbbell' | 'graduation-cap' | 'chart-line';
   label: string;
-  isFAB?: boolean;
 }
 
 /**
@@ -30,7 +31,7 @@ interface NavItem {
  */
 const NAV_ITEMS: NavItem[] = [
   { id: 'dnes', icon: 'home', label: 'Dnes' },
-  { id: 'cvicit', icon: 'dumbbell', label: 'Cvičit', isFAB: true },
+  { id: 'cvicit', icon: 'dumbbell', label: 'Cvičit' },
   { id: 'akademie', icon: 'graduation-cap', label: 'Akademie' },
   { id: 'pokrok', icon: 'chart-line', label: 'Pokrok' },
 ];
@@ -38,20 +39,16 @@ const NAV_ITEMS: NavItem[] = [
 /**
  * BottomNav - Fixed bottom navigation bar
  * 
+ * Active tab receives FAB styling (gold circle, elevation, larger icon).
+ * 
  * @example
  * <BottomNav />
  */
 export function BottomNav() {
-  const { currentTab, setCurrentTab, isFABPressed, setFABPressed } = useNavigation();
+  const { currentTab, setCurrentTab } = useNavigation();
   
-  function handleTabClick(tabId: NavTab, isFAB: boolean) {
+  function handleTabClick(tabId: NavTab) {
     setCurrentTab(tabId);
-    
-    // FAB press animation
-    if (isFAB) {
-      setFABPressed(true);
-      setTimeout(() => setFABPressed(false), 200);
-    }
   }
   
   return (
@@ -61,29 +58,21 @@ export function BottomNav() {
         
         const tabClass = [
           'bottom-nav__tab',
-          item.isFAB && 'bottom-nav__tab--fab',
           isActive && 'bottom-nav__tab--active',
-          item.isFAB && isFABPressed && 'bottom-nav__tab--pressed',
         ].filter(Boolean).join(' ');
         
         return (
           <button
             key={item.id}
             className={tabClass}
-            onClick={() => handleTabClick(item.id, item.isFAB || false)}
+            onClick={() => handleTabClick(item.id)}
             aria-label={item.label}
             aria-current={isActive ? 'page' : undefined}
             type="button"
           >
-            {item.isFAB ? (
-              <div className="bottom-nav__fab-icon">
-                <NavIcon name={item.icon} size={28} />
-              </div>
-            ) : (
-              <div className="bottom-nav__icon">
-                <NavIcon name={item.icon} size={24} />
-              </div>
-            )}
+            <div className="bottom-nav__icon-wrapper">
+              <NavIcon name={item.icon} size={isActive ? 28 : 24} />
+            </div>
             <span className="bottom-nav__label">{item.label}</span>
           </button>
         );

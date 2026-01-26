@@ -489,6 +489,247 @@ Můžeme pokračovat?
 
 ---
 
-*Last updated: 2026-01-23*  
-*Version: 1.0*  
-*Previous Agent: Claude Sonnet 4.5 (v3.3 crash fix)*
+## 📅 RECENT UPDATES (2026-01-24)
+
+### Mobile Refactor & Premium UX Polish
+
+**⚠️ DŮLEŽITÉ:** Dokumentace výše popisuje stav k 23.1.2026. Od té doby proběhl **velký refactoring** pro mobile optimization a dlouhodobou škálovatelnost.
+
+---
+
+### 🆕 Co se změnilo:
+
+#### 1. **Component Modularization**
+
+**Před:**
+```
+KPCenter.tsx (monolitický modal)
+  └─ renderCircleContent()
+  └─ renderButton()
+```
+
+**Po:**
+```
+KPCenter.tsx (orchestrator)
+  ├─ KPReady.tsx (Ready view)
+  ├─ KPInstructions.tsx (Fullscreen návod)
+  └─ KPMeasuring.tsx (Timer + results)
+```
+
+**Nové soubory:**
+- `src/platform/components/kp/views/KPReady.tsx`
+- `src/platform/components/kp/views/KPInstructions.tsx`
+- `src/platform/components/kp/views/KPMeasuring.tsx`
+
+**Proč:** Lepší izolace logiky, snazší testování, čistší struktura.
+
+---
+
+#### 2. **Shared BreathingCircle Component**
+
+**Před:**
+```
+src/components/kp/StaticBreathingCircle.tsx (KP-specific)
+```
+
+**Po:**
+```
+src/components/shared/BreathingCircle/ (shared s Exercise System)
+  ├─ BreathingCircle.tsx
+  ├─ breathing-circle.css
+  └─ index.ts
+```
+
+**Varianty:**
+- `variant="animated"` - Pro dechová cvičení (RAF animation)
+- `variant="static"` - Pro KP měření a countdown
+
+**Proč:** Single source of truth, vizuální konzistence napříč aplikací.
+
+---
+
+#### 3. **Mobile Immersive Mode**
+
+**Před:** Standard modal (s viditelným TOP NAV + BOTTOM NAV)
+
+**Po:** Fullscreen immersive mode
+
+**Jak funguje:**
+```typescript
+// KPCenter.tsx - při otevření
+useEffect(() => {
+  document.body.classList.add('immersive-mode');
+  return () => document.body.classList.remove('immersive-mode');
+}, []);
+```
+
+**CSS:**
+```css
+/* globals.css */
+body.immersive-mode .top-nav,
+body.immersive-mode .bottom-nav {
+  display: none;
+}
+```
+
+**Nové soubory:**
+- `src/styles/components/kp-center-mobile.css`
+
+**Proč:** Maximální focus, minimální distrakce (Apple Premium Style).
+
+---
+
+#### 4. **MiniTip Component (Reusable)**
+
+**Nový shared component pro tips:**
+
+```typescript
+<MiniTip variant="static">
+  <strong>Tip:</strong> Pro nejpřesnější výsledky měř KP ráno hned po probuzení.
+</MiniTip>
+```
+
+**Soubory:**
+- `src/platform/components/shared/MiniTip.tsx`
+- `src/styles/components/mini-tip.css`
+
+**Použití:**
+- KP measurement (conditional, time-based 9:00-3:59)
+- Exercise countdown (rotating tips pro exercises)
+
+**Proč:** Konzistentní styling, reusabilita, škálovatelnost.
+
+---
+
+#### 5. **Viewport Fix pro iPhone**
+
+**Problém:** White bars po stranách displeje na iPhone 13 mini
+
+**Fix:**
+```html
+<!-- index.html -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
+**Proč:** Full-bleed design pro edge-to-edge displaye.
+
+---
+
+#### 6. **Time-based Tip Logic**
+
+**Nové chování:**
+- KP měření mezi 9:00 - 3:59 → zobrazí tip o ranním měření
+- Jinak → žádný tip
+
+**Kód:**
+```typescript
+const currentHour = new Date().getHours();
+const shouldShowTip = currentHour >= 9 || currentHour < 4;
+```
+
+**Proč:** Contextual guidance (Melancholik wants details, but only when relevant).
+
+---
+
+#### 7. **Integration s Exercise System**
+
+**Nová vazba:**
+- KP používá stejný `BreathingCircle` jako Session Engine
+- Shared design tokens
+- Konzistentní animace
+
+**Související dokumentace:**
+- `docs/EXERCISE_SYSTEM_SPEC.md` (Protocol vs Exercise distinction)
+- `src/modules/mvp0/components/PresetProtocolButton/README.md`
+
+---
+
+### 🗂️ Nové/Upravené soubory:
+
+**Nové komponenty:**
+```
+src/
+├── components/shared/
+│   └── BreathingCircle/      (NEW - shared s Exercise System)
+├── platform/components/
+│   ├── kp/views/              (NEW - modularizace)
+│   │   ├── KPReady.tsx
+│   │   ├── KPInstructions.tsx
+│   │   └── KPMeasuring.tsx
+│   └── shared/
+│       └── MiniTip.tsx        (NEW - reusable tip component)
+```
+
+**Nové CSS:**
+```
+src/styles/components/
+├── kp-center-mobile.css       (NEW - mobile-specific)
+├── mini-tip.css               (NEW - tip styling)
+└── breathing-circle.css       (Moved from kp-static-circle.css)
+```
+
+**Upravené komponenty:**
+```
+src/platform/components/KPCenter.tsx  (Refactored to orchestrator)
+src/styles/components/kp-center.css   (Updated animations, layout)
+src/styles/globals.css                (Added immersive-mode styles)
+index.html                            (Added viewport-fit=cover)
+```
+
+---
+
+### 📚 Nová dokumentace:
+
+**Vytvořeno:**
+- `src/modules/mvp0/components/PresetProtocolButton/README.md` ⭐
+- `docs/EXERCISE_SYSTEM_SPEC.md` - Aktualizováno s Component Architecture
+
+**Aktualizováno:**
+- Tento dokument (KP_AGENT_HANDOFF_PROMPT.md)
+
+---
+
+### 🧪 Testing Report:
+
+**Kompletní mobile testing:**
+- Viz: `TEST_REPORT_KP_MOBILE_REFACTOR.md` (pokud existuje)
+- Testováno: iPhone 13 mini, Android, Desktop (375px, 768px, 1280px)
+- Status: ✅ All tests passed
+
+---
+
+### 🎯 Co se NEZMĚNILO:
+
+✅ **Headless Hook Pattern** - Stále platí  
+✅ **Data Contract** - Beze změny (docs/api/KP_DATA_CONTRACT.md)  
+✅ **DB Strategy** - Stále mock data, migration později  
+✅ **Design Principles** - Apple Premium Style, 4 Temperamenty  
+✅ **Git Workflow** - dev → test → main  
+
+---
+
+### 🚀 Pro nového agenta:
+
+**Pokud pokračuješ na KP komponentě:**
+
+1. ✅ Přečti tento dokument (celý, včetně updates)
+2. ✅ Prostuduj nové komponenty v `src/platform/components/kp/views/`
+3. ✅ Zkontroluj `BreathingCircle` implementaci (shared component)
+4. ✅ Otestuj na mobile device (ne jen browser emulator!)
+5. ✅ Respektuj modularizaci - nepřesouvej logiku zpět do monolitu
+
+**Další kroky:**
+- DB migration (až bude flow stabilní)
+- Real user testing (feedback loop)
+- Performance optimization (lazy loading, code splitting)
+
+---
+
+**Hodně štěstí! Komponenta je teď mnohem lépe připravená na škálování!** 🚀
+
+---
+
+*Last updated: 2026-01-24*  
+*Version: 2.0*  
+*Mobile Refactor: Complete ✅*  
+*Previous Agent: Claude Sonnet 4.5 (v3.3 crash fix + mobile refactor)*

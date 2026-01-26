@@ -1,9 +1,10 @@
 # BottomNav Component
 
-4-tab navigace s FAB (Floating Action Button) pro DechBar App.
+4-tab navigace s dynamickým FAB stylingem pro DechBar App.
 
 **Status:** ✅ Production Ready  
-**Since:** 2026-01-18
+**Since:** 2026-01-18  
+**Last Updated:** 2026-01-25
 
 ---
 
@@ -48,43 +49,62 @@ BOTTOM NAV (72px + safe area)
 
 ### 4 Tabs
 
-| Position | Name | Icon | Type | Description |
-|----------|------|------|------|-------------|
-| 1 | Dnes | Home (domeček) | Regular | Dashboard (preset protocols) |
-| 2 | Cvičit | Dumbbell (činka) | **FAB** | Exercise library (PRIMARY CTA) |
-| 3 | Akademie | Graduation cap (čepice) | Regular | Education + modules |
-| 4 | Pokrok | Chart line (graf) | Regular | Progress & stats |
+| Position | Name | Icon | Description |
+|----------|------|------|-------------|
+| 1 | Dnes | Home (domeček) | Dashboard (preset protocols) |
+| 2 | Cvičit | Dumbbell (činka) | Exercise library |
+| 3 | Akademie | Graduation cap (čepice) | Education + modules |
+| 4 | Pokrok | Chart line (graf) | Progress & stats |
 
 ---
 
-## FAB (Floating Action Button)
+## Dynamic FAB System
 
-### Specifikace
+**Koncept:** Aktivní tab dostává gold FAB treatment (zlatý kruh, elevation, větší ikona).
 
-- **Size:** 56×56px
+### Aktivní Tab (Gold FAB)
+
+- **Size:** 56×56px kruh
 - **Color:** Gold (#D6A23A)
 - **Elevation:** -24px above nav (floating)
 - **Shadow:** 0 8px 16px rgba(214, 162, 58, 0.4)
-- **Icon:** Dumbbell (28×28px, dark text)
-- **Label:** "Cvičit" (gold color, weight 600)
+- **Icon:** 28×28px, dark text (#121212)
+- **Label:** Gold color (#D6A23A), weight 600
 
-### Behavior
+### Neaktivní Taby
 
-- **Hover:** Larger shadow
-- **Press:** Scale 0.95 + reduced shadow
-- **Active:** Gold label stays (ne Teal)
+- **Size:** 24×24px icon (bez kruhu)
+- **Color:** Gray (#A0A0A0)
+- **Label:** Gray (#A0A0A0), weight 500
 
 ---
 
-## Active States
+## Behavior
 
-### Regular Tabs
-- **Inactive:** Secondary text color (#A0A0A0)
-- **Active:** Primary color (#2CBEC6 Teal)
+### Active State (FAB Treatment)
+- Gold circle background
+- Elevated position (-24px)
+- Larger icon (28px vs 24px)
+- Gold label
+- Gold shadow glow
 
-### FAB
-- **Always gold** (active i inactive)
-- **Active:** Label zůstává zlatý (ne Teal)
+### Inactive State
+- No circle
+- Normal position
+- Smaller icon (24px)
+- Gray label
+- No shadow
+
+### Hover (Inactive Tabs)
+- Icon + label preview gold
+- Icon translateY(-2px)
+
+### Hover (Active Tab)
+- Enhanced shadow (0 12px 24px)
+
+### Press Animation
+- **Inactive:** scale(0.92)
+- **Active:** icon wrapper scale(0.95)
 
 ---
 
@@ -94,9 +114,9 @@ BOTTOM NAV (72px + safe area)
 /* Navigation */
 --color-surface: #1E1E1E         /* Nav background */
 --color-border: #2A2A2A          /* Top border */
---color-primary: #2CBEC6         /* Active state */
---color-accent: #D6A23A          /* FAB */
+--color-accent: #D6A23A          /* Active FAB (Gold) */
 --color-text-secondary: #A0A0A0  /* Inactive labels */
+--color-background: #121212      /* Icon color on gold */
 
 /* Sizing */
 --spacing-2: 8px
@@ -128,9 +148,9 @@ setCurrentTab('dnes');  // 'dnes' | 'cvicit' | 'akademie' | 'pokrok'
 
 - ✅ **Keyboard:** Tab navigation mezi tabs
 - ✅ **ARIA:** aria-label, aria-current="page"
-- ✅ **Focus:** Teal outline (2px)
+- ✅ **Focus:** Gold outline (2px) - konzistentní s active state
 - ✅ **Touch:** Min 44×44px targets
-- ✅ **Screen reader:** Announces tab name
+- ✅ **Screen reader:** Announces tab name + active state
 
 ---
 
@@ -145,7 +165,40 @@ Handles iPhone home indicator automatically.
 ### Touch Feedback
 - Scale animation on press
 - Native-like responsiveness
-- No web-like delays
+- Smooth elevation transition between tabs
+
+---
+
+## Responsive Behavior
+
+### Standard (375px+)
+- Default sizing (56px active, 24px inactive icons)
+- 72px nav height
+
+### Very Narrow (< 375px)
+- Min-width: 56px per tab
+- Font size: 10px labels
+- Tighter padding (8px)
+
+---
+
+## Visual Examples
+
+### Kdy je aktivní "Dnes":
+```
+[🟡 Dnes]  [Cvičit]  [Akademie]  [Pokrok]
+ ↑ gold     ↑ gray    ↑ gray      ↑ gray
+   elevated  normal    normal      normal
+   28px      24px      24px        24px
+```
+
+### Kdy je aktivní "Cvičit":
+```
+[Dnes]  [🟡 Cvičit]  [Akademie]  [Pokrok]
+ ↑ gray  ↑ gold       ↑ gray      ↑ gray
+  normal   elevated    normal      normal
+  24px     28px        24px        24px
+```
 
 ---
 
@@ -166,5 +219,6 @@ Tab labels use:
 
 ---
 
-**Last Updated:** 2026-01-18  
-**Maintainer:** DechBar Team
+**Last Updated:** 2026-01-25  
+**Maintainer:** DechBar Team  
+**Version:** 2.0 (Dynamic FAB System)

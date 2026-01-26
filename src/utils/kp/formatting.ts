@@ -77,6 +77,27 @@ export function formatTimer(ms: number): string {
 }
 
 /**
+ * Format milliseconds to "XXs" string (for KP timer)
+ * 
+ * Zkrácený formát pro realtimový KP timer zobrazující pouze sekundy.
+ * Používá se během měření KP pro čitelnost a konzistenci s výsledky.
+ * Výhody: Méně znaků → větší font možný, scalabilita nad 99s, konzistence.
+ * 
+ * @param ms - Milliseconds
+ * @returns Formatted time string with seconds only
+ * 
+ * @example
+ * formatTimerSeconds(0) // "0s"
+ * formatTimerSeconds(5000) // "5s"
+ * formatTimerSeconds(35000) // "35s"
+ * formatTimerSeconds(125000) // "125s"
+ */
+export function formatTimerSeconds(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  return `${totalSeconds}s`;
+}
+
+/**
  * Format date to Czech locale
  * 
  * @param date - Date object or ISO string

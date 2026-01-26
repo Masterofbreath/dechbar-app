@@ -352,6 +352,74 @@ export const MESSAGES = {
       copyright: "© 2026 DechBar | Certifikováno odborníky",
     },
   },
+
+  // ============================================================
+  // 🎯 CHALLENGE LANDING PAGE (/vyzva)
+  // Březnová Dechová Výzva 2026 - Ultra-minimalistická LP
+  // Apple Premium style: Méně je více, sebevědomá jednoduchost
+  // Tone: Tykání, imperativ, krátké věty, BEZ emoji
+  // ============================================================
+  challenge: {
+    // Email submission responses
+    emailSubmitSuccess: "Super! Jsi registrovaný. Očekávej email 21.2.",
+    emailDuplicate: "Tento email už je registrovaný. Očekávej náš email.",
+    emailInvalid: "Ups! Tenhle email s námi nedýchá. Zkontroluj ho, prosím",
+    
+    // Hero section
+    hero: {
+      headline: "Největší 21denní dechová výzva roku 2026",
+      subtitle: "Ráno dělá den. Začni ten svůj funkčně. Stačí 7 minut a sluchátka.",
+      cta: "Registruj se zdarma →",
+      bonus: "BONUS: SMART tarif zdarma na 21 dní",
+      bonusValue: "(Hodnota 249 Kč)",
+      timeline: "VÝZVA STARTUJE 1. BŘEZNA 2026",
+      emailPlaceholder: "tvuj@email.cz",
+      // Trust signals (below CTA)
+      trustSignals: {
+        free: "Zcela zdarma",
+        participants: "850+ lidí dýchalo v 2025",
+        simple: "2 kliky ke spuštění"
+      }
+    },
+    
+    // 3 Reasons section
+    reasons: {
+      title: "", // No title (Apple Premium style)
+      reason1: {
+        headline: "Funkční probuzení",
+        text: "7 minut a jedeš.",
+      },
+      reason2: {
+        headline: "Pustíš a dýcháš",
+        text: "Dva kliky. To je celé.",
+      },
+      reason3: {
+        headline: "Funguje i offline",
+        text: "Stáhneš a dýcháš kdykoli.",
+      },
+    },
+    
+    // Timeline section
+    timeline: {
+      title: "Co tě čeká",
+      breakingText: "Změň své ráno. Změní se ti den.",
+      emailHint: "Připomeneme ti to e-mailem.",
+      now: "TEĎ",
+      nowAction: "Registruj se a potvrď e-mail.",
+      registration: "26. ÚNORA",
+      registrationAction: "Spouštíme appku. Otestuj ji.",
+      start: "1. BŘEZNA",
+      startAction: "Startujeme výzvu.",
+    },
+    
+    // Final CTA section
+    final: {
+      headline: "21 dní, které změní tvoje rána.",
+      cta: "Chci začít →",
+      subtext1: "Registrace zdarma.",
+      subtext2: "Žádné závazky.",
+    },
+  },
 } as const;
 
 // Type for autocomplete

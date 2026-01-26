@@ -42,17 +42,7 @@
   /* Transition */
   transition: all 200ms ease;
   
-  /* Interactive states */
-  &:hover {
-    background: rgba(44, 190, 198, 0.1); /* 10% teal */
-    color: var(--color-primary);
-  }
-  
-  &:active {
-    background: rgba(44, 190, 198, 0.15); /* 15% teal */
-    transform: scale(0.95);
-  }
-  
+  /* Focus state (always visible) */
   &:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
@@ -72,19 +62,49 @@
   transition: transform 200ms ease;
 }
 
-.close-button:hover .close-button__icon {
-  transform: rotate(90deg);
+/* ============================================================
+   INTERACTIVE STATES - Desktop/Trackpad Only
+   ============================================================ */
+
+/* Desktop/trackpad only - NO hover on touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .close-button:hover {
+    background: rgba(44, 190, 198, 0.1); /* 10% teal */
+    color: var(--color-primary);
+  }
+
+  .close-button:active {
+    background: rgba(44, 190, 198, 0.15); /* 15% teal */
+    transform: scale(0.95);
+  }
+
+  .close-button:hover .close-button__icon {
+    transform: rotate(90deg);
+  }
+  
+  .close-button--light:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Touch devices - only :active (tap feedback) */
+@media (hover: none) and (pointer: coarse) {
+  .close-button:active {
+    background: rgba(44, 190, 198, 0.1);
+    transform: scale(0.95);
+  }
 }
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
 
-/* Mobile: Slightly larger touch target */
+/* Mobile: Larger touch target */
 @media (max-width: 768px) {
   .close-button {
-    top: 12px;
-    right: 12px;
+    /* ✅ top/right REMOVED - keeps base 16px for consistency */
+    /* Fullscreen modals override via fullscreen-modal-mobile.css */
     width: 44px;
     height: 44px;
   }
@@ -116,11 +136,6 @@
 /* Light variant (for dark backgrounds) */
 .close-button--light {
   color: rgba(255, 255, 255, 0.7);
-  
-  &:hover {
-    color: rgba(255, 255, 255, 1);
-    background: rgba(255, 255, 255, 0.1);
-  }
 }
 
 /* ============================================================
@@ -140,9 +155,5 @@
   .close-button,
   .close-button__icon {
     transition: none;
-  }
-  
-  .close-button:hover .close-button__icon {
-    transform: none;
   }
 }

@@ -6,7 +6,7 @@
   position: fixed;
   inset: 0;
   background: var(--color-overlay-dark);
-  z-index: 10000;
+  z-index: 10000;  /* Above TOP NAV (100) and BOTTOM NAV (100) */
   animation: fadeIn 0.3s ease;
 }
 
@@ -25,10 +25,34 @@
   background: var(--color-surface-elevated);
   box-shadow: -8px 0 24px rgba(0, 0, 0, 0.3);
   animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 10001;
+  z-index: 10001;  /* Above overlay (10000) and TOP NAV (100) */
   display: flex;
   flex-direction: column;
   padding-top: env(safe-area-inset-top);
+  
+  /* Swipe gesture optimization */
+  touch-action: pan-y; /* Allow vertical scroll, track horizontal swipe */
+}
+
+/* Swipe hint indicator (optional visual cue) */
+.settings-drawer::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  width: 4px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+/* Hide swipe hint on desktop */
+@media (min-width: 769px) {
+  .settings-drawer::before {
+    display: none;
+  }
 }
 
 @keyframes slideInRight {
@@ -42,12 +66,19 @@
   }
 }
 
-/* Closing animations */
-@keyframes slideOutRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
+/* Closing animation - simplified */
+/* Note: Transform animation is handled by inline styles for smooth swipe exit */
+/* This class is just for stacking context and fallback */
+.settings-drawer--closing {
+  /* Ensure proper z-index during closing */
+  z-index: 10001;
+  
+  /* Fallback animation if inline styles fail (shouldn't happen) */
+  animation: slideOutRightFallback 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* Simplified fallback animation (inline styles take priority) */
+@keyframes slideOutRightFallback {
   to {
     transform: translateX(100%);
     opacity: 0;
@@ -59,12 +90,8 @@
   to { opacity: 0; }
 }
 
-.settings-drawer--closing {
-  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
 .settings-drawer-overlay--closing {
-  animation: fadeOut 0.3s ease forwards;
+  animation: fadeOut 0.25s ease forwards; /* Match drawer closing duration */
 }
 
 .settings-drawer__header {

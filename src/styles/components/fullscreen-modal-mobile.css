@@ -1,0 +1,131 @@
+/**
+ * Fullscreen Modal - Mobile Pattern
+ * Shared styles for all fullscreen modals on mobile
+ * 
+ * Components using this pattern:
+ * - KP Center (.kp-center)
+ * - Session Engine (.session-engine-modal__content)
+ * - (future fullscreen modals)
+ * 
+ * Design Philosophy:
+ * - Centralized mobile fullscreen patterns (DRY principle)
+ * - Consistent positioning across all fullscreen modals
+ * - Single source of truth for mobile UX
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ * @since 0.3.0
+ * @version 2.41.4
+ */
+
+@media (max-width: 768px) {
+  
+  /* ============================================================
+     Close Button - Fixed Positioning (for fullscreen modals)
+     Applies to: KP Center, Session Engine
+     
+     Strategy: Context-based selector instead of component-level override
+     Benefit: One definition, scales to all fullscreen modals
+     ============================================================ */
+  
+  .kp-center .close-button,
+  .session-engine-modal__content .close-button {
+    position: fixed !important;
+    top: max(16px, env(safe-area-inset-top)) !important;
+    right: max(16px, env(safe-area-inset-right)) !important;
+    z-index: 20 !important;
+  }
+  
+  /* ============================================================
+     Title - Left Aligned (next to CloseButton)
+     Applies to: KP Center titles
+     
+     Design: Title and CloseButton on same row for space efficiency
+     Alignment: Flex centering for visual consistency with CloseButton
+     ============================================================ */
+  
+  .kp-center__title {
+    position: fixed !important;
+    top: max(16px, env(safe-area-inset-top)) !important;
+    left: max(16px, env(safe-area-inset-left)) !important;
+    right: max(60px, env(safe-area-inset-right) + 44px) !important;  /* Space for CloseButton (36px + 8px margin) */
+    
+    /* ✅ Flex alignment - vertically center text with CloseButton */
+    display: flex !important;
+    align-items: center !important;
+    height: 44px !important;  /* Match CloseButton height */
+    
+    /* Typography */
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+    text-align: left !important;
+    
+    /* Reset */
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 1 !important;
+  }
+  
+  /* ============================================================
+     Instructions - Compact Spacing
+     Applies to: KP "Jak měřit?" view
+     
+     Design: Tighter list spacing for better content density
+     ============================================================ */
+  
+  .kp-center__instructions-list li {
+    padding: 8px 0 !important;  /* Compact spacing (from 12px) */
+    line-height: 1.5 !important;
+  }
+  
+  /* ============================================================
+     Instructions - Remove Separator Line
+     Applies to: Between point 5 and 6 in "Jak měřit?"
+     
+     Design: Unified spacing, no visual separator
+     ============================================================ */
+  
+  .kp-center__instructions-check::before {
+    content: none !important;  /* Remove separator line */
+  }
+  
+  /* Unified spacing for point 6 (same as other points) */
+  .kp-center__instructions-check {
+    padding-top: 8px !important;  /* Match other <li> spacing */
+  }
+  
+}
+
+/* ============================================================
+   USAGE NOTES FOR FUTURE MODALS
+   ============================================================
+
+   To add a new fullscreen modal on mobile:
+
+   1. Add your modal selector to the CloseButton rule:
+      
+      .kp-center .close-button,
+      .session-engine-modal__content .close-button,
+      .your-new-modal .close-button {  <-- Add this
+        position: fixed !important;
+        top: max(16px, env(safe-area-inset-top)) !important;
+        right: max(16px, env(safe-area-inset-right)) !important;
+        z-index: 20 !important;
+      }
+
+   2. If your modal has a title next to CloseButton, add it here:
+      
+      .kp-center__title,
+      .your-modal__title {  <-- Add this
+        position: fixed !important;
+        top: max(16px, env(safe-area-inset-top)) !important;
+        ...
+      }
+
+   Benefits:
+   - ✅ Consistent positioning across all modals
+   - ✅ Single source of truth
+   - ✅ Easy to maintain
+   - ✅ Scales infinitely
+
+   ============================================================ */

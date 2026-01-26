@@ -1,6 +1,6 @@
 /* ============================================================
-   BottomNav Styles - 4-Tab Navigation with FAB
-   Brand Book 2.0: Native Mobile Pattern
+   BottomNav Styles - 4-Tab Navigation with Dynamic FAB
+   Brand Book 2.0: Active tab receives gold FAB treatment
    ============================================================ */
 
 /* ============================================================
@@ -8,7 +8,11 @@
    ============================================================ */
 
 .bottom-nav {
-  /* Part of flex layout, not fixed - allows proper scrollbar containment */
+  /* Position & z-index for proper stacking */
+  position: relative; /* Ensure stacking context */
+  z-index: 100; /* Match TOP NAV - below modals (10000+) */
+  
+  /* Layout */
   height: 72px;
   padding-bottom: env(safe-area-inset-bottom); /* iOS home indicator */
   background: var(--color-surface); /* #1E1E1E */
@@ -20,7 +24,7 @@
 }
 
 /* ============================================================
-   Tab Item (Regular)
+   Tab Item (Base Styles)
    ============================================================ */
 
 .bottom-nav__tab {
@@ -29,92 +33,111 @@
   align-items: center;
   gap: 4px;
   padding: 8px 12px;
-  min-width: 64px; /* Touch target width */
+  min-width: 80px; /* Fixed width for stability */
   min-height: 56px; /* Touch target height */
   background: transparent;
   border: none;
-  color: var(--color-text-secondary); /* #A0A0A0 inactive */
   cursor: pointer;
-  transition: color 0.2s ease, transform 0.1s ease;
+  transition: transform 0.2s ease;
 }
 
-/* Hover effect (besides FAB) */
-.bottom-nav__tab:not(.bottom-nav__tab--fab):hover .bottom-nav__icon {
-  color: var(--color-primary); /* Teal preview */
-  transform: translateY(-2px);
-  transition: all 0.2s ease;
-}
+/* ============================================================
+   Icon Wrapper (Universal for all tabs)
+   ============================================================ */
 
-/* Active Tab (Teal highlight) */
-.bottom-nav__tab--active {
-  color: var(--color-primary); /* Teal #2CBEC6 */
-}
-
-/* Tab press feedback */
-.bottom-nav__tab:not(.bottom-nav__tab--fab):active {
-  transform: scale(0.92);
-}
-
-/* Icon Wrapper */
-.bottom-nav__icon {
-  width: 24px;
-  height: 24px;
+.bottom-nav__icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
-/* Label */
+/* Inactive tabs - simple icon wrapper */
+.bottom-nav__tab:not(.bottom-nav__tab--active) .bottom-nav__icon-wrapper {
+  width: 24px;
+  height: 24px;
+}
+
+/* ============================================================
+   Label (Base Styles)
+   ============================================================ */
+
 .bottom-nav__label {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.01em;
   font-family: var(--font-family-base); /* Inter */
+  transition: color 0.2s ease, font-weight 0.2s ease;
+}
+
+/* Inactive label */
+.bottom-nav__tab:not(.bottom-nav__tab--active) .bottom-nav__label {
+  color: var(--color-text-secondary); /* Gray #A0A0A0 */
 }
 
 /* ============================================================
-   FAB (Floating Action Button) - Zlatý Primary CTA
+   ACTIVE TAB - FAB Treatment (Gold Circle, Elevated)
    ============================================================ */
 
-.bottom-nav__tab--fab {
+.bottom-nav__tab--active {
   position: relative;
-  margin-top: -24px; /* Elevated above nav bar */
+  transform: translateY(-24px); /* Elevated above nav bar - doesn't affect layout */
 }
 
-.bottom-nav__fab-icon {
+/* Active tab - gold circle wrapper */
+.bottom-nav__tab--active .bottom-nav__icon-wrapper {
   width: 56px;
   height: 56px;
   background: var(--color-accent); /* Gold #D6A23A */
-  color: var(--color-background); /* Dark text #121212 */
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   box-shadow: 0 8px 16px rgba(214, 162, 58, 0.4); /* Gold glow */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* FAB hover state */
-.bottom-nav__tab--fab:hover .bottom-nav__fab-icon {
-  box-shadow: 0 12px 24px rgba(214, 162, 58, 0.5);
+/* Active tab - icon color (dark on gold) */
+.bottom-nav__tab--active .bottom-nav__icon-wrapper svg {
+  color: var(--color-background); /* Dark text #121212 */
 }
 
-/* FAB press animation */
-.bottom-nav__tab--fab:active .bottom-nav__fab-icon,
-.bottom-nav__tab--pressed .bottom-nav__fab-icon {
-  transform: scale(0.95);
-  box-shadow: 0 4px 8px rgba(214, 162, 58, 0.3);
-}
-
-/* FAB label (gold color) */
-.bottom-nav__tab--fab .bottom-nav__label {
-  color: var(--color-accent); /* Gold */
+/* Active tab - gold label */
+.bottom-nav__tab--active .bottom-nav__label {
+  color: var(--color-accent); /* Gold #D6A23A */
   font-weight: 600;
 }
 
-/* FAB when active */
-.bottom-nav__tab--fab.bottom-nav__tab--active .bottom-nav__label {
-  color: var(--color-accent); /* Keep gold even when active */
+/* ============================================================
+   Hover Effects (Gold Preview on Inactive Tabs)
+   ============================================================ */
+
+.bottom-nav__tab:not(.bottom-nav__tab--active):hover .bottom-nav__icon-wrapper svg {
+  color: var(--color-accent); /* Gold preview */
+  transform: translateY(-2px);
+}
+
+.bottom-nav__tab:not(.bottom-nav__tab--active):hover .bottom-nav__label {
+  color: var(--color-accent); /* Gold preview */
+}
+
+/* Active tab hover - enhance shadow */
+.bottom-nav__tab--active:hover .bottom-nav__icon-wrapper {
+  box-shadow: 0 12px 24px rgba(214, 162, 58, 0.5);
+}
+
+/* ============================================================
+   Press/Active Animations
+   ============================================================ */
+
+/* Inactive tab press */
+.bottom-nav__tab:not(.bottom-nav__tab--active):active {
+  transform: scale(0.92);
+}
+
+/* Active tab press - combine translateY with scale */
+.bottom-nav__tab--active:active {
+  transform: translateY(-24px) scale(0.98);
+}
+
+.bottom-nav__tab--active:active .bottom-nav__icon-wrapper {
+  box-shadow: 0 4px 8px rgba(214, 162, 58, 0.3);
 }
 
 /* ============================================================
@@ -122,7 +145,7 @@
    ============================================================ */
 
 .bottom-nav__tab:focus-visible {
-  outline: 2px solid var(--color-primary); /* Teal */
+  outline: 2px solid var(--color-accent); /* Gold focus (consistent with active) */
   outline-offset: 2px;
   border-radius: 8px;
 }
@@ -133,12 +156,16 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bottom-nav__tab,
-  .bottom-nav__fab-icon {
+  .bottom-nav__icon-wrapper {
     transition: none;
   }
   
   .bottom-nav__tab:active,
-  .bottom-nav__tab--fab:active .bottom-nav__fab-icon {
+  .bottom-nav__tab--active:active .bottom-nav__icon-wrapper {
+    transform: none;
+  }
+  
+  .bottom-nav__tab:not(.bottom-nav__tab--active):hover .bottom-nav__icon-wrapper svg {
     transform: none;
   }
 }
@@ -147,11 +174,27 @@
    Responsive (optional adjustments)
    ============================================================ */
 
+/* Mobile specific - prevent layout shift with active tab elevation */
+@media (max-width: 768px) {
+  .bottom-nav__tab {
+    flex: 0 0 80px; /* Fixed flex basis - prevents shifting */
+  }
+  
+  .bottom-nav__tab--active {
+    flex: 0 0 80px; /* Same as inactive - maintain spacing */
+  }
+}
+
 /* Very narrow screens */
 @media (max-width: 375px) {
   .bottom-nav__tab {
+    flex: 0 0 56px; /* Smaller on narrow screens */
     min-width: 56px;
     padding: 8px 8px;
+  }
+  
+  .bottom-nav__tab--active {
+    flex: 0 0 56px; /* Same as inactive */
   }
   
   .bottom-nav__label {
