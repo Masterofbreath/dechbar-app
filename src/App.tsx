@@ -26,7 +26,6 @@ import { Toast } from '@/components/shared';
 // Public Web Module - Landing Page + Science Page (eager load, not lazy)
 import { LandingPage } from '@/modules/public-web/pages/LandingPage';
 import { SciencePage } from '@/modules/public-web/pages/SciencePage';
-import { ChallengePage } from '@/modules/public-web/pages/ChallengePage';
 
 // Checkout Pages (Stripe integration)
 import { CheckoutSuccessPage } from '@/pages/CheckoutSuccessPage';
@@ -167,12 +166,6 @@ function App() {
         <Route 
           path="/veda" 
           element={<SciencePage />} 
-        />
-
-        {/* Challenge page - Březnová Dechová Výzva 2026 (public) */}
-        <Route 
-          path="/vyzva" 
-          element={<ChallengePage />} 
         />
 
         {/* Reset password page (public, accessed from email link) */}

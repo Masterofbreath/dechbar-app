@@ -36,7 +36,6 @@ export function KPCenter() {
   
   // Always start in 'ready' mode (simplified flow)
   const [viewMode, setViewMode] = useState<ViewMode>('ready');
-  const [isClosing, setIsClosing] = useState(false);
   
   // Get user preference from Settings (default 3x)
   const attemptsCount = getKPMeasurementsCount();
@@ -102,8 +101,6 @@ export function KPCenter() {
    * Handle close with touch event cleanup
    */
   const handleClose = () => {
-    setIsClosing(true);
-    
     // Force blur all focused elements
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
@@ -117,7 +114,6 @@ export function KPCenter() {
     
     setTimeout(() => {
       closeKPDetail();
-      setIsClosing(false);
       
       setTimeout(() => {
         document.body.classList.remove('kp-closing');

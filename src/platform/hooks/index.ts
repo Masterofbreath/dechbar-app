@@ -14,4 +14,3 @@ export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useFocusTrap } from './useFocusTrap';
 export { useSwipeToDismiss } from './useSwipeToDismiss';
 export type { UseSwipeToDismissOptions } from './useSwipeToDismiss';
-export { useChallenge } from './useChallenge';
