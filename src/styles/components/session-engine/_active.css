@@ -19,14 +19,11 @@
   z-index: var(--fullscreen-modal-circle-z);
 }
 
-/* Timer styling - absolute positioning v ContentZone */
+/* Timer styling - flex item BELOW circle */
 .session-timer {
-  position: absolute;
-  bottom: 24px;
-  left: 0;
-  right: 0;
+  order: 1;
   text-align: center;
-  z-index: 1;
+  margin-top: 8px;
 }
 
 .timer-seconds {

@@ -8,7 +8,7 @@
   height: var(--fullscreen-modal-bottom-bar-height);
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
   padding: 0 20px;
   flex-shrink: 0;
   gap: 8px;

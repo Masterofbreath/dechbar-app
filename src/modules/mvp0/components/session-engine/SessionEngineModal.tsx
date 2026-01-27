@@ -16,6 +16,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useScrollLock } from '@/platform/hooks';
 import { ConfirmModal, FullscreenModal } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
+import { MiniTip } from '@/platform/components/shared/MiniTip';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
 import { useAudioCues } from './hooks/useAudioCues';
@@ -422,14 +423,13 @@ export function SessionEngineModal({
               <SessionCountdown
                 exercise={exercise}
                 countdownNumber={countdownNumber}
-                isActive={true}
               />
             </FullscreenModal.ContentZone>
             
             <FullscreenModal.BottomBar>
-              <div className="fullscreen-modal__progress">
-                <div className="fullscreen-modal__progress-fill" style={{ width: '0%' }} />
-              </div>
+              <MiniTip variant="static" className="countdown-bottom-tip">
+                <strong>Tip:</strong> Najdi klidné místo a soustřeď se na dech
+              </MiniTip>
             </FullscreenModal.BottomBar>
           </>
         )}
@@ -478,24 +478,43 @@ export function SessionEngineModal({
           </>
         )}
         
-        {/* COMPLETED: Celebration & survey */}
+        {/* COMPLETED: FullscreenModal pattern */}
         {sessionState === 'completed' && (
-          <SessionCompleted
-            exercise={exercise}
-            difficultyRating={difficultyRating}
-            onDifficultyChange={setDifficultyRating}
-            moodAfter={moodAfter}
-            onMoodChange={setMoodAfter}
-            notes={notes}
-            onNotesChange={setNotes}
-            onSave={saveSession}
-            onRepeat={() => {
-              setSessionState('idle');
-              setCurrentPhaseIndex(0);
-              setMoodAfter(null);
-            }}
-            isSaving={completeSession.isPending}
-          />
+          <>
+            <FullscreenModal.TopBar>
+              <FullscreenModal.Title>
+                <span className="completion-celebration">Skvělá práce!</span>
+              </FullscreenModal.Title>
+              <FullscreenModal.CloseButton onClick={handleClose} />
+            </FullscreenModal.TopBar>
+            
+            <FullscreenModal.ContentZone className="completion-content">
+              <SessionCompleted
+                difficultyRating={difficultyRating}
+                onDifficultyChange={setDifficultyRating}
+                moodAfter={moodAfter}
+                onMoodChange={setMoodAfter}
+                notes={notes}
+                onNotesChange={setNotes}
+                onSave={saveSession}
+                isSaving={completeSession.isPending}
+              />
+            </FullscreenModal.ContentZone>
+            
+            <FullscreenModal.BottomBar>
+              <button
+                type="button"
+                className="completion-repeat-button"
+                onClick={() => {
+                  setSessionState('idle');
+                  setCurrentPhaseIndex(0);
+                  setMoodAfter(null);
+                }}
+              >
+                Opakovat cvičení
+              </button>
+            </FullscreenModal.BottomBar>
+          </>
         )}
         
         {/* Confirm modal for closing during active session */}

@@ -40,7 +40,8 @@
   }
   
   .fullscreen-modal__content-zone {
-    padding: 0 var(--fullscreen-modal-content-padding-mobile);
+    padding: 24px var(--fullscreen-modal-content-padding-mobile);
+    gap: 16px;
   }
   
   .fullscreen-modal__title {
@@ -50,5 +51,10 @@
   .fullscreen-modal__badge {
     font-size: 10px;
     padding: 5px 10px;
+  }
+  
+  .session-countdown__description {
+    font-size: 13px;
+    max-width: 320px;
   }
 }

@@ -24,21 +24,23 @@
   animation: tipFadeIn 600ms ease-in-out;
 }
 
-/* Countdown-specific tip styling (for regular exercises with MiniTip component) */
-.session-countdown__tip {
-  margin-top: 24px;
-  max-width: 420px;
-}
-
-/* Protocol description styling (for preset protocols: RÁNO, KLID, VEČER) */
+/* Protocol description styling - ABOVE circle */
 .session-countdown__description {
-  margin-top: 24px;
-  max-width: 420px;
+  order: -1;
+  max-width: 380px;
   font-size: 14px;
   line-height: 1.5;
   color: var(--color-text-secondary);
   text-align: center;
   opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+/* Countdown-specific tip styling - BELOW circle (at timer position) */
+.session-countdown__tip {
+  order: 1;
+  max-width: 420px;
+  margin-top: 8px;
 }
 
 /* Countdown circle container - no positioning needed (ContentZone handles centering) */

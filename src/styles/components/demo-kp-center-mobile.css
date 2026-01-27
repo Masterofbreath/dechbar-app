@@ -73,7 +73,7 @@
   /* Progress indicator - above circle */
   .demo-kp-center__progress-indicator {
     position: absolute !important;  /* ✅ Changed from fixed */
-    top: 50px !important;  /* ✅ From 60px (-10px) - closer to title for compact look */
+    top: 70px !important;  /* ✅ Optimized: closer to circle, less empty space */
     left: 0 !important;
     right: 0 !important;
     text-align: center !important;
@@ -84,7 +84,7 @@
   /* Description - below title */
   .demo-kp-center__description {
     position: absolute !important;  /* ✅ Changed from fixed */
-    top: 70px !important;  /* ✅ From 80px (-10px) - closer to title */
+    top: 80px !important;  /* ✅ Optimized: more space under title, better visual hierarchy */
     left: 0 !important;
     right: 0 !important;
     text-align: center !important;
@@ -171,11 +171,11 @@
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    /* ✅ COMPACT SPACING: Match real iPhone - less empty space, tighter layout */
+    /* ✅ OPTIMIZED SPACING: Less empty space above instructions, matches real iPhone */
     padding: 
-      40px  /* ✅ From 60px (-20px) - match real app compact top spacing */
+      20px  /* ✅ Reduced from 40px (-20px) - instructions start higher, less empty space */
       max(20px, env(safe-area-inset-right))
-      90px  /* ✅ From 120px (-30px) - match real app button position */
+      90px  /* ✅ Bottom space for fixed button */
       max(20px, env(safe-area-inset-left)) !important;
     overflow-y: auto !important;
   }
