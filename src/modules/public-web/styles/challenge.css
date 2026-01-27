@@ -1,0 +1,963 @@
+/**
+ * Challenge Landing Page Styles
+ * 
+ * Březnová Dechová Výzva 2026 - /vyzva
+ * Apple Premium aesthetic: Méně je více, sebevědomá jednoduchost
+ * 
+ * Design kritéria:
+ * - Tight letter-spacing (-0.02em) na headlines
+ * - Gold button glow (--shadow-gold)
+ * - Dark backgrounds (#121212)
+ * - Off-white text (#E0E0E0)
+ * - Minimální animace (smooth, apple timing)
+ * - Generous breathing space
+ * 
+ * @package DechBar_App
+ * @subpackage Modules/PublicWeb/Challenge
+ */
+
+/* ===================================
+   CHALLENGE PAGE BASE
+   =================================== */
+
+.challenge-page {
+  background: var(--color-background);  /* Dark #121212 */
+  color: var(--color-text-primary);     /* Off-white #E0E0E0 */
+  min-height: 100vh;
+}
+
+.challenge-page__main {
+  width: 100%;
+}
+
+/* ===================================
+   HERO SECTION
+   =================================== */
+
+.challenge-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-20) var(--spacing-6);  /* 80px 24px */
+  overflow: hidden;
+}
+
+.challenge-hero__container {
+  max-width: var(--container-xl);  /* 1280px */
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 55% 45%;  /* Content 55%, Mockup 45% (více prostoru pro text) */
+  gap: var(--spacing-6);  /* 24px (z 48px - mockup blíže) */
+  align-items: center;
+}
+
+.challenge-hero__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);  /* Menší gap - kompaktnější */
+}
+
+/* Headline - CRITICAL: Tight letter-spacing */
+.challenge-hero__headline {
+  font-size: 48px;  /* Sjednoceno s homepage (z 36px) */
+  font-weight: var(--font-weight-bold);  /* 700 (z 600) */
+  line-height: var(--line-height-tight);  /* 1.25 (z 1.2) */
+  letter-spacing: -0.02em;  /* TIGHT! Apple style */
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2);  /* 8px bottom margin */
+}
+
+.challenge-hero__subtitle {
+  font-size: var(--font-size-lg);  /* 18px (z 20px) */
+  font-weight: var(--font-weight-regular);  /* 400 */
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0 0 var(--spacing-6);  /* 24px bottom margin (větší gap před form) */
+}
+
+/* Subtext (deprecated - spojeno s subtitle) */
+.challenge-hero__subtext {
+  font-size: var(--font-size-base);  /* 16px */
+  color: var(--color-text-tertiary);
+  line-height: 1.6;
+  margin: 0 0 var(--spacing-6);  /* 24px bottom margin */
+}
+
+/* Email Form */
+.challenge-hero__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);  /* 16px */
+  margin-bottom: var(--spacing-4);  /* Space before trust signals */
+  max-width: 450px;  /* Rozumná šířka (ne přes celou šířku) */
+  width: 100%;
+}
+
+.challenge-hero__input-wrapper {
+  width: 100%;
+}
+
+.challenge-hero__email-input {
+  width: 100%;
+  padding: var(--spacing-4) var(--spacing-6);  /* 16px 24px */
+  font-size: var(--font-size-lg);  /* 18px */
+  background: var(--color-surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.challenge-hero__email-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+.challenge-hero__email-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.challenge-hero__email-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* CTA Button - Gold with glow */
+.challenge-hero__cta {
+  background: var(--color-accent) !important;  /* Gold #F8CA00 */
+  color: var(--color-background) !important;   /* Dark text on gold */
+  font-size: var(--font-size-lg);  /* 18px */
+  font-weight: 600;
+  padding: var(--spacing-4) var(--spacing-8) !important;  /* 16px 32px */
+  border-radius: 8px;
+  box-shadow: var(--shadow-gold);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.challenge-hero__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-gold);
+}
+
+.challenge-hero__cta:active {
+  transform: translateY(0);
+}
+
+/* Success/Error Messages */
+.challenge-hero__success,
+.challenge-hero__error {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: 8px;
+  font-size: var(--font-size-base);
+  text-align: center;
+}
+
+.challenge-hero__success {
+  background: rgba(0, 200, 100, 0.1);
+  border: 1px solid rgba(0, 200, 100, 0.3);
+  color: #00C864;
+}
+
+.challenge-hero__error {
+  background: rgba(255, 50, 50, 0.1);
+  border: 1px solid rgba(255, 50, 50, 0.3);
+  color: #FF5252;
+}
+
+/* Trust Signals (below CTA) */
+.challenge-hero__trust {
+  display: flex;
+  flex-direction: row;  /* Inline (vedle sebe) na desktopu */
+  gap: var(--spacing-6);  /* 24px mezi items */
+  flex-wrap: wrap;  /* Safety wrap pro případ dlouhých textů */
+  align-items: center;
+  margin-top: var(--spacing-3);  /* 12px from form */
+  margin-bottom: var(--spacing-4);  /* 16px before bonus */
+  font-size: var(--font-size-base);  /* 16px - body text (Visual Brand Book) */
+  font-weight: var(--font-weight-semibold);  /* 600 - subheadings */
+  color: var(--color-text-primary);  /* #E0E0E0 - primary text on dark */
+}
+
+.trust-signal {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);  /* 8px */
+}
+
+.trust-signal svg {
+  width: 24px;  /* DEFAULT size for UI elements (Visual Brand Book) */
+  height: 24px;
+  color: var(--color-accent);  /* Gold #D6A23A */
+  flex-shrink: 0;
+}
+
+/* SMART Bonus Badge */
+.challenge-hero__bonus {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--spacing-1);  /* 4px */
+  padding: var(--spacing-3) var(--spacing-4);  /* 12px 16px */
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 8px;
+  align-self: flex-start;
+}
+
+.challenge-hero__bonus-text {
+  font-size: var(--font-size-sm);  /* 14px */
+  font-weight: 600;
+  color: var(--color-primary);  /* Teal */
+}
+
+.challenge-hero__bonus-value {
+  font-size: var(--font-size-sm);  /* 14px (z 12px - větší) */
+  color: var(--color-accent);  /* Gold #D6A23A (z Teal) */
+  font-weight: var(--font-weight-bold);  /* 700 (z 600 - ještě tučnější) */
+  margin-top: var(--spacing-1);  /* 4px spacing */
+}
+
+/* Timeline Info */
+.challenge-hero__timeline {
+  font-size: var(--font-size-sm);  /* 14px */
+  font-weight: var(--font-weight-semibold);  /* 600 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;  /* Širší tracking pro uppercase */
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-2);  /* 8px */
+  text-align: left;
+}
+
+/* Visual/Mockup Side */
+.challenge-hero__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Mockup dominates - 60% width */
+}
+
+/* Remove old mockup placeholder styles */
+.challenge-hero__mockup,
+.challenge-hero__mockup-placeholder {
+  display: none;  /* Not needed anymore - using HeroMockup */
+}
+
+/* ===================================
+   3 REASONS SECTION
+   =================================== */
+
+.challenge-reasons {
+  padding: var(--spacing-20) var(--spacing-6);  /* 80px 24px */
+  /* Apple Premium: Jednotné pozadí (no background block) */
+}
+
+.challenge-reasons__container {
+  max-width: var(--container-xl);
+  margin: 0 auto;
+}
+
+.challenge-reasons__title {
+  font-size: var(--font-size-3xl);  /* 30px */
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 var(--spacing-12);  /* 48px bottom */
+  color: var(--color-text-primary);
+}
+
+.challenge-reasons__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-8);  /* 32px */
+}
+
+/* Individual Reason Card */
+.challenge-reason {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-4);  /* 16px */
+}
+
+.challenge-reason__icon {
+  width: auto;  /* Žádný wrapper */
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;  /* Bez pozadí (Apple Premium - clean) */
+  border-radius: 0;
+  margin-bottom: var(--spacing-2);
+  color: var(--color-primary);  /* Teal #14B8A6 - nejvyšší kontrast */
+}
+
+/* SVG icons are now inline - color applies via currentColor */
+.challenge-reason__icon svg {
+  width: 64px;  /* Větší (z 48px) - výraznější */
+  height: 64px;
+  /* color is inherited from parent (.challenge-reason__icon) */
+}
+
+.challenge-reason__headline {
+  font-size: var(--font-size-xl);  /* 20px */
+  font-weight: 600;
+  color: var(--color-accent);  /* GOLD (z Teal) - premium akcent */
+  margin: 0;
+}
+
+.challenge-reason__text {
+  font-size: var(--font-size-base);  /* 16px */
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ===================================
+   TIMELINE SECTION
+   =================================== */
+
+.challenge-timeline {
+  padding: var(--spacing-20) var(--spacing-6);
+  background: var(--color-background);
+}
+
+.challenge-timeline__container {
+  max-width: var(--container-xl);  /* 1280px (z 800px - širší pro grid) */
+  margin: 0 auto;
+}
+
+.challenge-timeline__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 var(--spacing-12);
+  color: var(--color-text-primary);
+}
+
+/* DESKTOP: Vertical centered stack (asymetrie oproti 3-column reasons) */
+@media (min-width: 769px) {
+  .challenge-timeline__steps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-10);  /* 40px mezi kroky */
+    max-width: 600px;  /* Narrower než main container */
+    margin: 0 auto;
+    padding-left: 0;
+    position: relative;
+  }
+
+  /* Vertikální linka (subtle) */
+  .challenge-timeline__steps::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      var(--color-primary) 0%,
+      var(--color-primary) 70%,
+      transparent 100%
+    );
+    z-index: 0;
+  }
+
+  /* Individual Step - centered */
+  .challenge-timeline__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);  /* 8px mezi date a action */
+    padding: 0 var(--spacing-8);  /* 32px horizontal padding (breathing space) */
+    text-align: center;  /* Centered text */
+    background: var(--color-background);  /* Black bg (překrývá linku) */
+    z-index: 1;
+  }
+
+  /* Žádné tečky na desktopu */
+  .challenge-timeline__step::before {
+    display: none;
+  }
+
+  /* Žádné šipky (vertikální layout = linka stačí) */
+  .challenge-timeline__step:not(:last-child)::after {
+    display: none;
+  }
+}
+
+/* MOBILE: Vertical timeline (centered jako desktop) */
+@media (max-width: 768px) {
+  .challenge-timeline__steps {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-8);  /* 32px mezi kroky (z 40px - kompaktnější) */
+    padding-left: 0;  /* Žádný left padding (centered) */
+  }
+
+  /* Vertikální linka na mobile (centered) */
+  .challenge-timeline__steps::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      var(--color-primary) 0%,
+      var(--color-primary) 70%,
+      transparent 100%
+    );
+    z-index: 0;
+  }
+
+  /* Individual Step */
+  .challenge-timeline__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);  /* 4px */
+    padding: 0 var(--spacing-4);  /* 16px horizontal - breathing space + překrývá linku */
+    text-align: center;  /* Centered i na mobile (konzistence) */
+    
+    /* FIX: Background překrývá vertikální linku (z-index: 0) */
+    background: var(--color-background);  /* Black */
+    z-index: 1;  /* Nad linkou */
+  }
+
+  /* Žádné tečky na mobile (Apple Premium - pure text + line) */
+  .challenge-timeline__step::before {
+    display: none;
+  }
+
+  /* Žádné šipky na mobile */
+  .challenge-timeline__step::after {
+    display: none;
+  }
+}
+
+.challenge-timeline__date {
+  font-size: var(--font-size-sm);  /* 14px */
+  font-weight: var(--font-weight-bold);  /* 700 */
+  color: var(--color-primary);  /* Teal */
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.challenge-timeline__action {
+  font-size: var(--font-size-base);  /* 16px */
+  color: var(--color-text-primary);  /* White */
+  line-height: 1.5;
+  font-weight: var(--font-weight-regular);  /* 400 */
+}
+
+/* ===================================
+   BREAKING TEXT (před Final CTA)
+   Apple Premium: Emocionální push
+   =================================== */
+
+.challenge-breaking-text {
+  padding: var(--spacing-15) var(--spacing-6) var(--spacing-6);  /* 60px top, 24px bottom (tight spacing před CTA) */
+}
+
+.challenge-breaking-text__container {
+  max-width: 600px;  /* Narrower než main container */
+  margin: 0 auto;
+}
+
+.challenge-breaking-text__content {
+  text-align: center;
+  font-size: var(--font-size-xl);  /* 20px */
+  color: var(--color-text-secondary);  /* Gray #B0B0B0 */
+  line-height: 1.5;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* ===================================
+   TESTIMONIALS SECTION
+   =================================== */
+
+.challenge-testimonials {
+  padding: var(--spacing-24) var(--spacing-6);  /* 96px top/bottom (extra breathing space) */
+  background: var(--color-background);  /* Pure black (jednobarvá LP) */
+}
+
+.challenge-testimonials__container {
+  max-width: var(--container-xl);
+  margin: 0 auto;
+}
+
+.challenge-testimonials__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-6);  /* 24px */
+}
+
+/* Individual Testimonial */
+.challenge-testimonial {
+  background: var(--color-background);
+  padding: var(--spacing-6);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.challenge-testimonial__image {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-4);
+}
+
+.challenge-testimonial__image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.challenge-testimonial__text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  font-style: italic;
+  margin: 0 0 var(--spacing-4);
+}
+
+.challenge-testimonial__author {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
+/* ===================================
+   FAQ SECTION
+   Apple Premium: Accordion, clean
+   =================================== */
+
+.challenge-faq {
+  padding: var(--spacing-20) var(--spacing-6);  /* 80px 24px */
+  background: var(--color-background);
+}
+
+.challenge-faq__container {
+  max-width: 800px;  /* Narrower než main (focus na content) */
+  margin: 0 auto;
+}
+
+.challenge-faq__title {
+  font-size: var(--font-size-3xl);  /* 30px */
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 var(--spacing-12);  /* 48px bottom */
+  color: var(--color-text-primary);
+}
+
+.challenge-faq__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);  /* 16px mezi otázkami */
+}
+
+/* Individual FAQ Item */
+.challenge-faq__item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);  /* Subtle divider */
+  padding-bottom: var(--spacing-4);  /* 16px */
+}
+
+.challenge-faq__item:last-child {
+  border-bottom: none;  /* Poslední item bez borderu */
+}
+
+/* Question button (clickable) */
+.challenge-faq__question {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-4);  /* 16px mezi textem a ikonou */
+  padding: var(--spacing-4) 0;  /* 16px vertical */
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.challenge-faq__question:hover {
+  color: var(--color-primary);  /* Teal on hover */
+}
+
+.challenge-faq__question-text {
+  font-size: var(--font-size-lg);  /* 18px */
+  font-weight: 600;
+  color: var(--color-text-primary);  /* White */
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.challenge-faq__icon {
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--color-primary);  /* Teal */
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+/* Icon rotation when open */
+.challenge-faq__item--open .challenge-faq__icon {
+  transform: rotate(0deg);  /* No rotation needed (+ → −) */
+}
+
+/* Answer (collapsed by default) */
+.challenge-faq__answer {
+  font-size: var(--font-size-base);  /* 16px */
+  color: var(--color-text-secondary);  /* Gray */
+  line-height: 1.6;
+  padding: var(--spacing-3) 0 var(--spacing-4);  /* 12px top, 16px bottom */
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 768px) {
+  .challenge-faq__question {
+    padding: 20px 0;  /* Z 16px - větší touch target (56px+ total) */
+    min-height: 56px;  /* iOS recommended minimum */
+  }
+  
+  .challenge-faq__question-text {
+    font-size: var(--font-size-base);  /* 16px na mobile */
+    line-height: 1.4;  /* Tight ale čitelné */
+  }
+  
+  .challenge-faq__icon {
+    font-size: 24px;  /* Menší ikona */
+  }
+}
+
+/* ===================================
+   FINAL CTA SECTION
+   =================================== */
+
+.challenge-final-cta {
+  padding: var(--spacing-20) var(--spacing-6) var(--spacing-24);  /* 80px top (breaking text removed), 24px horizontal, 96px bottom */
+  background: var(--color-background);
+  text-align: center;
+}
+
+.challenge-final-cta__container {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.challenge-final-cta__headline {
+  font-size: var(--font-size-3xl);  /* 30px */
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Email Form */
+.challenge-final-cta__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.challenge-final-cta__input-wrapper {
+  width: 100%;
+}
+
+.challenge-final-cta__email-input {
+  width: 100%;
+  padding: var(--spacing-4) var(--spacing-6);
+  font-size: var(--font-size-lg);
+  background: var(--color-surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.challenge-final-cta__email-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+.challenge-final-cta__email-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.challenge-final-cta__button {
+  background: var(--color-accent) !important;
+  color: var(--color-background) !important;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  padding: var(--spacing-4) var(--spacing-8) !important;
+  border-radius: 8px;
+  box-shadow: var(--shadow-gold);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.challenge-final-cta__button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-gold);
+}
+
+/* Success/Error Messages */
+.challenge-final-cta__success,
+.challenge-final-cta__error {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: 8px;
+  font-size: var(--font-size-base);
+  text-align: center;
+  width: 100%;
+}
+
+.challenge-final-cta__success {
+  background: rgba(0, 200, 100, 0.1);
+  border: 1px solid rgba(0, 200, 100, 0.3);
+  color: #00C864;
+}
+
+.challenge-final-cta__error {
+  background: rgba(255, 50, 50, 0.1);
+  border: 1px solid rgba(255, 50, 50, 0.3);
+  color: #FF5252;
+}
+
+/* Subtext */
+.challenge-final-cta__subtext {
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-tertiary);  /* Muted gray */
+  margin: 0;
+  text-align: center;
+}
+
+/* ===================================
+   RESPONSIVE - MOBILE FIRST
+   =================================== */
+
+/* Tablet (768px) */
+@media (max-width: 768px) {
+  /* Hero */
+  .challenge-hero__container {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-8);  /* 32px (menší gap na mobile) */
+    padding: var(--spacing-12) var(--spacing-4);  /* 48px 16px (menší padding) */
+  }
+  
+  .challenge-hero__content {
+    order: 0;  /* Content first (headline + CTA) */
+  }
+  
+  .challenge-hero__headline {
+    font-size: 32px;  /* Menší na mobile (z 36px) */
+  }
+  
+  .challenge-hero__subtitle {
+    font-size: var(--font-size-base);  /* 16px na mobile */
+  }
+  
+  .challenge-hero__visual {
+    order: 1;  /* Mockup second (po contentu) */
+    max-width: 300px;  /* Match homepage (konzistence) */
+    margin: 0 auto;
+  }
+  
+  /* Trust signals - stack on mobile */
+  .challenge-hero__trust {
+    flex-direction: column;  /* Stack vertically na mobile */
+    gap: var(--spacing-3);  /* 12px */
+    align-items: center;  /* Centered (z flex-start) - symmetrie s contentem */
+    text-align: center;
+  }
+  
+  .trust-signal {
+    justify-content: center;  /* Center SVG + text */
+  }
+  
+  /* Form full width on mobile */
+  .challenge-hero__form {
+    max-width: 100%;
+  }
+  
+  /* CTA Buttons - Větší touch target (iOS recommended 48-56px) */
+  .challenge-hero__cta,
+  .challenge-final-cta .button--lg {
+    padding: 18px 32px !important;  /* Z 16px - vyšší button (52px total) */
+  }
+  
+  /* 3 Reasons */
+  .challenge-reasons__grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-12);
+  }
+  
+  /* Testimonials */
+  .challenge-testimonials__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile (375px) */
+@media (max-width: 390px) {
+  .challenge-hero {
+    padding: var(--spacing-16) var(--spacing-4);
+  }
+  
+  .challenge-hero__headline {
+    font-size: 28px;  /* Ještě menší na very narrow (z 32px) */
+  }
+  
+  .challenge-hero__subtitle {
+    font-size: var(--font-size-sm);  /* 14px */
+  }
+  
+  .challenge-hero__visual {
+    max-width: 300px;  /* Match homepage (konzistence) */
+  }
+  
+  .challenge-reasons,
+  .challenge-timeline,
+  .challenge-testimonials,
+  .challenge-final-cta {
+    padding: var(--spacing-16) var(--spacing-4);
+  }
+  
+  .challenge-reasons__title,
+  .challenge-timeline__title,
+  .challenge-final-cta__headline {
+    font-size: var(--font-size-2xl);  /* 24px */
+  }
+}
+
+/* ===================================
+   CHALLENGE FOOTER
+   Ultra-minimal pro conversion LP
+   Apple Premium: Logo + legal links
+   =================================== */
+
+.challenge-footer {
+  padding: 64px 24px 24px;  /* 64px top (breathing space), 24px horizontal, 24px bottom */
+  background: var(--color-background);  /* Black */
+  text-align: center;
+}
+
+.challenge-footer__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-6);  /* 24px mezi brand, links, copyright */
+}
+
+/* Logo + tagline */
+.challenge-footer__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);  /* 8px mezi logem a tagline */
+}
+
+.challenge-footer__tagline {
+  font-size: 14px;
+  color: var(--color-text-secondary);  /* Gray */
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Legal links */
+.challenge-footer__links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;  /* Mobile wrap */
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.challenge-footer__links a {
+  font-size: 12px;
+  color: var(--color-text-tertiary);  /* Muted gray */
+  text-decoration: none;
+  transition: color 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.challenge-footer__links a:hover {
+  color: var(--color-primary);  /* Teal */
+}
+
+.challenge-footer__separator {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  opacity: 0.3;  /* Subtle bullet */
+  user-select: none;
+}
+
+/* Copyright */
+.challenge-footer__copyright {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  opacity: 0.5;  /* Very subtle */
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+/* Mobile optimization */
+@media (max-width: 480px) {
+  .challenge-footer {
+    padding: 32px 16px 16px;  /* Menší padding */
+  }
+  
+  .challenge-footer__links {
+    gap: 8px;
+  }
+  
+  .challenge-footer__links a {
+    font-size: 11px;  /* Menší text */
+  }
+  
+  .challenge-footer__separator {
+    display: none;  /* Hide bullets on mobile - stack vertically */
+  }
+  
+  .challenge-footer__copyright {
+    font-size: 11px;
+  }
+}

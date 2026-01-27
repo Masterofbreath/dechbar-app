@@ -36,7 +36,7 @@
     display: none !important;  /* Odstraněno - není potřeba na fullscreen modalu */
   }
   
-  /* States wrapper - full height flexbox container */
+  /* States wrapper - full height flexbox container (NO PADDING - like KP modal) */
   .session-states-wrapper {
     position: relative !important;
     min-height: 100vh !important;
@@ -46,11 +46,10 @@
     flex-direction: column !important;
     align-items: stretch !important;
     justify-content: flex-start !important;
-    padding: 
-      max(24px, env(safe-area-inset-top))
-      max(20px, env(safe-area-inset-right))
-      max(24px, env(safe-area-inset-bottom))
-      max(20px, env(safe-area-inset-left));
+    /* ✅ HYBRID APPROACH: No padding on wrapper
+       - Fixed elements (circle, close, exercise name, progress) handle safe-area individually
+       - Flow elements (timer, instructions) get spacing from child containers */
+    padding: 0 !important;
   }
   
   /* Countdown & Active - HYBRID: Relative container pro absolute kruh + flex pro ostatní */
@@ -95,28 +94,38 @@
     padding: 0 20px !important;
   }
   
-  /* Session header - Flex item PŘED kruhem */
+  /* Session header - HIDDEN on mobile (exercise name is fixed top-left) */
   .session-header,
   .session-active__header {
-    position: static !important;
-    width: 100% !important;
-    margin: 0 0 auto !important;  /* margin-bottom: auto = přilepí se nahoru */
-    padding-top: 80px !important;   /* Spacing od horního okraje */
-    min-height: auto !important;
-    text-align: center !important;
-    order: initial !important;
-    z-index: 1 !important;  /* Pod kruhem (aby kruh byl vždy vidět) */
+    position: absolute !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
   }
   
-  .session-exercise-name,
+  /* Exercise name - handled by fullscreen-modal-mobile.css (fixed top-left) */
+  
+  /* Phase name - for multi-phase exercises (if different from exercise name) */
   .phase-name {
     font-size: 20px !important;
     margin-bottom: 4px !important;
   }
   
+  /* Instruction text - BELOW circle (fixed position) */
   .session-instruction,
   .phase-description {
+    position: fixed !important;
+    top: calc(50vh + 130px) !important;  /* Below circle (220px/2 + 20px gap) */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 80% !important;
+    max-width: 320px !important;
+    text-align: center !important;
     font-size: 14px !important;
+    color: var(--color-text-secondary) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 1 !important;
   }
   
   /* Close button - FIXED top-right */
@@ -167,14 +176,14 @@
   
   /* Countdown circle container - FIXED VIEWPORT CENTER (stejné jako breathing) */
   .countdown-circle-container {
-    position: fixed !important;     /* ✅ Changed from absolute - viewport reference */
-    top: 50vh !important;           /* ✅ 50% viewport height */
-    left: 50vw !important;          /* ✅ 50% viewport width */
+    position: fixed !important;     /* ✅ Viewport reference (override desktop) */
+    top: 50vh !important;           /* ✅ TRUE vertical center */
+    left: 50vw !important;          /* ✅ TRUE horizontal center */
     transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
     margin: 0 !important;
-    z-index: 10 !important;  /* Nad headerem */
+    z-index: 10 !important;  /* Nad vším kromě CloseButton */
   }
   
   .countdown-circle {
@@ -184,6 +193,19 @@
   
   .countdown-number {
     font-size: 56px !important;
+  }
+  
+  /* Countdown tip/description - BELOW circle (fixed position) */
+  .session-countdown__tip,
+  .session-countdown__description {
+    position: fixed !important;
+    top: calc(50vh + 130px) !important;  /* Below circle (220px/2 + 20px gap) */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 85% !important;
+    max-width: 340px !important;
+    margin: 0 !important;
+    z-index: 1 !important;
   }
   
   /* Timer - Flex item PO kruhu */
@@ -277,8 +299,9 @@
   }
   
   .session-start__button {
-    width: 100% !important;
+    width: 75% !important;
     max-width: 320px !important;
+    margin: 0 auto !important;
   }
   
   /* Completed screen actions - také 75% width */
@@ -292,6 +315,23 @@
   .session-completed__actions > .button {
     width: 100% !important;
   }
+  
+  /* Typography hierarchy - mobile refinement */
+  .session-start__description {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
+  
+  .meta-item {
+    font-size: 12px !important;
+  }
+  
+  /* Countdown tip - make less prominent */
+  .session-countdown__description,
+  .mini-tip {
+    font-size: 13px !important;
+    opacity: 0.8 !important;
+  }
 }
 
 /* Landscape mobile (iPhone SE landscape: 667x375) */
@@ -301,7 +341,7 @@
   }
   
   .session-states-wrapper {
-    padding: 16px 20px !important;
+    padding: 0 !important;  /* ✅ Consistent with base mobile styles */
   }
   
   .breathing-circle-container {

@@ -16,6 +16,11 @@ import { NavIcon } from '@/platform/components';
 import { useToast } from '@/platform/components/Toast';
 import { DEMO_USER } from '../data/demoUser';
 
+export interface DemoTopNavProps {
+  onSettingsClick: (event?: React.MouseEvent) => void;
+  onKPClick: (event?: React.MouseEvent) => void;
+}
+
 /* 
   ============================================================
   TODO: KP Measurement Feature (Phase 2)
@@ -88,9 +93,9 @@ import { DEMO_USER } from '../data/demoUser';
  * DemoTopNav - Top navigation for demo mockup
  * 
  * @example
- * <DemoTopNav />
+ * <DemoTopNav onSettingsClick={handleSettingsOpen} onKPClick={handleKPOpen} />
  */
-export function DemoTopNav() {
+export function DemoTopNav({ onSettingsClick, onKPClick }: DemoTopNavProps) {
   const { show } = useToast();
   
   // Fake user data
@@ -112,13 +117,15 @@ export function DemoTopNav() {
           </div>
         </button>
         
-        <div onClick={() => show('Měření KP dostupné po registraci', { icon: '🔒' })}>
-          {/* KP Display - fake value shown via custom HTML */}
-          <div className="kp-display kp-display--good">
-            <span className="kp-display__label">KP</span>
-            <span className="kp-display__value">{kpValue}s</span>
-          </div>
-        </div>
+        <button
+          className="kp-display kp-display--good"
+          onClick={(e) => onKPClick(e)}
+          type="button"
+          aria-label="Změřit kontrolní pauzu"
+        >
+          <span className="kp-display__label">KP</span>
+          <span className="kp-display__value">{kpValue}s</span>
+        </button>
       </div>
       
       {/* Right: Bell + Settings (disabled) */}
@@ -134,9 +141,9 @@ export function DemoTopNav() {
         
         <button
           className="demo-top-nav__settings-button"
-          onClick={() => show('Nastavení dostupné po registraci', { icon: '🔒' })}
+          onClick={(e) => onSettingsClick(e)}
           type="button"
-          aria-label="Nastavení (dostupné po registraci)"
+          aria-label="Nastavení"
         >
           <NavIcon name="settings" size={24} />
         </button>

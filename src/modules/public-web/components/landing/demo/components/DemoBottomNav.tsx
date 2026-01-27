@@ -1,13 +1,14 @@
 /**
  * DemoBottomNav - Demo Bottom Navigation
  * 
- * 4-tab navigation with FAB (Floating Action Button) - MATCHES REAL APP:
+ * 4-tab navigation with DYNAMIC FAB - MATCHES REAL APP 1:1:
  * - Dnes (Home)
- * - Cvičit (FAB - gold, elevated) ⚠️ CRITICAL: FAB position, not regular tab
+ * - Cvičit (Exercise)
  * - Akademie (Disabled)
  * - Pokrok (Disabled)
  * 
- * Design: Dark-first, TEAL active state (not gold!), FAB gold accent
+ * Design: Dark-first, GOLD active state with FAB treatment (dynamic)
+ * Active tab receives gold circle, elevation, larger icon (28px vs 24px)
  * 
  * @package DechBar_App
  * @subpackage PublicWeb/Demo
@@ -45,7 +46,7 @@ export function DemoBottomNav({ activeView, onViewChange }: DemoBottomNavProps) 
   
   return (
     <nav className="demo-bottom-nav" role="navigation" aria-label="Demo navigace">
-      {/* Tab 1: Dnes (Home) */}
+      {/* Tab 1: Dnes (Home) - Dynamic FAB when active */}
       <button
         className={`demo-bottom-nav__tab ${activeView === 'dnes' ? 'demo-bottom-nav__tab--active' : ''}`}
         onClick={() => handleTabClick('dnes')}
@@ -53,22 +54,22 @@ export function DemoBottomNav({ activeView, onViewChange }: DemoBottomNavProps) 
         aria-label="Dnes"
         aria-current={activeView === 'dnes' ? 'page' : undefined}
       >
-        <div className="demo-bottom-nav__icon">
-          <NavIcon name="home" size={24} />
+        <div className="demo-bottom-nav__icon-wrapper">
+          <NavIcon name="home" size={activeView === 'dnes' ? 28 : 24} />
         </div>
         <span className="demo-bottom-nav__label">Dnes</span>
       </button>
       
-      {/* Tab 2: Cvičit (FAB - elevated gold button) */}
+      {/* Tab 2: Cvičit (Exercise) - Dynamic FAB when active */}
       <button
-        className={`demo-bottom-nav__tab demo-bottom-nav__tab--fab ${activeView === 'cvicit' ? 'demo-bottom-nav__tab--active' : ''}`}
+        className={`demo-bottom-nav__tab ${activeView === 'cvicit' ? 'demo-bottom-nav__tab--active' : ''}`}
         onClick={() => handleTabClick('cvicit')}
         type="button"
         aria-label="Cvičit"
         aria-current={activeView === 'cvicit' ? 'page' : undefined}
       >
-        <div className="demo-bottom-nav__fab-icon">
-          <NavIcon name="dumbbell" size={28} />
+        <div className="demo-bottom-nav__icon-wrapper">
+          <NavIcon name="dumbbell" size={activeView === 'cvicit' ? 28 : 24} />
         </div>
         <span className="demo-bottom-nav__label">Cvičit</span>
       </button>
@@ -81,7 +82,7 @@ export function DemoBottomNav({ activeView, onViewChange }: DemoBottomNavProps) 
         aria-label="Akademie (dostupná po registraci)"
         aria-disabled="true"
       >
-        <div className="demo-bottom-nav__icon">
+        <div className="demo-bottom-nav__icon-wrapper">
           <NavIcon name="graduation-cap" size={24} />
         </div>
         <span className="demo-bottom-nav__label">Akademie</span>
@@ -95,7 +96,7 @@ export function DemoBottomNav({ activeView, onViewChange }: DemoBottomNavProps) 
         aria-label="Pokrok (dostupný po registraci)"
         aria-disabled="true"
       >
-        <div className="demo-bottom-nav__icon">
+        <div className="demo-bottom-nav__icon-wrapper">
           <NavIcon name="chart-line" size={24} />
         </div>
         <span className="demo-bottom-nav__label">Pokrok</span>

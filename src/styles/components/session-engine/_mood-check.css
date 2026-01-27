@@ -54,11 +54,11 @@
   width: 100%;
   height: 8px;
   background: linear-gradient(90deg, 
-    #EF4444 0%,    /* Red - stressed */
-    #F59E0B 25%,   /* Orange - tired */
+    #15939A 0%,    /* Dark teal - stressed */
+    #2CBEC6 25%,   /* Main teal - tired */
     #A0A0A0 50%,   /* Gray - neutral */
-    #6ADBE0 75%,   /* Teal - calm */
-    #10B981 100%   /* Green - energized */
+    #6ADBE0 75%,   /* Light teal - calm */
+    #6ADBE0 100%   /* Light teal - energized */
   );
   border-radius: 4px;
   outline: none;

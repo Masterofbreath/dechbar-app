@@ -39,6 +39,7 @@
 
 /* Public Web Module */
 @import url('../modules/public-web/styles/landing.css');
+@import url('../modules/public-web/styles/challenge.css');
 @import url('../modules/public-web/styles/animations.css');
 
 /* ===================================
@@ -64,6 +65,9 @@
 @import url('./components/oauth-icons.css');
 @import url('./components/toast.css');
 @import url('./components/tooltip.css');
+
+/* KP Component Styles (for shared components) */
+@import url('./components/kp-center.css');
 @import url('./components/kp-center-mobile.css');
 
 /* Demo Mockup Components */
@@ -71,6 +75,9 @@
 @import url('./components/demo-top-nav.css');
 @import url('./components/demo-bottom-nav.css');
 @import url('./components/locked-exercise-modal.css');
+@import url('./components/demo-settings-drawer.css');
+@import url('./components/demo-kp-center.css');
+@import url('./components/demo-kp-center-mobile.css');
 
 /* ===================================
    IMPORT LAYOUT STYLES

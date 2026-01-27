@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:clean": "rm -rf node_modules/.vite && vite",
+    "dev:fresh": "rm -rf node_modules/.vite && npm install && vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "lint:css": "stylelint 'src/**/*.css'",

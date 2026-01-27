@@ -1,0 +1,265 @@
+/* ============================================================
+   Demo Settings Drawer - Premium slide-in panel
+   Matches real SettingsDrawer 1:1 (visual preview only)
+   ============================================================ */
+
+/* ============================================================
+   Overlay
+   ============================================================ */
+
+.demo-settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-dark);
+  z-index: 10000;  /* Above TOP NAV (100) and BOTTOM NAV (100) */
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.demo-settings-overlay--closing {
+  animation: fadeOut 0.25s ease forwards; /* Match drawer closing duration */
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ============================================================
+   Drawer Panel
+   ============================================================ */
+
+.demo-settings-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  max-width: 100%; /* ✅ Full width on mobile */
+  height: 100vh;
+  background: var(--color-surface-elevated);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.3);
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10001;  /* Above overlay (10000) and TOP NAV (100) */
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  
+  /* Swipe gesture optimization */
+  touch-action: pan-y; /* Allow vertical scroll, track horizontal swipe */
+}
+
+/* Swipe hint indicator (visual cue on mobile) */
+.demo-settings-drawer::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  width: 4px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+/* Hide swipe hint on desktop */
+@media (min-width: 769px) {
+  .demo-settings-drawer::before {
+    display: none;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Closing animation */
+.demo-settings-drawer--closing {
+  z-index: 10001;
+  animation: slideOutRightFallback 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes slideOutRightFallback {
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+
+.demo-settings__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-6) var(--spacing-4);
+  padding-bottom: var(--spacing-5);
+  position: relative;
+}
+
+/* Gold gradient line */
+.demo-settings__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-accent) 50%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px rgba(214, 162, 58, 0.2);
+}
+
+.demo-settings__header h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ============================================================
+   Menu
+   ============================================================ */
+
+.demo-settings__menu {
+  flex: 1;
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.demo-settings__menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  min-height: 44px; /* Touch target guarantee */
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.demo-settings__menu-item:hover {
+  background: var(--color-surface);
+  transform: translateX(4px);
+}
+
+/* Icon hover - Teal color */
+.demo-settings__menu-item:hover svg {
+  color: var(--color-primary);
+}
+
+/* Exception for danger state - Keep red */
+.demo-settings__menu-item--danger {
+  color: var(--color-error);
+}
+
+.demo-settings__menu-item--danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.demo-settings__menu-item--danger:hover svg {
+  color: var(--color-error); /* Stay red */
+}
+
+/* ============================================================
+   Divider (Gold Gradient)
+   ============================================================ */
+
+.demo-settings__divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-accent) 50%,
+    transparent 100%
+  );
+  margin: var(--spacing-4) 0;
+  box-shadow: 0 0 8px rgba(214, 162, 58, 0.2);
+}
+
+/* ============================================================
+   Focus States (Accessibility)
+   ============================================================ */
+
+.demo-settings__menu-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   Demo Mockup Context Override
+   Force full-width in demo mockup (desktop viewport)
+   ============================================================ */
+
+.demo-app .demo-settings-drawer {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ============================================================
+   Mobile Responsive
+   ============================================================ */
+
+/* Full width on mobile */
+@media (max-width: 768px) {
+  .demo-settings-drawer {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Very narrow screens */
+@media (max-width: 375px) {
+  .demo-settings__header h2 {
+    font-size: var(--font-size-lg);
+  }
+  
+  .demo-settings__menu-item {
+    padding: var(--spacing-3);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* ============================================================
+   Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-settings-overlay,
+  .demo-settings-drawer {
+    animation: none;
+  }
+  
+  .demo-settings__menu-item {
+    transition: none;
+  }
+  
+  .demo-settings__menu-item:hover {
+    transform: none;
+  }
+}

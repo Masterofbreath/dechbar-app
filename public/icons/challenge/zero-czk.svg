@@ -1,0 +1,11 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Zero circle -->
+  <circle cx="18" cy="24" r="10" stroke="currentColor" stroke-width="2"/>
+  <!-- K
+ text -->
+  <text x="32" y="28" font-family="Inter, -apple-system, sans-serif" font-size="14" font-weight="600" fill="currentColor">K
+</text>
+  <!-- Alternative: Hand-drawn K
+ -->
+  <path d="M32 18v12M36 22l-4 4 4 4M38 23h4M38 29h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

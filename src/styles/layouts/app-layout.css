@@ -94,6 +94,18 @@
   }
 }
 
+/* ✅ PWA FIX: Mobile-specific padding pro fixed bottom nav */
+@media (max-width: 768px) {
+  .app-layout__content {
+    /* Space for fixed BottomNav on mobile/PWA */
+    padding-bottom: calc(
+      72px +                              /* BottomNav height */
+      env(safe-area-inset-bottom) +      /* iOS home indicator */
+      var(--spacing-4)                    /* 16px breathing space */
+    ) !important;
+  }
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   .modal-overlay,

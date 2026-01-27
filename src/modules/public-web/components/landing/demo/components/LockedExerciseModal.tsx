@@ -22,6 +22,7 @@ export interface LockedExerciseModalProps {
   isOpen: boolean;
   onClose: () => void;
   exercise: Exercise | null;
+  kpMeasurement?: { averageKP: number; attempts: number[] } | null;
   onGoogleAuth: () => void;
   onEmailSubmit: (email: string) => void;
 }
@@ -42,6 +43,7 @@ export function LockedExerciseModal({
   isOpen,
   onClose,
   exercise,
+  kpMeasurement,
   onGoogleAuth,
   onEmailSubmit,
 }: LockedExerciseModalProps) {
@@ -64,7 +66,125 @@ export function LockedExerciseModal({
     }
   }, [isOpen, trigger]);
   
-  if (!isOpen || !exercise) return null;
+  if (!isOpen) return null;
+  
+  // KP Conversion variant (no exercise, only KP data)
+  if (kpMeasurement && !exercise) {
+    const { averageKP } = kpMeasurement;
+    
+    return (
+      <div 
+        className="modal-overlay" 
+        onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="kp-conversion-title"
+      >
+        <div className="modal-card" onClick={(e) => e.stopPropagation()} {...handlers} style={style}>
+          {/* Close button */}
+          <button 
+            className="modal-close" 
+            onClick={onClose} 
+            type="button" 
+            aria-label="Zavřít modal"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path 
+                d="M18 6L6 18M6 6l12 12" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+          
+          {/* KP Conversion Content */}
+          <h2 className="locked-exercise-modal__title" id="kp-conversion-title">
+            Uložit měření a pokračovat
+          </h2>
+          
+          <p className="locked-exercise-modal__subtitle">
+            Tvoje KP: <strong style={{ color: 'var(--color-primary)' }}>{averageKP}s</strong>. Zaregistruj se a sleduj svůj pokrok.
+          </p>
+          
+          {!showEmailForm ? (
+            <>
+              {/* Google CTA (primary) */}
+              <button 
+                type="button"
+                onClick={onGoogleAuth} 
+                className="locked-exercise-modal__google-btn"
+                aria-label="Uložit a registrovat se přes Google"
+              >
+                <img 
+                  src="/oauth-icons/google.svg" 
+                  alt="Google" 
+                  width="24" 
+                  height="24"
+                  className="locked-exercise-modal__google-icon"
+                />
+                Uložit a registrovat se
+              </button>
+              
+              {/* Email toggle */}
+              <button
+                type="button"
+                onClick={() => setShowEmailForm(true)}
+                className="locked-exercise-modal__email-toggle"
+              >
+                Nebo pokračuj s emailem
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Back to Google */}
+              <button
+                type="button"
+                onClick={() => setShowEmailForm(false)}
+                className="locked-exercise-modal__back-btn"
+                aria-label="Zpět na Google registraci"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Zpět na Google registraci
+              </button>
+              
+              {/* Email form */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (email) onEmailSubmit(email);
+                }}
+                className="locked-exercise-modal__email-form"
+              >
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tvuj@email.cz"
+                  required
+                  className="locked-exercise-modal__email-input"
+                  aria-label="Email adresa"
+                />
+                <Button type="submit" variant="primary" fullWidth size="lg">
+                  Uložit a začít cvičit →
+                </Button>
+              </form>
+            </>
+          )}
+          
+          {/* Trust signals */}
+          <p className="locked-exercise-modal__trust">
+            Zdarma • Bez závazků • 1150+ členů
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Exercise conversion variant (original)
+  if (!exercise) return null;
   
   // Special case for SMART exercise
   const isSmartExercise = exercise.id === 'smart-demo';

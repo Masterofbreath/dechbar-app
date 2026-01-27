@@ -18,6 +18,8 @@ import { DemoCvicitView } from './views/DemoCvicitView';
 import { DemoTopNav } from './components/DemoTopNav';
 import { DemoBottomNav } from './components/DemoBottomNav';
 import { LockedExerciseModal } from './components/LockedExerciseModal';
+import { DemoSettingsDrawer } from './components/DemoSettingsDrawer';
+import { DemoKPCenter } from './components/DemoKPCenter';
 import { ToastProvider } from '@/platform/components/Toast';
 import { useDemoAnalytics } from './hooks/useDemoAnalytics';
 import type { DemoView, DemoState } from './types/demo.types';
@@ -34,6 +36,9 @@ export function DemoApp() {
     activeView: 'dnes',
     selectedExercise: null,
     isModalOpen: false,
+    isSettingsOpen: false,
+    isKPOpen: false,
+    kpMeasurementData: null,
   });
   
   const { track } = useDemoAnalytics();
@@ -138,11 +143,93 @@ export function DemoApp() {
     }
   };
   
+  /**
+   * Handle Settings open
+   */
+  const handleSettingsOpen = (event?: React.MouseEvent) => {
+    event?.preventDefault();
+    event?.stopPropagation();  // CRITICAL - stop event bubbling z foreignObject!
+    
+    setState(prev => ({ ...prev, isSettingsOpen: true }));
+    
+    track({
+      action: 'settings_open',
+      timestamp: Date.now(),
+    });
+  };
+  
+  /**
+   * Handle Settings close
+   */
+  const handleSettingsClose = () => {
+    setState(prev => ({ ...prev, isSettingsOpen: false }));
+    
+    track({
+      action: 'settings_close',
+      timestamp: Date.now(),
+    });
+  };
+  
+  /**
+   * Handle KP measurement open
+   */
+  const handleKPOpen = (event?: React.MouseEvent) => {
+    event?.preventDefault();
+    event?.stopPropagation();  // CRITICAL - stop event bubbling z foreignObject!
+    
+    setState(prev => ({ ...prev, isKPOpen: true }));
+    
+    track({
+      action: 'kp_measurement_open',
+      timestamp: Date.now(),
+    });
+  };
+  
+  /**
+   * Handle KP measurement close
+   */
+  const handleKPClose = () => {
+    setState(prev => ({ ...prev, isKPOpen: false }));
+    
+    track({
+      action: 'kp_measurement_close',
+      timestamp: Date.now(),
+    });
+  };
+  
+  /**
+   * Handle KP measurement complete → trigger conversion
+   */
+  const handleKPConversion = (averageKP: number, attempts: number[]) => {
+    // Store KP data
+    setState(prev => ({ 
+      ...prev, 
+      kpMeasurementData: { averageKP, attempts },
+      isModalOpen: true, // Open conversion modal
+    }));
+    
+    track({
+      action: 'kp_measurement_completed',
+      kpValue: averageKP,
+      attempts: attempts.length,
+      timestamp: Date.now(),
+    });
+    
+    track({
+      action: 'kp_conversion_triggered',
+      kpValue: averageKP,
+      timestamp: Date.now(),
+    });
+  };
+  
   return (
     <ToastProvider>
       <div className="demo-app">
         {/* Top navigation (fixed) */}
-        <DemoTopNav />
+        <DemoTopNav 
+          onSettingsClick={handleSettingsOpen}
+          onKPClick={handleKPOpen}
+        />
         
         {/* Content area (scrollable, with padding for top nav) */}
         <div className="demo-app__content">
@@ -166,8 +253,22 @@ export function DemoApp() {
           isOpen={state.isModalOpen}
           onClose={handleModalClose}
           exercise={state.selectedExercise}
+          kpMeasurement={state.kpMeasurementData}
           onGoogleAuth={handleGoogleAuth}
           onEmailSubmit={handleEmailSubmit}
+        />
+        
+        {/* Settings drawer */}
+        <DemoSettingsDrawer
+          isOpen={state.isSettingsOpen}
+          onClose={handleSettingsClose}
+        />
+        
+        {/* KP Measurement modal */}
+        <DemoKPCenter
+          isOpen={state.isKPOpen}
+          onClose={handleKPClose}
+          onConversionTrigger={handleKPConversion}
         />
       </div>
     </ToastProvider>

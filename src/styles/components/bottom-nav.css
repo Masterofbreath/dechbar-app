@@ -8,8 +8,10 @@
    ============================================================ */
 
 .bottom-nav {
-  /* Position & z-index for proper stacking */
-  position: relative; /* Ensure stacking context */
+  /* ✅ PWA FIX: Fixed position pro konzistentní zobrazení
+     Desktop: relative (flex child v AppLayout)
+     Mobile/PWA: fixed (vždy viditelný na dně obrazovky) */
+  position: relative; /* Desktop default */
   z-index: 100; /* Match TOP NAV - below modals (10000+) */
   
   /* Layout */
@@ -176,6 +178,15 @@
 
 /* Mobile specific - prevent layout shift with active tab elevation */
 @media (max-width: 768px) {
+  /* ✅ PWA FIX: Fixed position pro vždy viditelný bottom nav */
+  .bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+  }
+  
   .bottom-nav__tab {
     flex: 0 0 80px; /* Fixed flex basis - prevents shifting */
   }

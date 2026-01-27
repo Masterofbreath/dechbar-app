@@ -171,14 +171,108 @@ Handles iPhone home indicator automatically.
 
 ## Responsive Behavior
 
-### Standard (375px+)
+### Desktop (> 768px)
 - Default sizing (56px active, 24px inactive icons)
 - 72px nav height
+- **Position:** `relative` (flex child v AppLayout)
+
+### Mobile (≤ 768px) - **PWA Optimized** 🎯
+- **Position:** `fixed` (always visible at bottom)
+- Layout shift prevention: `flex: 0 0 80px` per tab
+- Fixed positioning ensures visibility on iOS PWA
 
 ### Very Narrow (< 375px)
 - Min-width: 56px per tab
 - Font size: 10px labels
 - Tighter padding (8px)
+
+---
+
+## Mobile & PWA Behavior (v2.41.6+)
+
+### Fixed Positioning on Mobile
+
+Na mobile (≤768px) je Bottom Nav **fixed position** pro vždy viditelnou navigaci:
+
+```css
+@media (max-width: 768px) {
+  .bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+  }
+}
+```
+
+**Proč fixed?**
+- ✅ Na iOS PWA s `100dvh` AppLayout by byl relative nav mimo viewport
+- ✅ Konzistentní visibility mezi browser mobile a PWA
+- ✅ Nezávislý na AppLayout scroll/height
+
+### AppLayout Content Padding
+
+Aby se content nepřekrýval s fixed nav:
+
+```css
+@media (max-width: 768px) {
+  .app-layout__content {
+    padding-bottom: calc(
+      72px +                              /* BottomNav height */
+      env(safe-area-inset-bottom) +      /* iOS home indicator */
+      16px                                /* Breathing space */
+    ) !important;
+  }
+}
+```
+
+### iOS Safe Areas
+
+```css
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom); /* Home indicator ~34px */
+}
+```
+
+**Safe Area Handling:**
+- ✅ Automaticky podporuje iPhone notch a home indicator
+- ✅ iPhone 13 mini: ~34px bottom padding
+- ✅ Starší modely: 0px (graceful fallback)
+
+### Layout Shift Prevention
+
+```css
+@media (max-width: 768px) {
+  .bottom-nav__tab {
+    flex: 0 0 80px; /* Fixed flex basis */
+  }
+  
+  .bottom-nav__tab--active {
+    flex: 0 0 80px; /* Same - prevents shift */
+  }
+}
+```
+
+**Výsledek:**
+- ✅ Gold FAB animace bez layout shiftu
+- ✅ Stabilní 80px per tab width
+- ✅ Plynulý přechod mezi taby
+
+### PWA Testing
+
+**Test Checklist:**
+1. ✅ Browser mobile (Safari iOS) - fixed visible?
+2. ✅ PWA (Add to Home Screen) - fixed visible?
+3. ✅ Bottom nav nepřekrývá content?
+4. ✅ Safe area respektován (notch, home indicator)?
+5. ✅ Gold FAB bez layout shiftu?
+
+**Ngrok Testing:**
+```bash
+npm run dev        # Port 5173
+ngrok http 5173    # Mobile access
+```
 
 ---
 
@@ -219,6 +313,6 @@ Tab labels use:
 
 ---
 
-**Last Updated:** 2026-01-25  
+**Last Updated:** 2026-01-26  
 **Maintainer:** DechBar Team  
-**Version:** 2.0 (Dynamic FAB System)
+**Version:** 2.1 (Dynamic FAB + PWA Mobile Fixes)

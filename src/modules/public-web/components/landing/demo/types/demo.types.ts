@@ -15,12 +15,17 @@ export interface DemoState {
   activeView: DemoView;
   selectedExercise: Exercise | null;
   isModalOpen: boolean;
+  isSettingsOpen: boolean;
+  isKPOpen: boolean;
+  kpMeasurementData: { averageKP: number; attempts: number[] } | null;
 }
 
 export interface DemoEvent {
-  action: 'tab_switch' | 'exercise_click' | 'modal_open' | 'modal_close' | 'registration_start' | 'registration_complete';
+  action: 'tab_switch' | 'exercise_click' | 'modal_open' | 'modal_close' | 'registration_start' | 'registration_complete' | 'settings_open' | 'settings_close' | 'kp_measurement_open' | 'kp_measurement_close' | 'kp_measurement_completed' | 'kp_conversion_triggered';
   view?: DemoView;
   exercise?: Exercise;
   method?: 'google' | 'email';
+  kpValue?: number;
+  attempts?: number;
   timestamp: number;
 }

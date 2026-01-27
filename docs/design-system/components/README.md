@@ -15,7 +15,11 @@ Všechny Platform komponenty s detailní dokumentací API a příklady použití
 
 ### Navigation Components
 - **[TopNav](./TopNav.md)** - Minimalistický top bar (Avatar + Settings)
-- **[BottomNav](./BottomNav.md)** - 4-tab navigace s zlatým FAB
+- **[BottomNav](./BottomNav.md)** - 4-tab navigace s zlatým FAB (v2.1 - PWA optimized)
+
+### Measurement Components
+- **[KPCenter](./KPCenter.md)** - Kontrolní pauza measurement modal (multi-view flow)
+- **[BreathingCircle](./BreathingCircle.md)** - Shared breathing circle (static + animated)
 
 ### Interactive Components
 - **[Button](./Button.md)** - Primary, Secondary, Ghost variants s gold theme
@@ -27,6 +31,7 @@ Všechny Platform komponenty s detailní dokumentací API a příklady použití
 - **[Checkbox](./Checkbox.md)** - Soft-square checkbox (6px radius) s gold theme
 
 ### Layout Components
+- **[AppLayout](../layouts/AppLayout.md)** - Main layout wrapper (Top + Content + Bottom)
 - **[Card](./Card.md)** - Liquid glass cards pro modals a content containers
 
 ### Feedback Components
@@ -44,6 +49,9 @@ Všechny Platform komponenty s detailní dokumentací API a příklady použití
 | Input       | `@/platform/components`        | Formuláře (email, password)   | -            |
 | Checkbox    | `@/platform/components`        | Souhlasy, preferences         | sm, md, lg   |
 | Card        | `@/platform/components`        | Modals, content containers    | -            |
+| KPCenter    | `@/platform/components`        | KP measurement (4 views)      | Fullscreen   |
+| BreathingCircle | `@/components/shared`      | Breathing visualization       | 220-280px    |
+| AppLayout   | `@/platform/layouts`           | App wrapper (nav + content)   | Fullscreen   |
 
 ---
 
@@ -239,9 +247,16 @@ Máš otázky? Chceš přidat novou komponentu?
 
 ---
 
-**Poslední aktualizace:** 2026-01-10  
+**Poslední aktualizace:** 2026-01-26  
 **Maintainer:** DechBar Development Team  
 **Related Docs:** 
 - [Design System Overview](../00_OVERVIEW.md)
 - [Component Development Guide](../../development/AI_AGENT_COMPONENT_GUIDE.md)
 - [Implementation Logs](../../development/implementation-logs/README.md)
+
+**New in v2.41.6:**
+- ✅ KPCenter - Complete API docs with PWA mobile patterns
+- ✅ BreathingCircle - Shared component (static + animated)
+- ✅ AppLayout - Layout architecture with iOS safe areas
+- ✅ BottomNav - PWA mobile fixes (fixed positioning)
+- ✅ Session Engine - Mobile UX documentation

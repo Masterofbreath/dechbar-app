@@ -1,0 +1,8 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- WiFi symbol with slash -->
+  <path d="M24 36c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z" stroke="currentColor" stroke-width="2.5"/>
+  <path d="M18 28c3.3-3.3 8.7-3.3 12 0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M12 22c6.6-6.6 17.4-6.6 24 0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Diagonal slash line -->
+  <line x1="10" y1="38" x2="38" y2="10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

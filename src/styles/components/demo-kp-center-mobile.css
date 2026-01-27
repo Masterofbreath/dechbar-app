@@ -1,0 +1,555 @@
+/* ============================================================
+   Demo KP Center Mobile Styles - CONTAINER QUERIES
+   Responsive to container size (not viewport) - Modern CSS 2023+
+   Works in: Chrome 105+, Safari 16+, Firefox 110+
+   ============================================================ */
+
+/* ============================================================
+   PRIMARY: Container Queries (Modern Browsers)
+   Applies when container is ≤400px wide
+   ============================================================ */
+@container app-viewport (max-width: 400px) {
+  /* Modal container - fullscreen within scaled container */
+  .demo-kp-center {
+    position: absolute !important;  /* ✅ Changed from fixed - stays in scaled container */
+    inset: 0 !important;
+    width: 100% !important;  /* ✅ Changed from 100vw - relative to container */
+    height: 100% !important;  /* ✅ Changed from 100vh - relative to container */
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 10002 !important;
+    background: var(--color-background) !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Overlay - no padding on mobile */
+  .modal-overlay {
+    padding: 0 !important;
+  }
+  
+  /* Title - smaller font to avoid collision with CloseButton */
+  .demo-kp-center__title {
+    font-size: 24px !important;  /* ✅ From 28px (var(--font-size-2xl)) - prevents collision */
+    line-height: 1.2 !important;
+    padding: 24px 70px 0 24px !important;  /* ✅ Right padding for CloseButton (44px + 26px margin) */
+  }
+  
+  /* ============================================================
+     CIRCLE POSITIONING: Single Source of Truth
+     Override all other positioning rules for demo mockup
+     ============================================================ */
+  .demo-kp-center .breathing-circle-container {
+    /* Disable default behavior */
+    margin: 0 !important;
+    
+    /* Enable absolute centering to measurement-area */
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 2 !important;
+  }
+  
+  /* Content area - full height with safe areas */
+  .demo-kp-center__measurement-area {
+    position: relative !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    /* ✅ OPTICAL CENTER: Circle uses absolute positioning (50%) + padding offset for visual balance */
+    padding: 
+      120px  /* ✅ From 80px (+40px) - pushes absolute 50% center down to compensate for title+progress above */
+      max(20px, env(safe-area-inset-right))
+      50px   /* ✅ From 40px (+10px) - balanced bottom spacing */
+      max(20px, env(safe-area-inset-left)) !important;
+  }
+  
+  /* Progress indicator - above circle */
+  .demo-kp-center__progress-indicator {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    top: 50px !important;  /* ✅ From 60px (-10px) - closer to title for compact look */
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    padding: 0 20px !important;
+    z-index: 1 !important;
+  }
+  
+  /* Description - below title */
+  .demo-kp-center__description {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    top: 70px !important;  /* ✅ From 80px (-10px) - closer to title */
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 1 !important;
+  }
+  
+  /* Touch target optimization */
+  .button {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 24px !important;
+  }
+  
+  /* Actions - fixed bottom center, 75% width */
+  .demo-kp-center__actions,
+  .demo-kp-center__measurement-area > .button {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 75% !important;
+    max-width: 320px !important;
+    padding: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  /* Ensure button fills container */
+  .demo-kp-center__actions > .button,
+  .demo-kp-center__measurement-area > .button {
+    width: 100% !important;
+  }
+  
+  /* Instruction text - above button */
+  .demo-kp-center__instruction {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  /* Help link - above button */
+  .demo-kp-center__help {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  /* Result message - above circle */
+  .demo-kp-center__result-message {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    top: max(120px, env(safe-area-inset-top) + 104px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    z-index: 1 !important;
+  }
+  
+  /* Instructions fullscreen */
+  .demo-kp-center__instructions-fullscreen {
+    position: relative !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    /* ✅ COMPACT SPACING: Match real iPhone - less empty space, tighter layout */
+    padding: 
+      40px  /* ✅ From 60px (-20px) - match real app compact top spacing */
+      max(20px, env(safe-area-inset-right))
+      90px  /* ✅ From 120px (-30px) - match real app button position */
+      max(20px, env(safe-area-inset-left)) !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Instructions list */
+  .demo-kp-center__instructions-list {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    margin-bottom: 32px !important;
+  }
+  
+  /* Instructions button - 75% width */
+  .demo-kp-center__instructions-fullscreen > .button {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 75% !important;
+    max-width: 320px !important;
+    padding: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  .demo-kp-center__instructions-fullscreen > .button > * {
+    width: 100% !important;
+  }
+  
+  /* MiniTip v instrukcích - nad tlačítkem */
+  .demo-kp-center__instructions-fullscreen .demo-mini-tip {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    bottom: max(120px, env(safe-area-inset-bottom) + 100px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 85% !important;
+    max-width: 320px !important;
+    z-index: 4 !important;
+  }
+  
+  /* Timer - Větší font pro mobile */
+  .kp-center__timer {
+    font-size: 56px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  /* Intermediate Value - Stejná velikost */
+  .kp-center__intermediate-value {
+    font-size: 56px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  /* Final Value - Stejná velikost */
+  .kp-center__final-value {
+    font-size: 56px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  /* Progress indicator text */
+  .demo-kp-center__progress-text {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--color-text-secondary) !important;
+  }
+  
+  /* Larger tap area for links */
+  .text-link {
+    padding: 8px 12px;
+    margin: -8px -12px;
+  }
+  
+  /* Touch feedback */
+  .button:active,
+  .text-link:active,
+  .close-button:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Mini tip absolute positioning on mobile */
+  .demo-mini-tip--absolute {
+    position: absolute !important;  /* ✅ Changed from fixed */
+    bottom: max(120px, env(safe-area-inset-bottom) + 100px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 85% !important;
+    max-width: 320px !important;
+    z-index: 4 !important;
+  }
+}
+
+/* ============================================================
+   FALLBACK: Legacy Browsers without Container Query Support
+   Only applies if browser doesn't support container-type
+   ============================================================ */
+@supports not (container-type: inline-size) {
+  /* Force fullscreen for demo context (context-based selector) */
+  .demo-app-container .demo-kp-center {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 10002 !important;
+    background: var(--color-background) !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .demo-app-container .modal-overlay {
+    padding: 0 !important;
+  }
+  
+  .demo-app-container .demo-kp-center__measurement-area {
+    position: relative !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 
+      max(34px, env(safe-area-inset-top))
+      max(20px, env(safe-area-inset-right))
+      max(34px, env(safe-area-inset-bottom))
+      max(20px, env(safe-area-inset-left)) !important;
+  }
+  
+  .demo-app-container .demo-kp-center__progress-indicator {
+    position: fixed !important;
+    top: max(70px, env(safe-area-inset-top) + 54px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    padding: 0 20px !important;
+    z-index: 1 !important;
+  }
+  
+  .demo-app-container .demo-kp-center__description {
+    position: fixed !important;
+    top: max(95px, env(safe-area-inset-top) + 79px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 1 !important;
+  }
+  
+  .demo-app-container .button {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 24px !important;
+  }
+  
+  .demo-app-container .demo-kp-center__actions,
+  .demo-app-container .demo-kp-center__measurement-area > .button {
+    position: fixed !important;
+    bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 75% !important;
+    max-width: 320px !important;
+    padding: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  .demo-app-container .demo-kp-center__instruction {
+    position: fixed !important;
+    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  .demo-app-container .demo-kp-center__help {
+    position: fixed !important;
+    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  .demo-app-container .demo-kp-center__result-message {
+    position: fixed !important;
+    top: max(120px, env(safe-area-inset-top) + 104px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    padding: 0 20px !important;
+    margin: 0 !important;
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    z-index: 1 !important;
+  }
+  
+  .demo-app-container .demo-kp-center__instructions-fullscreen {
+    position: relative !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 
+      max(80px, env(safe-area-inset-top) + 64px)
+      max(20px, env(safe-area-inset-right))
+      max(140px, env(safe-area-inset-bottom) + 120px)
+      max(20px, env(safe-area-inset-left)) !important;
+    overflow-y: auto !important;
+  }
+  
+  .demo-app-container .demo-kp-center__instructions-list {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    margin-bottom: 32px !important;
+  }
+  
+  .demo-app-container .demo-kp-center__instructions-fullscreen > .button {
+    position: fixed !important;
+    bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 75% !important;
+    max-width: 320px !important;
+    padding: 0 !important;
+    z-index: 5 !important;
+  }
+  
+  .demo-app-container .kp-center__timer {
+    font-size: 56px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  .demo-app-container .kp-center__intermediate-value {
+    font-size: 56px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  .demo-app-container .kp-center__final-value {
+    font-size: 56px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+  
+  .demo-app-container .demo-kp-center__progress-text {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--color-text-secondary) !important;
+  }
+  
+  .demo-app-container .text-link {
+    padding: 8px 12px;
+    margin: -8px -12px;
+  }
+  
+  .demo-app-container .button:active,
+  .demo-app-container .text-link:active,
+  .demo-app-container .close-button:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  .demo-app-container .demo-mini-tip--absolute {
+    position: fixed !important;
+    bottom: max(120px, env(safe-area-inset-bottom) + 100px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 85% !important;
+    max-width: 320px !important;
+    z-index: 4 !important;
+  }
+}
+
+/* ============================================================
+   REAL MOBILE DEVICES: Traditional Media Query
+   For actual mobile devices (not demo mockup)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* All the same styles as container query, but for real mobile viewports */
+  .demo-kp-center {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 10002 !important;
+    background: var(--color-background) !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .modal-overlay {
+    padding: 0 !important;
+  }
+  
+  /* (остальные styly jsou stejné jako v container query) */
+  .demo-kp-center__measurement-area {
+    position: relative !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 
+      max(34px, env(safe-area-inset-top))
+      max(20px, env(safe-area-inset-right))
+      max(34px, env(safe-area-inset-bottom))
+      max(20px, env(safe-area-inset-left)) !important;
+  }
+  
+  /* Touch targets & font sizes matching container query */
+  .button {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 24px !important;
+  }
+  
+  .kp-center__timer,
+  .kp-center__intermediate-value,
+  .kp-center__final-value {
+    font-size: 56px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+  }
+}
+
+/* ============================================================
+   Landscape Mobile Optimization
+   For real mobile devices in landscape orientation
+   ============================================================ */
+@media (max-width: 768px) and (max-height: 600px) and (orientation: landscape) {
+  .demo-kp-center {
+    overflow-y: auto !important;
+  }
+  
+  .demo-kp-center__measurement-area {
+    padding: 16px 20px !important;
+  }
+  
+  /* Breathing circle - smaller in landscape */
+  .breathing-circle {
+    width: 180px !important;
+    height: 180px !important;
+  }
+  
+  .demo-kp-center__title {
+    font-size: 18px !important;
+    top: max(16px, env(safe-area-inset-top)) !important;
+  }
+  
+  .demo-kp-center__actions,
+  .demo-kp-center__measurement-area > .button {
+    bottom: max(20px, env(safe-area-inset-bottom) + 8px) !important;
+  }
+}

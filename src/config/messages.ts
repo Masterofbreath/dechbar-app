@@ -403,21 +403,50 @@ export const MESSAGES = {
     timeline: {
       title: "Co tě čeká",
       breakingText: "Změň své ráno. Změní se ti den.",
-      emailHint: "Připomeneme ti to e-mailem.",
       now: "TEĎ",
-      nowAction: "Registruj se a potvrď e-mail.",
+      nowAction: "Registruj se. Potvrď e-mail.",
       registration: "26. ÚNORA",
       registrationAction: "Spouštíme appku. Otestuj ji.",
       start: "1. BŘEZNA",
-      startAction: "Startujeme výzvu.",
+      startAction: "Výzva startuje.",
+    },
+    
+    // FAQ section
+    faq: {
+      title: "Časté otázky",
+      questions: [
+        {
+          question: "Je to opravdu zdarma?",
+          answer: "Ano. Celá výzva je zdarma. Žádné skryté poplatky."
+        },
+        {
+          question: "Zvládnu výzvu i když nemám žádné zkušenosti?",
+          answer: "Ano. Výzva je dělaná pro nováčky i profíky."
+        },
+        {
+          question: "Co když nestihnu ráno?",
+          answer: "Audio je dostupné celý den. Dýchej, kdy se ti to hodí."
+        },
+        {
+          question: "Co když vynechám den?",
+          answer: "Nic se neděje. Pokračuj druhý den. Nejde o perfekci."
+        },
+        {
+          question: "Jak výzva bude probíhat?",
+          answer: "Každé ráno klikneš na 'Dnešní dechpresso' a dýcháš. 7 minut. Jednoduché a praktické."
+        },
+        {
+          question: "Můžu to zkusit předem?",
+          answer: "21.2. pošleme všem registrovaným ochutnávku do mailu. Pak se rozhodneš."
+        }
+      ]
     },
     
     // Final CTA section
     final: {
-      headline: "21 dní, které změní tvoje rána.",
+      headline: "Změň své ráno za 21 dní.",
       cta: "Chci začít →",
-      subtext1: "Registrace zdarma.",
-      subtext2: "Žádné závazky.",
+      subtext: "Zdarma. 7 minut denně.",
     },
   },
 } as const;

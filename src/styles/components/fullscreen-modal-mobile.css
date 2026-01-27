@@ -29,7 +29,8 @@
      ============================================================ */
   
   .kp-center .close-button,
-  .session-engine-modal__content .close-button {
+  .session-engine-modal__content .close-button,
+  .session-start .close-button {
     position: fixed !important;
     top: max(16px, env(safe-area-inset-top)) !important;
     right: max(16px, env(safe-area-inset-right)) !important;
@@ -38,13 +39,14 @@
   
   /* ============================================================
      Title - Left Aligned (next to CloseButton)
-     Applies to: KP Center titles
+     Applies to: KP Center, Session Engine
      
      Design: Title and CloseButton on same row for space efficiency
      Alignment: Flex centering for visual consistency with CloseButton
      ============================================================ */
   
-  .kp-center__title {
+  .kp-center__title,
+  .session-exercise-name {
     position: fixed !important;
     top: max(16px, env(safe-area-inset-top)) !important;
     left: max(16px, env(safe-area-inset-left)) !important;

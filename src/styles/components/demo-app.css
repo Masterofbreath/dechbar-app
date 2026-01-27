@@ -129,9 +129,13 @@
    ============================================================ */
 
 .demo-app-container {
+  /* Container Query Setup - enables responsive styles based on container size */
+  container-type: inline-size;
+  container-name: app-viewport;
+  
   width: 375px;
   height: 812px;
-  transform: scale(0.693); /* 260/375 = perfect fit in SVG */
+  transform: scale(0.693); /* 260/375 = perfect fit in SVG (single source of truth) */
   transform-origin: top left;
   border-radius: 30px;
   overflow: hidden;
@@ -179,33 +183,21 @@
    Responsive Scaling (Mobile to Desktop)
    ============================================================ */
 
-/* Desktop (1024px+): Full size */
-@media (width >= 1024px) {
-  .demo-app-container {
-    transform: scale(0.693);
-  }
-}
-
-/* Tablet (768px - 1023px): Slightly smaller */
-@media (width <= 1023px) {
-  .hero-mockup__phone {
-    transform: scale(0.8);
-  }
-}
-
-/* Mobile (480px - 767px): More compact */
-@media (width <= 767px) {
-  .hero-mockup__phone {
-    transform: scale(0.7);
-  }
-}
-
-/* Small mobile (< 480px): Smallest */
-@media (width <= 479px) {
-  .hero-mockup__phone {
-    transform: scale(0.6);
-  }
-}
+/* ============================================================
+   RESPONSIVE SCALING REMOVED (Clean Architecture)
+   ============================================================
+   
+   Size control is now handled by max-width on wrapper:
+   - challenge.css: .challenge-hero__visual { max-width: 300px; }
+   - landing.css: .landing-hero__visual { max-width: 300px; }
+   
+   Benefits:
+   - Single scale value (0.693) - easier maintenance
+   - Separation of concerns (scale = internal, max-width = external)
+   - Consistent mockup size across all breakpoints
+   - Better mobile readability (260px > 156px from double scaling)
+   
+   ============================================================ */
 
 /* ============================================================
    Accessibility

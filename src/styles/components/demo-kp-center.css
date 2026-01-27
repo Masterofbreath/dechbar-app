@@ -1,0 +1,330 @@
+/* ============================================================
+   Demo KP Center Modal Styles - Desktop Base
+   Simplified version of kp-center.css for demo mockup
+   ============================================================ */
+
+/* ============================================================
+   Base Modal
+   ============================================================ */
+.demo-kp-center {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  min-height: 720px;
+  max-height: 720px;
+  background: var(--color-background);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   Title
+   ============================================================ */
+.demo-kp-center__title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+  padding: var(--spacing-6) var(--spacing-6) 0;
+}
+
+/* ============================================================
+   Description (under title in ready view)
+   ============================================================ */
+.demo-kp-center__description {
+  position: absolute;
+  top: 130px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: 420px;
+  text-align: center;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  padding: 0 var(--spacing-6);
+  opacity: 0.9;
+}
+
+/* ============================================================
+   Result Message (po finálním měření)
+   ============================================================ */
+.demo-kp-center__result-message {
+  position: absolute;
+  top: 130px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: 450px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  padding: 0 var(--spacing-6);
+  opacity: 0;
+  animation: fade-in-up 0.6s ease-out 0.3s forwards;
+}
+
+.demo-kp-center__result-message strong {
+  display: block;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-1);
+}
+
+/* Animation for result message */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   Measurement Area (Static Circle + Button)
+   ============================================================ */
+.demo-kp-center__measurement-area {
+  position: relative;
+  min-height: 580px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-8) var(--spacing-6);
+}
+
+/* Static Breathing Circle (simplified version) */
+.demo-breathing-circle {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, 
+    rgba(44, 190, 198, 0.05) 0%, 
+    rgba(44, 190, 198, 0.02) 100%);
+  border: 2px solid rgba(44, 190, 198, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  position: relative;
+  box-shadow: 
+    0 0 40px rgba(44, 190, 198, 0.1),
+    inset 0 0 60px rgba(44, 190, 198, 0.02);
+}
+
+/* Circle content variants */
+.demo-kp-center__circle-empty {
+  font-size: 64px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  letter-spacing: -2px;
+}
+
+.demo-kp-center__timer {
+  font-size: 48px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -2px;
+  text-align: center;
+}
+
+.demo-kp-center__intermediate-value {
+  font-size: 48px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -2px;
+  text-align: center;
+}
+
+.demo-kp-center__final-value {
+  font-size: 48px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -2px;
+  text-align: center;
+  animation: fade-in-scale 0.5s ease-out;
+}
+
+/* Fade in + scale animation */
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================================
+   Progress Indicator
+   ============================================================ */
+.demo-kp-center__progress-indicator {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  text-align: center;
+  z-index: 1;
+}
+
+.demo-kp-center__progress-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ============================================================
+   Instructions & Help
+   ============================================================ */
+.demo-kp-center__instruction {
+  position: absolute;
+  bottom: 115px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.demo-kp-center__help {
+  position: absolute;
+  bottom: 115px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  text-align: center;
+  display: block;
+}
+
+/* ============================================================
+   Button Positioning (ALWAYS same position)
+   ============================================================ */
+.demo-kp-center__measurement-area > .button,
+.demo-kp-center__measurement-area > .demo-kp-center__actions {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 420px;
+  max-width: 90%;
+}
+
+/* ============================================================
+   Instructions Fullscreen View
+   ============================================================ */
+.demo-kp-center__instructions-fullscreen {
+  position: relative;
+  padding: var(--spacing-8) var(--spacing-6);
+  max-width: 550px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 580px;
+}
+
+.demo-kp-center__instructions-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+  text-align: center;
+}
+
+.demo-kp-center__instructions-list {
+  list-style: decimal;
+  padding-left: var(--spacing-5);
+  margin: 0 0 var(--spacing-8) 0;
+}
+
+.demo-kp-center__instructions-list li {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-3) 0;
+  line-height: 1.6;
+}
+
+.demo-kp-center__instructions-detail {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  display: block;
+  margin-top: var(--spacing-2);
+}
+
+.demo-kp-center__instructions-check {
+  margin-top: 0;
+  padding-top: var(--spacing-3);
+  border-top: none;
+  color: var(--color-success);
+}
+
+.demo-kp-center__instructions-check strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Button v instructions NA STEJNÉ pozici */
+.demo-kp-center__instructions-fullscreen > .button {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 420px;
+  max-width: 90%;
+}
+
+/* ============================================================
+   Mini Tip Component
+   ============================================================ */
+.demo-mini-tip {
+  background: rgba(44, 190, 198, 0.05);
+  border: 1px solid rgba(44, 190, 198, 0.15);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-top: var(--spacing-4);
+}
+
+.demo-mini-tip strong {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.demo-mini-tip--absolute {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
+  max-width: 380px;
+  margin-top: 0;
+}
+
+/* ============================================================
+   Responsive - Tablet
+   ============================================================ */
+@media (width <= 767px) {
+  .demo-kp-center {
+    min-height: 720px;
+    max-height: min(720px, 90vh);
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  }
+}

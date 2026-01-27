@@ -210,6 +210,102 @@ npm run test:e2e session-engine
 - [Visual Brand Book](../../../../docs/brand/VISUAL_BRAND_BOOK.md)
 - [Tone of Voice](../../../../docs/design-system/TONE_OF_VOICE.md)
 
+---
+
+## Mobile & PWA Behavior (v2.41.6+)
+
+### Fullscreen Immersive Mode
+
+Na mobile (≤768px) se Session Engine zobrazuje jako **fullscreen modal** (bez top/bottom nav):
+
+```css
+@media (max-width: 768px) {
+  .session-engine-modal__content {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 10002 !important;
+  }
+}
+```
+
+**Výhody:**
+- ✅ Immersive focus (žádné rozptýlení)
+- ✅ Maximální prostor pro breathing circle
+- ✅ Plynulá PWA experience
+
+### iOS Safe Area Padding
+
+**Symetrický padding** pro TRUE vertical centering:
+
+```css
+.session-states-wrapper {
+  padding: 
+    max(34px, env(safe-area-inset-top))      /* ✅ Top */
+    max(20px, env(safe-area-inset-right))
+    max(34px, env(safe-area-inset-bottom))   /* ✅ Bottom - SHODNÝ! */
+    max(20px, env(safe-area-inset-left));
+}
+```
+
+**Proč symetrický?**
+- iOS: top ~47px (notch), bottom ~34px (home indicator)
+- Asymetrie → Circle posunutý níže
+- **Fix:** Použít max() hodnotu (34px+) pro obě strany
+- **Výsledek:** Breathing circle TRUE centered ✅
+
+### Breathing Circle Centering
+
+```css
+@media (max-width: 768px) {
+  .breathing-circle-container {
+    position: fixed !important;
+    top: 50vh !important;
+    left: 50vw !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 2 !important;
+  }
+}
+```
+
+**Fixed position** zajišťuje:
+- ✅ Centrování relativně k viewportu (ne parent)
+- ✅ Konzistence s KP measurement
+- ✅ Respektuje safe area padding
+
+### CloseButton Positioning
+
+Centralizováno v `fullscreen-modal-mobile.css`:
+
+```css
+.session-engine-modal__content .close-button {
+  position: fixed !important;
+  top: max(16px, env(safe-area-inset-top)) !important;
+  right: max(16px, env(safe-area-inset-right)) !important;
+  z-index: 20 !important;
+}
+```
+
+### Testing on Mobile
+
+**Ngrok Workflow:**
+```bash
+npm run dev        # Port 5173
+ngrok http 5173    # Získej public URL
+# Otevři na iPhone → Test protokol
+```
+
+**Test Checklist:**
+1. ✅ Fullscreen (no top/bottom nav)?
+2. ✅ Breathing circle centered?
+3. ✅ CloseButton accessible (top-right)?
+4. ✅ Safe areas respektovány?
+5. ✅ Phase transitions smooth?
+6. ✅ Audio cues working?
+
+---
+
 ## Migration Notes
 
 ### From Old Structure (2026-01-20)

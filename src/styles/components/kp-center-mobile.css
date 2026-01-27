@@ -35,10 +35,13 @@
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
+    /* ✅ PWA FIX: Rovnoměrný padding pro TRUE vertical center
+       iOS safe areas: top ~47px, bottom ~34px
+       Používáme max() z obou hodnot pro symetrii */
     padding: 
-      max(24px, env(safe-area-inset-top))
+      max(34px, env(safe-area-inset-top))
       max(20px, env(safe-area-inset-right))
-      max(24px, env(safe-area-inset-bottom))
+      max(34px, env(safe-area-inset-bottom))
       max(20px, env(safe-area-inset-left)) !important;
   }
   

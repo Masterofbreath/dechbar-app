@@ -89,32 +89,89 @@
   border-radius: var(--radius-full);
   backdrop-filter: blur(16px);
   padding: 4px; /* Inner padding for buttons */
-  opacity: 0.75; /* Muted to show disabled state, but visible */
+  opacity: 0.75; /* Muted by default */
+  transition: opacity 0.2s ease; /* ✅ Smooth transition */
+}
+
+/* ✅ Hover effect on entire pill */
+.demo-top-nav__right:hover {
+  opacity: 1; /* Full visibility on hover */
 }
 
 /* ============================================================
-   Bell + Settings Buttons (Disabled)
+   Bell + Settings Buttons
    ============================================================ */
 
-.demo-top-nav__bell-button,
-.demo-top-nav__settings-button {
+/* Bell button (still locked) */
+.demo-top-nav__bell-button {
   padding: 7px; /* 38x38 touch target */
-  color: var(--color-text-primary); /* Světlejší barva pro lepší viditelnost */
+  color: var(--color-text-primary);
   min-width: 38px;
   min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: not-allowed; /* Disabled in demo */
+  cursor: not-allowed; /* Still disabled */
   background: transparent;
   border: none;
 }
 
-/* Hover state pro lepší UX (i když je disabled) */
-.demo-top-nav__bell-button:hover,
-.demo-top-nav__settings-button:hover {
+/* Settings button (now functional) */
+.demo-top-nav__settings-button {
+  padding: 7px; /* 38x38 touch target */
   color: var(--color-text-primary);
-  opacity: 0.7;
+  min-width: 38px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer; /* ✅ Settings now functional */
+  background: transparent;
+  border: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* Settings icon SVG transition for smooth rotation */
+.demo-top-nav__settings-button svg {
+  transition: transform 0.3s ease;
+}
+
+/* Hover states */
+.demo-top-nav__bell-button:hover {
+  color: var(--color-text-primary);
+  opacity: 0.7; /* Muted hover for locked state */
+}
+
+.demo-top-nav__settings-button:hover {
+  opacity: 0.85; /* Active hover for functional button */
+}
+
+/* ============================================================
+   HOVER STATES - Desktop/Trackpad Only (Match Real App)
+   ============================================================ */
+
+/* Desktop/trackpad only - NO hover on touch devices */
+@media (hover: hover) and (pointer: fine) {
+  /* Pill container hover - TEAL glow (match real app) */
+  .demo-top-nav__right:hover {
+    opacity: 1;
+    background: rgba(44, 190, 198, 0.05);  /* ✅ TEAL glow */
+    border-color: rgba(44, 190, 198, 0.2); /* ✅ TEAL border */
+  }
+  
+  /* Settings button hover - TEAL color + 45° rotation */
+  .demo-top-nav__settings-button:hover {
+    color: var(--color-primary); /* ✅ TEAL color (#2CBEC6) */
+  }
+  
+  .demo-top-nav__settings-button:hover svg {
+    transform: rotate(45deg); /* ✅ 45° rotation (gear icon spins) */
+  }
+  
+  /* Bell button stays muted (locked) */
+  .demo-top-nav__bell-button:hover {
+    opacity: 0.7; /* Keep muted effect */
+  }
 }
 
 /* ============================================================
