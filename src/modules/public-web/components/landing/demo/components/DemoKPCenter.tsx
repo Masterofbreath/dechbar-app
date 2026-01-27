@@ -28,6 +28,7 @@ export interface DemoKPCenterProps {
   isOpen: boolean;
   onClose: () => void;
   onConversionTrigger: (averageKP: number, attempts: number[]) => void;
+  onEmailModalOpen: () => void;
 }
 
 /**
@@ -36,7 +37,8 @@ export interface DemoKPCenterProps {
 export function DemoKPCenter({ 
   isOpen, 
   onClose, 
-  onConversionTrigger 
+  onConversionTrigger,
+  onEmailModalOpen
 }: DemoKPCenterProps) {
   const [viewMode, setViewMode] = useState<DemoViewMode>('ready');
   
@@ -50,16 +52,11 @@ export function DemoKPCenter({
   }, [isOpen]);
   
   /**
-   * Immersive mode on mobile
+   * NO immersive mode in demo mockup
+   * Demo is already isolated in 375x812px container (foreignObject)
+   * Immersive mode would manipulate document.body → breaks foreignObject layout
+   * Modal uses position: absolute (relative to demo-app-container)
    */
-  useEffect(() => {
-    if (isOpen && window.innerWidth <= 768) {
-      document.body.classList.add('immersive-mode');
-    }
-    return () => {
-      document.body.classList.remove('immersive-mode');
-    };
-  }, [isOpen]);
   
   /**
    * Handle start measurement
@@ -69,16 +66,14 @@ export function DemoKPCenter({
   };
   
   /**
-   * Handle measurement complete
+   * Handle measurement complete (stores data, opens email modal immediately)
    */
   const handleMeasurementComplete = (averageKP: number, attempts: number[]) => {
-    // Close KP modal first
-    onClose();
+    // Store KP data in parent state
+    onConversionTrigger(averageKP, attempts);
     
-    // Then trigger conversion modal with KP data
-    setTimeout(() => {
-      onConversionTrigger(averageKP, attempts);
-    }, 300); // Slight delay for smooth transition
+    // Open email modal immediately (no result screen)
+    onEmailModalOpen();
   };
   
   /**

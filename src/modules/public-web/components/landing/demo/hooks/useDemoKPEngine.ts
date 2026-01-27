@@ -11,7 +11,6 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useToast } from '@/platform/components/Toast';
 
 /**
  * Timer state machine (simplified)
@@ -25,17 +24,18 @@ interface TimerState {
 
 /**
  * Engine phase (what UI shows)
+ * Note: 'result' phase removed - user goes straight to email modal
  */
 export type DemoKPPhase = 
   | 'measuring'      // Timer běží
-  | 'awaiting_next'  // Intermediate result
-  | 'result';        // Final result
+  | 'awaiting_next'; // Intermediate result
 
 /**
  * Hook options
  */
 export interface UseDemoKPEngineOptions {
   onComplete: (averageKP: number, attempts: number[]) => void;
+  onSaveResult: () => void;
 }
 
 /**
@@ -59,7 +59,7 @@ function formatTimerSeconds(ms: number): string {
 /**
  * useDemoKPEngine Hook
  */
-export function useDemoKPEngine({ onComplete }: UseDemoKPEngineOptions) {
+export function useDemoKPEngine({ onComplete, onSaveResult }: UseDemoKPEngineOptions) {
   const [enginePhase, setEnginePhase] = useState<DemoKPPhase>('measuring');
   const [timerState, setTimerState] = useState<TimerState>({
     phase: 'idle',
@@ -69,7 +69,6 @@ export function useDemoKPEngine({ onComplete }: UseDemoKPEngineOptions) {
   });
   
   const intervalRef = useRef<number | null>(null);
-  const { show: showToast } = useToast();
   
   const totalAttempts = 3; // Locked for demo
   
@@ -109,15 +108,34 @@ export function useDemoKPEngine({ onComplete }: UseDemoKPEngineOptions) {
       const newAttempts = [...prev.attempts];
       newAttempts[prev.currentAttempt] = seconds;
       
+      const newCurrentAttempt = prev.currentAttempt + 1;
+      
+      // Check if this was the LAST attempt
+      const isLastAttempt = newCurrentAttempt >= totalAttempts;
+      
       return {
         ...prev,
-        phase: 'awaiting_next',
+        phase: isLastAttempt ? 'idle' : 'awaiting_next',
         attempts: newAttempts,
-        currentAttempt: prev.currentAttempt + 1,  // ✅ INCREMENT HERE (match real app)
+        currentAttempt: newCurrentAttempt,
       };
     });
     
-    setEnginePhase('awaiting_next');
+    // ✅ OPTIMIZED FLOW: If last attempt, open email modal immediately (skip result screen)
+    const isLastAttempt = timerState.currentAttempt + 1 >= totalAttempts;
+    if (isLastAttempt) {
+      // Store completion data
+      const newAttempts = [...timerState.attempts];
+      newAttempts[timerState.currentAttempt] = seconds;
+      const validAttempts = newAttempts.filter((a): a is number => a !== null && a > 0);
+      const average = calculateAverage(newAttempts);
+      onComplete(average, validAttempts);
+      
+      // Open email modal immediately (no result screen)
+      onSaveResult();
+    } else {
+      setEnginePhase('awaiting_next');
+    }
   };
   
   /**
@@ -151,6 +169,7 @@ export function useDemoKPEngine({ onComplete }: UseDemoKPEngineOptions) {
   
   /**
    * Finish early (user clicked "Ukončit měření")
+   * ✅ OPTIMIZED FLOW: Open email modal immediately (skip result screen)
    */
   const finishEarly = () => {
     if (intervalRef.current) {
@@ -161,13 +180,11 @@ export function useDemoKPEngine({ onComplete }: UseDemoKPEngineOptions) {
     const validAttempts = timerState.attempts.filter((a): a is number => a !== null && a > 0);
     const average = calculateAverage(timerState.attempts);
     
-    setEnginePhase('result');
+    // Store completion data
+    onComplete(average, validAttempts);
     
-    // Trigger conversion after 2s
-    setTimeout(() => {
-      showToast('Hotovo! Teď si to ulož.');
-      onComplete(average, validAttempts);
-    }, 2000);
+    // Open email modal immediately (no result screen)
+    onSaveResult();
   };
   
   /**

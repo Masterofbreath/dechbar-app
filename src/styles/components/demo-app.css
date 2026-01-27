@@ -140,6 +140,9 @@
   border-radius: 30px;
   overflow: hidden;
   pointer-events: auto; /* Enable clicks inside demo */
+  
+  /* iOS Safari Fix: Isolate touch handling to prevent parent scroll */
+  touch-action: pan-y; /* Allow vertical scroll only, block horizontal + zoom */
 }
 
 /* ============================================================
@@ -198,6 +201,29 @@
    - Better mobile readability (260px > 156px from double scaling)
    
    ============================================================ */
+
+/* ============================================================
+   iOS Safari Focus Scroll Prevention
+   ============================================================
+   
+   Problem: iOS Safari auto-scrolls focused elements into view,
+   which breaks UX in scaled SVG foreignObject context.
+   
+   Solution: Multi-layer approach:
+   1. scroll-margin: 0 tells browser not to scroll
+   2. touch-action: manipulation disables pan/zoom on buttons
+   ============================================================ */
+
+.demo-app-container button,
+.demo-app-container .kp-display,
+.demo-app-container a {
+  scroll-margin-top: 0 !important;
+  scroll-margin-bottom: 0 !important;
+  scroll-snap-stop: normal !important;
+  
+  /* iOS Safari Fix: Disable touch-based scrolling on interactive elements */
+  touch-action: manipulation; /* Only allow tap, no pan/zoom */
+}
 
 /* ============================================================
    Accessibility

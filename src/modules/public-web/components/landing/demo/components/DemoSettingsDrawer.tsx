@@ -10,7 +10,7 @@
  * @subpackage PublicWeb/Demo
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NavIcon } from '@/platform/components';
 import { CloseButton } from '@/components/shared';
 import { useToast } from '@/platform/components/Toast';
@@ -89,15 +89,9 @@ export function DemoSettingsDrawer({ isOpen, onClose }: DemoSettingsDrawerProps)
     setTouchEnd(null);
   };
   
-  // Prevent body scroll when drawer is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+  // NO scroll lock needed in demo mockup
+  // Demo is isolated in foreignObject, locking body causes iOS bugs
+  // User scrolls parent page, not demo mockup
   
   if (!isOpen && !isClosing) return null;
   

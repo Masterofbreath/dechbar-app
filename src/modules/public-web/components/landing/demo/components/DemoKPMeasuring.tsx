@@ -13,7 +13,6 @@
 import { useEffect } from 'react';
 import { Button, TextLink } from '@/platform/components';
 import { BreathingCircle } from '@/components/shared/BreathingCircle';
-import { MiniTip } from '@/platform/components/shared/MiniTip';
 import { useDemoKPEngine } from '../hooks/useDemoKPEngine';
 
 export interface DemoKPMeasuringProps {
@@ -26,6 +25,7 @@ export interface DemoKPMeasuringProps {
 export function DemoKPMeasuring({ onComplete }: DemoKPMeasuringProps) {
   const engine = useDemoKPEngine({
     onComplete,
+    onSaveResult: () => {}, // No-op (email modal opened by engine automatically)
   });
   
   // Keyboard shortcuts (match real app)
@@ -78,13 +78,6 @@ export function DemoKPMeasuring({ onComplete }: DemoKPMeasuringProps) {
           </div>
         );
       
-      case 'result':
-        return (
-          <div className="kp-center__final-value">
-            {engine.averageKP}s
-          </div>
-        );
-      
       default:
         return <div className="kp-center__circle-placeholder">--</div>;
     }
@@ -111,12 +104,8 @@ export function DemoKPMeasuring({ onComplete }: DemoKPMeasuringProps) {
         );
       
       case 'awaiting_next': {
-        const isLastAttempt = engine.currentAttempt >= engine.totalAttempts;
-        
         // Dynamic button text
         const getButtonText = () => {
-          if (isLastAttempt) return 'Hotovo';
-          
           const nextAttempt = engine.currentAttempt + 1;
           if (nextAttempt === 2) return 'Začít druhé měření';
           if (nextAttempt === 3) return 'Začít poslední měření';
@@ -126,7 +115,7 @@ export function DemoKPMeasuring({ onComplete }: DemoKPMeasuringProps) {
         return (
           <>
             {/* Help Link - "Ukončit měření" only after first measurement */}
-            {!isLastAttempt && engine.currentAttempt === 1 && (
+            {engine.currentAttempt === 1 && (
               <div className="demo-kp-center__help">
                 <TextLink onClick={engine.finishEarly}>
                   Ukončit měření
@@ -134,33 +123,18 @@ export function DemoKPMeasuring({ onComplete }: DemoKPMeasuringProps) {
               </div>
             )}
             
-            {/* Primary button - ALWAYS in same position */}
+            {/* Primary button */}
             <Button 
               variant="primary" 
               fullWidth 
               size="lg"
-              onClick={isLastAttempt ? engine.finishEarly : engine.continueNext}
+              onClick={engine.continueNext}
             >
               {getButtonText()}
             </Button>
           </>
         );
       }
-      
-      case 'result':
-        return (
-          <Button 
-            variant="primary"
-            size="lg"
-            fullWidth
-            onClick={() => {
-              // Conversion will be triggered by onComplete callback
-              // This button just ensures UI consistency
-            }}
-          >
-            Uložit a registrovat se
-          </Button>
-        );
       
       default:
         return null;
@@ -185,22 +159,6 @@ export function DemoKPMeasuring({ onComplete }: DemoKPMeasuringProps) {
         );
       })()}
       
-      {/* Result message (when phase === 'result') - ABOVE measurement area */}
-      {engine.phase === 'result' && (() => {
-        const validCount = engine.attempts.filter((a): a is number => a !== null && a > 0).length;
-        const isSingleMeasurement = validCount === 1;
-        
-        return (
-          <p className="demo-kp-center__result-message">
-            <strong>Máš změřeno!</strong>
-            {isSingleMeasurement 
-              ? ' Toto je tvůj výsledek z jednoho měření. Pro přesnější hodnotu proveď tři měření.'
-              : ' Toto číslo je průměr ze všech tří měření. Trénuj, změř znovu za týden a sleduj svůj pokrok.'
-            }
-          </p>
-        );
-      })()}
-      
       {/* Measurement Area - ALWAYS same structure */}
       <div className="demo-kp-center__measurement-area">
         <BreathingCircle variant="static" size={280}>
@@ -208,21 +166,6 @@ export function DemoKPMeasuring({ onComplete }: DemoKPMeasuringProps) {
         </BreathingCircle>
         
         {renderButton()}
-        
-        {/* Tip BELOW button (same as in instructions) - only for result view */}
-        {engine.phase === 'result' && (() => {
-          const now = new Date();
-          const hour = now.getHours();
-          const shouldShowTimeTip = hour >= 9 || hour < 4;
-          
-          if (!shouldShowTimeTip) return null;
-          
-          return (
-            <MiniTip variant="absolute">
-              <strong>Tip:</strong> Pro nejpřesnější výsledky měř KP ráno hned po probuzení.
-            </MiniTip>
-          );
-        })()}
       </div>
     </>
   );

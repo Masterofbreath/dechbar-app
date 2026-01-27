@@ -12,7 +12,7 @@
  * @subpackage PublicWeb/Demo
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DemoDnesView } from './views/DemoDnesView';
 import { DemoCvicitView } from './views/DemoCvicitView';
 import { DemoTopNav } from './components/DemoTopNav';
@@ -20,6 +20,7 @@ import { DemoBottomNav } from './components/DemoBottomNav';
 import { LockedExerciseModal } from './components/LockedExerciseModal';
 import { DemoSettingsDrawer } from './components/DemoSettingsDrawer';
 import { DemoKPCenter } from './components/DemoKPCenter';
+import { DemoEmailModal } from './components/DemoEmailModal';
 import { ToastProvider } from '@/platform/components/Toast';
 import { useDemoAnalytics } from './hooks/useDemoAnalytics';
 import type { DemoView, DemoState } from './types/demo.types';
@@ -38,10 +39,34 @@ export function DemoApp() {
     isModalOpen: false,
     isSettingsOpen: false,
     isKPOpen: false,
+    isEmailModalOpen: false,
     kpMeasurementData: null,
   });
   
   const { track } = useDemoAnalytics();
+  
+  /**
+   * FAILSAFE: Force unlock body scroll if stuck
+   * Prevents iOS Safari foreignObject bug where cleanup doesn't run
+   */
+  useEffect(() => {
+    const unlockBodyScroll = () => {
+      // Force unlock body if stuck (defensive programming)
+      if (document.body.style.overflow === 'hidden') {
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+      }
+    };
+    
+    // Unlock on window focus (user returns to page)
+    window.addEventListener('focus', unlockBodyScroll);
+    
+    // Cleanup: Always unlock on unmount
+    return () => {
+      window.removeEventListener('focus', unlockBodyScroll);
+      unlockBodyScroll();
+    };
+  }, []);
   
   /**
    * Handle tab switching
@@ -198,14 +223,13 @@ export function DemoApp() {
   };
   
   /**
-   * Handle KP measurement complete → trigger conversion
+   * Handle KP measurement complete → open email modal
    */
   const handleKPConversion = (averageKP: number, attempts: number[]) => {
     // Store KP data
     setState(prev => ({ 
       ...prev, 
       kpMeasurementData: { averageKP, attempts },
-      isModalOpen: true, // Open conversion modal
     }));
     
     track({
@@ -214,10 +238,51 @@ export function DemoApp() {
       attempts: attempts.length,
       timestamp: Date.now(),
     });
+  };
+  
+  /**
+   * Handle Email modal open (after KP measurement)
+   */
+  const handleEmailModalOpen = () => {
+    setState(prev => ({ ...prev, isEmailModalOpen: true }));
+    
+    track({
+      action: 'email_modal_open',
+      kpValue: state.kpMeasurementData?.averageKP,
+      timestamp: Date.now(),
+    });
+  };
+  
+  /**
+   * Handle Email modal close
+   */
+  const handleEmailModalClose = () => {
+    setState(prev => ({ ...prev, isEmailModalOpen: false }));
+  };
+  
+  /**
+   * Handle Email submit → close both modals, open conversion modal
+   */
+  const handleKPEmailSubmit = (email: string) => {
+    // Close both modals
+    setState(prev => ({
+      ...prev,
+      isEmailModalOpen: false,
+      isKPOpen: false,
+      isModalOpen: true, // Open conversion modal
+    }));
+    
+    // Track email submission
+    track({
+      action: 'email_submitted',
+      email,
+      kpValue: state.kpMeasurementData?.averageKP,
+      timestamp: Date.now(),
+    });
     
     track({
       action: 'kp_conversion_triggered',
-      kpValue: averageKP,
+      kpValue: state.kpMeasurementData?.averageKP,
       timestamp: Date.now(),
     });
   };
@@ -269,6 +334,15 @@ export function DemoApp() {
           isOpen={state.isKPOpen}
           onClose={handleKPClose}
           onConversionTrigger={handleKPConversion}
+          onEmailModalOpen={handleEmailModalOpen}
+        />
+        
+        {/* Email Registration modal */}
+        <DemoEmailModal
+          isOpen={state.isEmailModalOpen}
+          onClose={handleEmailModalClose}
+          onSubmit={handleKPEmailSubmit}
+          kpValue={state.kpMeasurementData?.averageKP ?? 0}
         />
       </div>
     </ToastProvider>

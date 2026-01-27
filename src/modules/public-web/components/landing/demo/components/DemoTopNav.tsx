@@ -119,7 +119,24 @@ export function DemoTopNav({ onSettingsClick, onKPClick }: DemoTopNavProps) {
         
         <button
           className="kp-display kp-display--good"
-          onClick={(e) => onKPClick(e)}
+          onTouchStart={(e) => {
+            // iOS Safari Fix: Prevent Safari from preparing scroll on touch
+            e.preventDefault();
+          }}
+          onTouchEnd={(e) => {
+            // iOS Safari Fix: Prevent default BEFORE Safari scrolls (mobile)
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.blur(); // currentTarget = always button (not nested span)
+            onKPClick(e as any);
+          }}
+          onClick={(e) => {
+            // Desktop fallback
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.blur();
+            onKPClick(e);
+          }}
           type="button"
           aria-label="Změřit kontrolní pauzu"
         >
@@ -141,7 +158,24 @@ export function DemoTopNav({ onSettingsClick, onKPClick }: DemoTopNavProps) {
         
         <button
           className="demo-top-nav__settings-button"
-          onClick={(e) => onSettingsClick(e)}
+          onTouchStart={(e) => {
+            // iOS Safari Fix: Prevent Safari from preparing scroll on touch
+            e.preventDefault();
+          }}
+          onTouchEnd={(e) => {
+            // iOS Safari Fix: Prevent default BEFORE Safari scrolls (mobile)
+            e.preventDefault();
+            e.stopPropagation();
+            (e.target as HTMLElement).blur();
+            onSettingsClick(e as any);
+          }}
+          onClick={(e) => {
+            // Desktop fallback
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.blur();
+            onSettingsClick(e);
+          }}
           type="button"
           aria-label="Nastavení"
         >

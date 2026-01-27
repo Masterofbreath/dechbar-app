@@ -269,203 +269,38 @@
 }
 
 /* ============================================================
-   FALLBACK: Legacy Browsers without Container Query Support
-   Only applies if browser doesn't support container-type
+   ARCHITECTURE DECISION RECORD (ADR)
+   
+   Decision: Container Queries without @supports fallback
+   Date: 2026-01-27
+   Status: ACTIVE
+   
+   Context:
+   - Container queries supported in 95%+ browsers (Chrome 105+, Safari 16+, Firefox 110+)
+   - Demo mockup = marketing/preview tool (non-critical feature)
+   - Real mobile app always works via media query fallback below
+   
+   Decision:
+   - Use @container query for demo mockup (lines 11-269)
+   - Use @media query for real mobile devices (lines 271+)
+   - Remove @supports fallback to eliminate code duplication
+   
+   Consequences:
+   - ✅ Clean code: -193 lines of CSS (-35%)
+   - ✅ Single source of truth for demo mockup styling
+   - ✅ Easier maintenance (one place to update)
+   - ✅ Modern CSS standard (container queries = best practice 2026)
+   - ⚠️ Trade-off: <5% users (Safari 15, Chrome <105) see suboptimal demo mockup
+   - ✅ Mitigation: Real mobile app ALWAYS works (media query independent)
+   
+   Rollback:
+   - Git history preserves @supports fallback if needed
+   - Commit: "Remove container query fallback (ADR 2026-01-27)"
+   
+   References:
+   - Container Queries: https://caniuse.com/css-container-queries
+   - Browser support 2026: Chrome 105+ (95%), Safari 16+ (93%), Firefox 110+ (92%)
    ============================================================ */
-@supports not (container-type: inline-size) {
-  /* Force fullscreen for demo context (context-based selector) */
-  .demo-app-container .demo-kp-center {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: none !important;
-    max-height: none !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    z-index: 10002 !important;
-    background: var(--color-background) !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-  
-  .demo-app-container .modal-overlay {
-    padding: 0 !important;
-  }
-  
-  .demo-app-container .demo-kp-center__measurement-area {
-    position: relative !important;
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 
-      max(34px, env(safe-area-inset-top))
-      max(20px, env(safe-area-inset-right))
-      max(34px, env(safe-area-inset-bottom))
-      max(20px, env(safe-area-inset-left)) !important;
-  }
-  
-  .demo-app-container .demo-kp-center__progress-indicator {
-    position: fixed !important;
-    top: max(70px, env(safe-area-inset-top) + 54px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    text-align: center !important;
-    padding: 0 20px !important;
-    z-index: 1 !important;
-  }
-  
-  .demo-app-container .demo-kp-center__description {
-    position: fixed !important;
-    top: max(95px, env(safe-area-inset-top) + 79px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    text-align: center !important;
-    font-size: 14px !important;
-    padding: 0 20px !important;
-    margin: 0 !important;
-    z-index: 1 !important;
-  }
-  
-  .demo-app-container .button {
-    min-height: 48px !important;
-    min-width: 48px !important;
-    padding: 12px 24px !important;
-  }
-  
-  .demo-app-container .demo-kp-center__actions,
-  .demo-app-container .demo-kp-center__measurement-area > .button {
-    position: fixed !important;
-    bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 75% !important;
-    max-width: 320px !important;
-    padding: 0 !important;
-    z-index: 5 !important;
-  }
-  
-  .demo-app-container .demo-kp-center__instruction {
-    position: fixed !important;
-    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    text-align: center !important;
-    font-size: 14px !important;
-    padding: 0 20px !important;
-    margin: 0 !important;
-    z-index: 5 !important;
-  }
-  
-  .demo-app-container .demo-kp-center__help {
-    position: fixed !important;
-    bottom: max(110px, env(safe-area-inset-bottom) + 90px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    text-align: center !important;
-    font-size: 14px !important;
-    padding: 0 20px !important;
-    margin: 0 !important;
-    z-index: 5 !important;
-  }
-  
-  .demo-app-container .demo-kp-center__result-message {
-    position: fixed !important;
-    top: max(120px, env(safe-area-inset-top) + 104px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    text-align: center !important;
-    font-size: 14px !important;
-    line-height: 1.5 !important;
-    padding: 0 20px !important;
-    margin: 0 !important;
-    max-width: 400px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    z-index: 1 !important;
-  }
-  
-  .demo-app-container .demo-kp-center__instructions-fullscreen {
-    position: relative !important;
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 
-      max(80px, env(safe-area-inset-top) + 64px)
-      max(20px, env(safe-area-inset-right))
-      max(140px, env(safe-area-inset-bottom) + 120px)
-      max(20px, env(safe-area-inset-left)) !important;
-    overflow-y: auto !important;
-  }
-  
-  .demo-app-container .demo-kp-center__instructions-list {
-    font-size: 14px !important;
-    line-height: 1.6 !important;
-    margin-bottom: 32px !important;
-  }
-  
-  .demo-app-container .demo-kp-center__instructions-fullscreen > .button {
-    position: fixed !important;
-    bottom: max(40px, env(safe-area-inset-bottom) + 20px) !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 75% !important;
-    max-width: 320px !important;
-    padding: 0 !important;
-    z-index: 5 !important;
-  }
-  
-  .demo-app-container .kp-center__timer {
-    font-size: 56px !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em !important;
-  }
-  
-  .demo-app-container .kp-center__intermediate-value {
-    font-size: 56px !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em !important;
-  }
-  
-  .demo-app-container .kp-center__final-value {
-    font-size: 56px !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em !important;
-  }
-  
-  .demo-app-container .demo-kp-center__progress-text {
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    color: var(--color-text-secondary) !important;
-  }
-  
-  .demo-app-container .text-link {
-    padding: 8px 12px;
-    margin: -8px -12px;
-  }
-  
-  .demo-app-container .button:active,
-  .demo-app-container .text-link:active,
-  .demo-app-container .close-button:active {
-    transform: scale(0.98);
-    transition: transform 0.1s ease;
-  }
-  
-  .demo-app-container .demo-mini-tip--absolute {
-    position: fixed !important;
-    bottom: max(120px, env(safe-area-inset-bottom) + 100px) !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 85% !important;
-    max-width: 320px !important;
-    z-index: 4 !important;
-  }
-}
 
 /* ============================================================
    REAL MOBILE DEVICES: Traditional Media Query

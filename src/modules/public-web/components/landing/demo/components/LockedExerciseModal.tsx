@@ -14,8 +14,9 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/platform/components';
-import { useScrollLock, useSwipeToDismiss } from '@/platform/hooks';
+import { useSwipeToDismiss } from '@/platform/hooks';
 import { useHaptic } from '@/platform/services/haptic';
+import { useDemoScrollLock } from '../hooks/useDemoScrollLock';
 import type { Exercise } from '@/shared/exercises/types';
 
 export interface LockedExerciseModalProps {
@@ -51,7 +52,7 @@ export function LockedExerciseModal({
   const [showEmailForm, setShowEmailForm] = useState(false);
   const { trigger } = useHaptic();
   
-  useScrollLock(isOpen);
+  useDemoScrollLock(isOpen);
   
   // Swipe to dismiss
   const { handlers, style } = useSwipeToDismiss({ 
