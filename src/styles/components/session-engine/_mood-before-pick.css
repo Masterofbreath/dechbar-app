@@ -1,0 +1,66 @@
+/* ============================================================
+   MoodBeforePick Component
+   Embedded emoji picker for pre-session mood tracking
+   ============================================================ */
+
+.mood-before-pick {
+  width: 100%;
+}
+
+/* Emoji row */
+.mood-before-pick__emojis {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Emoji button */
+.mood-before-pick__emoji-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mood-before-pick__emoji-btn:hover {
+  background: var(--glow-primary-bg-subtle);
+  border-color: var(--color-primary);
+}
+
+.mood-before-pick__emoji-btn--selected {
+  background: var(--glow-primary-bg-medium);
+  border-color: var(--color-primary);
+}
+
+.mood-before-pick__emoji {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.mood-before-pick__label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .mood-before-pick__emoji-btn {
+    padding: 10px 8px;
+  }
+  
+  .mood-before-pick__emoji {
+    font-size: 28px;
+  }
+  
+  .mood-before-pick__label {
+    font-size: 10px;
+  }
+}

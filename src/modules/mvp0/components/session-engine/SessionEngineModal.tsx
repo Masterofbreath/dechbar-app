@@ -16,10 +16,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useScrollLock } from '@/platform/hooks';
 import { ConfirmModal, FullscreenModal } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
-import { MiniTip } from '@/platform/components/shared/MiniTip';
+import { Button } from '@/platform/components';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
 import { useAudioCues } from './hooks/useAudioCues';
+import { isProtocol } from '@/utils/exerciseHelpers';
 import {
   SessionStartScreen,
   SessionCountdown,
@@ -104,9 +105,10 @@ export function SessionEngineModal({
   // SESSION FLOW: State Machine
   // =====================================================
   
-  // Start session (idle → mood-before → countdown → active)
-  const startSession = useCallback(() => {
-    setSessionState('mood-before');
+  // Start session (idle → countdown for exercises with embedded mood)
+  const startSession = useCallback((mood: MoodType | null = null) => {
+    setMoodBefore(mood);
+    startCountdown(); // Skip mood-before state (merged into idle)
   }, []);
   
   // Start countdown after mood selection (or skip)
@@ -390,8 +392,8 @@ export function SessionEngineModal({
       <div className="session-engine-modal__overlay" onClick={handleClose} />
       
       <div className="session-engine-modal__content">
-        {/* IDLE: Start screen with TopBar/ContentZone/BottomBar pattern */}
-        {sessionState === 'idle' && (
+        {/* IDLE: Combined start + mood screen (exercises only) */}
+        {sessionState === 'idle' && !isProtocol(exercise) && (
           <>
             <FullscreenModal.TopBar>
               <FullscreenModal.Title>{exercise.name}</FullscreenModal.Title>
@@ -401,12 +403,20 @@ export function SessionEngineModal({
             <FullscreenModal.ContentZone>
               <SessionStartScreen
                 exercise={exercise}
-                onStart={startSession}
+                mood={moodBefore}
+                onMoodChange={setMoodBefore}
               />
             </FullscreenModal.ContentZone>
             
             <FullscreenModal.BottomBar>
-              <div /> {/* Empty placeholder */}
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => startSession(moodBefore)}
+                className="session-start__button-bottom"
+              >
+                Začít cvičení
+              </Button>
             </FullscreenModal.BottomBar>
           </>
         )}
@@ -452,13 +462,13 @@ export function SessionEngineModal({
               <SessionCountdown
                 exercise={exercise}
                 countdownNumber={countdownNumber}
+                currentPhaseIndex={currentPhaseIndex}
               />
             </FullscreenModal.ContentZone>
             
             <FullscreenModal.BottomBar>
-              <MiniTip variant="static" className="countdown-bottom-tip">
-                <strong>Tip:</strong> Najdi klidné místo a soustřeď se na dech
-              </MiniTip>
+              {/* Empty for all - MiniTip moved to ContentZone for exercises */}
+              <div />
             </FullscreenModal.BottomBar>
           </>
         )}

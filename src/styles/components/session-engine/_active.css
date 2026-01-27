@@ -22,7 +22,7 @@
 /* Timer styling - absolute positioning POD circlem */
 .session-timer {
   position: absolute;
-  bottom: 24px; /* Uvnitř 60px bottom paddingu ContentZone */
+  bottom: 12px; /* Více prostoru od circle při max expansion */
   left: 0;
   right: 0;
   text-align: center;
@@ -34,6 +34,20 @@
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   letter-spacing: -0.02em;
+}
+
+/* Phase name above circle (protocols - active) */
+.session-active__phase-name {
+  position: absolute;
+  top: 16px;
+  left: var(--fullscreen-modal-content-padding);
+  right: var(--fullscreen-modal-content-padding);
+  text-align: center;
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-transform: capitalize;
+  margin: 0;
 }
 
 /* Instructions gold box */
@@ -72,6 +86,26 @@
 }
 
 @media (max-width: 768px) {
+  .session-countdown__phase-name,
+  .session-active__phase-name {
+    font-size: 13px;
+    top: 12px;
+  }
+  
+  .session-countdown__description {
+    font-size: 13px;
+    bottom: 12px;
+  }
+  
+  .session-countdown__tip {
+    font-size: 12px;
+    bottom: 12px;
+  }
+  
+  .session-timer {
+    bottom: 12px;
+  }
+  
   .session-active__next-preview {
     font-size: 12px;
   }

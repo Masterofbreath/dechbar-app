@@ -24,10 +24,24 @@
   animation: tipFadeIn 600ms ease-in-out;
 }
 
-/* Protocol description styling - ABOVE circle (absolute) */
+/* Phase name above circle (protocols - countdown) */
+.session-countdown__phase-name {
+  position: absolute;
+  top: 16px;
+  left: var(--fullscreen-modal-content-padding);
+  right: var(--fullscreen-modal-content-padding);
+  text-align: center;
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-transform: capitalize;
+  margin: 0;
+}
+
+/* Protocol description styling - BELOW circle (absolute) */
 .session-countdown__description {
   position: absolute;
-  top: 16px; /* Uvnitř 60px top paddingu ContentZone */
+  bottom: 12px; /* Same as timer position */
   left: var(--fullscreen-modal-content-padding);
   right: var(--fullscreen-modal-content-padding);
   text-align: center;
@@ -39,12 +53,15 @@
   margin: 0 auto;
 }
 
-/* Countdown-specific tip styling - BELOW circle (absolute, same as timer) */
+/* MiniTip below circle (exercises) - same position as timer/description */
 .session-countdown__tip {
   position: absolute;
-  bottom: 24px; /* Same position as timer */
+  bottom: 12px;
   left: var(--fullscreen-modal-content-padding);
   right: var(--fullscreen-modal-content-padding);
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
   max-width: 420px;
   margin: 0 auto;
 }

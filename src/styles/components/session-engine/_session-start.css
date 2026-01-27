@@ -1,18 +1,36 @@
 /* ============================================================
    Session Engine Modal - Start Screen
-   Clean start screen with description + CTA
+   Combined modal: Icon + Description + Mood Pick
    ============================================================ */
 
 .session-start {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 16px; /* Reduced from 24px for compact feel */
   padding: 0 32px;
   text-align: center;
   width: 100%;
 }
 
+/* Icon */
+.session-start__icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg, 
+    var(--color-primary), 
+    var(--color-primary-dark)
+  );
+  border-radius: 16px;
+  color: var(--color-background);
+  flex-shrink: 0;
+}
+
+/* Description */
 .session-start__description {
   font-size: 16px;
   line-height: 1.6;
@@ -21,18 +39,66 @@
   margin: 0;
 }
 
-.session-start__button {
-  width: 75%;
-  max-width: 360px;
-  margin-top: 8px;
+/* Divider */
+.session-start__divider {
+  width: 60%;
+  height: 1px;
+  background: var(--color-border);
+  opacity: 0.3;
+  margin: 4px 0;
 }
 
+/* Mood section */
+.session-start__mood {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.session-start__mood-title {
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.session-start__mood-hint {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  opacity: 0.7;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Button in BottomBar - full width */
+.session-start__button-bottom {
+  width: 100%;
+  max-width: 360px;
+}
+
+/* Mobile */
 @media (max-width: 768px) {
   .session-start {
     padding: 0 20px;
+    gap: 12px;
   }
   
-  .session-start__button {
-    width: 100%; /* Full-width pro touch target */
+  .session-start__icon {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .session-start__description {
+    font-size: 15px;
+  }
+  
+  .session-start__mood-title {
+    font-size: 14px;
+  }
+  
+  .session-start__button-bottom {
+    width: 100%;
   }
 }

@@ -1,14 +1,6 @@
-/**
- * SessionActive - Active breathing session screen
- * 
- * Real-time breathing guidance with circle animation
- * 
- * @package DechBar_App
- * @subpackage MVP0/Components/SessionEngine
- */
-
 import { NavIcon } from '@/platform/components';
 import { BreathingCircle } from '@/components/shared/BreathingCircle';
+import { isProtocol } from '@/utils/exerciseHelpers';
 import type { Exercise, ExercisePhase } from '../../../types/exercises';
 
 interface SessionActiveProps {
@@ -22,6 +14,7 @@ interface SessionActiveProps {
 }
 
 export function SessionActive({
+  exercise,
   currentPhase,
   phaseTimeRemaining,
   currentInstruction,
@@ -45,6 +38,13 @@ export function SessionActive({
 
   return (
     <>
+      {/* Protocol: Phase name ABOVE circle */}
+      {isProtocol(exercise) && currentPhase && (
+        <p className="session-active__phase-name">
+          {currentPhase.name}
+        </p>
+      )}
+      
       {/* Breathing circle with instruction inside */}
       <BreathingCircle
         variant="animated"

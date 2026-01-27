@@ -64,6 +64,12 @@
   transform-origin: center;
   will-change: transform;
   
+  /* Initial shadow (prevents flash on countdown → active) */
+  box-shadow: 
+    0 0 20px var(--glow-primary-shadow-strong),
+    0 0 40px var(--glow-primary-shadow-medium),
+    inset 0 0 30px var(--glow-primary-shadow-subtle);
+  
   /* Smooth color transitions (800ms for calm feel) */
   transition: 
     border-color 800ms ease-in-out,

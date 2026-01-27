@@ -18,6 +18,7 @@
 
 /* Session components */
 @import './_instructions.css';
+@import './_mood-before-pick.css';
 
 /* Completion sub-components */
 @import './_difficulty-check.css';
