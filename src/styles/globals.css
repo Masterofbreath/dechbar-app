@@ -66,6 +66,10 @@
 @import url('./components/toast.css');
 @import url('./components/tooltip.css');
 
+/* FullscreenModal System */
+@import url('./components/fullscreen-modal/index.css');
+@import url('./components/fullscreen-modal-mobile.css');
+
 /* KP Component Styles (for shared components) */
 @import url('./components/kp-center.css');
 @import url('./components/kp-center-mobile.css');

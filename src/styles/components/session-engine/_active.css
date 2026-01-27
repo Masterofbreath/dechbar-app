@@ -1,84 +1,78 @@
 /* ============================================================
    Session Engine Modal - Active Session
-   Active breathing session screen with phase indicator
+   Active breathing session screen
    ============================================================ */
 
+/* Session active - no positioning, flex child of ContentZone */
 .session-active {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0; /* EXPLICITNĚ 0 - použít margins místo gap */
-  padding: 32px 24px;
-  
-  /* Fade transition */
-  opacity: 0;
-  transform: scale(0.98);
-  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
+  gap: 0;
+  width: 100%;
 }
 
-.session-active.active {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
+/* Timer styling */
+.session-timer {
+  margin-top: var(--fullscreen-modal-timer-margin);
+  margin-bottom: var(--fullscreen-modal-timer-margin);
+  text-align: center;
 }
 
-.session-active.entering {
-  opacity: 0;
-  transform: scale(0.98);
+.timer-seconds {
+  font-size: 48px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
 }
 
-.session-active__header {
-  margin-bottom: 32px; /* ZMĚNA: stejné jako .session-header */
-  min-height: 80px; /* STEJNÁ výška jako countdown header */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.phase-indicator {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  height: 40px;              /* ✅ Fixed height (same as close button) */
-  display: flex;             /* ✅ Flexbox for vertical centering */
-  align-items: center;       /* ✅ Vertically center text */
-  padding: 0 12px;           /* ✅ Horizontal padding only */
-  background: var(--glow-primary-shadow-subtle);
-  border: 1px solid var(--color-primary);
-  border-radius: 16px;
+/* Instructions gold box */
+.session-active__instructions {
+  max-width: 340px;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--glow-accent-bg-strong);
+  border: 1px solid var(--color-accent);
+  border-radius: 12px;
   font-size: 13px;
-  font-weight: 600;
-  color: var(--color-primary);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  z-index: 9; /* Pod close button (10) */
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Next phase preview - positioned ABOVE bottom bar */
+.session-active__next-preview {
+  position: absolute;
+  bottom: calc(var(--fullscreen-modal-bottom-bar-height) + 8px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.session-active__next-preview .next-label {
+  opacity: 0.7;
+}
+
+.session-active__next-preview .next-name {
+  font-weight: var(--font-weight-semibold);
 }
 
 @media (max-width: 768px) {
-  .phase-indicator {
-    top: max(16px, env(safe-area-inset-top));
-    left: max(16px, env(safe-area-inset-left));
+  .session-active__next-preview {
+    bottom: calc(var(--fullscreen-modal-bottom-bar-height-mobile) + 8px);
+    font-size: 12px;
   }
-}
-
-.phase-name {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 8px 0;
-  letter-spacing: -0.02em; /* Visual Brand Book: tight letter-spacing */
-  text-align: center;
-}
-
-.phase-description {
-  font-size: 15px;
-  color: var(--color-text-secondary);
-  margin: 0;
-  text-align: center;
+  
+  .session-active__instructions {
+    font-size: 12px;
+    padding: 10px 14px;
+  }
 }

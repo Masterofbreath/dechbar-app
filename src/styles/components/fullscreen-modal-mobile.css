@@ -22,14 +22,13 @@
   
   /* ============================================================
      Close Button - Fixed Positioning (for fullscreen modals)
-     Applies to: KP Center, Session Engine
+     Applies to: KP Center
      
      Strategy: Context-based selector instead of component-level override
      Benefit: One definition, scales to all fullscreen modals
      ============================================================ */
   
   .kp-center .close-button,
-  .session-engine-modal__content .close-button,
   .session-start .close-button {
     position: fixed !important;
     top: max(16px, env(safe-area-inset-top)) !important;
@@ -39,14 +38,13 @@
   
   /* ============================================================
      Title - Left Aligned (next to CloseButton)
-     Applies to: KP Center, Session Engine
+     Applies to: KP Center
      
      Design: Title and CloseButton on same row for space efficiency
      Alignment: Flex centering for visual consistency with CloseButton
      ============================================================ */
   
-  .kp-center__title,
-  .session-exercise-name {
+  .kp-center__title {
     position: fixed !important;
     top: max(16px, env(safe-area-inset-top)) !important;
     left: max(16px, env(safe-area-inset-left)) !important;

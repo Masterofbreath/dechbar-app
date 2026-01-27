@@ -9,7 +9,6 @@
 
 /* Base styles (must be first) */
 @import './_base.css';
-@import './_session-states.css';
 
 /* Session screens (chronological order) */
 @import './_session-start.css';
@@ -18,9 +17,7 @@
 @import './_completed.css';
 
 /* Session components */
-/* NOTE: _breathing-circle.css removed - using shared component */
 @import './_instructions.css';
-@import './_progress-bar.css';
 
 /* Completion sub-components */
 @import './_difficulty-check.css';

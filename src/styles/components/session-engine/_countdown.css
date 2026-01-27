@@ -3,61 +3,14 @@
    3-2-1 countdown before session starts
    ============================================================ */
 
+/* Session countdown - no positioning, flex child of ContentZone */
 .session-countdown {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0; /* ZMĚNA: Odstranit gap, použít explicit margins */
-  padding: 32px 24px;
-  
-  /* Fade transition */
-  opacity: 0;
-  transform: scale(0.98);
-  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-
-.session-countdown.active {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
-}
-
-.session-countdown.exiting {
-  opacity: 0;
-  transform: scale(1.02);
-}
-
-/* Session Header (countdown i active) */
-.session-header {
-  text-align: center;
-  max-width: 320px;
-  margin-bottom: 32px; /* ZMĚNA: 24px → 32px pro alignment */
-  min-height: 80px; /* FIXNÍ výška pro konzistentní layout */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.session-exercise-name {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 8px 0;
-  letter-spacing: -0.02em; /* Visual Brand Book: tight letter-spacing */
-}
-
-.session-instruction {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  margin: 0;
-  line-height: 1.5;
+  gap: 0;
+  width: 100%;
 }
 
 /* Breathing Tip (countdown i active) */
@@ -75,10 +28,9 @@
 .session-countdown__tip {
   margin-top: 24px;
   max-width: 420px;
-  animation: tipFadeIn 600ms ease-in-out 0.3s both;  /* Delay 0.3s for smoother entrance */
 }
 
-/* Protocol description styling (for preset protocols: RÁNO, RESET, NOC) */
+/* Protocol description styling (for preset protocols: RÁNO, KLID, VEČER) */
 .session-countdown__description {
   margin-top: 24px;
   max-width: 420px;
@@ -87,38 +39,16 @@
   color: var(--color-text-secondary);
   text-align: center;
   opacity: 0.8;
-  animation: tipFadeIn 600ms ease-in-out 0.3s both;  /* Delay 0.3s for smoother entrance */
 }
 
-@keyframes tipFadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Legacy countdown-instruction (for backwards compatibility) */
-.countdown-instruction {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  text-align: center;
-  max-width: 320px;
-  line-height: 1.5;
-  letter-spacing: 0.01em;
-}
-
-/* Countdown circle container - Desktop absolute, Mobile fixed (via _mobile.css) */
+/* Countdown circle container - no positioning needed (ContentZone handles centering) */
 .countdown-circle-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 280px;
   height: 280px;
   margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
 }
 
 .countdown-circle {

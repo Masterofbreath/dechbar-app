@@ -1,0 +1,11 @@
+/* ============================================================
+   FullscreenModal System - Index
+   Import orchestration for FullscreenModal styles
+   ============================================================ */
+
+@import './_constants.css';
+@import './_base.css';
+@import './_top-bar.css';
+@import './_content-zone.css';
+@import './_bottom-bar.css';
+@import './_mobile.css';

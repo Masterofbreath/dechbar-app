@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useScrollLock } from '@/platform/hooks';
-import { ConfirmModal, CloseButton } from '@/components/shared';
+import { ConfirmModal, FullscreenModal } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
@@ -389,18 +389,6 @@ export function SessionEngineModal({
       <div className="session-engine-modal__overlay" onClick={handleClose} />
       
       <div className="session-engine-modal__content">
-        {/* ✅ Close button - globální pro countdown/active/completed states */}
-        {(sessionState === 'countdown' || sessionState === 'active' || sessionState === 'completed') && (
-          <CloseButton onClick={handleClose} className="session-engine-modal__close" />
-        )}
-        
-        {/* ✅ Phase indicator - globální pro active state (levý horní roh) */}
-        {sessionState === 'active' && currentPhase && totalPhases > 1 && (
-          <span className="phase-indicator">
-            FÁZE {currentPhaseIndex + 1}/{totalPhases}
-          </span>
-        )}
-        
         {/* IDLE: Start screen (má vlastní close button) */}
         {sessionState === 'idle' && (
           <SessionStartScreen
@@ -422,20 +410,44 @@ export function SessionEngineModal({
           />
         )}
         
-        {/* COUNTDOWN + ACTIVE: With wrapper for absolute positioning */}
-        {(sessionState === 'countdown' || sessionState === 'active') && (
-          <div className="session-states-wrapper">
-            {/* COUNTDOWN: 5-4-3-2-1 */}
-            {sessionState === 'countdown' && (
+        {/* COUNTDOWN: FullscreenModal pattern */}
+        {sessionState === 'countdown' && (
+          <>
+            <FullscreenModal.TopBar>
+              <FullscreenModal.Title>{exercise.name}</FullscreenModal.Title>
+              <FullscreenModal.CloseButton onClick={handleClose} />
+            </FullscreenModal.TopBar>
+            
+            <FullscreenModal.ContentZone>
               <SessionCountdown
                 exercise={exercise}
                 countdownNumber={countdownNumber}
                 isActive={true}
               />
-            )}
+            </FullscreenModal.ContentZone>
             
-            {/* ACTIVE: Breathing session */}
-            {sessionState === 'active' && currentPhase && (
+            <FullscreenModal.BottomBar>
+              <div className="fullscreen-modal__progress">
+                <div className="fullscreen-modal__progress-fill" style={{ width: '0%' }} />
+              </div>
+            </FullscreenModal.BottomBar>
+          </>
+        )}
+        
+        {/* ACTIVE: FullscreenModal pattern */}
+        {sessionState === 'active' && currentPhase && (
+          <>
+            <FullscreenModal.TopBar>
+              <FullscreenModal.Title>{exercise.name}</FullscreenModal.Title>
+              {totalPhases > 1 && (
+                <FullscreenModal.Badge>
+                  FÁZE {currentPhaseIndex + 1}/{totalPhases}
+                </FullscreenModal.Badge>
+              )}
+              <FullscreenModal.CloseButton onClick={handleClose} />
+            </FullscreenModal.TopBar>
+            
+            <FullscreenModal.ContentZone>
               <SessionActive
                 exercise={exercise}
                 currentPhase={currentPhase}
@@ -443,11 +455,27 @@ export function SessionEngineModal({
                 totalPhases={totalPhases}
                 phaseTimeRemaining={phaseTimeRemaining}
                 currentInstruction={currentInstruction}
-                sessionProgress={sessionProgress}
                 circleRef={circleRef as React.RefObject<HTMLDivElement>}
               />
-            )}
-          </div>
+            </FullscreenModal.ContentZone>
+            
+            <FullscreenModal.BottomBar>
+              {currentPhaseIndex < totalPhases - 1 && (
+                <div className="session-active__next-preview">
+                  <span className="next-label">Další:</span>{' '}
+                  <span className="next-name">
+                    {exercise.breathing_pattern.phases[currentPhaseIndex + 1].name}
+                  </span>
+                </div>
+              )}
+              <div className="fullscreen-modal__progress">
+                <div 
+                  className="fullscreen-modal__progress-fill" 
+                  style={{ width: `${sessionProgress}%` }}
+                />
+              </div>
+            </FullscreenModal.BottomBar>
+          </>
         )}
         
         {/* COMPLETED: Celebration & survey */}

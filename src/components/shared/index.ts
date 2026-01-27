@@ -11,3 +11,4 @@ export { CloseButton } from './CloseButton';
 export { ConfirmModal } from './ConfirmModal';
 export { ErrorMessage } from './ErrorMessage';
 export { Toast } from './Toast';
+export { FullscreenModal } from './FullscreenModal';

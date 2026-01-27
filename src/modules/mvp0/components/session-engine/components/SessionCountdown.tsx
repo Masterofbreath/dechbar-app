@@ -47,7 +47,7 @@ function getRotatingTip(): string {
   }
 }
 
-export function SessionCountdown({ exercise, countdownNumber, isActive }: SessionCountdownProps) {
+export function SessionCountdown({ exercise, countdownNumber }: SessionCountdownProps) {
   const [currentTip] = useState(() => getRotatingTip());
   
   // Increment session count on mount (for next session)
@@ -61,15 +61,7 @@ export function SessionCountdown({ exercise, countdownNumber, isActive }: Sessio
   }, []);
   
   return (
-    <div className={`session-countdown ${isActive ? 'active' : 'exiting'}`}>
-      {/* Exercise name - FIXED top-left (via fullscreen-modal-mobile.css) */}
-      <h3 className="session-exercise-name">{exercise.name}</h3>
-      
-      {/* Hidden header wrapper - pouze pro instruction text (shown as fixed below circle) */}
-      <div className="session-header">
-        <p className="session-instruction">Připrav se na první nádech</p>
-      </div>
-      
+    <>
       {/* Countdown circle using shared component */}
       <BreathingCircle variant="static" size={280}>
         <span className="countdown-number">{countdownNumber}</span>
@@ -87,6 +79,6 @@ export function SessionCountdown({ exercise, countdownNumber, isActive }: Sessio
           <strong>Tip:</strong> {currentTip}
         </MiniTip>
       )}
-    </div>
+    </>
   );
 }

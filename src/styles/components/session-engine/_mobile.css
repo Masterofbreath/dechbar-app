@@ -52,20 +52,16 @@
     padding: 0 !important;
   }
   
-  /* Countdown & Active - HYBRID: Relative container pro absolute kruh + flex pro ostatní */
+  /* Countdown & Active - flex children of ContentZone */
   .session-countdown,
   .session-active {
-    position: relative !important;  /* Pro absolute kruh */
     width: 100% !important;
-    flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: flex-start !important;  /* NE center - prvky se rozmístí samy */
-    gap: 0 !important;  /* Žádný gap - používáme marginy */
+    justify-content: center !important;
+    gap: 0 !important;
     padding: 0 20px !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
   }
   
   /* Session Start Screen - vertikální centrování */
@@ -92,54 +88,6 @@
     align-items: center !important;
     justify-content: center !important;
     padding: 0 20px !important;
-  }
-  
-  /* Session header - contains only instruction text (hidden wrapper, instruction shown as fixed below circle) */
-  .session-header {
-    display: none !important;  /* ✅ Simplified - exercise name is now outside header */
-  }
-  
-  /* Exercise name - handled by fullscreen-modal-mobile.css (fixed top-left) */
-  
-  /* Phase name - for multi-phase exercises (if different from exercise name) */
-  .phase-name {
-    font-size: 20px !important;
-    margin-bottom: 4px !important;
-  }
-  
-  /* Instruction text - BELOW circle (fixed position) */
-  .session-instruction,
-  .phase-description {
-    position: fixed !important;
-    top: calc(50vh + 130px) !important;  /* Below circle (220px/2 + 20px gap) */
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 80% !important;
-    max-width: 320px !important;
-    text-align: center !important;
-    font-size: 14px !important;
-    color: var(--color-text-secondary) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    z-index: 1 !important;
-  }
-  
-  /* Close button - FIXED top-right */
-  .session-engine-modal__close {
-    position: fixed !important;
-    top: max(16px, env(safe-area-inset-top)) !important;
-    right: max(16px, env(safe-area-inset-right)) !important;
-    z-index: 20 !important;  /* Nad vším */
-  }
-  
-  /* Phase indicator - horní roh */
-  .phase-indicator {
-    position: fixed !important;
-    top: max(16px, env(safe-area-inset-top)) !important;
-    left: max(16px, env(safe-area-inset-left)) !important;
-    z-index: 10 !important;
-    font-size: 11px !important;
-    padding: 4px 8px !important;
   }
   
   /* Breathing circle - FIXED VIEWPORT CENTER (stejné jako KP modal) */
@@ -204,64 +152,36 @@
     z-index: 1 !important;
   }
   
-  /* Timer - Flex item PO kruhu */
+  /* Timer - BELOW circle with proper margin */
   .session-timer {
-    position: static !important;
+    position: fixed !important;
+    top: calc(50vh + 140px) !important;  /* Below circle with margin */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
     width: 100% !important;
-    margin: auto 0 3px !important;  /* ✅ margin-bottom: 3px (kompaktní spacing k "Další:") */
-    padding-bottom: 100px !important;  /* Spacing od dolního okraje */
     text-align: center !important;
-    order: initial !important;
-    z-index: 1 !important;  /* Pod kruhem */
+    z-index: 1 !important;
   }
   
   .timer-seconds {
     font-size: 48px !important;
   }
   
-  .timer-label {
-    font-size: 12px !important;
-  }
-  
-  /* Next phase info - Flex item mezi timerem a dolním okrajem */
-  .session-active__next {
-    position: static !important;
-    width: 100% !important;
-    margin: 3px 0 0 !important;  /* ✅ margin-top: 3px (kompaktní spacing od timeru) */
-    text-align: center !important;
-    font-size: 13px !important;
-    order: initial !important;
-    z-index: 1 !important;  /* Pod kruhem */
-  }
-  
-  /* Instrukce - normální flow v flexboxu */
+  /* Instructions - gold box styling preserved */
   .session-active__instructions {
     position: static !important;
     width: calc(100% - 32px) !important;
     max-width: 100% !important;
-    margin: 0 !important;
+    margin: 16px auto 0 !important;
     padding: 12px 16px !important;
     font-size: 13px !important;
     line-height: 1.4 !important;
     text-align: center !important;
-    order: initial !important;
     
     /* ZACHOVAT gold box styling */
     background: var(--glow-accent-bg-strong) !important;
     border: 1px solid var(--color-accent) !important;
     border-radius: 12px !important;
-  }
-  
-  /* Progress bar - úplně dole (FIXED - mimo flow pro správné centrování) */
-  .session-progress {
-    position: fixed !important;
-    bottom: max(20px, env(safe-area-inset-bottom)) !important;
-    left: 16px !important;
-    right: 16px !important;
-    width: auto !important;
-    height: 4px !important;
-    border-radius: 2px !important;
-    z-index: 5 !important;  /* Pod phase indicator (10), nad contentem */
   }
   
   /* Start screen - kompaktnější na mobile */

@@ -1,0 +1,33 @@
+/* ============================================================
+   FullscreenModal BottomBar Styles
+   Fixed bottom bar with progress bar
+   ============================================================ */
+
+.fullscreen-modal__bottom-bar {
+  position: relative;
+  height: var(--fullscreen-modal-bottom-bar-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--spacing-6);
+  flex-shrink: 0;
+}
+
+.fullscreen-modal__progress {
+  width: 100%;
+  height: 4px;
+  background: var(--glow-accent-bg-strong);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.fullscreen-modal__progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    var(--glow-accent-shadow-fade) 100%
+  );
+  transition: width 1s linear;
+  box-shadow: 0 0 8px var(--glow-accent-shadow-strong);
+}

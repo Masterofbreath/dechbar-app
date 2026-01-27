@@ -1,0 +1,30 @@
+/* ============================================================
+   FullscreenModal CSS Variables
+   Centralized layout constants for FullscreenModal system
+   ============================================================ */
+
+:root {
+  /* Layout Heights */
+  --fullscreen-modal-top-bar-height: 70px;
+  --fullscreen-modal-top-bar-height-mobile: 60px;
+  --fullscreen-modal-bottom-bar-height: 70px;
+  --fullscreen-modal-bottom-bar-height-mobile: 60px;
+  
+  /* Content Zone */
+  --fullscreen-modal-content-padding: 24px;
+  --fullscreen-modal-content-padding-mobile: 20px;
+  
+  /* Circle Dimensions */
+  --fullscreen-modal-circle-size: 280px;
+  --fullscreen-modal-circle-size-mobile: 220px;
+  
+  /* Spacing */
+  --fullscreen-modal-timer-margin: 24px;
+  --fullscreen-modal-progress-bottom: 20px;
+  
+  /* Z-index Layers */
+  --fullscreen-modal-overlay-z: 10000;
+  --fullscreen-modal-container-z: 10001;
+  --fullscreen-modal-close-z: 20;
+  --fullscreen-modal-badge-z: 10;
+}
