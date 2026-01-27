@@ -1,4 +1,3 @@
-import { NavIcon } from '@/platform/components';
 import { BreathingCircle } from '@/components/shared/BreathingCircle';
 import { isProtocol } from '@/utils/exerciseHelpers';
 import type { Exercise, ExercisePhase } from '../../../types/exercises';
@@ -38,10 +37,23 @@ export function SessionActive({
 
   return (
     <>
-      {/* Protocol: Phase name ABOVE circle */}
+      {/* Protocol: Instructions OR Phase name ABOVE circle */}
       {isProtocol(exercise) && currentPhase && (
-        <p className="session-active__phase-name">
-          {currentPhase.name}
+        currentPhase.instructions && !isFinalPhase && !isBuzzingPhase ? (
+          <p className="session-active__instruction-text">
+            {currentPhase.instructions}
+          </p>
+        ) : (
+          <p className="session-active__phase-name">
+            {currentPhase.name}
+          </p>
+        )
+      )}
+      
+      {/* Buzzing phase: Instruction above circle */}
+      {isBuzzingPhase && (
+        <p className="session-active__buzzing-hint">
+          Při výdechu jemně bzuč
         </p>
       )}
       
@@ -61,7 +73,9 @@ export function SessionActive({
             ) : isBuzzingPhase ? (
               <>
                 {currentInstruction}
-                <span className="breathing-hint">(bzzz)</span>
+                {currentInstruction === 'VÝDECH' && (
+                  <span className="breathing-hint">(bzzz)</span>
+                )}
               </>
             ) : (
               currentInstruction
@@ -74,14 +88,6 @@ export function SessionActive({
       <div className="session-timer">
         <span className="timer-seconds">{phaseTimeRemaining} s</span>
       </div>
-      
-      {/* Instructions - SKRYTO pro poslední fázi a bzučení fázi ✅ */}
-      {currentPhase.instructions && !isFinalPhase && !isBuzzingPhase && (
-        <div className="session-active__instructions">
-          <NavIcon name="info" size={16} />
-          <span>{currentPhase.instructions}</span>
-        </div>
-      )}
     </>
   );
 }

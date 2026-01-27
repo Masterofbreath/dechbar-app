@@ -18,6 +18,7 @@ import { DemoCvicitView } from './views/DemoCvicitView';
 import { DemoTopNav } from './components/DemoTopNav';
 import { DemoBottomNav } from './components/DemoBottomNav';
 import { LockedExerciseModal } from './components/LockedExerciseModal';
+import { ChallengeRegistrationModal } from './components/ChallengeRegistrationModal';
 import { DemoSettingsDrawer } from './components/DemoSettingsDrawer';
 import { DemoKPCenter } from './components/DemoKPCenter';
 import { DemoEmailModal } from './components/DemoEmailModal';
@@ -44,6 +45,13 @@ export function DemoApp() {
   });
   
   const { track } = useDemoAnalytics();
+  
+  /**
+   * Detect if we're on challenge landing page (/vyzva)
+   * Used for conditional modal rendering
+   */
+  const isChallengePage = typeof window !== 'undefined' && 
+    window.location.pathname.includes('/vyzva');
   
   /**
    * FAILSAFE: Force unlock body scroll if stuck
@@ -95,18 +103,22 @@ export function DemoApp() {
       isModalOpen: true,
     }));
     
-    // Track click
+    // Track exercise click (conversion trigger)
     track({
       action: 'exercise_click',
       view: state.activeView,
-      exercise,
+      exercise_name: exercise.name,
+      exercise_id: exercise.id,
+      page: isChallengePage ? '/vyzva' : '/',
       timestamp: Date.now(),
     });
     
     // Track modal open
     track({
-      action: 'modal_open',
-      exercise,
+      action: 'registration_modal_open',
+      modal_type: isChallengePage ? 'challenge_registration' : 'locked_exercise',
+      trigger: 'exercise_click',
+      exercise_name: exercise.name,
       timestamp: Date.now(),
     });
   };
@@ -205,7 +217,8 @@ export function DemoApp() {
     setState(prev => ({ ...prev, isKPOpen: true }));
     
     track({
-      action: 'kp_measurement_open',
+      action: 'kp_measurement_started',
+      source: 'top_nav',
       timestamp: Date.now(),
     });
   };
@@ -298,6 +311,37 @@ export function DemoApp() {
     });
   };
   
+  /**
+   * Handle challenge registration (email submit on /vyzva page)
+   */
+  const handleChallengeRegistration = (email: string) => {
+    // Close modal
+    setState(prev => ({
+      ...prev,
+      isModalOpen: false,
+    }));
+    
+    // Track challenge registration
+    track({
+      action: 'challenge_registration_submitted',
+      email,
+      exercise: state.selectedExercise?.name,
+      kpValue: state.kpMeasurementData?.averageKP,
+      source: 'challenge_landing',
+      timestamp: Date.now(),
+    });
+    
+    // TODO: Backend integration
+    // - Create user in Supabase
+    // - Activate 21-day challenge
+    // - Send welcome email via Ecomail
+    
+    console.log('Challenge registration:', { email, exercise: state.selectedExercise });
+    
+    // Show success message
+    // (will be replaced with actual backend integration)
+  };
+  
   return (
     <ToastProvider>
       <div className="demo-app">
@@ -324,15 +368,25 @@ export function DemoApp() {
           onViewChange={handleViewChange} 
         />
         
-        {/* Conversion modal */}
-        <LockedExerciseModal
-          isOpen={state.isModalOpen}
-          onClose={handleModalClose}
-          exercise={state.selectedExercise}
-          kpMeasurement={state.kpMeasurementData}
-          onGoogleAuth={handleGoogleAuth}
-          onEmailSubmit={handleEmailSubmit}
-        />
+        {/* Conversion modal - Conditional based on page */}
+        {isChallengePage ? (
+          <ChallengeRegistrationModal
+            isOpen={state.isModalOpen}
+            onClose={handleModalClose}
+            exercise={state.selectedExercise}
+            kpMeasurement={state.kpMeasurementData}
+            onSubmit={handleChallengeRegistration}
+          />
+        ) : (
+          <LockedExerciseModal
+            isOpen={state.isModalOpen}
+            onClose={handleModalClose}
+            exercise={state.selectedExercise}
+            kpMeasurement={state.kpMeasurementData}
+            onGoogleAuth={handleGoogleAuth}
+            onEmailSubmit={handleEmailSubmit}
+          />
+        )}
         
         {/* Settings drawer */}
         <DemoSettingsDrawer

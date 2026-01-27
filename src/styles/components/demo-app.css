@@ -146,6 +146,60 @@
 }
 
 /* ============================================================
+   Demo Modals & Overlays - Fullscreen Fix
+   CRITICAL: Modals must cover entire mockup window (no content bleeding through)
+   ============================================================ */
+
+/* Modal overlay - fullscreen within demo container */
+.demo-app-container .modal-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  z-index: 99998 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* KP Center modal - fullscreen */
+.demo-app-container .demo-kp-center {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Settings drawer - fullscreen */
+.demo-app-container .demo-settings-drawer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Settings overlay - fullscreen */
+.demo-app-container .demo-settings-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99998 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Locked exercise modal - fullscreen */
+.demo-app-container .locked-exercise-modal {
+  position: absolute !important;
+  z-index: 99999 !important;
+}
+
+/* Email modal - fullscreen */
+.demo-app-container .demo-email-modal {
+  position: absolute !important;
+  z-index: 99999 !important;
+}
+
+/* ============================================================
    Loading States
    ============================================================ */
 

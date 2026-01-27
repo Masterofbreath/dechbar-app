@@ -50,6 +50,36 @@
   margin: 0;
 }
 
+/* Instruction text above circle (same styling as phase name) */
+.session-active__instruction-text {
+  position: absolute;
+  top: 16px;
+  left: var(--fullscreen-modal-content-padding);
+  right: var(--fullscreen-modal-content-padding);
+  text-align: center;
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  margin: 0;
+  padding: 0 20px; /* Horizontal padding for long text */
+}
+
+/* Buzzing hint above circle */
+.session-active__buzzing-hint {
+  position: absolute;
+  top: 16px;
+  left: var(--fullscreen-modal-content-padding);
+  right: var(--fullscreen-modal-content-padding);
+  text-align: center;
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent); /* Gold for emphasis */
+  line-height: 1.4;
+  margin: 0;
+  padding: 0 20px;
+}
+
 /* Instructions gold box */
 .session-active__instructions {
   max-width: 340px;
@@ -87,9 +117,17 @@
 
 @media (max-width: 768px) {
   .session-countdown__phase-name,
-  .session-active__phase-name {
+  .session-active__phase-name,
+  .session-active__instruction-text {
     font-size: 13px;
     top: 12px;
+    padding: 0 16px;
+  }
+  
+  .session-active__buzzing-hint {
+    font-size: 13px;
+    top: 12px;
+    padding: 0 16px;
   }
   
   .session-countdown__description {

@@ -15,7 +15,7 @@ import type { Exercise } from '@/modules/mvp0/types/exercises';
  * 
  * @todo v2.0: Replace with exercise.type === 'protocol' after DB migration
  */
-const PRESET_PROTOCOL_NAMES = ['RÁNO', 'RESET', 'NOC'] as const;
+const PRESET_PROTOCOL_NAMES = ['RÁNO', 'KLID', 'VEČER'] as const;
 
 /**
  * Check if exercise is a preset protocol

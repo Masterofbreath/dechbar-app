@@ -8,7 +8,8 @@
   padding: 32px !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch; /* Smooth scroll na iOS */
-  max-height: 100%; /* Respektuje ContentZone bounds */
+  max-height: calc(100vh - 180px); /* Dynamic: viewport - TopBar - BottomBar */
+  min-height: 300px; /* Ensure minimum space */
 }
 
 /* Celebration title in TopBar - gold gradient */
@@ -66,4 +67,30 @@
   .session-completed {
     gap: 20px;
   }
+}
+
+/* ============================================================
+   Mood Slider - Selected State Highlight
+   Apple-style feedback for selected mood
+   ============================================================ */
+
+/* Labels - default state */
+.mood-slider__label {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  font-size: 11px;
+}
+
+/* Labels - selected state */
+.mood-slider__emoji-btn--selected .mood-slider__label {
+  color: var(--color-primary); /* Teal highlight */
+  opacity: 1;
+  font-weight: var(--font-weight-semibold); /* Bold */
+  transform: scale(1.05); /* Subtle emphasis */
+}
+
+/* Emoji - selected state (enhance existing) */
+.mood-slider__emoji-btn--selected .mood-slider__emoji {
+  transform: scale(1.1); /* Slightly larger */
 }
