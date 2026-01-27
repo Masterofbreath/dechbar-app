@@ -39,22 +39,32 @@ export function SessionActive({
     <>
       {/* Protocol: Instructions OR Phase name ABOVE circle */}
       {isProtocol(exercise) && currentPhase && (
-        currentPhase.instructions && !isFinalPhase && !isBuzzingPhase ? (
-          <p className="session-active__instruction-text">
-            {currentPhase.instructions}
-          </p>
-        ) : (
-          <p className="session-active__phase-name">
-            {currentPhase.name}
-          </p>
-        )
-      )}
-      
-      {/* Buzzing phase: Instruction above circle */}
-      {isBuzzingPhase && (
-        <p className="session-active__buzzing-hint">
-          Při výdechu jemně bzuč
-        </p>
+        <>
+          {/* Phase name or instructions */}
+          {currentPhase.instructions && !isFinalPhase && !isBuzzingPhase ? (
+            <p className="session-active__instruction-text">
+              {currentPhase.instructions}
+            </p>
+          ) : (
+            <p className="session-active__phase-name">
+              {currentPhase.name}
+            </p>
+          )}
+          
+          {/* Final phase instruction (Doznění) */}
+          {isFinalPhase && (
+            <p className="session-active__final-instruction">
+              Dýchej volně ve svém rytmu
+            </p>
+          )}
+          
+          {/* Buzzing hint BELOW phase name */}
+          {isBuzzingPhase && (
+            <p className="session-active__buzzing-hint">
+              Při výdechu jemně bzuč
+            </p>
+          )}
+        </>
       )}
       
       {/* Breathing circle with instruction inside */}
@@ -67,18 +77,14 @@ export function SessionActive({
         {/* Breathing instruction inside circle */}
         {currentInstruction && (
           <div className="breathing-instruction">
-            {/* ✅ Dynamický obsah kruhu pro speciální fáze */}
-            {isFinalPhase ? (
-              'VOLNĚ'
-            ) : isBuzzingPhase ? (
-              <>
-                {currentInstruction}
-                {currentInstruction === 'VÝDECH' && (
-                  <span className="breathing-hint">(bzzz)</span>
-                )}
-              </>
-            ) : (
-              currentInstruction
+            {/* Main instruction text - always centered */}
+            <span className="breathing-instruction__text">
+              {isFinalPhase ? 'VOLNĚ' : currentInstruction}
+            </span>
+            
+            {/* Hint below (only for buzzing on VÝDECH) */}
+            {isBuzzingPhase && currentInstruction === 'VÝDECH' && (
+              <span className="breathing-hint">(bzzz)</span>
             )}
           </div>
         )}

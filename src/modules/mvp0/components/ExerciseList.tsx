@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { ExerciseCard } from './ExerciseCard';
 import { Button, LoadingSkeleton, EmptyState, NavIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
 import { useMembership } from '@/platform/membership';
+import { isProtocol } from '@/utils/exerciseHelpers';
 import type { MoodType } from '../types/exercises';
 import {
   useExercises,
@@ -74,11 +75,11 @@ export function ExerciseList({
   const deleteExercise = useDeleteExercise();
   
   // Filter exercises by category
-  // Note: RÁNO, RESET, NOC are shown only on Dnes view (quick access)
-  // Cvičit shows other presets (BOX, Calm, Coherence + future additions)
+  // Note: Protocols (RÁNO, KLID, VEČER) are shown only on Dnes view (quick access)
+  // Cvičit shows exercises (Box Breathing, Uklidnění, Srdeční koherence + future additions)
   const presetExercises = exercises?.filter(ex => 
     ex.category === 'preset' && 
-    !['RÁNO', 'RESET', 'NOC'].includes(ex.name)
+    !isProtocol(ex) // Hide all protocols (RÁNO, KLID, VEČER)
   ) || [];
   const customExercises = exercises?.filter(ex => ex.category === 'custom') || [];
   

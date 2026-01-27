@@ -65,17 +65,34 @@
   padding: 0 20px; /* Horizontal padding for long text */
 }
 
-/* Buzzing hint above circle */
+/* Buzzing hint BELOW phase name */
 .session-active__buzzing-hint {
   position: absolute;
-  top: 16px;
+  top: 44px; /* 16px (phase top) + 23px (phase height) + 5px gap */
   left: var(--fullscreen-modal-content-padding);
   right: var(--fullscreen-modal-content-padding);
   text-align: center;
-  font-size: 14px;
+  font-size: 13px; /* Smaller than phase name (15px) */
   font-weight: var(--font-weight-medium);
   color: var(--color-accent); /* Gold for emphasis */
-  line-height: 1.4;
+  opacity: 0.9;
+  line-height: 1.3;
+  margin: 0;
+  padding: 0 20px;
+}
+
+/* Final phase instruction (Doznění) - same styling as buzzing hint */
+.session-active__final-instruction {
+  position: absolute;
+  top: 44px; /* Below phase name */
+  left: var(--fullscreen-modal-content-padding);
+  right: var(--fullscreen-modal-content-padding);
+  text-align: center;
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary); /* Not gold, neutral */
+  opacity: 0.9;
+  line-height: 1.3;
   margin: 0;
   padding: 0 20px;
 }
@@ -124,9 +141,10 @@
     padding: 0 16px;
   }
   
-  .session-active__buzzing-hint {
-    font-size: 13px;
-    top: 12px;
+  .session-active__buzzing-hint,
+  .session-active__final-instruction {
+    font-size: 12px;
+    top: 38px; /* 12px + 20px + 6px */
     padding: 0 16px;
   }
   

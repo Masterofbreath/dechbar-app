@@ -3,13 +3,22 @@
    Post-session survey and celebration
    ============================================================ */
 
-/* Completion content zone - padding for survey + scrollable */
+/* Completion content zone - padding for survey, modal grows dynamically */
 .completion-content {
   padding: 32px !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch; /* Smooth scroll na iOS */
-  max-height: calc(100vh - 180px); /* Dynamic: viewport - TopBar - BottomBar */
-  min-height: 300px; /* Ensure minimum space */
+  overflow: visible !important; /* No scroll - modal grows */
+  max-height: none !important; /* Remove constraint */
+  min-height: auto; /* Natural height */
+}
+
+/* Completion modal state - dynamic height */
+.session-engine-modal__content--completion {
+  height: auto !important; /* Override fixed height */
+  max-height: 95vh !important; /* Safety cap */
+  overflow: visible; /* Allow growth */
+  
+  /* Smooth expansion */
+  transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Celebration title in TopBar - gold gradient */
@@ -66,6 +75,11 @@
   
   .session-completed {
     gap: 20px;
+  }
+  
+  /* Respect safe areas on mobile */
+  .session-engine-modal__content--completion {
+    max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
   }
 }
 

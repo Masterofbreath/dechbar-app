@@ -122,25 +122,47 @@
 
 /* Breathing instruction (Session Engine - animated variant) */
 .breathing-instruction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0; /* No gap, tight stacking */
+  pointer-events: none;
+  text-align: center;
+  
+  /* ✅ Smooth transition on content change (no blink) */
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+/* Ensure children inherit transition */
+.breathing-instruction > * {
+  transition: inherit;
+}
+
+/* Main instruction text - always centered independently */
+.breathing-instruction__text {
   font-size: 28px;
   font-weight: 700;
   color: var(--color-primary);  /* Teal #2CBEC6 */
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  pointer-events: none;
+  line-height: 1; /* Tight, no extra space */
   text-align: center;
 }
 
 /* Breathing hint - smaller text below main instruction (e.g. "(bzzz)") */
 .breathing-hint {
   display: block;
-  font-size: 16px;
+  font-size: 14px; /* Reduced from 16px - more subtle */
   font-weight: 400;
   color: var(--color-text-secondary);
-  margin-top: 4px;
-  opacity: 0.8;
+  margin-top: 2px; /* Minimal spacing from text above */
+  opacity: 0.7; /* More subtle than before */
   letter-spacing: 0.05em;
   text-transform: none; /* Don't uppercase hints */
+  line-height: 1;
+  text-align: center;
 }
 
 /* Timer BELOW circle (Session Engine) */

@@ -19,7 +19,8 @@ export interface NavIconProps {
         'sun' | 'refresh' | 'moon' | 'lightbulb' | 'sparkles' | 'chevron-right' |
         'close' | 'user' | 'credit-card' | 'info' | 'logout' | 'lock' |
         'clock' | 'edit' | 'trash' | 'x' | 'wind' | 'layers' | 'bar-chart' | 'target' | 
-        'zap' | 'circle' | 'check' | 'file-text' | 'chevron-up' | 'chevron-down';
+        'zap' | 'circle' | 'check' | 'file-text' | 'chevron-up' | 'chevron-down' |
+        'square' | 'meditation' | 'heart';
   
   /**
    * Size in pixels
@@ -270,6 +271,32 @@ export function NavIcon({
     ),
     'chevron-down': (
       <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    
+    // Exercise-specific icons
+    'square': (
+      <rect x="4" y="4" width="16" height="16" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+    ),
+    'meditation': (
+      <>
+        {/* Head */}
+        <circle cx="12" cy="6" r="2" />
+        {/* Body */}
+        <path d="M12 8 L12 14" strokeLinecap="round" />
+        {/* Legs (lotus pose) */}
+        <path d="M8 12 Q10 15, 12 16" strokeLinecap="round" />
+        <path d="M16 12 Q14 15, 12 16" strokeLinecap="round" />
+        {/* Arms (meditation hands) */}
+        <path d="M12 10 L8 12" strokeLinecap="round" />
+        <path d="M12 10 L16 12" strokeLinecap="round" />
+      </>
+    ),
+    'heart': (
+      <path 
+        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+      />
     ),
   };
   

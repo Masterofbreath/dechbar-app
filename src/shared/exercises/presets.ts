@@ -210,14 +210,14 @@ export const PRESET_EXERCISES: Exercise[] = [
   },
   {
     id: 'calm',
-    name: 'Calm',
+    name: 'Uklidnění',
     duration: 420, // 7 min
     total_duration_seconds: 420, // MVp0 compatibility
     description: 'Prodloužený výdech pro rychlé uklidnění',
     category: 'preset' as const,
     subcategory: 'stress' as const,
     difficulty: 'beginner' as const,
-    icon: 'circle',
+    icon: 'meditation', // Meditation icon for calming exercise
     tags: ['klid', 'snížení stresu', 'úleva od úzkosti'],
     locked: false,
     phase_count: 1,
@@ -256,7 +256,7 @@ export const PRESET_EXERCISES: Exercise[] = [
   },
   {
     id: 'coherence',
-    name: 'Coherence',
+    name: 'Srdeční koherence',
     duration: 300, // 5 min (OPRAVENO z 3 min)
     total_duration_seconds: 300, // MVp0 compatibility (OPRAVENO z 180)
     description: 'Optimální rytmus pro srdeční variabilitu (HRV)',

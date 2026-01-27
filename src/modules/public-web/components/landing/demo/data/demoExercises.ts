@@ -20,10 +20,10 @@ export const DEMO_DNES_PROTOCOLS = PRESET_EXERCISES.filter(ex =>
 
 /**
  * Cvičit View Exercises (3 free exercises)
- * BOX breathing, Calm, Coherence
+ * Box Breathing, Uklidnění, Srdeční koherence
  */
 export const DEMO_CVICIT_EXERCISES = PRESET_EXERCISES.filter(ex =>
-  ['BOX breathing', 'Calm', 'Coherence'].includes(ex.name)
+  ['Box Breathing', 'Uklidnění', 'Srdeční koherence'].includes(ex.name)
 );
 
 /**

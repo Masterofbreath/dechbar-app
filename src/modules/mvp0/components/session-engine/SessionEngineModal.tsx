@@ -390,7 +390,11 @@ export function SessionEngineModal({
     <div className="session-engine-modal" role="dialog" aria-modal="true">
       <div className="session-engine-modal__overlay" onClick={handleClose} />
       
-      <div className="session-engine-modal__content">
+      <div 
+        className={`session-engine-modal__content ${
+          sessionState === 'completed' ? 'session-engine-modal__content--completion' : ''
+        }`}
+      >
         {/* IDLE: Combined start + mood screen (exercises only) */}
         {sessionState === 'idle' && !isProtocol(exercise) && (
           <>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BreathingCircle } from '@/components/shared/BreathingCircle';
 import { isProtocol } from '@/utils/exerciseHelpers';
 import type { Exercise } from '../../../types/exercises';
@@ -16,15 +16,16 @@ const BREATHING_TIPS = [
   'Soustřeď se pouze na přítomný okamžik',
 ];
 
-function getRotatingTip(): string {
-  const tipIndex = Math.floor(Date.now() / 10000) % BREATHING_TIPS.length;
-  return BREATHING_TIPS[tipIndex];
-}
-
 export function SessionCountdown({ 
   exercise, 
   countdownNumber
 }: SessionCountdownProps) {
+  // Select tip ONCE on mount, never changes during countdown
+  const [selectedTip] = useState(() => {
+    const tipIndex = Math.floor(Date.now() / 10000) % BREATHING_TIPS.length;
+    return BREATHING_TIPS[tipIndex];
+  });
+
   // Increment session count on mount (for tracking)
   useEffect(() => {
     try {
@@ -49,10 +50,10 @@ export function SessionCountdown({
         </p>
       )}
       
-      {/* Exercise: MiniTip BELOW circle */}
+      {/* Exercise: MiniTip BELOW circle - stable during countdown */}
       {!isProtocol(exercise) && (
         <p className="session-countdown__tip">
-          💡 {getRotatingTip()}
+          💡 {selectedTip}
         </p>
       )}
     </>
