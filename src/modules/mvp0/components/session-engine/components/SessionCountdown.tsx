@@ -6,7 +6,6 @@ import type { Exercise } from '../../../types/exercises';
 interface SessionCountdownProps {
   exercise: Exercise;
   countdownNumber: number;
-  currentPhaseIndex?: number; // For phase name display
 }
 
 // Rotating tips for exercises
@@ -24,8 +23,7 @@ function getRotatingTip(): string {
 
 export function SessionCountdown({ 
   exercise, 
-  countdownNumber,
-  currentPhaseIndex = 0 
+  countdownNumber
 }: SessionCountdownProps) {
   // Increment session count on mount (for tracking)
   useEffect(() => {
@@ -37,17 +35,8 @@ export function SessionCountdown({
     }
   }, []);
   
-  const currentPhase = exercise.breathing_pattern.phases[currentPhaseIndex];
-  
   return (
     <>
-      {/* Protocol: Phase name ABOVE circle */}
-      {isProtocol(exercise) && currentPhase && (
-        <p className="session-countdown__phase-name">
-          {currentPhase.name}
-        </p>
-      )}
-      
       {/* Countdown circle using shared component */}
       <BreathingCircle variant="static" size={280}>
         <span className="countdown-number">{countdownNumber}</span>

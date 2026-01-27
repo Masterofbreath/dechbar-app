@@ -24,20 +24,6 @@
   animation: tipFadeIn 600ms ease-in-out;
 }
 
-/* Phase name above circle (protocols - countdown) */
-.session-countdown__phase-name {
-  position: absolute;
-  top: 16px;
-  left: var(--fullscreen-modal-content-padding);
-  right: var(--fullscreen-modal-content-padding);
-  text-align: center;
-  font-size: 15px;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  text-transform: capitalize;
-  margin: 0;
-}
-
 /* Protocol description styling - BELOW circle (absolute) */
 .session-countdown__description {
   position: absolute;

@@ -79,14 +79,10 @@
 /* ============================================================
    Variant: Static (KP Measurement, Countdown)
    No animations, no transitions
-   Match initial shadow with animated variant for smooth transition
+   Pure circle without glow - active will "wake up" with glow
    ============================================================ */
 .breathing-circle--static {
-  /* Match animated initial shadow (prevent flash on countdown → active) */
-  box-shadow: 
-    0 0 20px var(--glow-primary-shadow-strong),
-    0 0 40px var(--glow-primary-shadow-medium),
-    inset 0 0 30px var(--glow-primary-shadow-subtle);
+  box-shadow: none; /* Clean countdown, no glow */
   
   /* No will-change optimization needed */
   /* No transitions (instant state changes) */

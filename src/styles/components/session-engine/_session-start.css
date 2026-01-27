@@ -3,11 +3,16 @@
    Combined modal: Icon + Description + Mood Pick
    ============================================================ */
 
+/* Compact ContentZone wrapper for start screen */
+.session-start-wrapper {
+  padding: 24px 32px !important; /* Compact - override global 60px */
+}
+
 .session-start {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px; /* Reduced from 24px for compact feel */
+  gap: 12px; /* Compact - reduced from 16px */
   padding: 0 32px;
   text-align: center;
   width: 100%;
@@ -28,6 +33,11 @@
   border-radius: 16px;
   color: var(--color-background);
   flex-shrink: 0;
+}
+
+/* Icon - square variant for Box Breathing */
+.session-start__icon--square {
+  border-radius: 8px; /* Less rounded for square feel */
 }
 
 /* Description */
@@ -52,7 +62,7 @@
 .session-start__mood {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px; /* Compact - reduced from 12px */
   width: 100%;
   max-width: 480px;
 }
@@ -64,18 +74,7 @@
   margin: 0;
 }
 
-.session-start__mood-hint {
-  font-size: 12px;
-  color: var(--color-text-tertiary);
-  opacity: 0.7;
-  margin: 0;
-  font-style: italic;
-}
-
-/* Icon - square variant for Box Breathing */
-.session-start__icon--square {
-  border-radius: 8px; /* Less rounded for square feel */
-}
+/* Button in ContentZone bottom */
 .session-start__button {
   margin-top: 8px;
   width: 100%;
@@ -84,9 +83,13 @@
 
 /* Mobile */
 @media (max-width: 768px) {
+  .session-start-wrapper {
+    padding: 16px 20px !important; /* Even more compact on mobile */
+  }
+  
   .session-start {
     padding: 0 20px;
-    gap: 12px;
+    gap: 10px; /* Even tighter on mobile */
   }
   
   .session-start__icon {
@@ -96,6 +99,10 @@
   
   .session-start__description {
     font-size: 15px;
+  }
+  
+  .session-start__mood {
+    gap: 6px;
   }
   
   .session-start__mood-title {

@@ -45,9 +45,6 @@ export function SessionStartScreen({
           value={mood} 
           onChange={onMoodChange}
         />
-        <p className="session-start__mood-hint">
-          (volitelné)
-        </p>
       </div>
       
       {/* Button in ContentZone bottom */}

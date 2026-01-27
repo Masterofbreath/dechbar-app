@@ -6,7 +6,6 @@
 /* Completion content zone - padding for survey + scrollable */
 .completion-content {
   padding: 32px !important;
-  padding-bottom: 16px !important; /* Less bottom padding for sticky button */
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch; /* Smooth scroll na iOS */
   max-height: 100%; /* Respektuje ContentZone bounds */
@@ -30,18 +29,6 @@
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
-}
-
-/* Sticky save button - always visible */
-.session-completed .button--full-width {
-  position: sticky;
-  bottom: 0;
-  background: var(--color-background);
-  padding-top: 16px;
-  padding-bottom: 16px;
-  margin-top: 24px;
-  z-index: 11; /* Above BottomBar (z-index: 5) */
-  box-shadow: 0 -8px 16px var(--color-background); /* Fade effect */
 }
 
 /* Repeat button in BottomBar */

@@ -399,7 +399,7 @@ export function SessionEngineModal({
               <FullscreenModal.CloseButton onClick={handleClose} />
             </FullscreenModal.TopBar>
             
-            <FullscreenModal.ContentZone>
+            <FullscreenModal.ContentZone className="session-start-wrapper">
               <SessionStartScreen
                 exercise={exercise}
                 mood={moodBefore}
@@ -455,7 +455,6 @@ export function SessionEngineModal({
               <SessionCountdown
                 exercise={exercise}
                 countdownNumber={countdownNumber}
-                currentPhaseIndex={currentPhaseIndex}
               />
             </FullscreenModal.ContentZone>
             
