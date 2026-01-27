@@ -101,6 +101,7 @@ export function DemoApp() {
       ...prev,
       selectedExercise: exercise,
       isModalOpen: true,
+      kpMeasurementData: null, // CRITICAL: Clear old KP data (exercise click should NOT show KP)
     }));
     
     // Track exercise click (conversion trigger)
@@ -127,7 +128,11 @@ export function DemoApp() {
    * Handle modal close
    */
   const handleModalClose = () => {
-    setState(prev => ({ ...prev, isModalOpen: false }));
+    setState(prev => ({ 
+      ...prev, 
+      isModalOpen: false,
+      kpMeasurementData: null, // CRITICAL: Clear KP data on modal close
+    }));
     
     track({
       action: 'modal_close',

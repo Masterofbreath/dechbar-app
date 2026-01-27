@@ -44,7 +44,15 @@ export function ExerciseCard({
   const difficultyTags = ['začátečník', 'mírně-pokročilý', 'pokročilý', 'expert'];
   const displayTags = exercise.tags.filter(tag => !difficultyTags.includes(tag));
   
-  // Icon mapping for subcategories
+  // Exercise-specific icon overrides (priority over subcategory)
+  const exerciseSpecificIcons: Record<string, string> = {
+    'Box Breathing': 'square',
+    'Uklidnění': 'meditation',
+    'Srdeční koherence': 'heart',
+    'KLID': 'wind',
+  };
+  
+  // Icon mapping for subcategories (fallback)
   const subcategoryIcons: Record<string, string> = {
     morning: 'sun',
     evening: 'moon',
@@ -54,9 +62,9 @@ export function ExerciseCard({
     energy: 'zap',
   };
   
-  const icon = exercise.subcategory
-    ? subcategoryIcons[exercise.subcategory]
-    : 'circle';
+  // Use specific icon if defined, otherwise fall back to subcategory
+  const icon = exerciseSpecificIcons[exercise.name] 
+    || (exercise.subcategory ? subcategoryIcons[exercise.subcategory] : 'circle');
   
   function handleClick() {
     if (isLocked) return;
