@@ -17,12 +17,12 @@ export interface PresetProtocolButtonProps {
   /**
    * Protocol ID
    */
-  protocol: 'rano' | 'reset' | 'noc';
+  protocol: 'rano' | 'klid' | 'vecer';
   
   /**
    * Icon name
    */
-  icon: 'sun' | 'refresh' | 'moon';
+  icon: 'sun' | 'wind' | 'moon';
   
   /**
    * Protocol label (uppercase)

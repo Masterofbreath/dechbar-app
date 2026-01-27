@@ -62,9 +62,11 @@ export function SessionCountdown({ exercise, countdownNumber, isActive }: Sessio
   
   return (
     <div className={`session-countdown ${isActive ? 'active' : 'exiting'}`}>
-      {/* Header se jménem cvičení */}
+      {/* Exercise name - FIXED top-left (via fullscreen-modal-mobile.css) */}
+      <h3 className="session-exercise-name">{exercise.name}</h3>
+      
+      {/* Hidden header wrapper - pouze pro instruction text (shown as fixed below circle) */}
       <div className="session-header">
-        <h3 className="session-exercise-name">{exercise.name}</h3>
         <p className="session-instruction">Připrav se na první nádech</p>
       </div>
       

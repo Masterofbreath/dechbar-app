@@ -52,9 +52,11 @@ export function SessionActive({
     <>
       {/* Přímo session-active bez wrapperu */}
       <div className="session-active active">
-        {/* Header se jménem cvičení */}
+        {/* Exercise name - FIXED top-left (via fullscreen-modal-mobile.css) */}
+        <h3 className="session-exercise-name">{exercise.name}</h3>
+        
+        {/* Hidden header wrapper - pouze pro instruction text (shown as fixed below circle) */}
         <div className="session-header">
-          <h3 className="session-exercise-name">{exercise.name}</h3>
           {currentPhase.name && (
             <p className="session-instruction">
               {/* ✅ Dynamický text pro speciální fáze */}

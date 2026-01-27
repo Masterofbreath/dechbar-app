@@ -94,13 +94,9 @@
     padding: 0 20px !important;
   }
   
-  /* Session header - HIDDEN on mobile (exercise name is fixed top-left) */
-  .session-header,
-  .session-active__header {
-    position: absolute !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    z-index: -1 !important;
+  /* Session header - contains only instruction text (hidden wrapper, instruction shown as fixed below circle) */
+  .session-header {
+    display: none !important;  /* ✅ Simplified - exercise name is now outside header */
   }
   
   /* Exercise name - handled by fullscreen-modal-mobile.css (fixed top-left) */

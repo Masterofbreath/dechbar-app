@@ -106,18 +106,18 @@ export function DnesPage() {
             onClick={() => handleProtocolClick('RÁNO')}
           />
           <PresetProtocolButton
-            protocol="reset"
-            icon="refresh"
-            label="RESET"
+            protocol="klid"
+            icon="wind"
+            label="KLID"
             duration="5 min"
-            onClick={() => handleProtocolClick('RESET')}
+            onClick={() => handleProtocolClick('KLID')}
           />
           <PresetProtocolButton
-            protocol="noc"
+            protocol="vecer"
             icon="moon"
-            label="NOC"
+            label="VEČER"
             duration="10 min"
-            onClick={() => handleProtocolClick('NOC')}
+            onClick={() => handleProtocolClick('VEČER')}
           />
         </div>
       </section>
