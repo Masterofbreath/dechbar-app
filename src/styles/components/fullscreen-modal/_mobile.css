@@ -40,8 +40,11 @@
   }
   
   .fullscreen-modal__content-zone {
-    padding: 24px var(--fullscreen-modal-content-padding-mobile);
-    gap: 16px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: var(--fullscreen-modal-content-padding-mobile);
+    padding-right: var(--fullscreen-modal-content-padding-mobile);
+    min-height: 340px; /* Mobile - ensures consistency */
   }
   
   .fullscreen-modal__title {

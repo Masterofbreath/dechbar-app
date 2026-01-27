@@ -19,11 +19,14 @@
   z-index: var(--fullscreen-modal-circle-z);
 }
 
-/* Timer styling - flex item BELOW circle */
+/* Timer styling - absolute positioning POD circlem */
 .session-timer {
-  order: 1;
+  position: absolute;
+  bottom: 24px; /* Uvnitř 60px bottom paddingu ContentZone */
+  left: 0;
+  right: 0;
   text-align: center;
-  margin-top: 8px;
+  z-index: 1; /* Above ContentZone, below circle (z-index: 10) */
 }
 
 .timer-seconds {

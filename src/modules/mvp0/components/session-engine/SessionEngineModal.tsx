@@ -390,25 +390,54 @@ export function SessionEngineModal({
       <div className="session-engine-modal__overlay" onClick={handleClose} />
       
       <div className="session-engine-modal__content">
-        {/* IDLE: Start screen (má vlastní close button) */}
+        {/* IDLE: Start screen with TopBar/ContentZone/BottomBar pattern */}
         {sessionState === 'idle' && (
-          <SessionStartScreen
-            exercise={exercise}
-            onStart={startSession}
-            onClose={handleClose}
-          />
+          <>
+            <FullscreenModal.TopBar>
+              <FullscreenModal.Title>{exercise.name}</FullscreenModal.Title>
+              <FullscreenModal.CloseButton onClick={handleClose} />
+            </FullscreenModal.TopBar>
+            
+            <FullscreenModal.ContentZone>
+              <SessionStartScreen
+                exercise={exercise}
+                onStart={startSession}
+              />
+            </FullscreenModal.ContentZone>
+            
+            <FullscreenModal.BottomBar>
+              <div /> {/* Empty placeholder */}
+            </FullscreenModal.BottomBar>
+          </>
         )}
         
-        {/* MOOD BEFORE: Quick emoji pick */}
+        {/* MOOD BEFORE: TopBar/ContentZone/BottomBar pattern */}
         {sessionState === 'mood-before' && (
-          <MoodBeforePick
-            value={moodBefore}
-            onChange={(mood) => {
-              setMoodBefore(mood);
-              startCountdown(); // Automaticky pokračovat na countdown
-            }}
-            onSkip={startCountdown} // Přeskočit a jít rovnou na countdown
-          />
+          <>
+            <FullscreenModal.TopBar>
+              <FullscreenModal.Title>Jak se teď cítíš?</FullscreenModal.Title>
+              <FullscreenModal.CloseButton onClick={handleClose} />
+            </FullscreenModal.TopBar>
+            
+            <FullscreenModal.ContentZone>
+              <MoodBeforePick
+                value={moodBefore}
+                onChange={(mood) => {
+                  setMoodBefore(mood);
+                  startCountdown(); // Automaticky pokračovat na countdown
+                }}
+              />
+            </FullscreenModal.ContentZone>
+            
+            <FullscreenModal.BottomBar>
+              <button
+                onClick={startCountdown}
+                className="mood-before-skip-link"
+              >
+                Nebo přeskoč a začni cvičit
+              </button>
+            </FullscreenModal.BottomBar>
+          </>
         )}
         
         {/* COUNTDOWN: FullscreenModal pattern */}
@@ -485,7 +514,7 @@ export function SessionEngineModal({
               <FullscreenModal.Title>
                 <span className="completion-celebration">Skvělá práce!</span>
               </FullscreenModal.Title>
-              <FullscreenModal.CloseButton onClick={handleClose} />
+              {/* No close button - pouze "Uložit & Zavřít" exit (méně je více) */}
             </FullscreenModal.TopBar>
             
             <FullscreenModal.ContentZone className="completion-content">

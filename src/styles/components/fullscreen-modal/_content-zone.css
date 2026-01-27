@@ -11,16 +11,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px var(--fullscreen-modal-content-padding);
+  padding-top: 60px;
+  padding-bottom: 60px;
+  padding-left: var(--fullscreen-modal-content-padding);
+  padding-right: var(--fullscreen-modal-content-padding);
   overflow: visible;
-  gap: 20px;
+  min-height: 420px; /* Desktop - ensures ContentZone consistency */
 }
 
-/* Circle container - fixed anchor point */
+/* Circle container - fixed anchor point, flex centering */
 .fullscreen-modal__content-zone .breathing-circle-container {
   flex-shrink: 0;
-  order: 0;
 }
 
 /* Auto-centering zajistí, že circle je VŽDY ve středu
-   bez ohledu na countdown/active state */
+   Timer/description jsou absolute, takže neovlivňují centrování */

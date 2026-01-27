@@ -13,7 +13,6 @@ import type { MoodType } from '../../../types/exercises';
 interface MoodBeforePickProps {
   value: MoodType | null;
   onChange: (mood: MoodType) => void;
-  onSkip?: () => void; // Optional skip callback
 }
 
 const MOOD_OPTIONS = [
@@ -24,12 +23,10 @@ const MOOD_OPTIONS = [
   { value: 'energized', emoji: '⚡', label: 'Energicky' },
 ] as const;
 
-export function MoodBeforePick({ value, onChange, onSkip }: MoodBeforePickProps) {
+export function MoodBeforePick({ value, onChange }: MoodBeforePickProps) {
   return (
     <div className="mood-before-pick">
-      <h3 className="mood-before-pick__title">Jak se teď cítíš?</h3>
-      
-      {/* Emoji row - větší než "po cvičení" */}
+      {/* Emoji row */}
       <div className="mood-before-pick__emojis">
         {MOOD_OPTIONS.map((opt) => (
           <button
@@ -47,20 +44,6 @@ export function MoodBeforePick({ value, onChange, onSkip }: MoodBeforePickProps)
           </button>
         ))}
       </div>
-      
-      {/* Optional skip text */}
-      {onSkip && (
-        <p className="mood-before-pick__skip">
-          Nebo{' '}
-          <button
-            type="button"
-            className="mood-before-pick__skip-btn"
-            onClick={onSkip}
-          >
-            přeskoč a začni cvičit
-          </button>
-        </p>
-      )}
     </div>
   );
 }

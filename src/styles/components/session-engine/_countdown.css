@@ -24,23 +24,29 @@
   animation: tipFadeIn 600ms ease-in-out;
 }
 
-/* Protocol description styling - ABOVE circle */
+/* Protocol description styling - ABOVE circle (absolute) */
 .session-countdown__description {
-  order: -1;
-  max-width: 380px;
+  position: absolute;
+  top: 16px; /* Uvnitř 60px top paddingu ContentZone */
+  left: var(--fullscreen-modal-content-padding);
+  right: var(--fullscreen-modal-content-padding);
+  text-align: center;
   font-size: 14px;
   line-height: 1.5;
   color: var(--color-text-secondary);
-  text-align: center;
   opacity: 0.8;
-  margin-bottom: 8px;
+  max-width: 380px;
+  margin: 0 auto;
 }
 
-/* Countdown-specific tip styling - BELOW circle (at timer position) */
+/* Countdown-specific tip styling - BELOW circle (absolute, same as timer) */
 .session-countdown__tip {
-  order: 1;
+  position: absolute;
+  bottom: 24px; /* Same position as timer */
+  left: var(--fullscreen-modal-content-padding);
+  right: var(--fullscreen-modal-content-padding);
   max-width: 420px;
-  margin-top: 8px;
+  margin: 0 auto;
 }
 
 /* Countdown circle container - no positioning needed (ContentZone handles centering) */
