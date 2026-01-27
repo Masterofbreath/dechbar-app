@@ -8,9 +8,11 @@
   height: var(--fullscreen-modal-bottom-bar-height);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 0 var(--spacing-6);
+  justify-content: flex-end;
+  padding: 0 20px;
   flex-shrink: 0;
+  gap: 8px;
+  z-index: var(--fullscreen-modal-bars-z);
 }
 
 .fullscreen-modal__progress {

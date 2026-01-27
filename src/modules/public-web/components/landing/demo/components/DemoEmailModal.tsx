@@ -20,6 +20,7 @@ export interface DemoEmailModalProps {
   onClose: () => void;
   onSubmit: (email: string) => void;
   kpValue: number;
+  validAttemptsCount: number;
 }
 
 /**
@@ -38,6 +39,7 @@ export function DemoEmailModal({
   onClose,
   onSubmit,
   kpValue,
+  validAttemptsCount,
 }: DemoEmailModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -45,6 +47,12 @@ export function DemoEmailModal({
   useDemoScrollLock(isOpen);
   
   if (!isOpen) return null;
+  
+  // Conditional message based on measurement count
+  const isSingleMeasurement = validAttemptsCount === 1;
+  const contextMessage = isSingleMeasurement
+    ? 'Výsledek z jednoho měření'
+    : 'Průměr ze tří měření';
   
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -103,8 +111,8 @@ export function DemoEmailModal({
         
         {/* KP Result Display */}
         <div className="demo-email-modal__kp-display">
-          <span className="kp-label">Tvoje KP:</span>
           <span className="kp-value">{kpValue}s</span>
+          <span className="kp-context">{contextMessage}</span>
         </div>
         
         {/* Email Form */}
@@ -152,7 +160,7 @@ export function DemoEmailModal({
           <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer" className="demo-email-modal__link">
             obchodními podmínkami
           </a>
-          {' '}včetně používání souborů Cookie.
+          .
         </p>
       </div>
     </div>

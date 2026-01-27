@@ -34,6 +34,8 @@
   
   .fullscreen-modal__bottom-bar {
     height: var(--fullscreen-modal-bottom-bar-height-mobile);
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
     padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
   

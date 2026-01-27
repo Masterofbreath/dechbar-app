@@ -3,7 +3,7 @@
    Active breathing session screen
    ============================================================ */
 
-/* Session active - no positioning, flex child of ContentZone */
+/* Session active - wrapper for circle */
 .session-active {
   display: flex;
   flex-direction: column;
@@ -13,11 +13,20 @@
   width: 100%;
 }
 
-/* Timer styling */
+/* Breathing circle z-index */
+.breathing-circle-container {
+  position: relative;
+  z-index: var(--fullscreen-modal-circle-z);
+}
+
+/* Timer styling - absolute positioning v ContentZone */
 .session-timer {
-  margin-top: var(--fullscreen-modal-timer-margin);
-  margin-bottom: var(--fullscreen-modal-timer-margin);
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
   text-align: center;
+  z-index: 1;
 }
 
 .timer-seconds {
@@ -46,15 +55,12 @@
   margin-top: 16px;
 }
 
-/* Next phase preview - positioned ABOVE bottom bar */
+/* Next phase preview - flex item v BottomBar */
 .session-active__next-preview {
-  position: absolute;
-  bottom: calc(var(--fullscreen-modal-bottom-bar-height) + 8px);
-  left: 0;
-  right: 0;
   text-align: center;
   font-size: 13px;
   color: var(--color-text-secondary);
+  order: -1;
 }
 
 .session-active__next-preview .next-label {
@@ -67,7 +73,6 @@
 
 @media (max-width: 768px) {
   .session-active__next-preview {
-    bottom: calc(var(--fullscreen-modal-bottom-bar-height-mobile) + 8px);
     font-size: 12px;
   }
   

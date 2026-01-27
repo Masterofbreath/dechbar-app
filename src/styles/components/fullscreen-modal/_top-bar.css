@@ -9,8 +9,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-6);
+  padding: 0 20px;
   flex-shrink: 0;
+  z-index: var(--fullscreen-modal-bars-z);
 }
 
 .fullscreen-modal__title {

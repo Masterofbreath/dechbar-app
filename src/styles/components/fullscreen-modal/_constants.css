@@ -25,6 +25,8 @@
   /* Z-index Layers */
   --fullscreen-modal-overlay-z: 10000;
   --fullscreen-modal-container-z: 10001;
+  --fullscreen-modal-bars-z: 1;
+  --fullscreen-modal-circle-z: 10;
   --fullscreen-modal-close-z: 20;
   --fullscreen-modal-badge-z: 10;
 }

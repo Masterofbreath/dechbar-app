@@ -254,10 +254,21 @@ export function DemoApp() {
   };
   
   /**
-   * Handle Email modal close
+   * Handle Email modal close (X button or ESC)
+   * Also closes KP modal underneath
    */
   const handleEmailModalClose = () => {
-    setState(prev => ({ ...prev, isEmailModalOpen: false }));
+    setState(prev => ({ 
+      ...prev, 
+      isEmailModalOpen: false,
+      isKPOpen: false, // Close KP modal too
+    }));
+    
+    track({
+      action: 'email_modal_close',
+      kpValue: state.kpMeasurementData?.averageKP,
+      timestamp: Date.now(),
+    });
   };
   
   /**
@@ -343,6 +354,7 @@ export function DemoApp() {
           onClose={handleEmailModalClose}
           onSubmit={handleKPEmailSubmit}
           kpValue={state.kpMeasurementData?.averageKP ?? 0}
+          validAttemptsCount={state.kpMeasurementData?.attempts.length ?? 0}
         />
       </div>
     </ToastProvider>

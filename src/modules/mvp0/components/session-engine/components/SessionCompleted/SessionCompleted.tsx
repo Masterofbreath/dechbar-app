@@ -27,7 +27,6 @@ interface SessionCompletedProps {
 }
 
 export function SessionCompleted({
-  exercise,
   difficultyRating,
   onDifficultyChange,
   moodAfter,
@@ -43,9 +42,6 @@ export function SessionCompleted({
       {/* Gold celebration header */}
       <div className="completion-header">
         <h2 className="completion-title">Skvělá práce!</h2>
-        <p className="completion-subtitle">
-          {exercise.name} • {Math.floor(exercise.total_duration_seconds / 60)} minut
-        </p>
       </div>
       
       {/* Difficulty rating - text only, no emoji */}
