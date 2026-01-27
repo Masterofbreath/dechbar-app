@@ -16,7 +16,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useScrollLock } from '@/platform/hooks';
 import { ConfirmModal, FullscreenModal } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
-import { Button } from '@/platform/components';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
 import { useAudioCues } from './hooks/useAudioCues';
@@ -405,18 +404,12 @@ export function SessionEngineModal({
                 exercise={exercise}
                 mood={moodBefore}
                 onMoodChange={setMoodBefore}
+                onStart={startSession}
               />
             </FullscreenModal.ContentZone>
             
             <FullscreenModal.BottomBar>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => startSession(moodBefore)}
-                className="session-start__button-bottom"
-              >
-                Začít cvičení
-              </Button>
+              <div /> {/* Empty - button moved to ContentZone */}
             </FullscreenModal.BottomBar>
           </>
         )}

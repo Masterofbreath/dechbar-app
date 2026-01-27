@@ -22,7 +22,7 @@
 /* Timer styling - absolute positioning POD circlem */
 .session-timer {
   position: absolute;
-  bottom: 12px; /* Více prostoru od circle při max expansion */
+  bottom: 8px; /* Úplně dole (max space od circle) */
   left: 0;
   right: 0;
   text-align: center;
@@ -30,7 +30,7 @@
 }
 
 .timer-seconds {
-  font-size: 48px;
+  font-size: 40px; /* Reduced from 48px - less dominant */
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   letter-spacing: -0.02em;
