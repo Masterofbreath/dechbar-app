@@ -138,7 +138,6 @@ export function ChallengeRegistrationModal({
         {/* Success State - Prioritize over normal form */}
         {successMessage ? (
           <div className="demo-email-modal__success">
-            <div className="success-icon">✓</div>
             <h2 className="success-email-display">{email}</h2>
             <p className="success-instruction">{successMessage}</p>
             
