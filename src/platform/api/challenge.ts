@@ -97,27 +97,26 @@ export async function sendChallengeMagicLink(
     if (authError) {
       console.error('Magic link error:', authError);
       
-      // Rate limit error (429)
+      // Rate limit error (429) - special handling
+      // Registrace už proběhla v DB, takže jen informujeme uživatele
       if (authError.message?.includes('rate limit') || authError.status === 429) {
-        return {
-          success: false,
-          error: 'Příliš mnoho pokusů. Zkus to za hodinu nebo použij jiný email.'
-        };
+        // Continue to registration step - user can try resending later
+        console.warn('[Challenge] Rate limit hit, but continuing to registration...');
       }
-      
       // SMTP error (500) - email service is down or misconfigured
-      if (authError.status === 500 || authError.message?.includes('sending confirmation email')) {
+      else if (authError.status === 500 || authError.message?.includes('sending confirmation email')) {
         return {
           success: false,
           error: 'Email se nepodařilo odeslat. Kontaktuj nás přímo na info@dechbar.cz'
         };
       }
-      
       // Generic error with contact info
-      return {
-        success: false,
-        error: 'Něco se pokazilo. Zkus to za chvíli znovu nebo nás kontaktuj na info@dechbar.cz'
-      };
+      else {
+        return {
+          success: false,
+          error: 'Něco se pokazilo. Zkus to za chvíli znovu nebo nás kontaktuj na info@dechbar.cz'
+        };
+      }
     }
     
     // 5. Handle challenge registration for BOTH existing and new users
