@@ -329,17 +329,8 @@ export function DemoApp() {
       
       await sendLink(email, kpValue, 'demo_measurement_complete');
       
-      // If success, close modals after delay
-      // Magic link hook handles success/error state display
-      if (magicLinkSent && !magicLinkError) {
-        setTimeout(() => {
-          setState(prev => ({
-            ...prev,
-            isEmailModalOpen: false,
-            isKPOpen: false,
-          }));
-        }, 5000); // 5 seconds to read success message
-      }
+      // Success modal now has "Rozumím" button - user closes it manually
+      // No need for auto-close timeout
       
       return;
     }
@@ -388,16 +379,8 @@ export function DemoApp() {
     
     console.log('🎯 [DemoApp] Magic link sent. Error:', magicLinkError, 'Success:', magicLinkSent);
     
-    // Close modal after delay (let user see success message)
-    if (magicLinkSent && !magicLinkError) {
-      setTimeout(() => {
-        console.log('🎯 [DemoApp] Closing modal after success');
-        setState(prev => ({
-          ...prev,
-          isModalOpen: false,
-        }));
-      }, 5000); // 5 seconds to read success message
-    }
+    // Success modal now has "Rozumím" button - user closes it manually
+    // No need for auto-close timeout
   };
   
   return (

@@ -129,6 +129,16 @@ export function ChallengeRegistrationModal({
             <div className="success-icon">✓</div>
             <h2 className="success-email-display">{email}</h2>
             <p className="success-instruction">{successMessage}</p>
+            
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={onClose}
+              style={{ marginTop: '1.5rem' }}
+            >
+              Rozumím
+            </Button>
           </div>
         ) : (
           <>
