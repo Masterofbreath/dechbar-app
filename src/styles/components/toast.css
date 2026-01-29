@@ -17,7 +17,7 @@
   bottom: calc(env(safe-area-inset-bottom) + 1rem);
   left: 1rem;
   right: 1rem;
-  z-index: 10002; /* Above modals (10000) and foreignObject content */
+  z-index: 10003; /* Above Settings drawer (10001) and overlay (10000) */
   
   /* Dark glassmorphism */
   background: rgb(42 42 42 / 95%);
