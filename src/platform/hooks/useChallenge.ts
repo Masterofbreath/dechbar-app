@@ -64,43 +64,15 @@ export function useChallenge() {
     setIsSubmitting(true);
 
     try {
-      // Insert into challenge_registrations
-      const { data, error } = await supabase
-        .from('challenge_registrations')
-        .insert({
-          email: email.toLowerCase().trim(),
-          challenge_id: challengeId,
-          conversion_source: source
-        })
-        .select()
-        .single();
-
+      // This function is DEPRECATED - don't use it
+      // Real registration happens via sendChallengeMagicLink in DemoApp
+      console.warn('[DEPRECATED] submitEmail() - Use useChallengeMagicLink() instead');
+      
       setIsSubmitting(false);
-
-      // Handle duplicate email (unique constraint violation)
-      if (error?.code === '23505') {
-        return {
-          success: false,
-          duplicate: true,
-          message: MESSAGES.challenge.emailDuplicate,
-          error: 'duplicate_email'
-        };
-      }
-
-      // Handle other errors
-      if (error) {
-        console.error('Challenge email submission error:', error);
-        return {
-          success: false,
-          message: MESSAGES.error.serverError,
-          error: error.code || 'unknown_error'
-        };
-      }
-
-      // Success
+      
       return {
         success: true,
-        message: MESSAGES.challenge.emailSubmitSuccess
+        message: 'Email odeslán. Zkontroluj svou schránku.'
       };
 
     } catch (err) {

@@ -18,32 +18,32 @@
 
 import { useState, FormEvent } from 'react';
 import { Button } from '@/platform/components';
-import { useChallenge } from '@/platform/hooks';
+import { CloseButton } from '@/components/shared/CloseButton';
+import { useChallengeMagicLink } from '@/hooks/useChallenge';
 import { MESSAGES } from '@/config/messages';
-import { CHALLENGE_CONFIG } from '@/modules/public-web/data/challengeConfig';
 import { HeroMockup } from '@/modules/public-web/components/landing/HeroMockup';
 
 export function ChallengeHero() {
   const [email, setEmail] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const { submitEmail, isSubmitting } = useChallenge();
+  const { sendLink, sendingMagicLink } = useChallengeMagicLink();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     
     // Clear previous messages
-    setSuccessMessage('');
+    setShowSuccessModal(false);
     setErrorMessage('');
 
-    // Submit email
-    const result = await submitEmail(email, CHALLENGE_CONFIG.id, 'landing_page');
+    // Send magic link (KP = 0 for hero registration - KP not measured yet)
+    const result = await sendLink(email, 0, 'hero_cta');
 
     if (result.success) {
-      setSuccessMessage(result.message);
-      setEmail(''); // Clear input
+      // Show success modal instead of redirect
+      setShowSuccessModal(true);
     } else {
-      setErrorMessage(result.message);
+      setErrorMessage(result.error || 'Něco se pokazilo. Zkus to znovu.');
     }
   }
 
@@ -70,7 +70,7 @@ export function ChallengeHero() {
                 placeholder={MESSAGES.challenge.hero.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isSubmitting}
+                disabled={sendingMagicLink}
                 required
                 autoFocus
               />
@@ -80,7 +80,7 @@ export function ChallengeHero() {
               variant="primary"
               size="lg"
               type="submit"
-              loading={isSubmitting}
+              loading={sendingMagicLink}
               className="challenge-hero__cta"
             >
               {MESSAGES.challenge.hero.cta}
@@ -88,12 +88,6 @@ export function ChallengeHero() {
           </form>
 
           {/* Success/Error Messages */}
-          {successMessage && (
-            <div className="challenge-hero__success">
-              {successMessage}
-            </div>
-          )}
-          
           {errorMessage && (
             <div className="challenge-hero__error">
               {errorMessage}
@@ -147,6 +141,28 @@ export function ChallengeHero() {
           <HeroMockup />
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={() => setShowSuccessModal(false)} />
+            
+            <p className="success-email-display">{email}</p>
+            <p className="success-instruction">Dokonči registraci v e-mailu.</p>
+            
+            <Button 
+              variant="primary" 
+              size="lg" 
+              fullWidth
+              onClick={() => setShowSuccessModal(false)}
+              style={{marginTop: '1.5rem'}}
+            >
+              Rozumím
+            </Button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -360,6 +360,7 @@
   letter-spacing: -0.05em;      /* Tight letter-spacing for premium feel */
   margin: 0 0 1.5rem 0;         /* 24px bottom margin */
   word-break: break-word;       /* Prevent overflow on long emails */
+  text-align: center;           /* Centered for success modals */
 }
 
 /* Success state - instruction text */
@@ -367,6 +368,7 @@
   font-size: var(--font-size-base); /* 16px */
   color: var(--color-text-secondary); /* #A0A0A0 */
   margin: 0 0 1rem 0;           /* 16px bottom margin */
+  text-align: center;           /* Centered for success modals */
 }
 
 /* Success state - hint text (small, tertiary) */

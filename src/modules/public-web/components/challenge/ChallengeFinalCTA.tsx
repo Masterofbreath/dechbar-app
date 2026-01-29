@@ -12,29 +12,30 @@
 
 import { useState, FormEvent } from 'react';
 import { Button } from '@/platform/components';
-import { useChallenge } from '@/platform/hooks';
+import { CloseButton } from '@/components/shared/CloseButton';
+import { useChallengeMagicLink } from '@/hooks/useChallenge';
 import { MESSAGES } from '@/config/messages';
-import { CHALLENGE_CONFIG } from '@/modules/public-web/data/challengeConfig';
 
 export function ChallengeFinalCTA() {
   const [email, setEmail] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const { submitEmail, isSubmitting } = useChallenge();
+  const { sendLink, sendingMagicLink } = useChallengeMagicLink();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     
-    setSuccessMessage('');
+    setShowSuccessModal(false);
     setErrorMessage('');
 
-    const result = await submitEmail(email, CHALLENGE_CONFIG.id, 'landing_page_final');
+    // Send magic link (KP = 0 for footer CTA - KP not measured yet)
+    const result = await sendLink(email, 0, 'footer_cta');
 
     if (result.success) {
-      setSuccessMessage(result.message);
-      setEmail('');
+      // Show success modal instead of redirect
+      setShowSuccessModal(true);
     } else {
-      setErrorMessage(result.message);
+      setErrorMessage(result.error || 'Něco se pokazilo. Zkus to znovu.');
     }
   }
 
@@ -54,7 +55,7 @@ export function ChallengeFinalCTA() {
               placeholder={MESSAGES.challenge.hero.emailPlaceholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={isSubmitting}
+              disabled={sendingMagicLink}
               required
             />
           </div>
@@ -63,7 +64,7 @@ export function ChallengeFinalCTA() {
             variant="primary"
             size="lg"
             type="submit"
-            loading={isSubmitting}
+            loading={sendingMagicLink}
             className="challenge-final-cta__button"
           >
             {MESSAGES.challenge.final.cta}
@@ -71,12 +72,6 @@ export function ChallengeFinalCTA() {
         </form>
 
         {/* Success/Error Messages */}
-        {successMessage && (
-          <div className="challenge-final-cta__success">
-            {successMessage}
-          </div>
-        )}
-        
         {errorMessage && (
           <div className="challenge-final-cta__error">
             {errorMessage}
@@ -88,6 +83,28 @@ export function ChallengeFinalCTA() {
           {MESSAGES.challenge.final.subtext}
         </p>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={() => setShowSuccessModal(false)} />
+            
+            <p className="success-email-display">{email}</p>
+            <p className="success-instruction">Dokonči registraci v e-mailu.</p>
+            
+            <Button 
+              variant="primary" 
+              size="lg" 
+              fullWidth
+              onClick={() => setShowSuccessModal(false)}
+              style={{marginTop: '1.5rem'}}
+            >
+              Rozumím
+            </Button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

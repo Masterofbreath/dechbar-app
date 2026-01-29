@@ -24,6 +24,7 @@ import { DemoKPCenter } from './components/DemoKPCenter';
 import { DemoEmailModal } from './components/DemoEmailModal';
 import { ToastProvider } from '@/platform/components/Toast';
 import { useDemoAnalytics } from './hooks/useDemoAnalytics';
+import { useChallengeMagicLink } from '@/hooks/useChallenge';
 import type { DemoView, DemoState } from './types/demo.types';
 import type { Exercise } from '@/shared/exercises/types';
 
@@ -45,6 +46,7 @@ export function DemoApp() {
   });
   
   const { track } = useDemoAnalytics();
+  const { sendLink, loading: sendingMagicLink, success: magicLinkSent, error: magicLinkError } = useChallengeMagicLink();
   
   /**
    * Detect if we're on challenge landing page (/vyzva)
@@ -165,8 +167,9 @@ export function DemoApp() {
   
   /**
    * Handle email registration
+   * UPDATED: Now sends magic link for challenge registration
    */
-  const handleEmailSubmit = (email: string) => {
+  const handleEmailSubmit = async (email: string) => {
     track({
       action: 'registration_start',
       method: 'email',
@@ -174,8 +177,22 @@ export function DemoApp() {
       timestamp: Date.now(),
     });
     
-    // TODO: Integrate with real auth (Phase 2)
-    // For now: Demo alert
+    // On /vyzva page with KP measurement → Send magic link
+    if (isChallengePage && state.kpMeasurementData) {
+      const kpValue = state.kpMeasurementData.average || state.kpMeasurementData.lastValue;
+      
+      await sendLink(email, kpValue, 'demo_measurement_round_1');
+      
+      // Magic link hook handles success/error state
+      // We just close the modal after send
+      setTimeout(() => {
+        setState(prev => ({ ...prev, isEmailModalOpen: false }));
+      }, 2000); // Give user time to see success message
+      
+      return;
+    }
+    
+    // Fallback for non-challenge pages (old behavior)
     if (import.meta.env.DEV) {
       console.log('[Demo] Email registration:', email, 'for:', state.selectedExercise?.name);
       alert(`Demo: Email registrace\n\nEmail: ${email}\nCvičení: ${state.selectedExercise?.name}\n\nV produkci: redirect to /exercise/${state.selectedExercise?.id}`);
@@ -262,7 +279,11 @@ export function DemoApp() {
    * Handle Email modal open (after KP measurement)
    */
   const handleEmailModalOpen = () => {
-    setState(prev => ({ ...prev, isEmailModalOpen: true }));
+    setState(prev => ({ 
+      ...prev, 
+      isEmailModalOpen: true,
+      isKPOpen: false, // CRITICAL: Close KP modal before opening email modal (prevents z-index conflict)
+    }));
     
     track({
       action: 'email_modal_open',
@@ -290,17 +311,10 @@ export function DemoApp() {
   };
   
   /**
-   * Handle Email submit → close both modals, open conversion modal
+   * Handle Email submit after KP measurement
+   * UPDATED: Sends magic link for challenge registration
    */
-  const handleKPEmailSubmit = (email: string) => {
-    // Close both modals
-    setState(prev => ({
-      ...prev,
-      isEmailModalOpen: false,
-      isKPOpen: false,
-      isModalOpen: true, // Open conversion modal
-    }));
-    
+  const handleKPEmailSubmit = async (email: string) => {
     // Track email submission
     track({
       action: 'email_submitted',
@@ -308,6 +322,36 @@ export function DemoApp() {
       kpValue: state.kpMeasurementData?.averageKP,
       timestamp: Date.now(),
     });
+    
+    // On /vyzva page → Send magic link
+    if (isChallengePage && state.kpMeasurementData) {
+      const kpValue = state.kpMeasurementData.averageKP || state.kpMeasurementData.attempts[0];
+      
+      await sendLink(email, kpValue, 'demo_measurement_complete');
+      
+      // If success, close modals after delay
+      // Magic link hook handles success/error state display
+      if (!magicLinkError) {
+        setTimeout(() => {
+          setState(prev => ({
+            ...prev,
+            isEmailModalOpen: false,
+            isKPOpen: false,
+          }));
+        }, 3000); // Give user time to see success message
+      }
+      
+      return;
+    }
+    
+    // Fallback for non-challenge pages (homepage)
+    // Close both modals, open conversion modal
+    setState(prev => ({
+      ...prev,
+      isEmailModalOpen: false,
+      isKPOpen: false,
+      isModalOpen: true, // Open conversion modal
+    }));
     
     track({
       action: 'kp_conversion_triggered',
@@ -318,13 +362,10 @@ export function DemoApp() {
   
   /**
    * Handle challenge registration (email submit on /vyzva page)
+   * Used when clicking on protocols/exercises WITHOUT KP measurement
    */
-  const handleChallengeRegistration = (email: string) => {
-    // Close modal
-    setState(prev => ({
-      ...prev,
-      isModalOpen: false,
-    }));
+  const handleChallengeRegistration = async (email: string) => {
+    console.log('🎯 [DemoApp] handleChallengeRegistration called with email:', email);
     
     // Track challenge registration
     track({
@@ -332,19 +373,31 @@ export function DemoApp() {
       email,
       exercise: state.selectedExercise?.name,
       kpValue: state.kpMeasurementData?.averageKP,
-      source: 'challenge_landing',
+      source: 'challenge_landing_protocol',
       timestamp: Date.now(),
     });
     
-    // TODO: Backend integration
-    // - Create user in Supabase
-    // - Activate 21-day challenge
-    // - Send welcome email via Ecomail
+    // If user clicked from protocol/exercise (no KP data), use default KP = 0
+    // Real registration happens via magic link
+    const kpValue = state.kpMeasurementData?.averageKP || 0;
     
-    console.log('Challenge registration:', { email, exercise: state.selectedExercise });
+    console.log('🎯 [DemoApp] Sending magic link with KP:', kpValue);
     
-    // Show success message
-    // (will be replaced with actual backend integration)
+    // Send magic link with proper source tracking
+    await sendLink(email, kpValue, 'post_protocol_exercise');
+    
+    console.log('🎯 [DemoApp] Magic link sent. Error:', magicLinkError, 'Success:', magicLinkSent);
+    
+    // Close modal after short delay (let user see success/error message)
+    if (!magicLinkError) {
+      setTimeout(() => {
+        console.log('🎯 [DemoApp] Closing modal after success');
+        setState(prev => ({
+          ...prev,
+          isModalOpen: false,
+        }));
+      }, 3000);
+    }
   };
   
   return (
@@ -381,6 +434,9 @@ export function DemoApp() {
             exercise={state.selectedExercise}
             kpMeasurement={state.kpMeasurementData}
             onSubmit={handleChallengeRegistration}
+            isSubmitting={sendingMagicLink}
+            successMessage={magicLinkSent ? 'Magic link odeslán! Zkontroluj svůj e-mail.' : ''}
+            errorMessage={magicLinkError || ''}
           />
         ) : (
           <LockedExerciseModal
@@ -407,14 +463,28 @@ export function DemoApp() {
           onEmailModalOpen={handleEmailModalOpen}
         />
         
-        {/* Email Registration modal */}
-        <DemoEmailModal
-          isOpen={state.isEmailModalOpen}
-          onClose={handleEmailModalClose}
-          onSubmit={handleKPEmailSubmit}
-          kpValue={state.kpMeasurementData?.averageKP ?? 0}
-          validAttemptsCount={state.kpMeasurementData?.attempts.length ?? 0}
-        />
+        {/* Email/Challenge Registration modal (after KP measurement) */}
+        {/* Conditional: Challenge modal on /vyzva, Email modal on homepage */}
+        {isChallengePage ? (
+          <ChallengeRegistrationModal
+            isOpen={state.isEmailModalOpen}
+            onClose={handleEmailModalClose}
+            exercise={null}
+            kpMeasurement={state.kpMeasurementData}
+            onSubmit={handleKPEmailSubmit}
+            isSubmitting={sendingMagicLink}
+            successMessage={magicLinkSent ? 'Magic link odeslán! Zkontroluj svůj e-mail.' : ''}
+            errorMessage={magicLinkError || ''}
+          />
+        ) : (
+          <DemoEmailModal
+            isOpen={state.isEmailModalOpen}
+            onClose={handleEmailModalClose}
+            onSubmit={handleKPEmailSubmit}
+            kpValue={state.kpMeasurementData?.averageKP ?? 0}
+            validAttemptsCount={state.kpMeasurementData?.attempts.length ?? 0}
+          />
+        )}
       </div>
     </ToastProvider>
   );

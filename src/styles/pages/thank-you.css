@@ -1,0 +1,180 @@
+/**
+ * Thank You Page Styles
+ * 
+ * Děkovací stránka po registraci do výzvy
+ * Apple Premium style
+ */
+
+.thank-you-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-6) var(--spacing-4);
+  background: var(--color-bg-primary);
+}
+
+.thank-you-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Icon */
+.thank-you-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--spacing-6);
+  color: var(--color-teal);
+  background: rgba(20, 184, 166, 0.1);
+  border-radius: 50%;
+}
+
+.thank-you-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Header */
+.thank-you-header {
+  margin-bottom: var(--spacing-8);
+}
+
+.thank-you-header__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2) 0;
+  letter-spacing: -0.02em;
+}
+
+.thank-you-header__subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Timeline */
+.thank-you-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-8);
+}
+
+.thank-you-timeline-item {
+  display: flex;
+  gap: var(--spacing-4);
+  padding: var(--spacing-5);
+  text-align: left;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.thank-you-timeline-item:hover {
+  border-color: var(--color-teal);
+  box-shadow: 0 4px 16px rgba(20, 184, 166, 0.1);
+}
+
+.thank-you-timeline-item--highlight {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, rgba(20, 184, 166, 0.02) 100%);
+  border-color: var(--color-teal);
+}
+
+.thank-you-timeline-item__icon {
+  flex-shrink: 0;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.thank-you-timeline-item__content {
+  flex: 1;
+}
+
+.thank-you-timeline-item__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1) 0;
+}
+
+.thank-you-timeline-item__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.thank-you-timeline-item__text strong {
+  color: var(--color-teal);
+  font-weight: 600;
+}
+
+/* Info */
+.thank-you-info {
+  margin-bottom: var(--spacing-8);
+  padding: var(--spacing-4);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.thank-you-info__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.thank-you-info__text strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* CTA */
+.thank-you-cta {
+  /* Placeholder pro případné další CTA */
+}
+
+.thank-you-cta__button {
+  padding: var(--spacing-3) var(--spacing-6);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.thank-you-cta__button:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-teal);
+  background: rgba(20, 184, 166, 0.05);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .thank-you-page {
+    padding: var(--spacing-4) var(--spacing-3);
+  }
+  
+  .thank-you-header__title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .thank-you-timeline-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .thank-you-timeline-item__icon {
+    font-size: 40px;
+  }
+}

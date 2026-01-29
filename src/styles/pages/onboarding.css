@@ -1,0 +1,206 @@
+/**
+ * Onboarding Page Styles
+ * 
+ * Apple Premium style - minimalistický, modern
+ * Responsive: Mobile-first
+ */
+
+.onboarding-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-6) var(--spacing-4);
+  background: var(--color-bg-primary);
+}
+
+.onboarding-container {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Header */
+.onboarding-header {
+  text-align: center;
+  margin-bottom: var(--spacing-8);
+}
+
+.onboarding-header__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2) 0;
+  letter-spacing: -0.02em;
+}
+
+.onboarding-header__subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.onboarding-header__subtitle strong {
+  color: var(--color-teal);
+  font-weight: 600;
+}
+
+/* Form */
+.onboarding-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.onboarding-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.onboarding-form__label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.onboarding-form__input {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.onboarding-form__input:focus {
+  outline: none;
+  border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.onboarding-form__input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.onboarding-form__input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Motivations */
+.onboarding-motivations {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-2);
+}
+
+.onboarding-motivation {
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.onboarding-motivation:hover:not(:disabled) {
+  border-color: var(--color-teal);
+  color: var(--color-text-primary);
+}
+
+.onboarding-motivation--selected {
+  background: var(--color-teal);
+  color: var(--color-text-on-primary);
+  border-color: var(--color-teal);
+}
+
+.onboarding-motivation:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error */
+.onboarding-form__error {
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--font-size-sm);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-lg);
+}
+
+/* Submit Button */
+.onboarding-form__submit {
+  width: 100%;
+  padding: var(--spacing-4) var(--spacing-6);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-on-primary);
+  background: var(--color-teal);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(20, 184, 166, 0.25);
+}
+
+.onboarding-form__submit:hover:not(:disabled) {
+  background: #15939A;
+  box-shadow: 0 4px 16px rgba(20, 184, 166, 0.35);
+  transform: translateY(-1px);
+}
+
+.onboarding-form__submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.onboarding-form__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Info */
+.onboarding-info {
+  margin-top: var(--spacing-6);
+  padding: var(--spacing-4);
+  text-align: center;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.onboarding-info__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.onboarding-info__text strong {
+  color: var(--color-teal);
+  font-weight: 600;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .onboarding-page {
+    padding: var(--spacing-4) var(--spacing-3);
+  }
+  
+  .onboarding-header__title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .onboarding-motivations {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,408 @@
+/**
+ * Challenge Thank You Page Styles
+ * 
+ * Děkovná stránka /vyzva/dekujeme
+ * Apple Premium: Dark, minimalistická, uklidňující
+ * 
+ * Design tokens: ALWAYS use CSS variables from design-tokens/
+ * Single Source of Truth: src/styles/design-tokens/
+ * - colors.css - All color values
+ * - spacing.css - 4px grid spacing system
+ * - typography.css - Font sizes, weights, letter-spacing
+ * - shadows.css - Elevation & glow effects
+ * 
+ * @see /docs/brand/VISUAL_BRAND_BOOK.md
+ */
+
+/* ========================================
+   PAGE WRAPPER
+   ======================================== */
+
+.challenge-thank-you {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);  /* #121212 */
+}
+
+.challenge-thank-you__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12) var(--spacing-6);  /* 48px 24px */
+}
+
+.challenge-thank-you__container {
+  width: 100%;
+  max-width: var(--container-md);  /* 768px - wider for readability */
+  margin: 0 auto;
+}
+
+/* ========================================
+   HERO SECTION
+   ======================================== */
+
+.challenge-thank-you-hero {
+  text-align: center;
+  margin-bottom: var(--spacing-12);  /* 48px */
+}
+
+.challenge-thank-you-hero__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto var(--spacing-8);  /* 32px */
+  color: var(--color-primary);  /* Teal #2CBEC6 */
+  background: var(--glow-primary-bg-subtle);  /* rgba(44, 190, 198, 0.1) */
+  border-radius: var(--radius-full);  /* 50% */
+  animation: fadeInScale 0.6s ease-out;
+}
+
+.challenge-thank-you-hero__icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+.challenge-thank-you-hero__title {
+  font-family: var(--font-family-base);
+  font-size: 48px;
+  font-weight: var(--font-weight-bold);  /* 700 */
+  line-height: var(--line-height-tight);  /* 1.25 */
+  letter-spacing: var(--letter-spacing-tight);  /* -0.02em */
+  color: var(--color-text-primary);  /* #E0E0E0 */
+  margin: 0 0 var(--spacing-4) 0;  /* 16px */
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.challenge-thank-you-hero__subtitle {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-lg);  /* 18px */
+  line-height: 1.6;
+  color: var(--color-text-secondary);  /* #A0A0A0 */
+  margin: 0;
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+/* ========================================
+   BONUS BOX
+   ======================================== */
+
+.challenge-thank-you-bonus {
+  margin: 0 0 var(--spacing-12) 0;  /* 48px */
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.challenge-thank-you-bonus__content {
+  background: linear-gradient(135deg, var(--glow-primary-bg-subtle) 0%, var(--glow-primary-shadow-light) 100%);
+  border: 1px solid var(--glow-primary-shadow-medium);  /* rgba(44, 190, 198, 0.2) */
+  border-radius: var(--radius-lg);  /* 16px */
+  padding: var(--spacing-6);  /* 24px */
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.challenge-thank-you-bonus__content:hover {
+  border-color: var(--glow-primary-shadow-strong);  /* rgba(44, 190, 198, 0.4) - stronger on hover */
+  background: linear-gradient(135deg, var(--glow-primary-shadow-faint) 0%, var(--glow-primary-shadow-subtle) 100%);
+}
+
+.challenge-thank-you-bonus__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--spacing-4);  /* 16px */
+  color: var(--color-accent);  /* Gold #D6A23A */
+  background: var(--glow-accent-bg-strong);  /* rgba(214, 162, 58, 0.1) */
+  border-radius: var(--radius-md);  /* 12px */
+}
+
+.challenge-thank-you-bonus__icon svg {
+  width: var(--spacing-6);  /* 24px */
+  height: var(--spacing-6);  /* 24px */
+}
+
+.challenge-thank-you-bonus__title {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);  /* 14px */
+  font-weight: var(--font-weight-bold);  /* 700 */
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-primary);  /* Teal */
+  margin: 0 0 var(--spacing-2) 0;  /* 8px */
+}
+
+.challenge-thank-you-bonus__description {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-xl);  /* 20px */
+  font-weight: var(--font-weight-semibold);  /* 600 */
+  line-height: 1.4;
+  color: var(--color-text-primary);  /* #E0E0E0 */
+  margin: 0 0 var(--spacing-1) 0;  /* 4px */
+}
+
+.challenge-thank-you-bonus__value {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);  /* 14px */
+  color: var(--color-text-secondary);  /* #A0A0A0 */
+  margin: 0;
+}
+
+/* ========================================
+   TIMELINE
+   ======================================== */
+
+.challenge-thank-you-timeline {
+  margin: 0 0 var(--spacing-12) 0;  /* 48px */
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.challenge-thank-you-timeline__heading {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-2xl);  /* 24px */
+  font-weight: var(--font-weight-semibold);  /* 600 */
+  letter-spacing: var(--letter-spacing-tight);  /* -0.02em */
+  color: var(--color-text-primary);  /* #E0E0E0 */
+  text-align: center;
+  margin: 0 0 var(--spacing-8) 0;  /* 32px */
+}
+
+.challenge-thank-you-timeline__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);  /* 24px */
+}
+
+.challenge-thank-you-timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-4);  /* 16px */
+  padding: var(--spacing-5);  /* 20px */
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border-subtle);  /* rgba(255, 255, 255, 0.05) */
+  border-radius: var(--radius-md);  /* 12px */
+  transition: all 0.3s ease;
+}
+
+.challenge-thank-you-timeline-item:hover {
+  background: var(--color-surface-hover);  /* rgba(255, 255, 255, 0.04) */
+  border-color: var(--glow-primary-shadow-medium);  /* rgba(44, 190, 198, 0.2) */
+  transform: translateX(4px);
+}
+
+.challenge-thank-you-timeline-item__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-primary);  /* Teal */
+  background: var(--glow-primary-bg-subtle);  /* rgba(44, 190, 198, 0.1) */
+  border-radius: 10px;
+}
+
+.challenge-thank-you-timeline-item__icon svg {
+  width: var(--spacing-6);  /* 24px */
+  height: var(--spacing-6);  /* 24px */
+}
+
+.challenge-thank-you-timeline-item__content {
+  flex: 1;
+  padding-top: 2px;
+}
+
+.challenge-thank-you-timeline-item__title {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);  /* 16px */
+  font-weight: var(--font-weight-semibold);  /* 600 */
+  color: var(--color-text-primary);  /* #E0E0E0 */
+  margin: 0 0 var(--spacing-1) 0;  /* 4px */
+}
+
+.challenge-thank-you-timeline-item__description {
+  font-family: var(--font-family-base);
+  font-size: 15px;
+  line-height: var(--line-height-normal);  /* 1.5 */
+  color: var(--color-text-secondary);  /* #A0A0A0 */
+  margin: 0;
+}
+
+/* ========================================
+   CTA BUTTON
+   ======================================== */
+
+.challenge-thank-you-cta {
+  text-align: center;
+  animation: fadeInUp 0.6s ease-out 0.5s both;
+}
+
+.challenge-thank-you-cta__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4) 40px;  /* 16px 40px */
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-lg);  /* 18px */
+  font-weight: var(--font-weight-semibold);  /* 600 */
+  color: var(--color-background);  /* #121212 - dark text on gold */
+  background: var(--color-accent);  /* Gold #D6A23A */
+  border: none;
+  border-radius: var(--radius-md);  /* 12px */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px var(--glow-accent-shadow-subtle);  /* rgba(214, 162, 58, 0.3) */
+}
+
+.challenge-thank-you-cta__button:hover {
+  background: var(--color-accent-light);  /* #F0C76A */
+  box-shadow: 0 6px 20px var(--glow-accent-shadow-subtle);  /* Stronger glow */
+  transform: translateY(-2px);
+}
+
+.challenge-thank-you-cta__button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px var(--glow-accent-shadow-subtle);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   RESPONSIVE - MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .challenge-thank-you__main {
+    padding: var(--spacing-8) var(--spacing-5);  /* 32px 20px */
+  }
+
+  .challenge-thank-you-hero {
+    margin-bottom: var(--spacing-8);  /* 32px */
+  }
+
+  .challenge-thank-you-hero__icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--spacing-6);  /* 24px */
+  }
+
+  .challenge-thank-you-hero__icon svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .challenge-thank-you-hero__title {
+    font-size: 32px;
+    margin-bottom: var(--spacing-3);  /* 12px */
+  }
+
+  .challenge-thank-you-hero__subtitle {
+    font-size: var(--font-size-base);  /* 16px */
+  }
+
+  .challenge-thank-you-bonus {
+    margin-bottom: var(--spacing-8);  /* 32px */
+  }
+
+  .challenge-thank-you-bonus__content {
+    padding: var(--spacing-5);  /* 20px */
+  }
+
+  .challenge-thank-you-bonus__icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--spacing-3);  /* 12px */
+  }
+
+  .challenge-thank-you-bonus__description {
+    font-size: var(--font-size-lg);  /* 18px */
+  }
+
+  .challenge-thank-you-timeline {
+    margin-bottom: var(--spacing-8);  /* 32px */
+  }
+
+  .challenge-thank-you-timeline__heading {
+    font-size: var(--font-size-xl);  /* 20px */
+    margin-bottom: var(--spacing-6);  /* 24px */
+  }
+
+  .challenge-thank-you-timeline__items {
+    gap: var(--spacing-4);  /* 16px */
+  }
+
+  .challenge-thank-you-timeline-item {
+    padding: var(--spacing-4);  /* 16px */
+    gap: var(--spacing-3);  /* 12px */
+  }
+
+  .challenge-thank-you-timeline-item__icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .challenge-thank-you-timeline-item__icon svg {
+    width: var(--spacing-5);  /* 20px */
+    height: var(--spacing-5);  /* 20px */
+  }
+
+  .challenge-thank-you-timeline-item__title {
+    font-size: 15px;
+  }
+
+  .challenge-thank-you-timeline-item__description {
+    font-size: var(--font-size-sm);  /* 14px */
+  }
+
+  .challenge-thank-you-cta__button {
+    width: 100%;
+    padding: var(--spacing-4) var(--spacing-8);  /* 16px 32px */
+    font-size: var(--font-size-base);  /* 16px */
+  }
+}
+
+/* ========================================
+   RESPONSIVE - NARROW MOBILE (375px)
+   ======================================== */
+
+@media (max-width: 480px) {
+  .challenge-thank-you__main {
+    padding: var(--spacing-6) var(--spacing-4);  /* 24px 16px */
+  }
+
+  .challenge-thank-you-hero__title {
+    font-size: 28px;
+  }
+
+  .challenge-thank-you-timeline-item:hover {
+    transform: none;  /* Disable hover transform on touch devices */
+  }
+}
