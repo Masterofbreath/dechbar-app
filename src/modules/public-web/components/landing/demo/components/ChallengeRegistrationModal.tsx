@@ -26,6 +26,8 @@ export interface ChallengeRegistrationModalProps {
   exercise: Exercise | null;
   onSubmit: (email: string) => void;
   kpMeasurement?: { averageKP: number; attempts: number[] } | null;
+  successMessage?: string;
+  errorMessage?: string;
 }
 
 /**
@@ -51,9 +53,10 @@ function validateEmail(email: string): boolean {
 export function ChallengeRegistrationModal({
   isOpen,
   onClose,
-  exercise,
   onSubmit,
   kpMeasurement,
+  successMessage = '',
+  errorMessage = '',
 }: ChallengeRegistrationModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -120,72 +123,83 @@ export function ChallengeRegistrationModal({
         {/* Close Button */}
         <CloseButton onClick={onClose} />
         
-        {/* Title - Conditional based on KP */}
-        <h2 id="challenge-modal-title" className="modal-card__title">
-          {title}
-        </h2>
-        
-        {/* Subtitle - Conditional based on KP */}
-        <p className="demo-email-modal__subtitle">
-          {subtitle}
-        </p>
-        
-        {/* KP Result Display - Only if measured */}
-        {hasKPResult && (
-          <div className="demo-email-modal__kp-display">
-            <span className="kp-value">{kpMeasurement.averageKP}s</span>
-            <span className="kp-context">{contextMessage}</span>
+        {/* Success State - Prioritize over normal form */}
+        {successMessage ? (
+          <div className="demo-email-modal__success">
+            <div className="success-icon">✓</div>
+            <h2 className="success-email-display">{email}</h2>
+            <p className="success-instruction">{successMessage}</p>
           </div>
-        )}
-        
-        {/* Email Form - Same styling as homepage */}
-        <form onSubmit={handleSubmit} className="demo-email-modal__form">
-          {/* Email Input */}
-          <input
-            type="email"
-            value={email}
-            onChange={handleEmailChange}
-            onKeyPress={handleKeyPress}
-            placeholder="tvuj@email.cz"
-            className="demo-email-modal__input"
-            autoFocus
-            aria-label="E-mail"
-            aria-invalid={!!error}
-            aria-describedby={error ? 'email-error' : undefined}
-          />
-          
-          {/* Error Message */}
-          {error && (
-            <p id="email-error" className="demo-email-modal__error" role="alert">
-              {error}
+        ) : (
+          <>
+            {/* Title - Conditional based on KP */}
+            <h2 id="challenge-modal-title" className="modal-card__title">
+              {title}
+            </h2>
+            
+            {/* Subtitle - Conditional based on KP */}
+            <p className="demo-email-modal__subtitle">
+              {subtitle}
             </p>
-          )}
-          
-          {/* Submit Button */}
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            onClick={handleSubmit}
-            type="button"
-          >
-            Vstoupit do výzvy
-          </Button>
-        </form>
-        
-        {/* Privacy Notice */}
-        <p className="demo-email-modal__privacy">
-          Registrací souhlasíš s{' '}
-          <a 
-            href="/obchodni-podminky" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="demo-email-modal__link"
-          >
-            obchodními podmínkami
-          </a>
-          .
-        </p>
+            
+            {/* KP Result Display - Only if measured */}
+            {hasKPResult && (
+              <div className="demo-email-modal__kp-display">
+                <span className="kp-value">{kpMeasurement.averageKP}s</span>
+                <span className="kp-context">{contextMessage}</span>
+              </div>
+            )}
+            
+            {/* Email Form - Same styling as homepage */}
+            <form onSubmit={handleSubmit} className="demo-email-modal__form">
+              {/* Email Input */}
+              <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                onKeyPress={handleKeyPress}
+                placeholder="tvuj@email.cz"
+                className="demo-email-modal__input"
+                autoFocus
+                aria-label="E-mail"
+                aria-invalid={!!error}
+                aria-describedby={error ? 'email-error' : undefined}
+              />
+              
+              {/* Error Message */}
+              {(error || errorMessage) && (
+                <p id="email-error" className="demo-email-modal__error" role="alert">
+                  {error || errorMessage}
+                </p>
+              )}
+              
+              {/* Submit Button */}
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={handleSubmit}
+                type="button"
+              >
+                Vstoupit do výzvy
+              </Button>
+            </form>
+            
+            {/* Privacy Notice */}
+            <p className="demo-email-modal__privacy">
+              Registrací souhlasíš s{' '}
+              <a 
+                href="/obchodni-podminky" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="demo-email-modal__link"
+              >
+                obchodními podmínkami
+              </a>
+              .
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

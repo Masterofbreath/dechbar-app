@@ -331,14 +331,14 @@ export function DemoApp() {
       
       // If success, close modals after delay
       // Magic link hook handles success/error state display
-      if (!magicLinkError) {
+      if (magicLinkSent && !magicLinkError) {
         setTimeout(() => {
           setState(prev => ({
             ...prev,
             isEmailModalOpen: false,
             isKPOpen: false,
           }));
-        }, 3000); // Give user time to see success message
+        }, 5000); // 5 seconds to read success message
       }
       
       return;
@@ -388,15 +388,15 @@ export function DemoApp() {
     
     console.log('🎯 [DemoApp] Magic link sent. Error:', magicLinkError, 'Success:', magicLinkSent);
     
-    // Close modal after short delay (let user see success/error message)
-    if (!magicLinkError) {
+    // Close modal after delay (let user see success message)
+    if (magicLinkSent && !magicLinkError) {
       setTimeout(() => {
         console.log('🎯 [DemoApp] Closing modal after success');
         setState(prev => ({
           ...prev,
           isModalOpen: false,
         }));
-      }, 3000);
+      }, 5000); // 5 seconds to read success message
     }
   };
   
