@@ -28,6 +28,7 @@ export interface ChallengeRegistrationModalProps {
   kpMeasurement?: { averageKP: number; attempts: number[] } | null;
   successMessage?: string;
   errorMessage?: string;
+  isSubmitting?: boolean;
 }
 
 /**
@@ -57,11 +58,22 @@ export function ChallengeRegistrationModal({
   kpMeasurement,
   successMessage = '',
   errorMessage = '',
+  isSubmitting = false,
 }: ChallengeRegistrationModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   
   useDemoScrollLock(isOpen);
+  
+  /**
+   * Handle close with cleanup
+   * Reset form state when modal closes
+   */
+  const handleClose = () => {
+    setEmail('');
+    setError('');
+    onClose();
+  };
   
   if (!isOpen) return null;
   
@@ -111,7 +123,7 @@ export function ChallengeRegistrationModal({
   return (
     <div 
       className="modal-overlay" 
-      onClick={onClose}
+      onClick={handleClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="challenge-modal-title"
@@ -121,7 +133,7 @@ export function ChallengeRegistrationModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
-        <CloseButton onClick={onClose} />
+        <CloseButton onClick={handleClose} />
         
         {/* Success State - Prioritize over normal form */}
         {successMessage ? (
@@ -134,7 +146,7 @@ export function ChallengeRegistrationModal({
               variant="primary"
               size="lg"
               fullWidth
-              onClick={onClose}
+              onClick={handleClose}
               style={{ marginTop: '1.5rem' }}
             >
               Rozumím
@@ -174,6 +186,7 @@ export function ChallengeRegistrationModal({
                 aria-label="E-mail"
                 aria-invalid={!!error}
                 aria-describedby={error ? 'email-error' : undefined}
+                disabled={isSubmitting}
               />
               
               {/* Error Message */}
@@ -190,6 +203,8 @@ export function ChallengeRegistrationModal({
                 fullWidth
                 onClick={handleSubmit}
                 type="button"
+                loading={isSubmitting}
+                disabled={isSubmitting}
               >
                 Vstoupit do výzvy
               </Button>

@@ -46,7 +46,7 @@ export function DemoApp() {
   });
   
   const { track } = useDemoAnalytics();
-  const { sendLink, loading: sendingMagicLink, success: magicLinkSent, error: magicLinkError } = useChallengeMagicLink();
+  const { sendLink, loading: sendingMagicLink, success: magicLinkSent, error: magicLinkError, reset } = useChallengeMagicLink();
   
   /**
    * Detect if we're on challenge landing page (/vyzva)
@@ -99,6 +99,9 @@ export function DemoApp() {
     event?.preventDefault();
     event?.stopPropagation();
     
+    // Reset success state before opening new modal (defensive)
+    reset();
+    
     setState(prev => ({
       ...prev,
       selectedExercise: exercise,
@@ -130,6 +133,11 @@ export function DemoApp() {
    * Handle modal close
    */
   const handleModalClose = () => {
+    // Reset success state when closing modal
+    if (magicLinkSent) {
+      reset();
+    }
+    
     setState(prev => ({ 
       ...prev, 
       isModalOpen: false,
@@ -279,6 +287,9 @@ export function DemoApp() {
    * Handle Email modal open (after KP measurement)
    */
   const handleEmailModalOpen = () => {
+    // Reset success state before opening new modal (defensive)
+    reset();
+    
     setState(prev => ({ 
       ...prev, 
       isEmailModalOpen: true,
@@ -297,6 +308,11 @@ export function DemoApp() {
    * Also closes KP modal underneath
    */
   const handleEmailModalClose = () => {
+    // Reset success state when closing modal
+    if (magicLinkSent) {
+      reset();
+    }
+    
     setState(prev => ({ 
       ...prev, 
       isEmailModalOpen: false,
