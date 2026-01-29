@@ -10,7 +10,7 @@
  * @subpackage Modules/PublicWeb/Challenge
  */
 
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button } from '@/platform/components';
 import { CloseButton } from '@/components/shared/CloseButton';
 import { useChallengeMagicLink } from '@/hooks/useChallenge';
@@ -20,7 +20,7 @@ export function ChallengeFinalCTA() {
   const [email, setEmail] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const { sendLink, sendingMagicLink } = useChallengeMagicLink();
+  const { sendLink, loading } = useChallengeMagicLink();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -55,7 +55,7 @@ export function ChallengeFinalCTA() {
               placeholder={MESSAGES.challenge.hero.emailPlaceholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={sendingMagicLink}
+              disabled={loading}
               required
             />
           </div>
@@ -64,7 +64,7 @@ export function ChallengeFinalCTA() {
             variant="primary"
             size="lg"
             type="submit"
-            loading={sendingMagicLink}
+            loading={loading}
             className="challenge-final-cta__button"
           >
             {MESSAGES.challenge.final.cta}

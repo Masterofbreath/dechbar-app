@@ -14,7 +14,6 @@ import {
   checkChallengeAccess,
   isRegisteredForChallenge,
   getChallengeRegistration,
-  type ChallengeMagicLinkResponse,
   type ChallengeAccessStatus
 } from '@/platform/api/challenge';
 import { 
