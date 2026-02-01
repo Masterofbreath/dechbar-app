@@ -44,6 +44,17 @@ export function useKeyboardShortcuts() {
   
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      // ✅ IGNORE shortcuts when user is typing in input/textarea
+      // Fixes: Shift+1234 couldn't type !@#$ in email inputs on /vyzva
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return; // User is typing → skip all keyboard shortcuts
+      }
+      
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const modKey = isMac ? e.metaKey : e.ctrlKey;
       
