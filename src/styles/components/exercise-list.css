@@ -50,7 +50,7 @@
 
 .tab:hover {
   color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 5%);
 }
 
 /* Instant visual feedback on tap */
@@ -110,15 +110,16 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
+  margin-top: 24px; /* Spacing když je grid pod create buttonem */
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .exercise-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   .exercise-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -129,7 +130,7 @@
    ============================================================ */
 .tier-info {
   padding: 12px 16px;
-  background: rgba(44, 190, 198, 0.1);
+  background: rgb(44 190 198 / 10%);
   border: 1px solid var(--color-primary);
   border-radius: 12px;
   margin-bottom: 16px;
@@ -153,22 +154,28 @@
   margin-top: 16px;
 }
 
+/* Compact mode - centered, reduced width */
+.exercise-list__create-button--compact {
+  width: 65%; /* Zmenšeno z 100% na 65% */
+  max-width: 400px; /* Maximální šířka pro velké obrazovky */
+  margin: 16px auto 24px; /* Centrovat horizontálně + spacing */
+  display: block; /* Nutné pro margin: auto */
+}
+
+/* Mobile optimization - širší pro lepší touch targets */
+@media (width <= 640px) {
+  .exercise-list__create-button--compact {
+    width: 80%; /* Na mobilu o trochu širší */
+    max-width: none;
+  }
+}
+
 /* ============================================================
    Upgrade Prompt
    ============================================================ */
 .upgrade-prompt {
   text-align: center;
-  padding: 32px 24px;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
   margin-top: 16px;
-}
-
-.upgrade-prompt p {
-  font-size: 16px;
-  color: var(--color-text-primary);
-  margin: 0 0 16px 0;
 }
 
 /* ============================================================
@@ -226,7 +233,7 @@
 /* ============================================================
    Responsive Design
    ============================================================ */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .exercise-list__tabs {
     padding: 3px;
     gap: 4px;
@@ -248,13 +255,13 @@
    Badge Styles (Session History)
    ============================================================ */
 .badge--difficulty {
-  background: rgba(214, 162, 58, 0.1);
+  background: rgb(214 162 58 / 10%);
   color: var(--color-accent);
   border: 1px solid var(--color-accent);
 }
 
 .badge--notes {
-  background: rgba(44, 190, 198, 0.1); /* Teal background */
+  background: rgb(44 190 198 / 10%); /* Teal background */
   color: var(--color-primary); /* Teal text */
   border: 1px solid var(--color-primary); /* Teal border */
   cursor: pointer;
@@ -282,20 +289,16 @@
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
-  
   min-width: 200px;
   max-width: 320px;
   padding: 12px 16px;
-  
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  
   font-size: 14px;
   color: var(--color-text-primary);
   line-height: 1.5;
-  
   z-index: 100;
   animation: tooltip-fade-in 0.2s ease;
 }
@@ -345,14 +348,13 @@
 }
 
 /* Mobile - modal místo tooltip */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .note-tooltip {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     bottom: auto;
-    
     width: calc(100% - 32px);
     max-width: 400px;
     
@@ -373,11 +375,8 @@
   .note-tooltip::before {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background: rgb(0 0 0 / 50%);
     z-index: -1;
     animation: overlay-fade-in 0.2s ease;
   }

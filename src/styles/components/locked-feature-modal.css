@@ -11,6 +11,7 @@
   padding: var(--spacing-8); /* 32px */
   text-align: center;
   max-width: 400px;
+
   /* Gold top border removed */
 }
 
@@ -26,7 +27,7 @@
 .locked-feature__icon svg {
   width: 48px;
   height: 48px;
-  filter: drop-shadow(0 4px 12px rgba(214, 162, 58, 0.4)); /* Gold shadow */
+  filter: drop-shadow(0 4px 12px rgb(214 162 58 / 40%)); /* Gold shadow */
 }
 
 /* Title */
@@ -57,7 +58,54 @@
   margin-bottom: var(--spacing-2); /* 8px */
 }
 
-/* Website Link - styled as premium button */
+/* Copy URL Button - PRIMARY CTA (Gold Gradient) */
+.locked-feature__copy-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
+  margin-bottom: var(--spacing-6); /* 24px */
+  
+  /* PRIMARY CTA - Gold Gradient */
+  background: linear-gradient(135deg, var(--color-accent) 0%, #C8922D 100%);
+  border: none;
+  border-radius: var(--radius-md); /* 8px */
+  
+  /* Dark text on gold background */
+  color: var(--color-background);
+  font-size: 18px;
+  font-weight: 700;
+  font-family: inherit;
+  box-shadow: 0 4px 12px rgb(214 162 58 / 30%);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.locked-feature__copy-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgb(214 162 58 / 40%);
+}
+
+.locked-feature__copy-button:active {
+  transform: scale(0.98);
+}
+
+/* Copied state - Green with white text */
+.locked-feature__copy-button--copied {
+  background: var(--color-success);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgb(16 185 129 / 30%);
+}
+
+.locked-feature__copy-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* OLD Website Link - keep for backwards compatibility */
 .locked-feature__link {
   display: inline-block;
   font-size: var(--font-size-lg); /* 18px */
@@ -70,13 +118,13 @@
   margin-bottom: var(--spacing-6); /* 24px */
   text-decoration: none;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.3); /* Gold shadow */
+  box-shadow: 0 4px 12px rgb(214 162 58 / 30%); /* Gold shadow */
   user-select: all; /* Double-click selects entire URL */
 }
 
 .locked-feature__link:hover {
   /* transform: translateY(-2px); REMOVED - not a button */
-  box-shadow: 0 6px 18px rgba(214, 162, 58, 0.3); /* Keep shadow, reduce from 0.4 */
+  box-shadow: 0 6px 18px rgb(214 162 58 / 30%); /* Keep shadow, reduce from 0.4 */
 }
 
 .locked-feature__link:active {

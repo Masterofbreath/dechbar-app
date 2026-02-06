@@ -13,6 +13,7 @@
  * @since 0.2.0
  */
 
+import { useState } from 'react';
 import { Card } from '@/platform/components';
 import { useScrollLock, useSwipeToDismiss } from '@/platform/hooks';
 
@@ -29,7 +30,7 @@ export interface LockedFeatureModalProps {
   
   /**
    * Name of locked feature
-   * @example "SMART CVIČENÍ", "DechBar STUDIO", "Výzvy"
+   * @example "SMART CVIČENÍ", "NEOMEZENÝ POČET", "DechBar STUDIO", "Výzvy"
    */
   featureName: string;
   
@@ -37,6 +38,12 @@ export interface LockedFeatureModalProps {
    * Required tier to unlock
    */
   tierRequired: 'SMART' | 'AI_COACH' | 'STUDIO' | 'CHALLENGES' | 'AKADEMIE';
+  
+  /**
+   * Website URL for copy-to-clipboard (optional)
+   * @default "https://dechbar.cz"
+   */
+  websiteUrl?: string;
 }
 
 /**
@@ -49,13 +56,24 @@ export interface LockedFeatureModalProps {
  *   featureName="SMART CVIČENÍ"
  *   tierRequired="SMART"
  * />
+ * 
+ * @example Custom exercises limit
+ * <LockedFeatureModal
+ *   isOpen={isOpen}
+ *   onClose={() => setOpen(false)}
+ *   featureName="NEOMEZENÝ POČET"
+ *   tierRequired="SMART"
+ * />
  */
 export function LockedFeatureModal({
   isOpen,
   onClose,
   featureName,
-  tierRequired
+  tierRequired,
+  websiteUrl = 'https://dechbar.cz'
 }: LockedFeatureModalProps) {
+  
+  const [copied, setCopied] = useState(false);
   
   // Lock scroll when modal is open
   useScrollLock(isOpen);
@@ -65,6 +83,27 @@ export function LockedFeatureModal({
     onDismiss: onClose,
     enabled: isOpen
   });
+  
+  // Copy to clipboard handler
+  async function handleCopyUrl() {
+    try {
+      await navigator.clipboard.writeText(websiteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = websiteUrl;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
   
   if (!isOpen) return null;
   
@@ -104,7 +143,7 @@ export function LockedFeatureModal({
         
         {/* Description */}
         <p className="locked-feature__description">
-          Tato funkce je dostupná v tarifu <strong>{tierRequired}</strong>.
+          Tato funkce je dostupná od tarifu <strong>{tierRequired}</strong>.
         </p>
         
         {/* Info */}
@@ -112,10 +151,15 @@ export function LockedFeatureModal({
           Pro odemknutí navštiv naše webové stránky:
         </p>
         
-        {/* Website Link (text only, not clickable button - iOS compliance) */}
-        <div className="locked-feature__link">
-          dechbar.cz
-        </div>
+        {/* Copy URL Button - PRIMARY CTA */}
+        <button
+          className={`locked-feature__copy-button ${copied ? 'locked-feature__copy-button--copied' : ''}`}
+          onClick={handleCopyUrl}
+          type="button"
+          aria-label={copied ? 'Odkaz zkopírován' : 'Zkopírovat odkaz'}
+        >
+          {copied ? '✓ Zkopírováno!' : 'www.dechbar.cz'}
+        </button>
         
         {/* Close Button */}
         <button

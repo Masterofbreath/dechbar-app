@@ -12,6 +12,7 @@
 
 import { useState } from 'react';
 import { ExerciseCard } from './ExerciseCard';
+import { LockedFeatureModal } from './LockedFeatureModal';
 import { Button, LoadingSkeleton, EmptyState, NavIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
 import { useMembership } from '@/platform/membership';
 import { isProtocol } from '@/utils/exerciseHelpers';
@@ -49,6 +50,7 @@ export function ExerciseList({
 }: ExerciseListProps) {
   const [activeTab, setActiveTab] = useState<TabType>('presets');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { plan } = useMembership();
   
   // Mood labels Czech mapping
@@ -178,74 +180,59 @@ export function ExerciseList({
         {/* CUSTOM TAB */}
         {activeTab === 'custom' && (
           <div className="tab-content" role="tabpanel">
-            {/* Tier info banner */}
-            <div className="tier-info">
-              <p className="tier-info__text">
-                {plan === 'ZDARMA' && (
-                  <>
-                    Máš {customCount}/3 vlastní cvičení.{' '}
-                    {!canCreateMore && (
-                      <strong>Upgraduj na SMART pro unlimited.</strong>
-                    )}
-                  </>
-                )}
-                {plan === 'SMART' && (
-                  <>Máš {customCount} vlastních cvičení (unlimited).</>
-                )}
-                {plan === 'AI_COACH' && (
-                  <>Máš {customCount} vlastních cvičení (unlimited + AI optimalizace).</>
-                )}
-              </p>
-            </div>
+            {/* Tier info banner - POUZE pro FREE uživatele */}
+            {plan === 'ZDARMA' && (
+              <div className="tier-info">
+                <p className="tier-info__text">
+                  Máš {customCount}/3 vlastní cvičení.{' '}
+                  {!canCreateMore && (
+                    <strong>Upgraduj na SMART pro neomezený počet.</strong>
+                  )}
+                </p>
+              </div>
+            )}
             
+            {/* Create button - hned pod tier banner */}
+            {canCreateMore ? (
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={onCreateCustom}
+                className="exercise-list__create-button exercise-list__create-button--compact"
+              >
+                + Vytvořit nové cvičení
+              </Button>
+            ) : (
+              <div className="upgrade-prompt">
+                <Button 
+                  variant="primary" 
+                  size="md"
+                  onClick={() => setShowUpgradeModal(true)}
+                >
+                  Upgraduj na SMART
+                </Button>
+              </div>
+            )}
+            
+            {/* Exercise Grid - bez EmptyState */}
             {exercisesLoading ? (
               <div className="exercise-grid">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <LoadingSkeleton key={i} variant="card" height="120px" />
                 ))}
               </div>
-            ) : (
-              <>
-                {customExercises.length > 0 ? (
-                  <div className="exercise-grid">
-                    {customExercises.map((exercise) => (
-                      <ExerciseCard
-                        key={exercise.id}
-                        exercise={exercise}
-                        onStart={onStartExercise}
-                        onEdit={onEditExercise}
-                        onDelete={handleDelete}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                <EmptyState
-                  icon="✨"
-                  title="Zatím tu není ani dech"
-                  message="Vytvoř si první vlastní cvičení!"
-                />
-                )}
-                
-                {/* Create button */}
-                {canCreateMore ? (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                    onClick={onCreateCustom}
-                    className="exercise-list__create-button"
-                  >
-                    + Vytvořit nové cvičení
-                  </Button>
-                ) : (
-                  <div className="upgrade-prompt">
-                    <p>Dosáhl jsi limit {maxCustom} cvičení</p>
-                    <Button variant="primary" size="md">
-                      Upgraduj na SMART
-                    </Button>
-                  </div>
-                )}
-              </>
+            ) : customExercises.length > 0 && (
+              <div className="exercise-grid">
+                {customExercises.map((exercise) => (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    onStart={onStartExercise}
+                    onEdit={onEditExercise}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -273,7 +260,7 @@ export function ExerciseList({
               </div>
             ) : sessions && sessions.length > 0 ? (
               <div className="session-list">
-                {sessions.map((session: any) => (
+                {sessions.map((session) => (
                   <div key={session.id} className="session-card">
                     <div className="session-card__header">
                       <h4 className="session-card__title">
@@ -322,6 +309,14 @@ export function ExerciseList({
                         </span>
                       )}
                       
+                      {/* NEW: Custom exercise badge - označení vlastních cvičení */}
+                      {session.exercise?.category === 'custom' && (
+                        <span className="badge badge--custom">
+                          <NavIcon name="edit" size={12} />
+                          Vlastní
+                        </span>
+                      )}
+                      
                       {/* NEW: Notes badge (clickable with tooltip) */}
                       {session.notes && (
                         <button
@@ -362,6 +357,14 @@ export function ExerciseList({
           </div>
         )}
       </div>
+      
+      {/* Upgrade Modal */}
+      <LockedFeatureModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        featureName="NEOMEZENÝ POČET"
+        tierRequired="SMART"
+      />
     </div>
   );
 }
