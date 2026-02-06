@@ -10,7 +10,7 @@
  * Architecture:
  * Frontend → API Wrapper → Supabase DB (sync_queue) → Edge Function → Ecomail API
  * 
- * See: docs/marketing/ECOMAIL_ARCHITECTURE.md
+ * See: docs/marketing/ecomail/01_ARCHITECTURE.md
  * 
  * @package DechBar_App
  * @subpackage Platform/API

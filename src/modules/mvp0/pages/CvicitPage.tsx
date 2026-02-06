@@ -13,6 +13,7 @@
 
 import { useState } from 'react';
 import { ExerciseList, SessionEngineModal } from '../components';
+import { useNavigation } from '@/platform/hooks';
 import type { Exercise } from '../types/exercises';
 
 /**
@@ -21,7 +22,9 @@ import type { Exercise } from '../types/exercises';
 export function CvicitPage() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isSessionOpen, setIsSessionOpen] = useState(false);
-  const [isCreatorOpen, setIsCreatorOpen] = useState(false);
+  
+  // Use global navigation for Exercise Creator
+  const { openExerciseCreator } = useNavigation();
   
   function handleStartExercise(exercise: Exercise) {
     setSelectedExercise(exercise);
@@ -29,13 +32,16 @@ export function CvicitPage() {
   }
   
   function handleCreateCustom() {
-    setIsCreatorOpen(true);
+    // Open Exercise Creator via global state
+    openExerciseCreator();
   }
   
   function handleEditExercise(exercise: Exercise) {
-    // TODO: Open exercise editor (MVP2)
-    console.log('Edit exercise:', exercise.id);
-    alert('Editace cvičení bude dostupná brzy.');
+    // Open Exercise Creator in edit mode
+    openExerciseCreator({ 
+      mode: 'edit', 
+      exerciseId: exercise.id 
+    });
   }
   
   return (
@@ -65,16 +71,7 @@ export function CvicitPage() {
         />
       )}
       
-      {/* Exercise Creator Modal (TODO: MVP2) */}
-      {isCreatorOpen && (
-        <div className="modal-overlay" onClick={() => setIsCreatorOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Vytvořit nové cvičení</h2>
-            <p>Exercise Creator Wizard bude dostupný v MVP2.</p>
-            <button onClick={() => setIsCreatorOpen(false)}>Zavřít</button>
-          </div>
-        </div>
-      )}
+      {/* Exercise Creator Modal moved to GlobalModals (App.tsx) */}
     </div>
   );
 }

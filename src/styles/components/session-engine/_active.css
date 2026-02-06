@@ -132,6 +132,53 @@
   font-weight: var(--font-weight-semibold);
 }
 
+/* ============================================================
+   Progressive Disclosure - Floating "Další:" Preview
+   Apple style: Show context only when needed
+   NEW v2.42.10: Moved to ContentZone (absolute) for layout stability
+   ============================================================ */
+
+/* ✅ Floating "Další:" preview in ContentZone (Option A) */
+.session-active__next-floating {
+  position: absolute;
+  bottom: 16px; /* ✅ Above BottomBar (60px) + breathing space */
+  left: 20px;
+  right: 20px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  z-index: 5; /* ✅ Above ContentZone bg, below circle (z: 10) */
+  
+  /* Soft fade-in from below (Apple Watch pattern) */
+  opacity: 0;
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* DEPRECATED: Old micro preview in BottomBar (v2.42.8-9) */
+.session-active__next-micro {
+  display: none; /* ✅ Replaced by floating version */
+}
+
+/* ✅ NEW v2.42.13: Desktop-specific "Další:" positioning */
+@media (min-width: 769px) {
+  .session-active__next-floating {
+    bottom: -9px; /* ✅ v2.42.16: Posunout POD ContentZone edge (clears timer, was 0px) */
+    font-size: 12px; /* ✅ Larger font on desktop (was 11px) */
+  }
+}
+
 @media (max-width: 768px) {
   .session-countdown__phase-name,
   .session-active__phase-name,
@@ -164,6 +211,19 @@
   
   .session-active__next-preview {
     font-size: 12px;
+  }
+  
+  /* ✅ Mobile floating "Další:" preview (v2.42.10) */
+  .session-active__next-floating {
+    bottom: 12px; /* ✅ Tighter on mobile (60px BottomBar) */
+    font-size: 10px;
+    left: 16px;
+    right: 16px;
+  }
+  
+  /* DEPRECATED: Old micro preview */
+  .session-active__next-micro {
+    display: none;
   }
   
   .session-active__instructions {

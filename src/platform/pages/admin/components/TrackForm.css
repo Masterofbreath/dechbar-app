@@ -1,0 +1,223 @@
+/**
+ * TrackForm Styles
+ * 
+ * Modal form for creating/editing tracks
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Pages/Admin/Components
+ * @since 2.44.0
+ */
+
+.track-form-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.track-form-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.track-form-modal__content {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  background: var(--color-surface-elevated);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.track-form-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.track-form-modal__header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.track-form-modal__close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.track-form-modal__close:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.track-form {
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.track-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.track-form__field--full {
+  grid-column: 1 / -1;
+}
+
+.track-form__field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.track-form__field input,
+.track-form__field select,
+.track-form__field textarea {
+  padding: 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.track-form__field input:focus,
+.track-form__field select:focus,
+.track-form__field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(44, 190, 198, 0.1);
+}
+
+.track-form__field input:disabled,
+.track-form__field select:disabled,
+.track-form__field textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.track-form__field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.track-form__error {
+  grid-column: 1 / -1;
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: 0.5rem;
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+.track-form__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.track-form__btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.track-form__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.track-form__btn--cancel {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.track-form__btn--cancel:hover:not(:disabled) {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.track-form__btn--submit {
+  background: var(--color-accent);
+  color: var(--color-background);
+}
+
+.track-form__btn--submit:hover:not(:disabled) {
+  background: #E5B745;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.2);
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .track-form {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .track-form-modal__header {
+    padding: 1rem;
+  }
+  
+  .track-form__actions {
+    flex-direction: column;
+  }
+  
+  .track-form__btn {
+    min-height: 44px; /* Touch target */
+  }
+}

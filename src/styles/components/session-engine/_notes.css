@@ -61,19 +61,46 @@
   line-height: 1.5;
   resize: none;
   transition: border-color 0.2s ease;
-  margin-top: 12px;
-  animation: slideDown 0.3s ease;
+  /* margin-top: 12px; ✅ v2.42.12: REMOVED - now animated in keyframes */
+  animation: slideDown 0.3s ease forwards; /* ✅ v2.42.12: Added 'forwards' to retain final state */
+  
+  /* ✅ iOS style - limit to 2 lines (60px), scroll inside textarea */
+  max-height: 60px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.session-notes__input::-webkit-scrollbar {
+  width: 4px;
+}
+
+.session-notes__input::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.session-notes__input::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
     max-height: 0;
+    margin-top: 0; /* ✅ v2.42.12: Animovat i margin (plynulý expand) */
+    margin-bottom: 0; /* ✅ v2.42.13: Animovat i bottom gap (button slides smoothly) */
+    padding-top: 0;
+    padding-bottom: 0;
     transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    max-height: 200px;
+    max-height: 60px; /* ✅ Match final CSS max-height (no jump) */
+    margin-top: 12px; /* ✅ v2.42.12: Dojede na 12px (no flash) */
+    margin-bottom: 12px; /* ✅ v2.42.13: Gap appears gradually (no button jump) */
+    padding-top: 12px;
+    padding-bottom: 12px;
     transform: translateY(0);
   }
 }

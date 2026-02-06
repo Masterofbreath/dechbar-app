@@ -50,6 +50,17 @@
   white-space: nowrap;
 }
 
+/* ✅ Touch devices: Instant feedback, no delay (Apple iOS style) */
+@media (hover: none) and (pointer: coarse) {
+  .mood-before-pick__emoji-btn {
+    transition: none !important;
+  }
+  
+  .mood-before-pick__emoji-btn--selected {
+    transition: none !important;
+  }
+}
+
 /* Emoji row */
 .mood-before-pick__emojis {
   display: flex;

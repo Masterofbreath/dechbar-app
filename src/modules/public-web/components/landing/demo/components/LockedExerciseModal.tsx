@@ -12,7 +12,7 @@
  * @subpackage PublicWeb/Demo
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/platform/components';
 import { useSwipeToDismiss } from '@/platform/hooks';
 import { useHaptic } from '@/platform/services/haptic';
@@ -51,6 +51,7 @@ export function LockedExerciseModal({
   const [email, setEmail] = useState('');
   const [showEmailForm, setShowEmailForm] = useState(false);
   const { trigger } = useHaptic();
+  const emailInputRef = useRef<HTMLInputElement>(null);
   
   useDemoScrollLock(isOpen);
   
@@ -66,6 +67,16 @@ export function LockedExerciseModal({
       trigger('medium');
     }
   }, [isOpen, trigger]);
+  
+  // Focus email input without scrolling when email form appears
+  useEffect(() => {
+    if (showEmailForm && emailInputRef.current) {
+      // Delay focus slightly to ensure modal is fully rendered
+      setTimeout(() => {
+        emailInputRef.current?.focus({ preventScroll: true });
+      }, 100);
+    }
+  }, [showEmailForm]);
   
   if (!isOpen) return null;
   
@@ -297,7 +308,7 @@ export function LockedExerciseModal({
                   onChange={(e) => setEmail(e.target.value)}
                   className="locked-exercise-modal__email-input"
                   required
-                  autoFocus
+                  ref={emailInputRef}
                 />
                 <Button 
                   variant="primary" 

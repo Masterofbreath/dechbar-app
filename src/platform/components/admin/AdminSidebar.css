@@ -1,0 +1,167 @@
+/**
+ * AdminSidebar Styles
+ * 
+ * Left sidebar navigation (240px) with mobile hamburger overlay
+ * Apple Premium Clean Design - No AdminHeader needed
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Components/Admin
+ * @since 2.44.0
+ * @updated 2.46.2 - Removed AdminHeader, added Logo to Sidebar
+ */
+
+.admin-sidebar {
+  position: fixed;
+  top: 0; /* Full height - no header above */
+  left: 0;
+  bottom: 0;
+  width: 240px;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+/* Logo section */
+.admin-sidebar__logo {
+  padding: 1.5rem 1rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-sidebar__logo img {
+  max-width: 140px;
+  height: auto;
+}
+
+/* User info section */
+.admin-sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-sidebar__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.admin-sidebar__avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent);
+  color: var(--color-background);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.admin-sidebar__user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
+}
+
+.admin-sidebar__user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-sidebar__user-role {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Navigation menu */
+.admin-sidebar__nav {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.admin-sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.admin-sidebar__item:hover {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}
+
+.admin-sidebar__item--active {
+  background: var(--color-surface-elevated);
+  color: var(--color-accent);
+  border-left-color: var(--color-accent);
+}
+
+.admin-sidebar__item svg {
+  flex-shrink: 0;
+}
+
+/* Back button (sticky at bottom) */
+.admin-sidebar__back {
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.admin-sidebar__back:hover {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 1023px) {
+  .admin-sidebar {
+    width: 200px; /* Narrower on tablets */
+  }
+}
+
+@media (max-width: 767px) {
+  /* Transform to hamburger overlay on mobile */
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1001; /* Above content */
+    box-shadow: none;
+  }
+  
+  .admin-sidebar--open {
+    transform: translateX(0);
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
+  }
+}

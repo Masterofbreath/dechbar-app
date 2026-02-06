@@ -23,6 +23,61 @@
   user-select: none;
 }
 
+/* Custom Exercise Cards - Premium accent bar (Apple Music / Spotify style) */
+.exercise-card--custom {
+  position: relative;
+  background: var(--color-surface); /* Keep dark surface for readability */
+  border-left: 4px solid var(--custom-color, var(--color-primary)); /* Colored accent bar */
+  
+  /* Safari < 16.2 fallback - using teal as fallback color */
+  box-shadow: 
+    inset 4px 0 12px rgba(44, 190, 198, 0.12),
+    0 2px 12px rgba(44, 190, 198, 0.10);
+  
+  /* Modern browsers - dynamic color based on card_color */
+  @supports (color: color-mix(in srgb, red, blue)) {
+    box-shadow: 
+      inset 4px 0 12px color-mix(in srgb, var(--custom-color, var(--color-primary)) 12%, transparent),
+      0 2px 12px color-mix(in srgb, var(--custom-color, var(--color-primary)) 10%, transparent);
+  }
+}
+
+/* Subtle gradient overlay from left */
+.exercise-card--custom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  /* Safari < 16.2 fallback - using teal as fallback color */
+  background: linear-gradient(
+    90deg, 
+    rgba(44, 190, 198, 0.08) 0%,
+    transparent 35%
+  );
+  
+  /* Modern browsers - dynamic color based on card_color */
+  @supports (color: color-mix(in srgb, red, blue)) {
+    background: linear-gradient(
+      90deg, 
+      color-mix(in srgb, var(--custom-color, var(--color-primary)) 8%, transparent) 0%,
+      transparent 35%
+    );
+  }
+  
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Ensure content is above the gradient overlay */
+.exercise-card--custom > * {
+  position: relative;
+  z-index: 1;
+}
+
 .exercise-card:hover:not(.exercise-card--locked) {
   background: var(--color-surface-elevated);
   border-color: var(--color-primary);
@@ -66,7 +121,7 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin: 0 0 4px 0;
+  margin: 0 0 12px 0; /* Increased from 4px to 12px for universal spacing */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -79,7 +134,7 @@
 .exercise-card__description {
   font-size: 14px;
   color: var(--color-text-secondary);
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0; /* Reduced from 12px to 8px (total with title: 12+8=20px) */
   line-height: 1.4;
 }
 
@@ -145,6 +200,19 @@
 .badge--success {
   color: var(--color-success);
   border-color: var(--color-success);
+}
+
+.badge--custom {
+  color: var(--color-accent); /* Gold = premium feel */
+  border-color: var(--color-accent);
+  background: rgba(214, 162, 58, 0.12); /* Safari fallback */
+}
+
+/* Modern browsers - subtle gold glow */
+@supports (color: color-mix(in srgb, red, blue)) {
+  .badge--custom {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
 }
 
 /* ============================================================

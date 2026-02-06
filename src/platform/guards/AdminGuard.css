@@ -1,0 +1,61 @@
+/**
+ * AdminGuard Styles
+ * 
+ * Styles for admin access denied page
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Guards
+ * @since 2.44.0
+ */
+
+.admin-access-denied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--color-background);
+  padding: 2rem;
+}
+
+.admin-access-denied__content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.admin-access-denied__icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  color: var(--color-error);
+}
+
+.admin-access-denied__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.admin-access-denied__message {
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.admin-access-denied__button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: var(--color-background);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.admin-access-denied__button:hover {
+  background: #E5B745;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.2);
+}

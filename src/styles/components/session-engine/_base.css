@@ -48,6 +48,14 @@
   box-shadow: 0 24px 48px var(--overlay-black-medium);
   animation: modalSlideUp 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ✅ iOS native feel - hide scrollbar */
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+}
+
+.session-engine-modal__content::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari/iOS */
 }
 
 @keyframes modalSlideUp {

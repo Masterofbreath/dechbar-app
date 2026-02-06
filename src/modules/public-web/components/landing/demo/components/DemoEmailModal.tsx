@@ -10,7 +10,7 @@
  * @subpackage PublicWeb/Demo/Components
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/platform/components';
 import { CloseButton } from '@/components/shared';
 import { useDemoScrollLock } from '../hooks/useDemoScrollLock';
@@ -43,8 +43,20 @@ export function DemoEmailModal({
 }: DemoEmailModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const emailInputRef = useRef<HTMLInputElement>(null);
   
   useDemoScrollLock(isOpen);
+  
+  /**
+   * Focus email input without scrolling when modal opens
+   */
+  useEffect(() => {
+    if (isOpen && emailInputRef.current) {
+      setTimeout(() => {
+        emailInputRef.current?.focus({ preventScroll: true });
+      }, 100);
+    }
+  }, [isOpen]);
   
   if (!isOpen) return null;
   
@@ -125,7 +137,7 @@ export function DemoEmailModal({
             onKeyPress={handleKeyPress}
             placeholder="tvuj@email.cz"
             className="demo-email-modal__input"
-            autoFocus
+            ref={emailInputRef}
             aria-label="E-mail"
             aria-invalid={!!error}
             aria-describedby={error ? 'email-error' : undefined}

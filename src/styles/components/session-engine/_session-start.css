@@ -79,6 +79,9 @@
   margin-top: 8px;
   width: 100%;
   max-width: 360px;
+  height: auto !important; /* Prevent vertical stretching */
+  min-height: 48px; /* Standard button height */
+  max-height: 52px; /* Limit vertical growth */
 }
 
 /* Mobile */
@@ -110,6 +113,6 @@
   }
   
   .session-start__button {
-    max-width: 100%;
+    max-width: 360px !important; /* Prevent square-like stretching on mobile */
   }
 }

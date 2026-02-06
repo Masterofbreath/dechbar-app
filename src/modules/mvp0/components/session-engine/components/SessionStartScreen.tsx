@@ -15,10 +15,12 @@ export function SessionStartScreen({
   onMoodChange,
   onStart
 }: SessionStartScreenProps) {
-  // Icon based on exercise type (square icon not in NavIcon library)
-  const iconName = exercise.breathing_pattern.phases[0]?.type === 'breathing' 
-    ? 'wind' 
-    : 'moon';
+  // Icon based on exercise type
+  const iconName = exercise.category === 'custom'
+    ? 'edit' // Custom exercises get "edit" icon (fixed from 'edit-3')
+    : exercise.breathing_pattern.phases[0]?.type === 'breathing' 
+      ? 'wind' 
+      : 'moon';
   
   // Detect Box Breathing for visual customization
   const isBoxBreathing = exercise.name.toLowerCase().includes('box breathing');

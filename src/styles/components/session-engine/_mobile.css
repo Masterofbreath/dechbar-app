@@ -29,6 +29,53 @@
     /* Zajistit nejvyšší vrstvu (nad navigation i overlay) */
     z-index: 10002 !important;
     background: var(--color-background) !important;
+    
+    /* ✅ iOS native feel - NO scrollbar on portrait */
+    overflow: hidden !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .session-engine-modal__content::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* ✅ Completion: Allow scroll but hide scrollbar */
+  .session-engine-modal__content--completion {
+    overflow-y: auto !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .session-engine-modal__content--completion::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* ✅ iOS native feel - Hide ALL scrollbars in immersive mode (mobile only) */
+  body.immersive-mode,
+  body.immersive-mode *:not(textarea) {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  body.immersive-mode *:not(textarea)::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  /* ✅ Textarea keeps thin scrollbar for user feedback */
+  body.immersive-mode textarea::-webkit-scrollbar {
+    width: 4px !important;
+  }
+  
+  body.immersive-mode textarea::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+  
+  body.immersive-mode textarea::-webkit-scrollbar-thumb {
+    background: var(--color-border) !important;
+    border-radius: 2px !important;
   }
   
   /* Overlay - SKRYTÝ na mobile (fullscreen modal má vlastní background) */

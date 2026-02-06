@@ -187,6 +187,19 @@
   background: rgba(239, 68, 68, 0.1);
 }
 
+/* Admin menu item - Subtle gold accent (consistent with other items) */
+.settings-menu-item--admin {
+  /* Same base styling as other items, only color differs */
+}
+
+.settings-menu-item--admin svg {
+  color: var(--color-accent);
+}
+
+.settings-menu-item--admin:hover svg {
+  color: var(--color-accent);
+}
+
 .settings-menu-divider {
   height: 1px;
   background: linear-gradient(

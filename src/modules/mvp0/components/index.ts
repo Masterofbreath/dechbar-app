@@ -32,3 +32,9 @@ export type { SessionEngineModalProps } from './session-engine';
 
 export { SafetyQuestionnaire } from './SafetyQuestionnaire';
 export type { SafetyQuestionnaireProps } from './SafetyQuestionnaire';
+
+export { ExerciseCreatorModal } from './ExerciseCreator/ExerciseCreatorModal';
+export type { ExerciseCreatorModalProps } from './ExerciseCreator/types';
+
+export { TodaysChallengeButton } from './TodaysChallengeButton';
+export type { TodaysChallengeButtonProps } from './TodaysChallengeButton';

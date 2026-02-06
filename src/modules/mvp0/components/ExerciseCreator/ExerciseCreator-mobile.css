@@ -1,0 +1,291 @@
+/**
+ * Exercise Creator Modal - Mobile Styles
+ * @module ExerciseCreator/Styles/Mobile
+ * @description Fullscreen immersive mode for mobile devices
+ * Pattern: KP Center mobile
+ */
+
+@media (max-width: 768px) {
+  /* ================================
+     FULLSCREEN MODAL CONTAINER
+     ================================ */
+  
+  .exercise-creator {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 10002 !important; /* Match KP modal - above TopNav/BottomNav */
+    background: var(--color-background) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important; /* Modal doesn't scroll */
+  }
+
+  /* ================================
+     OVERLAY - No padding on mobile
+     ================================ */
+  
+  .modal-overlay {
+    padding: 0 !important;
+  }
+
+  /* ================================
+     CONTENT AREA - Scrollable (original pattern)
+     ================================ */
+  
+  .exercise-creator__content {
+    flex: 1 !important;
+    overflow-y: auto !important; /* Content scrolls */
+    overflow-x: hidden !important;
+    padding: 
+      max(70px, env(safe-area-inset-top) + 54px)  /* Top (under fixed header) */
+      max(16px, env(safe-area-inset-right))
+      max(160px, env(safe-area-inset-bottom) + 140px)  /* Bottom: actions + color picker full visibility + extra spacing */
+      max(16px, env(safe-area-inset-left)) !important;
+    -webkit-overflow-scrolling: touch !important;
+    
+    /* Hide scrollbar (iOS native feel) */
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  .exercise-creator__content::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* ================================
+     HEADER - Fixed at top with flex layout
+     ================================ */
+  
+  .exercise-creator__header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important; /* Tight spacing for mobile */
+    padding: max(16px, env(safe-area-inset-top)) 16px 16px 16px !important;
+    margin: 0 !important;
+    z-index: 100 !important;
+    background: var(--color-background) !important;
+  }
+
+  /* Title - flex child in header */
+  .exercise-creator__title {
+    flex: 1 !important;
+    font-size: 18px !important;
+    text-align: left !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Mode toggle and CloseButton - in header flow, no overrides */
+
+  /* ================================
+     FOOTER ACTIONS - Fixed at bottom (above browser UI)
+     ================================ */
+  
+  .exercise-creator__actions {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    padding: 
+      var(--spacing-4) 
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left)) !important;
+    background: var(--color-background) !important;
+    border-top: 1px solid var(--color-border) !important;
+    z-index: 10 !important;
+  }
+
+  .exercise-creator__actions .button {
+    width: 100% !important;
+    min-height: 48px !important;
+  }
+
+  /* ================================
+     BREATHING PATTERN - Compact layout for small screens
+     ================================ */
+  
+  .breathing-pattern-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important; /* Reduced from 12px for iPhone 13 mini */
+    overflow-x: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 0 8px var(--spacing-2) 8px !important;
+  }
+  
+  .breathing-control {
+    min-width: 75px !important; /* Reduced from 90px - fits 375px display */
+    max-width: 85px !important;
+  }
+  
+  .breathing-control__label {
+    font-size: 13px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .breathing-control__value {
+    min-width: 60px !important; /* Reduced from 80px */
+    padding: 8px 4px !important;
+    background: transparent !important; /* Clean look - no background */
+    border: none !important;
+    font-size: 20px !important;
+  }
+  
+  .breathing-control__button {
+    height: 28px !important;
+    width: 90% !important; /* Narrower hover area */
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+  
+  .breathing-control__number {
+    font-size: 22px !important; /* Reduced from 24px */
+    font-weight: 600 !important;
+  }
+  
+  .breathing-control__unit {
+    font-size: 12px !important;
+  }
+
+  /* ================================
+     DURATION CONTROL - Smaller on mobile
+     ================================ */
+  
+  .duration-control__button {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 24px !important;
+  }
+
+  .duration-control__circle {
+    width: 160px !important; /* Reduced from 180px */
+    height: 160px !important;
+  }
+  
+  .duration-control__value {
+    font-size: 40px !important; /* Reduced from 48px */
+  }
+
+  /* ================================
+     COLLAPSIBLE TEXTAREA - Consistent spacing desktop + mobile
+     ================================ */
+  
+  /* Removed mobile-specific override - now uses base CSS value */
+
+  /* ================================
+     COLOR PICKER - Compact single row (iPhone 13 mini optimized)
+     ================================ */
+  
+  .color-picker__grid {
+    grid-template-columns: repeat(8, 1fr) !important; /* Single row on mobile */
+    gap: 5px !important; /* Reduced from 6px for better fit */
+  }
+
+  .color-picker__option {
+    min-height: 38px !important; /* Reduced from 40px */
+    max-height: 38px !important;
+  }
+  
+  .color-picker__checkmark {
+    width: 20px !important; /* Reduced from 24px */
+    height: 20px !important;
+  }
+
+  /* ================================
+     SECTIONS - Reduce spacing
+     ================================ */
+  
+  .exercise-creator__section {
+    margin-bottom: var(--spacing-6) !important;
+  }
+
+  /* ================================
+     TOUCH FEEDBACK
+     ================================ */
+  
+  .button:active,
+  .breathing-control__button:active,
+  .duration-control__button:active,
+  .color-picker__option:active {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+  }
+
+  /* ================================
+     CONFIRMATION DIALOG - Mobile adjustments
+     ================================ */
+  
+  .exercise-creator__overlay {
+    padding: var(--spacing-12) var(--spacing-8) !important; /* 48px 32px - larger clickable area */
+  }
+
+  .exercise-creator__dialog {
+    max-width: 80% !important; /* 20% total space (10% each side) for easier clicking outside */
+  }
+
+  .exercise-creator__dialog-actions {
+    flex-direction: column !important;
+  }
+
+  .exercise-creator__dialog-actions .button {
+    width: 100% !important;
+  }
+}
+
+/* ================================
+   ULTRA-COMPACT MODE (iPhone 13 mini and smaller)
+   ================================ */
+
+@media (max-width: 375px) {
+  .breathing-control {
+    min-width: 70px !important;
+    max-width: 80px !important;
+  }
+  
+  .breathing-control__number {
+    font-size: 20px !important;
+  }
+  
+  .breathing-pattern-grid {
+    gap: 6px !important;
+  }
+}
+
+/* ================================
+   LANDSCAPE MOBILE - Compact mode
+   ================================ */
+
+@media (max-width: 768px) and (max-height: 600px) and (orientation: landscape) {
+  .exercise-creator {
+    overflow-y: auto !important;
+  }
+
+  .exercise-creator__content {
+    padding: 16px 20px 120px 20px !important;
+  }
+
+  .exercise-creator__title {
+    font-size: 18px !important;
+    top: max(12px, env(safe-area-inset-top)) !important;
+  }
+
+  .duration-control__circle {
+    width: 150px !important;
+    height: 150px !important;
+  }
+
+  .duration-control__value {
+    font-size: 36px !important;
+  }
+}

@@ -1,0 +1,79 @@
+/**
+ * AudioPlayerAdmin Styles
+ * 
+ * Main admin page for media management
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Pages/Admin
+ * @since 2.44.0
+ */
+
+.audio-player-admin {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.audio-player-admin__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.audio-player-admin__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.audio-player-admin__subtitle {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.audio-player-admin__create-btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: var(--color-background);
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.audio-player-admin__create-btn:hover {
+  background: #E5B745;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.2);
+}
+
+.audio-player-admin__error {
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: 0.75rem;
+  color: var(--color-error);
+  margin-bottom: 1.5rem;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .audio-player-admin__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .audio-player-admin__create-btn {
+    width: 100%;
+  }
+  
+  .audio-player-admin__title {
+    font-size: 1.5rem;
+  }
+}

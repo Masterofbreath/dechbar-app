@@ -80,6 +80,7 @@ export interface Exercise {
   difficulty: ExerciseDifficulty | null;
   tags: string[];
   contraindications: Contraindication[];
+  card_color?: string | null; // Hex color for custom exercises (#RRGGBB)
   deleted_at: string | null; // ISO timestamp
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
@@ -160,6 +161,7 @@ export interface CreateExercisePayload {
   subcategory?: ExerciseSubcategory;
   breathing_pattern: BreathingPattern;
   tags?: string[];
+  card_color?: string; // Hex color (#RRGGBB)
 }
 
 /**

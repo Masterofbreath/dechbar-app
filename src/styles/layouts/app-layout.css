@@ -103,6 +103,14 @@
       env(safe-area-inset-bottom) +      /* iOS home indicator */
       var(--spacing-4)                    /* 16px breathing space */
     ) !important;
+    
+    /* ✅ iOS native feel - hide scrollbar on mobile views (global) */
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  .app-layout__content::-webkit-scrollbar {
+    display: none !important;
   }
 }
 

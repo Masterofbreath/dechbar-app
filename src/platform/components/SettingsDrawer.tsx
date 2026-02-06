@@ -9,14 +9,17 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useNavigation } from '@/platform/hooks';
-import { useAuth } from '@/platform/auth';
+import { useAuth, useIsAdmin } from '@/platform/auth';
 import { CloseButton } from '@/components/shared';
 import { NavIcon } from './NavIcon';
 
 export function SettingsDrawer() {
   const { isSettingsOpen, closeSettings, openProfile } = useNavigation();
   const { signOut } = useAuth();
+  const isAdmin = useIsAdmin();
+  const navigate = useNavigate();
   const [isClosing, setIsClosing] = useState(false);
   
   // Swipe-to-close gesture state
@@ -134,6 +137,11 @@ export function SettingsDrawer() {
     openProfile();
   };
   
+  const handleAdminClick = () => {
+    handleClose();
+    navigate('/app/admin');
+  };
+  
   return (
     <>
       <div 
@@ -184,6 +192,13 @@ export function SettingsDrawer() {
             <NavIcon name="settings" size={20} />
             <span>Základní nastavení</span>
           </button>
+          
+          {isAdmin && (
+            <button className="settings-menu-item settings-menu-item--admin" onClick={handleAdminClick}>
+              <NavIcon name="shield" size={20} />
+              <span>Administrace</span>
+            </button>
+          )}
           
           <button className="settings-menu-item">
             <NavIcon name="info" size={20} />

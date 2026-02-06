@@ -38,7 +38,11 @@ export function SmartExerciseButton({ onClick }: SmartExerciseButtonProps) {
   const isPremium = plan === 'SMART' || plan === 'AI_COACH';
   const locked = !isPremium;
   
-  function handleClick() {
+  function handleClick(event: React.MouseEvent) {
+    // Prevent scroll jump on mobile/desktop
+    event.preventDefault();
+    event.stopPropagation();
+    
     if (locked) {
       setShowModal(true);
     } else {

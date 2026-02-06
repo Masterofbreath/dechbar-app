@@ -485,12 +485,6 @@ export function DemoApp() {
           />
         )}
       </div>
-      
-      {/* Settings drawer - OUTSIDE demo-app for proper z-index stacking */}
-      <DemoSettingsDrawer
-        isOpen={state.isSettingsOpen}
-        onClose={handleSettingsClose}
-      />
     </ToastProvider>
   );
 }

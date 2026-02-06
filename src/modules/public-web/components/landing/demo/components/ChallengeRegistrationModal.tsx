@@ -14,7 +14,7 @@
  * @subpackage PublicWeb/Demo/Components
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/platform/components';
 import { CloseButton } from '@/components/shared';
 import { useDemoScrollLock } from '../hooks/useDemoScrollLock';
@@ -62,6 +62,7 @@ export function ChallengeRegistrationModal({
 }: ChallengeRegistrationModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const emailInputRef = useRef<HTMLInputElement>(null);
   
   useDemoScrollLock(isOpen);
   
@@ -74,6 +75,17 @@ export function ChallengeRegistrationModal({
     setError('');
     onClose();
   };
+  
+  /**
+   * Focus email input without scrolling when modal opens (not in success state)
+   */
+  useEffect(() => {
+    if (isOpen && !successMessage && emailInputRef.current) {
+      setTimeout(() => {
+        emailInputRef.current?.focus({ preventScroll: true });
+      }, 100);
+    }
+  }, [isOpen, successMessage]);
   
   if (!isOpen) return null;
   
@@ -181,7 +193,7 @@ export function ChallengeRegistrationModal({
                 onKeyPress={handleKeyPress}
                 placeholder="tvuj@email.cz"
                 className="demo-email-modal__input"
-                autoFocus
+                ref={emailInputRef}
                 aria-label="E-mail"
                 aria-invalid={!!error}
                 aria-describedby={error ? 'email-error' : undefined}

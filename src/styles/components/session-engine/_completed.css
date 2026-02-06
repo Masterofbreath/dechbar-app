@@ -9,16 +9,30 @@
   overflow: visible !important; /* No scroll - modal grows */
   max-height: none !important; /* Remove constraint */
   min-height: auto; /* Natural height */
+  
+  /* ✅ NEW v2.42.11: Align content to TOP (no vertical centering) */
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important; /* Static positioning - content starts at top */
+  align-items: stretch !important;
 }
 
-/* Completion modal state - dynamic height */
+/* Completion modal state - dynamic height with scroll capability */
 .session-engine-modal__content--completion {
   height: auto !important; /* Override fixed height */
-  max-height: 95vh !important; /* Safety cap */
-  overflow: visible; /* Allow growth */
+  max-height: calc(100vh - 40px) !important; /* ✅ Fixed max-height per viewport */
+  overflow-y: auto !important; /* ✅ Allow scroll if content overflows */
   
   /* Smooth expansion */
   transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ✅ iOS native feel - hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.session-engine-modal__content--completion::-webkit-scrollbar {
+  display: none;
 }
 
 /* Celebration title in TopBar - gold gradient */
@@ -27,8 +41,12 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-size: 24px;
+  font-size: 28px; /* ✅ Larger for celebration (was 24px) */
   font-weight: var(--font-weight-bold);
+  text-align: center; /* ✅ Centered, Apple Watch style */
+  display: block;
+  width: 100%;
+  margin-bottom: 16px; /* ✅ NEW v2.42.12: Spacing below title */
 }
 
 /* Session completed container */
@@ -39,6 +57,9 @@
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
+  
+  /* ✅ NEW v2.42.11: Stick to top (no dynamic shifts when notes expand) */
+  align-self: flex-start; /* Static - difficulty/mood stay at top, only button moves down */
 }
 
 /* Repeat button in BottomBar */
@@ -63,6 +84,13 @@
   transform: scale(0.98);
 }
 
+/* Desktop adjustments - breathing space at top */
+@media (min-width: 769px) {
+  .completion-content {
+    padding-top: 24px !important; /* ✅ v2.42.14: Top breathing space (matches border-radius) */
+  }
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .completion-content {
@@ -70,7 +98,7 @@
   }
   
   .completion-celebration {
-    font-size: 20px;
+    font-size: 24px; /* ✅ Larger for mobile (was 20px) */
   }
   
   .session-completed {
@@ -81,6 +109,13 @@
   .session-engine-modal__content--completion {
     max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
   }
+}
+
+/* ✅ Center TopBar title on completion screen */
+.session-engine-modal__content--completion .fullscreen-modal__title {
+  text-align: center;
+  justify-content: center;
+  width: 100%;
 }
 
 /* ============================================================

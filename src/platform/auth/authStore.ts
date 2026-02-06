@@ -21,6 +21,8 @@ import { supabase } from '../api/supabase';
 import type { User, SignInCredentials, SignUpCredentials } from './types';
 import { getVocative } from '@/utils/inflection';
 import { isWebApp } from '@/platform/utils/environment';
+import { roleService } from './roleService';
+import { useUserState } from '@/platform/user/userStateStore';
 
 /**
  * Auth Store Interface
@@ -127,6 +129,7 @@ export const useAuthStore = create<AuthStore>()(
           if (error) throw error;
           
           if (session?.user) {
+            // Set basic user info (no roles yet)
             get()._setUser({
               id: session.user.id,
               email: session.user.email!,
@@ -134,6 +137,9 @@ export const useAuthStore = create<AuthStore>()(
               vocative_name: session.user.user_metadata.vocative_name,
               avatar_url: session.user.user_metadata.avatar_url,
             });
+            
+            // ✅ NEW: Fetch unified user state (roles + membership + modules)
+            await useUserState.getState().fetchUserState(session.user.id);
           }
         } catch (err: any) {
           if (err.name === 'AbortError') {
@@ -160,6 +166,7 @@ export const useAuthStore = create<AuthStore>()(
               full_name: session.user.user_metadata.full_name,
               vocative_name: session.user.user_metadata.vocative_name,
               avatar_url: session.user.user_metadata.avatar_url,
+              roles: session.user.user_metadata.roles || [], // ← Synchronous read from metadata
             });
           } else {
             get()._setUser(null);
@@ -285,6 +292,15 @@ export const useAuthStore = create<AuthStore>()(
           get()._setIsLoading(true);
           get()._setIsLoggingOut(true);  // ← SHARED STATE across all components!
           get()._setError(null);
+          
+          // ✅ NEW: Clear unified user state
+          useUserState.getState().clearUserState();
+          
+          // Clear role cache on logout
+          const userId = get().user?.id;
+          if (userId) {
+            roleService.clearCache(userId);
+          }
           
           const { error } = await ensureMinLoadingTime(
             supabase.auth.signOut(),

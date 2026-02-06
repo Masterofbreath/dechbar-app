@@ -1,0 +1,59 @@
+/**
+ * AdminComingSoon Styles
+ * 
+ * Placeholder page for future admin sections
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Pages/Admin
+ * @since 2.44.0
+ */
+
+.admin-coming-soon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
+}
+
+.admin-coming-soon__content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.admin-coming-soon__icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-coming-soon__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+.admin-coming-soon__message {
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  font-size: 1rem;
+}
+
+.admin-coming-soon__button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: var(--color-background);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.admin-coming-soon__button:hover {
+  background: #E5B745;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.2);
+}

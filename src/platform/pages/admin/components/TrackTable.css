@@ -1,0 +1,196 @@
+/**
+ * TrackTable Styles
+ * 
+ * Desktop: Full table layout
+ * Mobile (<768px): Card layout
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Pages/Admin/Components
+ * @since 2.44.0
+ */
+
+.track-table {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.track-table__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.track-table__table thead {
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.track-table__table th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.track-table__row {
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.2s ease;
+}
+
+.track-table__row:last-child {
+  border-bottom: none;
+}
+
+.track-table__row:hover {
+  background: rgba(44, 190, 198, 0.03);
+}
+
+.track-table__table td {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.track-table__cover-cell {
+  width: 60px;
+}
+
+.track-table__cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.375rem;
+  object-fit: cover;
+}
+
+.track-table__cover-placeholder {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-elevated);
+  border-radius: 0.375rem;
+  font-size: 1.25rem;
+}
+
+.track-table__title {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.track-table__category {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(44, 190, 198, 0.1);
+  color: var(--color-primary);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.track-table__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.track-table__action-btn {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.track-table__action-btn--edit {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.track-table__action-btn--edit:hover {
+  background: rgba(44, 190, 198, 0.1);
+}
+
+.track-table__action-btn--delete {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.track-table__action-btn--delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Mobile: Card layout */
+@media (max-width: 767px) {
+  .track-table__table,
+  .track-table__table thead,
+  .track-table__table tbody,
+  .track-table__table tr,
+  .track-table__table td,
+  .track-table__table th {
+    display: block;
+  }
+
+  .track-table__table thead {
+    display: none;
+  }
+
+  .track-table__row {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--color-surface-elevated);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+  }
+
+  .track-table__row:last-child {
+    margin-bottom: 0;
+  }
+
+  .track-table__table td {
+    padding: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .track-table__table td:last-child {
+    border-bottom: none;
+    padding-top: 1rem;
+  }
+
+  .track-table__table td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .track-table__cover-cell {
+    width: auto;
+  }
+
+  .track-table__cover-cell:before {
+    content: 'Cover';
+  }
+
+  .track-table__actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .track-table__action-btn {
+    flex: 1;
+    min-height: 44px; /* Touch target */
+  }
+}

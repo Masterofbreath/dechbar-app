@@ -22,10 +22,12 @@
   
   /* ============================================================
      Close Button - Fixed Positioning (for fullscreen modals)
-     Applies to: KP Center
+     Applies to: KP Center (only)
      
      Strategy: Context-based selector instead of component-level override
      Benefit: One definition, scales to all fullscreen modals
+     
+     NOTE: Exercise Creator uses header-based layout (children inside)
      ============================================================ */
   
   .kp-center .close-button,
@@ -33,15 +35,17 @@
     position: fixed !important;
     top: max(16px, env(safe-area-inset-top)) !important;
     right: max(16px, env(safe-area-inset-right)) !important;
-    z-index: 20 !important;
+    z-index: 101 !important; /* Above header (z-index: 100) */
   }
   
   /* ============================================================
      Title - Left Aligned (next to CloseButton)
-     Applies to: KP Center
+     Applies to: KP Center (only)
      
      Design: Title and CloseButton on same row for space efficiency
      Alignment: Flex centering for visual consistency with CloseButton
+     
+     NOTE: Exercise Creator uses header-based layout (title inside header)
      ============================================================ */
   
   .kp-center__title {
@@ -121,6 +125,11 @@
         top: max(16px, env(safe-area-inset-top)) !important;
         ...
       }
+   
+   NOTE: Exercise Creator uses header-based layout (flex container)
+         where title, mode toggle, and close button are children inside header.
+         This is an alternative pattern that works well for modals with multiple
+         header elements.
 
    Benefits:
    - ✅ Consistent positioning across all modals

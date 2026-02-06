@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+- 🧹 **Major Documentation Cleanup (4.2.2026)**
+  - Reduced ROOT .md files from 70 to 10 (86% reduction)
+  - Deleted 60 version logs & historical summaries (preserved in git)
+  - Created universal AI agent onboarding (docs/development/AI_AGENT_ONBOARDING.md)
+  - Reorganized Ecomail docs: 4 core docs with verified data (docs/marketing/ecomail/)
+  - Moved HMR guide to docs/development/HMR_GUIDE.md
+  - Result: Cleaner structure, faster agent onboarding (40 min vs 3 hours)
+
 ### Added
 - **Premium Pricing Cards UI with Stripe Checkout Integration**
   - Glassmorphism pricing cards with multi-layer shadows and gold accents

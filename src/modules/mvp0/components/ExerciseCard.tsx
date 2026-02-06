@@ -9,6 +9,7 @@
  */
 
 import { NavIcon } from '@/platform/components';
+import { useNavigation } from '@/platform/hooks';
 import type { Exercise } from '../types/exercises';
 
 export interface ExerciseCardProps {
@@ -37,6 +38,7 @@ export function ExerciseCard({
   onEdit,
   onDelete,
 }: ExerciseCardProps) {
+  const { openDeleteConfirm } = useNavigation();
   const durationMinutes = Math.round(exercise.total_duration_seconds / 60);
   const isCustom = exercise.category === 'custom';
   
@@ -78,21 +80,34 @@ export function ExerciseCard({
   
   function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
-    if (onDelete) onDelete(exercise);
+    
+    if (!onDelete) return;
+    
+    // Open global delete confirmation dialog
+    openDeleteConfirm({
+      exerciseId: exercise.id,
+      exerciseName: exercise.name,
+      onConfirm: () => onDelete(exercise),
+    });
   }
   
   return (
     <div
-      className={`exercise-card ${isLocked ? 'exercise-card--locked' : ''}`}
+      className={`exercise-card ${isLocked ? 'exercise-card--locked' : ''} ${isCustom ? 'exercise-card--custom' : ''}`}
       onClick={handleClick}
       role="button"
       tabIndex={isLocked ? -1 : 0}
       aria-label={`${exercise.name} - ${durationMinutes} minut`}
+      style={isCustom && exercise.card_color ? {
+        '--custom-color': exercise.card_color,
+      } as React.CSSProperties : undefined}
     >
-      {/* Icon */}
-      <div className="exercise-card__icon">
-        <NavIcon name={icon as any} size={32} />
-      </div>
+      {/* Icon - only for non-custom exercises (premium "less is more" design) */}
+      {!isCustom && (
+        <div className="exercise-card__icon">
+          <NavIcon name={icon as any} size={32} />
+        </div>
+      )}
       
       {/* Content */}
       <div className="exercise-card__content">
@@ -133,7 +148,7 @@ export function ExerciseCard({
             </span>
           )}
           
-          {exercise.difficulty && (
+          {!isCustom && exercise.difficulty && (
             <span className={`badge badge--difficulty badge--${exercise.difficulty}`}>
               {exercise.difficulty === 'beginner' && 'Začátečník'}
               {exercise.difficulty === 'intermediate' && 'Pokročilý'}

@@ -1,24 +1,20 @@
 /**
  * useMembership Hook
  * 
- * Access user's membership plan and status
+ * Access user's membership plan and status.
+ * Now reads from unified user state store (real-time synced).
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Membership
+ * @since Original
+ * @updated 2.47.0 - Use unified user state store (no React Query!)
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../api/supabase';
-
-interface Membership {
-  id: string;
-  user_id: string;
-  plan: 'ZDARMA' | 'SMART' | 'AI_COACH';
-  status: 'active' | 'cancelled' | 'expired';
-  type: 'lifetime' | 'subscription';
-  purchased_at: string;
-  expires_at: string | null;
-}
+import { useUserState } from '@/platform/user/userStateStore';
+import type { UserMembership } from '@/platform/user/userStateStore';
 
 interface UseMembershipReturn {
-  membership: Membership | null;
+  membership: UserMembership | null;
   plan: 'ZDARMA' | 'SMART' | 'AI_COACH';
   isPremium: boolean;
   isLoading: boolean;
@@ -28,43 +24,20 @@ interface UseMembershipReturn {
 /**
  * Get user's active membership
  * 
- * @param userId - User ID
+ * No userId parameter needed - reads from current logged-in user
  */
-export function useMembership(userId?: string): UseMembershipReturn {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['membership', userId],
-    queryFn: async (): Promise<Membership | null> => {
-      if (!userId) return null;
-
-      const { data, error } = await supabase
-        .from('memberships')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching membership:', error);
-        throw error;
-      }
-
-      return data as Membership | null;
-    },
-    enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  const membership = data || null;
-  const plan = membership?.plan || 'ZDARMA';
-  const isPremium = plan !== 'ZDARMA';
+export function useMembership(): UseMembershipReturn {
+  // ✅ NEW: Read from unified store (real-time synced!)
+  const membership = useUserState((state) => state.membership);
+  const plan = useUserState((state) => state.membership?.plan || 'ZDARMA');
+  const isPremium = useUserState((state) => state.isPremium);
+  const isLoading = useUserState((state) => state.isLoading);
 
   return {
     membership,
     plan,
     isPremium,
     isLoading,
-    error: error as Error | null,
+    error: null, // No errors in unified store (handled internally)
   };
 }

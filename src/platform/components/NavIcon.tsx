@@ -17,7 +17,7 @@ export interface NavIconProps {
    */
   name: 'home' | 'dumbbell' | 'graduation-cap' | 'chart-line' | 'settings' | 'bell' | 
         'sun' | 'refresh' | 'moon' | 'lightbulb' | 'sparkles' | 'chevron-right' |
-        'close' | 'user' | 'credit-card' | 'info' | 'logout' | 'lock' |
+        'close' | 'user' | 'credit-card' | 'info' | 'logout' | 'lock' | 'shield' |
         'clock' | 'edit' | 'trash' | 'x' | 'wind' | 'layers' | 'bar-chart' | 'target' | 
         'zap' | 'circle' | 'check' | 'file-text' | 'chevron-up' | 'chevron-down' |
         'square' | 'meditation' | 'heart';
@@ -198,6 +198,14 @@ export function NavIcon({
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       </>
+    ),
+    
+    'shield': (
+      <path 
+        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+      />
     ),
     
     // Exercise system icons

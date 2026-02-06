@@ -1,5 +1,22 @@
 # DechBar App - React + Supabase + Capacitor
 
+⚠️ **FOR AI AGENTS - CRITICAL:**
+
+**Your workspace is ONLY this folder:** `/Users/DechBar/dechbar-app/`
+
+**DO NOT work in:**
+- ❌ `/Users/DechBar/` (parent - multi-project workspace)
+- ❌ `/Users/DechBar/wp-content/` (WordPress project - different codebase)
+- ❌ `/Users/DechBar/FOUNDATION/` (WordPress framework - not relevant here)
+
+**Work ONLY in:**
+- ✅ `/Users/DechBar/dechbar-app/` (THIS FOLDER!)
+- ✅ All your files, docs, code go HERE inside dechbar-app/
+
+**Start reading:** `README.md` (this file) → `PROJECT_GUIDE.md` → `docs/development/AI_AGENT_ONBOARDING.md`
+
+---
+
 ## 🚀 Modern Native Mobile App
 
 Dechová cvičení jako native mobile app (iOS + Android) s modulární architekturou.

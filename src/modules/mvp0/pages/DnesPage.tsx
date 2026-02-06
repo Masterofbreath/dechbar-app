@@ -16,7 +16,8 @@ import { useState } from 'react';
 import { useAuth } from '@/platform/auth';
 import { 
   Greeting, 
-  SmartExerciseButton, 
+  SmartExerciseButton,
+  TodaysChallengeButton,
   PresetProtocolButton, 
   DailyTipWidget,
   SessionEngineModal
@@ -71,6 +72,30 @@ export function DnesPage() {
     }
   }
   
+  // Handle challenge button click - load today's challenge exercise
+  function handleChallengeClick(currentDay: number) {
+    console.log('🎯 [DnesPage] Challenge kliknuto - den:', currentDay);
+    
+    if (!exercises) {
+      console.warn('⚠️ [DnesPage] Exercises ještě nejsou načteny');
+      return;
+    }
+    
+    // TODO: Implementovat načtení konkrétního cvičení pro daný den výzvy
+    // Pro teď načteme první dostupné cvičení jako placeholder
+    // V budoucnu: SELECT * FROM challenge_exercises WHERE day_number = currentDay
+    
+    const challengeExercise = exercises[0]; // Placeholder
+    
+    if (challengeExercise) {
+      console.log('✅ [DnesPage] Challenge cvičení nalezeno:', challengeExercise.name);
+      setSkipFlow(true); // Direct start
+      setSelectedExercise(challengeExercise);
+    } else {
+      console.error('❌ [DnesPage] Challenge cvičení nenalezeno pro den:', currentDay);
+    }
+  }
+  
   // Show loading state
   if (isLoading) {
     console.log('⏳ [DnesPage] Načítám cvičení...');
@@ -89,6 +114,11 @@ export function DnesPage() {
       {/* 2. SMART Exercise Button (tier-aware) */}
       <SmartExerciseButton 
         onClick={() => console.log('SMART exercise clicked')}
+      />
+      
+      {/* 2.5 Today's Challenge Button (challenge-aware) */}
+      <TodaysChallengeButton 
+        onClick={(day) => handleChallengeClick(day)}
       />
       
       {/* 3. Preset Protocols Section */}

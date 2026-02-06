@@ -1,0 +1,48 @@
+/**
+ * AdminLayout Styles
+ * 
+ * Main layout for admin panel - Apple Premium Clean Design
+ * NO AdminHeader - Sidebar from top to bottom for maximum content space
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Layouts
+ * @since 2.44.0
+ * @updated 2.46.2 - Removed AdminHeader padding (+44px more content space)
+ */
+
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.admin-layout__container {
+  display: flex;
+  flex: 1;
+  /* Removed: padding-top: 44px; - No AdminHeader anymore! */
+}
+
+.admin-layout__content {
+  flex: 1;
+  margin-left: 240px; /* AdminSidebar width */
+  padding: 2rem;
+  overflow-y: auto;
+  min-height: 100vh; /* Full viewport height */
+}
+
+/* Tablet */
+@media (max-width: 1023px) {
+  .admin-layout__content {
+    margin-left: 200px; /* Narrower sidebar */
+    padding: 1.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .admin-layout__content {
+    margin-left: 0; /* Sidebar becomes overlay */
+    padding: 1rem;
+  }
+}

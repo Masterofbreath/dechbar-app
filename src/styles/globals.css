@@ -51,6 +51,7 @@
 @import url('./components/checkbox.css');
 @import url('./components/close-button.css');
 @import url('./components/mini-tip.css');
+@import url('./components/audio-player.css');
 
 /* Shared Components */
 @import url('../components/shared/BreathingCircle/breathing-circle.css');

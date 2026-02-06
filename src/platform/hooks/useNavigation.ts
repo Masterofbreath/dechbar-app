@@ -17,6 +17,19 @@ import { create } from 'zustand';
 export type NavTab = 'dnes' | 'cvicit' | 'akademie' | 'pokrok';
 
 /**
+ * Exercise Creator mode
+ */
+export type ExerciseCreatorMode = 'create' | 'edit';
+
+/**
+ * Exercise Creator options (for edit mode)
+ */
+export interface ExerciseCreatorOptions {
+  mode: ExerciseCreatorMode;
+  exerciseId?: string; // For edit mode
+}
+
+/**
  * Navigation state interface
  */
 interface NavigationState {
@@ -38,9 +51,24 @@ interface NavigationState {
   openNotifications: () => void;
   closeNotifications: () => void;
   
+  // Exercise Creator Modal (NEW)
+  isExerciseCreatorOpen: boolean;
+  exerciseCreatorOptions: ExerciseCreatorOptions | null;
+  openExerciseCreator: (options?: ExerciseCreatorOptions) => void;
+  closeExerciseCreator: () => void;
+  
+  // Delete Confirmation Dialog (NEW)
+  isDeleteConfirmOpen: boolean;
+  deleteConfirmData: { exerciseId: string; exerciseName: string; onConfirm: () => void } | null;
+  openDeleteConfirm: (data: { exerciseId: string; exerciseName: string; onConfirm: () => void }) => void;
+  closeDeleteConfirm: () => void;
+  
   // Notification state
   unreadNotifications: number;
   setUnreadNotifications: (count: number) => void;
+  
+  // Global modal actions (NEW - close all modals)
+  closeAllModals: () => void;
 }
 
 /**
@@ -49,6 +77,11 @@ interface NavigationState {
  * @example
  * const { currentTab, setCurrentTab } = useNavigation();
  * setCurrentTab('dnes');
+ * 
+ * @example
+ * const { openExerciseCreator } = useNavigation();
+ * openExerciseCreator(); // Create mode
+ * openExerciseCreator({ mode: 'edit', exerciseId: '123' }); // Edit mode
  */
 export const useNavigation = create<NavigationState>((set) => ({
   // Tab state
@@ -57,25 +90,79 @@ export const useNavigation = create<NavigationState>((set) => ({
   
   // Profile modal
   isProfileOpen: false,
-  openProfile: () => set({ isProfileOpen: true }),
+  openProfile: () => set({ 
+    isProfileOpen: true,
+    // Close other modals for focus
+    isExerciseCreatorOpen: false,
+  }),
   closeProfile: () => set({ isProfileOpen: false }),
   
   // Settings modal
   isSettingsOpen: false,
-  openSettings: () => set({ isSettingsOpen: true }),
+  openSettings: () => set({ 
+    isSettingsOpen: true,
+    // Close other modals for focus
+    isExerciseCreatorOpen: false,
+  }),
   closeSettings: () => set({ isSettingsOpen: false }),
   
   // KP Detail modal/view
   isKPDetailOpen: false,
-  openKPDetail: () => set({ isKPDetailOpen: true }),
+  openKPDetail: () => set({ 
+    isKPDetailOpen: true,
+    // Close other modals for focus
+    isExerciseCreatorOpen: false,
+  }),
   closeKPDetail: () => set({ isKPDetailOpen: false }),
   
   // Notifications center
   isNotificationsOpen: false,
-  openNotifications: () => set({ isNotificationsOpen: true }),
+  openNotifications: () => set({ 
+    isNotificationsOpen: true,
+    // Don't close other modals - notifications are overlay
+  }),
   closeNotifications: () => set({ isNotificationsOpen: false }),
+  
+  // Exercise Creator Modal (NEW)
+  isExerciseCreatorOpen: false,
+  exerciseCreatorOptions: null,
+  openExerciseCreator: (options) => set({ 
+    isExerciseCreatorOpen: true,
+    exerciseCreatorOptions: options || { mode: 'create' },
+    // Close other modals for focus
+    isProfileOpen: false,
+    isKPDetailOpen: false,
+  }),
+  closeExerciseCreator: () => set({ 
+    isExerciseCreatorOpen: false,
+    exerciseCreatorOptions: null,
+  }),
+  
+  // Delete Confirmation Dialog (NEW)
+  isDeleteConfirmOpen: false,
+  deleteConfirmData: null,
+  openDeleteConfirm: (data) => set({
+    isDeleteConfirmOpen: true,
+    deleteConfirmData: data,
+  }),
+  closeDeleteConfirm: () => set({
+    isDeleteConfirmOpen: false,
+    deleteConfirmData: null,
+  }),
   
   // Notification state
   unreadNotifications: 0,
   setUnreadNotifications: (count) => set({ unreadNotifications: count }),
+  
+  // Close all modals (NEW - for emergency situations)
+  closeAllModals: () => set({
+    isProfileOpen: false,
+    isSettingsOpen: false,
+    isKPDetailOpen: false,
+    isNotificationsOpen: false,
+    isExerciseCreatorOpen: false,
+    exerciseCreatorOptions: null,
+    isDeleteConfirmOpen: false,
+    deleteConfirmData: null,
+  }),
 }));

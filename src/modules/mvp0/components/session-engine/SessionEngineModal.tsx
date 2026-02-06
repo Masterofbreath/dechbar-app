@@ -19,6 +19,7 @@ import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
 import { useAudioCues } from './hooks/useAudioCues';
+import { useWakeLock } from '../../hooks/useWakeLock'; // ✅ NEW v2.42.11
 import { isProtocol } from '@/utils/exerciseHelpers';
 import {
   SessionStartScreen,
@@ -71,6 +72,7 @@ export function SessionEngineModal({
   // Custom hooks
   const { playBell } = useAudioCues();
   const { circleRef, animateBreathingCircle, cleanup: cleanupAnimation } = useBreathingAnimation();
+  const wakeLock = useWakeLock(); // ✅ NEW v2.42.11: Keep screen on during session
   
   useScrollLock(isOpen);
   
@@ -99,6 +101,17 @@ export function SessionEngineModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skipFlow, sessionState]);
+  
+  // ✅ NEW v2.42.11: Wake Lock - Keep screen on during active session
+  useEffect(() => {
+    if (sessionState === 'active') {
+      // Session started → request wake lock
+      wakeLock.request();
+    } else {
+      // Session ended/paused → release wake lock
+      wakeLock.release();
+    }
+  }, [sessionState, wakeLock]);
   
   // =====================================================
   // SESSION FLOW: State Machine
@@ -492,17 +505,17 @@ export function SessionEngineModal({
                 currentInstruction={currentInstruction}
                 circleRef={circleRef as React.RefObject<HTMLDivElement>}
               />
+              
+              {/* ✅ NEW: Floating "Další:" preview at bottom of ContentZone (Option A) */}
+              {phaseTimeRemaining <= 5 && currentPhaseIndex < totalPhases - 1 && (
+                <div className="session-active__next-floating">
+                  Další: {exercise.breathing_pattern.phases[currentPhaseIndex + 1].name}
+                </div>
+              )}
             </FullscreenModal.ContentZone>
             
             <FullscreenModal.BottomBar>
-              {currentPhaseIndex < totalPhases - 1 && (
-                <div className="session-active__next-preview">
-                  <span className="next-label">Další:</span>{' '}
-                  <span className="next-name">
-                    {exercise.breathing_pattern.phases[currentPhaseIndex + 1].name}
-                  </span>
-                </div>
-              )}
+              {/* ✅ ONLY progress bar - clean, predictable, always visible */}
               <div className="fullscreen-modal__progress">
                 <div 
                   className="fullscreen-modal__progress-fill" 
@@ -537,17 +550,9 @@ export function SessionEngineModal({
             </FullscreenModal.ContentZone>
             
             <FullscreenModal.BottomBar>
-              <button
-                type="button"
-                className="completion-repeat-button"
-                onClick={() => {
-                  setSessionState('idle');
-                  setCurrentPhaseIndex(0);
-                  setMoodAfter(null);
-                }}
-              >
-                Opakovat cvičení
-              </button>
+              {/* ✅ "Opakovat cvičení" removed - Less is More principle */}
+              {/* User can restart via back + start again (3 taps vs 1 tap = acceptable trade-off) */}
+              <div />
             </FullscreenModal.BottomBar>
           </>
         )}

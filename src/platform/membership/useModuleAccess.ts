@@ -1,66 +1,42 @@
 /**
  * useModuleAccess Hook
  * 
- * Check if user has access to a specific module
+ * Check if user has access to a specific module.
+ * Now reads from unified user state store (real-time synced).
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Membership
+ * @since Original
+ * @updated 2.47.0 - Use unified user state store (no React Query!)
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../api/supabase';
-import type { UserModule } from '../modules/types';
+import { useUserState } from '@/platform/user/userStateStore';
 
 interface UseModuleAccessReturn {
   hasAccess: boolean;
   isLoading: boolean;
-  module: UserModule | null;
+  module: { module_id: string } | null;
   error: Error | null;
 }
 
 /**
  * Check if user owns a specific module
  * 
- * @param moduleId - Module ID to check (e.g., 'studio')
- * @param userId - User ID
+ * @param moduleId - Module ID to check (e.g., 'studio', 'challenges', 'akademie')
  */
 export function useModuleAccess(
-  moduleId: string,
-  userId?: string
+  moduleId: string
 ): UseModuleAccessReturn {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['module-access', moduleId, userId],
-    queryFn: async (): Promise<UserModule | null> => {
-      if (!userId) return null;
-
-      const { data, error } = await supabase
-        .from('user_modules')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('module_id', moduleId)
-        .maybeSingle();
-
-      if (error) {
-        console.error(`Error checking access to module ${moduleId}:`, error);
-        throw error;
-      }
-
-      return data as UserModule | null;
-    },
-    enabled: !!userId && !!moduleId,
-    staleTime: 1 * 60 * 1000, // 1 minute
-  });
-
-  const module = data || null;
+  // ✅ NEW: Read from unified store (real-time synced!)
+  const ownedModules = useUserState((state) => state.ownedModules);
+  const isLoading = useUserState((state) => state.isLoading);
   
-  // Check if user has active access
-  const hasAccess = module !== null && (
-    module.purchase_type === 'lifetime' ||
-    (module.subscription_status === 'active' && 
-     (!module.current_period_end || new Date(module.current_period_end) > new Date()))
-  );
-
+  const hasAccess = ownedModules.includes(moduleId);
+  
   return {
     hasAccess,
     isLoading,
-    module,
-    error: error as Error | null,
+    module: hasAccess ? { module_id: moduleId } : null,
+    error: null, // No errors in unified store (handled internally)
   };
 }

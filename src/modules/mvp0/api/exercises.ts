@@ -183,6 +183,7 @@ export function useCreateExercise() {
           difficulty: payload.breathing_pattern.metadata.difficulty,
           tags: payload.tags || [],
           contraindications: [],
+          card_color: payload.card_color || null,
         })
         .select()
         .single();
