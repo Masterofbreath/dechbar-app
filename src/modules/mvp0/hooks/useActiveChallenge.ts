@@ -8,12 +8,14 @@
  * - Completed days count
  * - Visibility for admin/CEO users (hardcoded list)
  * 
+ * ✅ Uses React Query for caching - data persists across page navigations
+ * 
  * @package DechBar_App
  * @subpackage MVP0/Hooks
  * @since 0.3.0
  */
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/platform/auth';
 import { 
   getChallengeRegistration,
@@ -68,43 +70,26 @@ function calculateCurrentDay(): number {
 
 /**
  * Hook for active challenge management
+ * 
+ * ✅ Uses React Query for persistent caching across page navigations
+ * Cache expires after 5 minutes or on manual invalidation
  */
 export function useActiveChallenge(): ActiveChallengeStatus {
   const { user } = useAuth();
-  const [status, setStatus] = useState<ActiveChallengeStatus>({
-    challenge: null,
-    isActive: false,
-    currentDay: 0,
-    completedDays: 0,
-    progress: [],
-    isVisible: false,
-    isLoading: true,
-    error: null,
-  });
   
-  useEffect(() => {
-    if (!user) {
-      setStatus({
-        challenge: null,
-        isActive: false,
-        currentDay: 0,
-        completedDays: 0,
-        progress: [],
-        isVisible: false,
-        isLoading: false,
-        error: null,
-      });
-      return;
-    }
-    
-    loadChallengeStatus();
-  }, [user]);
-  
-  async function loadChallengeStatus() {
-    if (!user) return;
-    
-    try {
-      setStatus(prev => ({ ...prev, isLoading: true, error: null }));
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['activeChallenge', user?.id],
+    queryFn: async () => {
+      if (!user) {
+        return {
+          challenge: null,
+          isActive: false,
+          currentDay: 0,
+          completedDays: 0,
+          progress: [],
+          isVisible: false,
+        };
+      }
       
       // Check if user is admin (hardcoded email check)
       const isAdminUser = isAdmin(user.email);
@@ -114,17 +99,14 @@ export function useActiveChallenge(): ActiveChallengeStatus {
       
       // If no registration and not admin, hide button
       if (!registration && !isAdminUser) {
-        setStatus({
+        return {
           challenge: null,
           isActive: false,
           currentDay: 0,
           completedDays: 0,
           progress: [],
           isVisible: false,
-          isLoading: false,
-          error: null,
-        });
-        return;
+        };
       }
       
       // Check challenge access (time-based)
@@ -157,26 +139,32 @@ export function useActiveChallenge(): ActiveChallengeStatus {
       // 2. User has active challenge
       const isVisible = isAdminUser || isActive;
       
-      setStatus({
+      return {
         challenge: registration,
         isActive,
         currentDay,
         completedDays,
         progress,
         isVisible,
-        isLoading: false,
-        error: null,
-      });
-      
-    } catch (err) {
-      console.error('[useActiveChallenge] Error loading challenge:', err);
-      setStatus(prev => ({
-        ...prev,
-        isLoading: false,
-        error: 'Nepodařilo se načíst výzvu',
-      }));
-    }
-  }
+      };
+    },
+    enabled: !!user, // Only run query if user is logged in
+    staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+    gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache
+    refetchOnWindowFocus: false, // Don't refetch on tab focus
+    refetchOnMount: false, // Don't refetch on component mount (use cache!)
+  });
   
-  return status;
+  return {
+    ...(data || {
+      challenge: null,
+      isActive: false,
+      currentDay: 0,
+      completedDays: 0,
+      progress: [],
+      isVisible: false,
+    }),
+    isLoading,
+    error: error ? 'Nepodařilo se načíst výzvu' : null,
+  };
 }

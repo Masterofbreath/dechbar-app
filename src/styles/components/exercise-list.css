@@ -48,22 +48,44 @@
   touch-action: manipulation; /* Remove 300ms delay on mobile */
 }
 
-.tab:hover {
-  color: var(--color-text-primary);
-  background: rgb(255 255 255 / 5%);
+/* Desktop only - hover effect */
+@media (hover: hover) and (pointer: fine) {
+  .tab:hover {
+    color: var(--color-text-primary);
+    background: rgb(255 255 255 / 5%);
+  }
+  
+  .tab:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
 }
 
-/* Instant visual feedback on tap */
-.tab:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-  transition: transform 0.1s ease, opacity 0.1s ease;
+/* Mobile - NO :hover or :active effects (instant tab switch) */
+@media (hover: none) and (pointer: coarse) {
+  .tab:hover {
+    /* Disable hover on touch devices - prevents sticky hover */
+  }
+  
+  .tab:active {
+    /* Disable active on touch devices - prevents sticky state */
+  }
 }
 
+/* Base active tab styles */
 .tab--active {
   color: var(--color-text-primary);
   background: var(--color-primary);
   font-weight: 600;
+}
+
+/* Override :active state for active tab (prevent sticky mobile behavior) */
+.tab--active:active {
+  transform: none !important;
+  opacity: 1 !important;
+  background: var(--color-primary) !important; /* Force teal instantly */
+  transition: none !important; /* Kill all transitions - instant feedback */
 }
 
 .tab__badge {
@@ -162,9 +184,18 @@
   display: block; /* Nutné pro margin: auto */
 }
 
+/* Below grid mode - button under exercise grid */
+.exercise-list__create-button--below-grid {
+  width: 65%;
+  max-width: 400px;
+  margin: 24px auto 16px; /* Top margin larger for spacing from grid */
+  display: block;
+}
+
 /* Mobile optimization - širší pro lepší touch targets */
 @media (width <= 640px) {
-  .exercise-list__create-button--compact {
+  .exercise-list__create-button--compact,
+  .exercise-list__create-button--below-grid {
     width: 80%; /* Na mobilu o trochu širší */
     max-width: none;
   }
@@ -179,7 +210,79 @@
 }
 
 /* ============================================================
-   Session List (History Tab)
+   Empty Custom State (when no custom exercises)
+   ============================================================ */
+.empty-custom-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  margin-top: 24px;
+  text-align: center;
+  background: rgb(44 190 198 / 5%);
+  border: 1px dashed var(--color-border);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.empty-custom-state:hover {
+  background: rgb(44 190 198 / 8%);
+  border-color: var(--color-primary);
+}
+
+.empty-custom-state__icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.empty-custom-state__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px;
+}
+
+.empty-custom-state__description {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 0 0 24px;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* Mobile adjustments */
+@media (width <= 640px) {
+  .empty-custom-state {
+    padding: 40px 20px;
+  }
+  
+  .empty-custom-state__icon {
+    font-size: 40px;
+  }
+  
+  .empty-custom-state__title {
+    font-size: 18px;
+  }
+  
+  .empty-custom-state__description {
+    font-size: 14px;
+  }
+}
+
+/* ============================================================
+   Session List (History Tab) - Gold accent (achievement color)
    ============================================================ */
 .session-list {
   display: flex;
@@ -197,11 +300,60 @@
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
+  overflow: hidden; /* For gradient overlay */
+  
+  /* Gold accent bar (success/achievement color) */
+  border-left: 3px solid var(--color-accent);
+  
+  /* Safari < 16.2 fallback - using gold */
+  box-shadow: 
+    inset 3px 0 8px rgb(214 162 58 / 8%),
+    0 2px 8px rgb(214 162 58 / 8%);
+  
+  /* Modern browsers - gold accent effect */
+  @supports (color: color-mix(in srgb, red, blue)) {
+    box-shadow: 
+      inset 3px 0 8px color-mix(in srgb, var(--color-accent) 8%, transparent),
+      0 2px 8px color-mix(in srgb, var(--color-accent) 8%, transparent);
+  }
+}
+
+/* Subtle gold gradient overlay from left */
+.session-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  
+  /* Safari < 16.2 fallback - using gold */
+  background: linear-gradient(
+    90deg, 
+    rgb(214 162 58 / 6%) 0%,
+    transparent 30%
+  );
+  
+  /* Modern browsers - gold gradient */
+  @supports (color: color-mix(in srgb, red, blue)) {
+    background: linear-gradient(
+      90deg, 
+      color-mix(in srgb, var(--color-accent) 6%, transparent) 0%,
+      transparent 30%
+    );
+  }
+  
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Ensure content is above the gradient overlay */
+.session-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .session-card:hover {
   background: var(--color-surface-elevated);
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
 }
 
 .session-card__header {

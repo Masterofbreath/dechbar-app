@@ -15,6 +15,7 @@ import { ExerciseCard } from './ExerciseCard';
 import { LockedFeatureModal } from './LockedFeatureModal';
 import { Button, LoadingSkeleton, EmptyState, NavIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
 import { useMembership } from '@/platform/membership';
+import { useNavigation } from '@/platform/hooks';
 import { isProtocol } from '@/utils/exerciseHelpers';
 import type { MoodType } from '../types/exercises';
 import {
@@ -52,6 +53,7 @@ export function ExerciseList({
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { plan } = useMembership();
+  const { openExerciseCreator } = useNavigation();
   
   // Mood labels Czech mapping
   const moodLabels: Record<MoodType, string> = {
@@ -98,7 +100,8 @@ export function ExerciseList({
   const historyDaysLimit = plan === 'ZDARMA' ? 7 : plan === 'SMART' ? 90 : null;
   
   async function handleDelete(exercise: Exercise) {
-    if (!confirm(`Opravdu smazat cvičení "${exercise.name}"?`)) return;
+    // Confirmation už proběhla v custom modal (openDeleteConfirm)
+    // Browser confirm() dialog zde způsoboval duplicate dialog
     
     try {
       await deleteExercise.mutateAsync(exercise.id);
@@ -108,13 +111,25 @@ export function ExerciseList({
     }
   }
   
+  function handleDuplicate(exercise: Exercise) {
+    // Open Exercise Creator in duplicate mode
+    openExerciseCreator({ 
+      mode: 'duplicate', 
+      exerciseId: exercise.id,
+      sourceExercise: exercise,
+    });
+  }
+  
   return (
     <div className="exercise-list">
       {/* Tabs */}
       <div className="exercise-list__tabs" role="tablist">
         <button
           className={`tab ${activeTab === 'presets' ? 'tab--active' : ''}`}
-          onClick={() => setActiveTab('presets')}
+          onClick={(e) => {
+            setActiveTab('presets');
+            e.currentTarget.blur(); // Force remove :active state on mobile
+          }}
           role="tab"
           aria-selected={activeTab === 'presets'}
           type="button"
@@ -124,7 +139,10 @@ export function ExerciseList({
         
         <button
           className={`tab ${activeTab === 'custom' ? 'tab--active' : ''}`}
-          onClick={() => setActiveTab('custom')}
+          onClick={(e) => {
+            setActiveTab('custom');
+            e.currentTarget.blur();
+          }}
           role="tab"
           aria-selected={activeTab === 'custom'}
           type="button"
@@ -137,7 +155,10 @@ export function ExerciseList({
         
         <button
           className={`tab ${activeTab === 'history' ? 'tab--active' : ''}`}
-          onClick={() => setActiveTab('history')}
+          onClick={(e) => {
+            setActiveTab('history');
+            e.currentTarget.blur(); // Force remove :active state on mobile
+          }}
           role="tab"
           aria-selected={activeTab === 'history'}
           type="button"
@@ -164,6 +185,7 @@ export function ExerciseList({
                     key={exercise.id}
                     exercise={exercise}
                     onStart={onStartExercise}
+                    onDuplicate={handleDuplicate}
                   />
                 ))}
               </div>
@@ -184,7 +206,7 @@ export function ExerciseList({
             {plan === 'ZDARMA' && (
               <div className="tier-info">
                 <p className="tier-info__text">
-                  Máš {customCount}/3 vlastní cvičení.{' '}
+                  Máš {customCount}/3 cvičení.{' '}
                   {!canCreateMore && (
                     <strong>Upgraduj na SMART pro neomezený počet.</strong>
                   )}
@@ -192,46 +214,82 @@ export function ExerciseList({
               </div>
             )}
             
-            {/* Create button - hned pod tier banner */}
-            {canCreateMore ? (
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={onCreateCustom}
-                className="exercise-list__create-button exercise-list__create-button--compact"
-              >
-                + Vytvořit nové cvičení
-              </Button>
-            ) : (
-              <div className="upgrade-prompt">
-                <Button 
-                  variant="primary" 
-                  size="md"
-                  onClick={() => setShowUpgradeModal(true)}
-                >
-                  Upgraduj na SMART
-                </Button>
-              </div>
-            )}
-            
-            {/* Exercise Grid - bez EmptyState */}
+            {/* Exercise Grid OR Empty State */}
             {exercisesLoading ? (
               <div className="exercise-grid">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <LoadingSkeleton key={i} variant="card" height="120px" />
                 ))}
               </div>
-            ) : customExercises.length > 0 && (
-              <div className="exercise-grid">
-                {customExercises.map((exercise) => (
-                  <ExerciseCard
-                    key={exercise.id}
-                    exercise={exercise}
-                    onStart={onStartExercise}
-                    onEdit={onEditExercise}
-                    onDelete={handleDelete}
-                  />
-                ))}
+            ) : customExercises.length > 0 ? (
+              <>
+                {/* Exercise Grid */}
+                <div className="exercise-grid">
+                  {customExercises.map((exercise) => (
+                    <ExerciseCard
+                      key={exercise.id}
+                      exercise={exercise}
+                      onStart={onStartExercise}
+                      onEdit={onEditExercise}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                  
+                  {/* Upgrade card as last grid item (when limit reached) */}
+                  {!canCreateMore && (
+                    <div 
+                      className="exercise-card exercise-card--upgrade"
+                      onClick={() => setShowUpgradeModal(true)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="exercise-card__upgrade-icon-wrapper">
+                        <NavIcon name="lock" size={32} />
+                      </div>
+                      <div className="exercise-card__upgrade-text">
+                        <h3 className="exercise-card__upgrade-title">
+                          Upgraduj na SMART
+                        </h3>
+                        <p className="exercise-card__upgrade-subtitle">
+                          Neomezený počet cvičení
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Create button POD gridem (only if can create more) */}
+                {canCreateMore && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={onCreateCustom}
+                    className="exercise-list__create-button exercise-list__create-button--below-grid"
+                  >
+                    + Vytvořit cvičení
+                  </Button>
+                )}
+              </>
+            ) : (
+              /* Empty state when no custom exercises */
+              <div className="empty-custom-state">
+                <div className="empty-custom-state__icon">✨</div>
+                <h3 className="empty-custom-state__title">
+                  Vytvoř si vlastní cvičení
+                </h3>
+                <p className="empty-custom-state__description">
+                  Nastav si dechové fáze přesně podle sebe.
+                  {plan === 'ZDARMA' && ' Máš 3 sloty zdarma.'}
+                </p>
+                {canCreateMore && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={onCreateCustom}
+                  >
+                    + Vytvořit první cvičení
+                  </Button>
+                )}
               </div>
             )}
           </div>

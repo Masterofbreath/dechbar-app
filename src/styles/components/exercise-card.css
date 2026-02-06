@@ -4,35 +4,90 @@
    ============================================================ */
 
 /* ============================================================
-   Base Card Styles
+   Base Card Styles - Unified Premium Design
    ============================================================ */
 .exercise-card {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 0;
   padding: 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
-  overflow: hidden;
+  overflow: visible; /* Allow hover effects to extend beyond card */
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
+  
+  /* Preset exercises: Teal accent bar + gradient (Apple/Spotify style) */
+  border-left: 4px solid var(--color-primary);
+  
+  /* Safari < 16.2 fallback - using teal as base */
+  box-shadow: 
+    inset 4px 0 12px rgb(44 190 198 / 12%),
+    0 2px 12px rgb(44 190 198 / 10%);
+  
+  /* Modern browsers - teal accent effect */
+  @supports (color: color-mix(in srgb, red, blue)) {
+    box-shadow: 
+      inset 4px 0 12px color-mix(in srgb, var(--color-primary) 12%, transparent),
+      0 2px 12px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
 }
 
-/* Custom Exercise Cards - Premium accent bar (Apple Music / Spotify style) */
-.exercise-card--custom {
-  position: relative;
-  background: var(--color-surface); /* Keep dark surface for readability */
-  border-left: 4px solid var(--custom-color, var(--color-primary)); /* Colored accent bar */
+/* Subtle gradient overlay from left (preset exercises) */
+.exercise-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   
-  /* Safari < 16.2 fallback - using teal as fallback color */
+  /* Safari < 16.2 fallback - using teal */
+  background: linear-gradient(
+    90deg, 
+    rgb(44 190 198 / 8%) 0%,
+    transparent 35%
+  );
+  
+  /* Modern browsers - teal gradient */
+  @supports (color: color-mix(in srgb, red, blue)) {
+    background: linear-gradient(
+      90deg, 
+      color-mix(in srgb, var(--color-primary) 8%, transparent) 0%,
+      transparent 35%
+    );
+  }
+  
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  overflow: hidden; /* Gradient stays inside card bounds */
+}
+
+/* Ensure content is above the gradient overlay */
+.exercise-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Card must be positioned above backgrounds (swipe) - BEFORE :hover for specificity */
+.exercise-card-wrapper > .exercise-card {
+  position: relative;
+  z-index: 2;
+  background: var(--color-surface); /* Ensure opaque background */
+}
+
+/* Custom Exercise Cards - User-selected color override */
+.exercise-card--custom {
+  /* Override default teal with user's custom color */
+  border-left-color: var(--custom-color, var(--color-primary));
+  
+  /* Safari < 16.2 fallback - using custom color */
   box-shadow: 
-    inset 4px 0 12px rgba(44, 190, 198, 0.12),
-    0 2px 12px rgba(44, 190, 198, 0.10);
+    inset 4px 0 12px rgb(44 190 198 / 12%),
+    0 2px 12px rgb(44 190 198 / 10%);
   
   /* Modern browsers - dynamic color based on card_color */
   @supports (color: color-mix(in srgb, red, blue)) {
@@ -42,23 +97,16 @@
   }
 }
 
-/* Subtle gradient overlay from left */
+/* Custom gradient overlay - user's color */
 .exercise-card--custom::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  
-  /* Safari < 16.2 fallback - using teal as fallback color */
+  /* Safari < 16.2 fallback */
   background: linear-gradient(
     90deg, 
-    rgba(44, 190, 198, 0.08) 0%,
+    rgb(44 190 198 / 8%) 0%,
     transparent 35%
   );
   
-  /* Modern browsers - dynamic color based on card_color */
+  /* Modern browsers - dynamic custom color */
   @supports (color: color-mix(in srgb, red, blue)) {
     background: linear-gradient(
       90deg, 
@@ -66,23 +114,6 @@
       transparent 35%
     );
   }
-  
-  pointer-events: none;
-  z-index: 0;
-  border-radius: inherit;
-}
-
-/* Ensure content is above the gradient overlay */
-.exercise-card--custom > * {
-  position: relative;
-  z-index: 1;
-}
-
-.exercise-card:hover:not(.exercise-card--locked) {
-  background: var(--color-surface-elevated);
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(44, 190, 198, 0.15);
 }
 
 .exercise-card:focus-visible {
@@ -90,23 +121,15 @@
   outline-offset: 2px;
 }
 
-.exercise-card:active:not(.exercise-card--locked) {
-  transform: translateY(0);
+.exercise-card:hover:not(.exercise-card--locked) {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(44 190 198 / 15%);
 }
 
-/* ============================================================
-   Icon
-   ============================================================ */
-.exercise-card__icon {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  border-radius: 12px;
-  color: var(--color-background);
+.exercise-card:active:not(.exercise-card--locked) {
+  transform: translateY(0);
 }
 
 /* ============================================================
@@ -121,7 +144,7 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin: 0 0 12px 0; /* Increased from 4px to 12px for universal spacing */
+  margin: 0 0 12px; /* Increased from 4px to 12px for universal spacing */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -134,7 +157,7 @@
 .exercise-card__description {
   font-size: 14px;
   color: var(--color-text-secondary);
-  margin: 0 0 8px 0; /* Reduced from 12px to 8px (total with title: 12+8=20px) */
+  margin: 0 0 8px; /* Reduced from 12px to 8px (total with title: 12+8=20px) */
   line-height: 1.4;
 }
 
@@ -153,7 +176,7 @@
   align-items: center;
   gap: 4px;
   padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 5%);
   border: 1px solid var(--color-border);
   border-radius: 12px;
   font-size: 12px;
@@ -164,6 +187,34 @@
 .badge--duration {
   color: var(--color-primary);
   border-color: var(--color-primary);
+}
+
+/* Customizable duration badge (for presets with duplicate functionality) */
+.badge--duration-customizable {
+  cursor: pointer;
+  position: relative;
+  padding-right: 32px; /* Make room for settings icon */
+  transition: all 0.2s ease;
+}
+
+.badge--duration-customizable:hover {
+  background: var(--color-primary);
+  color: var(--color-background);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(44 190 198 / 25%);
+}
+
+.badge--duration-customizable .badge__customize-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.badge--duration-customizable:hover .badge__customize-icon {
+  opacity: 1;
 }
 
 .badge--phases {
@@ -178,58 +229,10 @@
   letter-spacing: 0.05em;
 }
 
-.badge--difficulty {
+.badge--benefit {
+  color: var(--color-accent);         /* Gold - premium feel */
+  border-color: var(--color-accent);  /* Gold border */
   font-weight: 600;
-}
-
-.badge--beginner {
-  color: var(--color-success);
-  border-color: var(--color-success);
-}
-
-.badge--intermediate {
-  color: var(--color-warning);
-  border-color: var(--color-warning);
-}
-
-.badge--advanced {
-  color: var(--color-error);
-  border-color: var(--color-error);
-}
-
-.badge--success {
-  color: var(--color-success);
-  border-color: var(--color-success);
-}
-
-.badge--custom {
-  color: var(--color-accent); /* Gold = premium feel */
-  border-color: var(--color-accent);
-  background: rgba(214, 162, 58, 0.12); /* Safari fallback */
-}
-
-/* Modern browsers - subtle gold glow */
-@supports (color: color-mix(in srgb, red, blue)) {
-  .badge--custom {
-    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
-  }
-}
-
-/* ============================================================
-   Tags
-   ============================================================ */
-.exercise-card__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tag {
-  padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  font-size: 11px;
-  color: var(--color-text-tertiary);
 }
 
 /* ============================================================
@@ -256,7 +259,7 @@
 }
 
 .icon-button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 5%);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
@@ -276,11 +279,8 @@
 
 .exercise-card__lock-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(18, 18, 18, 0.85);
+  inset: 0;
+  background: rgb(18 18 18 / 85%);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -300,17 +300,150 @@
 }
 
 /* ============================================================
+   Upgrade Card (in grid position)
+   ============================================================ */
+.exercise-card--upgrade {
+  /* Gold accent styling (premium call-to-action) */
+  background: rgb(214 162 58 / 5%);
+  border: 2px dashed var(--color-accent);
+  cursor: pointer;
+  
+  /* Horizontal layout - zámek vlevo + text vpravo */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  min-height: auto; /* Match other cards height */
+  
+  /* Override default gradient */
+  box-shadow: 
+    0 4px 16px rgb(214 162 58 / 15%),
+    inset 0 0 20px rgb(214 162 58 / 8%);
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.exercise-card--upgrade::before {
+  /* Gold gradient overlay */
+  background: linear-gradient(
+    135deg,
+    rgb(214 162 58 / 8%) 0%,
+    transparent 50%
+  );
+}
+
+.exercise-card--upgrade:hover {
+  background: rgb(214 162 58 / 10%);
+  border-color: var(--color-accent);
+  transform: translateY(-4px);
+  box-shadow: 
+    0 8px 24px rgb(214 162 58 / 25%),
+    inset 0 0 30px rgb(214 162 58 / 12%);
+}
+
+.exercise-card--upgrade:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+/* Icon wrapper - left side */
+.exercise-card__upgrade-icon-wrapper {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Odstranění pozadí */
+  color: var(--color-accent);
+  z-index: 1;
+  position: relative;
+}
+
+/* Text content - right side */
+.exercise-card__upgrade-text {
+  flex: 1;
+  text-align: left;
+  z-index: 1;
+  position: relative;
+}
+
+.exercise-card__upgrade-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin: 0 0 4px;
+  letter-spacing: 0.02em;
+}
+
+.exercise-card__upgrade-subtitle {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Swipe Actions (Mobile Only)
+   ============================================================ */
+
+/* Wrapper for swipe functionality */
+.exercise-card-wrapper {
+  position: relative;
+  width: 100%;
+  padding: 2px 0; /* Prostor pro hover lift efekt (prevent top clipping) */
+  overflow: hidden; /* Hide swipe backgrounds outside card */
+}
+
+/* Swipe background indicators (FIXED behind card) */
+.exercise-card__swipe-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  z-index: 0;
+  transition: opacity 0.2s ease;
+  opacity: 0;
+  border-radius: 16px;
+}
+
+/* Edit background (left side) - teal */
+.exercise-card__swipe-bg--edit {
+  left: 0;
+  background: var(--color-primary);
+  justify-content: flex-start;
+  padding-left: 24px;
+  color: var(--color-background);
+}
+
+/* Delete background (right side) - red */
+.exercise-card__swipe-bg--delete {
+  right: 0;
+  background: linear-gradient(90deg, transparent 0%, #FF3B30 100%);
+  justify-content: flex-end;
+  padding-right: 24px;
+  color: white;
+}
+
+/* Show backgrounds when swiping */
+.exercise-card__swipe-bg--active {
+  opacity: 1;
+}
+
+/* Remove old swipe-action styles (obsolete) */
+.exercise-card__swipe-action {
+  display: none;
+}
+
+/* ============================================================
    Responsive Design
    ============================================================ */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .exercise-card {
     padding: 12px;
-    gap: 12px;
-  }
-  
-  .exercise-card__icon {
-    width: 48px;
-    height: 48px;
+    gap: 0;
   }
   
   .exercise-card__title {
