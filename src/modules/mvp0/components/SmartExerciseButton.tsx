@@ -53,14 +53,10 @@ export function SmartExerciseButton({ onClick }: SmartExerciseButtonProps) {
   return (
     <>
       <button
-        className={`smart-exercise-button ${isPremium ? 'smart-exercise-button--premium' : ''}`}
+        className="smart-exercise-button"
         onClick={handleClick}
         type="button"
       >
-        <p className="smart-exercise-button__subtitle">
-          Personalizované doporučení na základě tvého pokroku
-        </p>
-        
         <div className="smart-exercise-button__title">
           {locked && (
             <NavIcon name="lock" size={18} className="smart-exercise-button__lock" />

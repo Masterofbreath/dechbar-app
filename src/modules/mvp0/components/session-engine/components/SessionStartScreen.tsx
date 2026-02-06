@@ -9,26 +9,22 @@ interface SessionStartScreenProps {
   onStart: (mood: MoodType | null) => void;
 }
 
+// Default preset icon for all preset exercises (unified wind symbol)
+const DEFAULT_PRESET_ICON = 'wind';
+
 export function SessionStartScreen({ 
   exercise, 
   mood,
   onMoodChange,
   onStart
 }: SessionStartScreenProps) {
-  // Icon based on exercise type
-  const iconName = exercise.category === 'custom'
-    ? 'edit' // Custom exercises get "edit" icon (fixed from 'edit-3')
-    : exercise.breathing_pattern.phases[0]?.type === 'breathing' 
-      ? 'wind' 
-      : 'moon';
-  
-  // Detect Box Breathing for visual customization
-  const isBoxBreathing = exercise.name.toLowerCase().includes('box breathing');
+  // Ultra simplified: custom = edit, all presets = wind
+  const iconName = exercise.category === 'custom' ? 'edit' : DEFAULT_PRESET_ICON;
   
   return (
     <div className="session-start">
-      {/* Icon - square styling for Box Breathing */}
-      <div className={`session-start__icon ${isBoxBreathing ? 'session-start__icon--square' : ''}`}>
+      {/* Icon - Apple Premium Style (teal icon, no background) */}
+      <div className="session-start__icon">
         <NavIcon name={iconName} size={48} />
       </div>
       

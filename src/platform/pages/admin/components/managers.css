@@ -1,0 +1,68 @@
+/**
+ * Managers Styles
+ * 
+ * Shared styles for TracksManager and AlbumsManager components
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Pages/Admin/Components
+ * @since 2.47.0
+ */
+
+.tracks-manager,
+.albums-manager {
+  /* Container */
+}
+
+.tracks-manager__toolbar,
+.albums-manager__toolbar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.tracks-manager__create-btn,
+.albums-manager__create-btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: #121212;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tracks-manager__create-btn:hover,
+.albums-manager__create-btn:hover {
+  background: #E5B745;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(214 162 58 / 20%);
+}
+
+.tracks-manager__error,
+.albums-manager__error {
+  padding: 1rem;
+  background: rgb(239 68 68 / 10%);
+  border: 1px solid var(--color-error);
+  border-radius: 0.75rem;
+  color: var(--color-error);
+  margin-bottom: 1.5rem;
+}
+
+/* Mobile */
+@media (width <= 767px) {
+  .tracks-manager__toolbar,
+  .albums-manager__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .tracks-manager__create-btn,
+  .albums-manager__create-btn {
+    width: 100%;
+  }
+}

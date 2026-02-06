@@ -18,26 +18,22 @@
   width: 100%;
 }
 
-/* Icon */
+/* Icon - Apple Premium Style (no background, teal icon directly on surface) */
 .session-start__icon {
   width: 64px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg, 
-    var(--color-primary), 
-    var(--color-primary-dark)
-  );
-  border-radius: 16px;
-  color: var(--color-background);
+  background: transparent; /* No background - clean minimal design */
+  border-radius: 0; /* No border radius - icon directly on surface */
+  color: var(--color-primary); /* Teal icon (no background box) */
   flex-shrink: 0;
 }
 
-/* Icon - square variant for Box Breathing */
+/* Icon - square variant for Box Breathing (not used anymore, but kept for backward compatibility) */
 .session-start__icon--square {
-  border-radius: 8px; /* Less rounded for square feel */
+  border-radius: 0; /* Already 0, but explicit for clarity */
 }
 
 /* Description */
@@ -85,7 +81,7 @@
 }
 
 /* Mobile */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .session-start-wrapper {
     padding: 16px 20px !important; /* Even more compact on mobile */
   }

@@ -11,12 +11,15 @@
 
 -- Drop old restrictive policy (if exists)
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Admins can update all profiles" ON public.profiles;
 
 -- Policy 1: Users can view own profile
 CREATE POLICY "Users can view own profile"
   ON public.profiles FOR SELECT
   TO authenticated
-  USING (auth.uid() = id);
+  USING (auth.uid() = user_id);
 
 -- Policy 2: Admins can view all profiles
 CREATE POLICY "Admins can view all profiles"
@@ -34,7 +37,7 @@ CREATE POLICY "Admins can view all profiles"
 CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
   TO authenticated
-  USING (auth.uid() = id);
+  USING (auth.uid() = user_id);
 
 -- Policy 4: Admins can update all profiles
 CREATE POLICY "Admins can update all profiles"

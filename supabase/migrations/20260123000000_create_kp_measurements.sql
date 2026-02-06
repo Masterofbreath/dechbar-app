@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS kp_measurements (
   -- PRIMARY KEY
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   
   -- CORE MEASUREMENT DATA

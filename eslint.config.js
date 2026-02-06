@@ -19,5 +19,12 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Disable react-refresh for route files (they export more than components)
+      'react-refresh/only-export-components': ['warn', { 
+        allowConstantExport: true,
+        allowExportNames: ['loader', 'action', 'meta', 'links', 'headers']
+      }],
+    },
   },
 ])

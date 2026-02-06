@@ -4,13 +4,34 @@
  * Displays exercise information with tier-based lock state.
  * Dark-first design with teal/gold accents per Brand Book 2.0.
  * 
+ * Features:
+ * - Swipe gestures on mobile (swipe left = delete, swipe right = edit)
+ * - Click to start exercise
+ * - Edit/Delete buttons for custom exercises
+ * 
  * @package DechBar_App
  * @subpackage MVP0/Components
  */
 
+import { useState, useRef, useEffect } from 'react';
 import { NavIcon } from '@/platform/components';
 import { useNavigation } from '@/platform/hooks';
 import type { Exercise } from '../types/exercises';
+
+// Category benefits mapping (subcategory → benefit label)
+const CATEGORY_BENEFITS: Record<string, string> = {
+  focus: 'Čistá mysl',      // Box Breathing - mental clarity
+  stress: 'Klid',           // Uklidnění - emotional calm
+  morning: 'Energie',       // RÁNO
+  evening: 'Odpočinek',     // NOC
+  energy: 'Aktivace',
+  sleep: 'Spánek',
+};
+
+// Exercise-specific benefit overrides (priority over category)
+const EXERCISE_SPECIFIC_BENEFITS: Record<string, string> = {
+  'Srdeční koherence': 'Kreativita',  // HRV exercise - creativity/flow
+};
 
 export interface ExerciseCardProps {
   exercise: Exercise;
@@ -18,6 +39,7 @@ export interface ExerciseCardProps {
   onStart: (exercise: Exercise) => void;
   onEdit?: (exercise: Exercise) => void;
   onDelete?: (exercise: Exercise) => void;
+  onDuplicate?: (exercise: Exercise) => void;
 }
 
 /**
@@ -37,39 +59,41 @@ export function ExerciseCard({
   onStart,
   onEdit,
   onDelete,
+  onDuplicate,
 }: ExerciseCardProps) {
   const { openDeleteConfirm } = useNavigation();
   const durationMinutes = Math.round(exercise.total_duration_seconds / 60);
   const isCustom = exercise.category === 'custom';
+  const benefitLabel = !isCustom && exercise.subcategory
+    ? (EXERCISE_SPECIFIC_BENEFITS[exercise.name] || CATEGORY_BENEFITS[exercise.subcategory])
+    : null;
   
-  // Filter out difficulty tags (they're already shown in badge)
-  const difficultyTags = ['začátečník', 'mírně-pokročilý', 'pokročilý', 'expert'];
-  const displayTags = exercise.tags.filter(tag => !difficultyTags.includes(tag));
+  // Swipe gesture state
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [swipeAction, setSwipeAction] = useState<'edit' | 'delete' | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const isSwiping = useRef(false);
   
-  // Exercise-specific icon overrides (priority over subcategory)
-  const exerciseSpecificIcons: Record<string, string> = {
-    'Box Breathing': 'square',
-    'Uklidnění': 'meditation',
-    'Srdeční koherence': 'heart',
-    'KLID': 'wind',
-  };
+  // Swipe thresholds
+  const SWIPE_THRESHOLD = 80; // pixels to trigger action
+  const MAX_SWIPE = 120; // max swipe distance
   
-  // Icon mapping for subcategories (fallback)
-  const subcategoryIcons: Record<string, string> = {
-    morning: 'sun',
-    evening: 'moon',
-    stress: 'refresh',
-    sleep: 'moon',
-    focus: 'target',
-    energy: 'zap',
-  };
+  // Detect if mobile device
+  const [isMobile, setIsMobile] = useState(false);
   
-  // Use specific icon if defined, otherwise fall back to subcategory
-  const icon = exerciseSpecificIcons[exercise.name] 
-    || (exercise.subcategory ? subcategoryIcons[exercise.subcategory] : 'circle');
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   function handleClick() {
-    if (isLocked) return;
+    if (isLocked || swipeOffset !== 0) return;
     onStart(exercise);
   }
   
@@ -91,25 +115,109 @@ export function ExerciseCard({
     });
   }
   
+  function handleDuplicate(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (onDuplicate) onDuplicate(exercise);
+  }
+  
+  // Touch handlers for swipe gestures (mobile only, custom exercises only)
+  function handleTouchStart(e: React.TouchEvent) {
+    if (!isMobile || !isCustom || isLocked) return;
+    
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isSwiping.current = false;
+  }
+  
+  function handleTouchMove(e: React.TouchEvent) {
+    if (!isMobile || !isCustom || isLocked) return;
+    
+    const touchX = e.touches[0].clientX;
+    const touchY = e.touches[0].clientY;
+    const deltaX = touchX - touchStartX.current;
+    const deltaY = touchY - touchStartY.current;
+    
+    // Determine if horizontal swipe (prevent vertical scroll interference)
+    if (!isSwiping.current && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+      isSwiping.current = true;
+      e.preventDefault(); // Prevent scroll
+    }
+    
+    if (isSwiping.current) {
+      // Clamp swipe offset
+      const clampedOffset = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, deltaX));
+      setSwipeOffset(clampedOffset);
+      
+      // Determine action based on direction
+      if (clampedOffset < -SWIPE_THRESHOLD && onDelete) {
+        setSwipeAction('delete');
+      } else if (clampedOffset > SWIPE_THRESHOLD && onEdit) {
+        setSwipeAction('edit');
+      } else {
+        setSwipeAction(null);
+      }
+    }
+  }
+  
+  function handleTouchEnd() {
+    if (!isMobile || !isCustom || isLocked) return;
+    
+    if (isSwiping.current) {
+      // Trigger action if threshold reached
+      if (swipeAction === 'delete' && onDelete) {
+        openDeleteConfirm({
+          exerciseId: exercise.id,
+          exerciseName: exercise.name,
+          onConfirm: () => onDelete(exercise),
+        });
+      } else if (swipeAction === 'edit' && onEdit) {
+        onEdit(exercise);
+      }
+      
+      // Reset swipe state
+      setSwipeOffset(0);
+      setSwipeAction(null);
+      isSwiping.current = false;
+    }
+  }
+  
   return (
-    <div
-      className={`exercise-card ${isLocked ? 'exercise-card--locked' : ''} ${isCustom ? 'exercise-card--custom' : ''}`}
-      onClick={handleClick}
-      role="button"
-      tabIndex={isLocked ? -1 : 0}
-      aria-label={`${exercise.name} - ${durationMinutes} minut`}
-      style={isCustom && exercise.card_color ? {
-        '--custom-color': exercise.card_color,
-      } as React.CSSProperties : undefined}
-    >
-      {/* Icon - only for non-custom exercises (premium "less is more" design) */}
-      {!isCustom && (
-        <div className="exercise-card__icon">
-          <NavIcon name={icon as any} size={32} />
-        </div>
+    <div className="exercise-card-wrapper">
+      {/* Swipe action indicators (FIXED background - revealed during swipe) */}
+      {isMobile && isCustom && (
+        <>
+          {/* Edit indicator (left side, revealed when swiping RIGHT) */}
+          <div className={`exercise-card__swipe-bg exercise-card__swipe-bg--edit ${swipeAction === 'edit' ? 'exercise-card__swipe-bg--active' : ''}`}>
+            <NavIcon name="edit" size={24} />
+          </div>
+          
+          {/* Delete indicator (right side, revealed when swiping LEFT) */}
+          <div className={`exercise-card__swipe-bg exercise-card__swipe-bg--delete ${swipeAction === 'delete' ? 'exercise-card__swipe-bg--active' : ''}`}>
+            <NavIcon name="trash" size={24} />
+          </div>
+        </>
       )}
       
-      {/* Content */}
+      {/* Main card (moves on top of background) */}
+      <div
+        ref={cardRef}
+        className={`exercise-card ${isLocked ? 'exercise-card--locked' : ''} ${isCustom ? 'exercise-card--custom' : ''}`}
+        onClick={handleClick}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        role="button"
+        tabIndex={isLocked ? -1 : 0}
+        aria-label={`${exercise.name} - ${durationMinutes} minut`}
+        style={{
+          ...(isCustom && exercise.card_color ? {
+            '--custom-color': exercise.card_color,
+          } : {}),
+          transform: isMobile && isCustom ? `translateX(${swipeOffset}px)` : undefined,
+          transition: 'transform 0.3s ease',
+        } as React.CSSProperties}
+      >
+        {/* Content - full width (no icon) */}
       <div className="exercise-card__content">
         <h3 className="exercise-card__title">
           {exercise.name}
@@ -124,13 +232,23 @@ export function ExerciseCard({
           <p className="exercise-card__description">{exercise.description}</p>
         )}
         
-        {/* Metadata badges */}
+        {/* Metadata badges - duration + pattern/phases + benefit (preset only) */}
         <div className="exercise-card__meta">
-          <span className="badge badge--duration">
+          {/* 1. Duration (always first) - with customize icon for presets */}
+          <span 
+            className={`badge badge--duration ${!isCustom && onDuplicate ? 'badge--duration-customizable' : ''}`}
+            onClick={!isCustom && onDuplicate ? handleDuplicate : undefined}
+            role={!isCustom && onDuplicate ? 'button' : undefined}
+            title={!isCustom && onDuplicate ? 'Upravit délku cvičení' : undefined}
+          >
             <NavIcon name="clock" size={16} />
             {durationMinutes} min
+            {!isCustom && onDuplicate && (
+              <NavIcon name="settings" size={14} className="badge__customize-icon" />
+            )}
           </span>
           
+          {/* 2. Pattern/Phase count (always for all exercises) */}
           {exercise.phase_count === 1 ? (
             // Show breathing pattern for simple exercises
             exercise.breathing_pattern.phases[0].pattern && (
@@ -148,25 +266,14 @@ export function ExerciseCard({
             </span>
           )}
           
-          {!isCustom && exercise.difficulty && (
-            <span className={`badge badge--difficulty badge--${exercise.difficulty}`}>
-              {exercise.difficulty === 'beginner' && 'Začátečník'}
-              {exercise.difficulty === 'intermediate' && 'Pokročilý'}
-              {exercise.difficulty === 'advanced' && 'Expert'}
+          {/* 3. Benefit badge (only for preset exercises, last) */}
+          {benefitLabel && (
+            <span className="badge badge--benefit">
+              <NavIcon name="heart" size={16} />
+              {benefitLabel}
             </span>
           )}
         </div>
-        
-        {/* Tags */}
-        {displayTags.length > 0 && (
-          <div className="exercise-card__tags">
-            {displayTags.slice(0, 3).map((tag) => (
-              <span key={tag} className="tag">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
       
       {/* Actions (for custom exercises) */}
@@ -205,6 +312,7 @@ export function ExerciseCard({
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

@@ -1,0 +1,141 @@
+/**
+ * TagSelect Styles
+ * 
+ * Multi-select dropdown for tags
+ * 
+ * @package DechBar_App
+ * @subpackage Platform/Pages/Admin/Components
+ * @since 2.47.1
+ */
+
+.tag-select {
+  position: relative;
+  width: 100%;
+}
+
+/* Selected tags container */
+.tag-select__selected {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag-select__selected:hover {
+  border-color: var(--color-primary);
+}
+
+.tag-select__placeholder {
+  color: var(--color-text-tertiary);
+  font-size: 0.875rem;
+}
+
+/* Individual tag pill */
+.tag-select__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background: rgb(44 190 198 / 15%);
+  border: 1px solid rgb(44 190 198 / 30%);
+  border-radius: 0.375rem;
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.tag-select__tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--color-primary);
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag-select__tag-remove:hover {
+  background: rgb(44 190 198 / 20%);
+}
+
+/* Toggle button */
+.tag-select__toggle {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.tag-select__toggle:hover {
+  color: var(--color-text-primary);
+}
+
+/* Dropdown */
+.tag-select__dropdown {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+  padding: 0.5rem;
+}
+
+.tag-select__option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+.tag-select__option:hover {
+  background: rgb(44 190 198 / 10%);
+}
+
+.tag-select__option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.tag-select__option span {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+/* Mobile */
+@media (width <= 767px) {
+  .tag-select__dropdown {
+    max-height: 150px;
+  }
+}

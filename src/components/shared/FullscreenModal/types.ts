@@ -11,6 +11,7 @@ export interface FullscreenModalProps {
   children: React.ReactNode;
   isOpen?: boolean;
   onClose?: () => void;
+  className?: string; // For modifier classes (--form, --wide, etc.)
 }
 
 export interface FullscreenModalBarProps {

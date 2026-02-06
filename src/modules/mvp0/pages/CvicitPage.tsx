@@ -48,9 +48,6 @@ export function CvicitPage() {
     <div className="cvicit-page">
       <div className="cvicit-page__header">
         <h1 className="cvicit-page__title">Cvičit</h1>
-        <p className="cvicit-page__subtitle">
-          Všechna tvoje dechová cvičení na jednom místě
-        </p>
       </div>
       
       <ExerciseList

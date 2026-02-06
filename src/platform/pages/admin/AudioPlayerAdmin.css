@@ -5,7 +5,7 @@
  * 
  * @package DechBar_App
  * @subpackage Platform/Pages/Admin
- * @since 2.44.0
+ * @since 2.47.0
  */
 
 .audio-player-admin {
@@ -34,12 +34,21 @@
   font-size: 0.875rem;
 }
 
-.audio-player-admin__create-btn {
-  padding: 0.75rem 1.5rem;
-  background: var(--color-accent);
-  color: var(--color-background);
-  border: none;
+/* Tab Navigation */
+.audio-player-admin__tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: #1E1E1E;
+  padding: 0.25rem;
   border-radius: 0.5rem;
+}
+
+.audio-player-admin__tab {
+  padding: 0.5rem 1.5rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  border-radius: 0.375rem;
   font-weight: 500;
   font-size: 0.875rem;
   cursor: pointer;
@@ -47,15 +56,23 @@
   white-space: nowrap;
 }
 
-.audio-player-admin__create-btn:hover {
-  background: #E5B745;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.2);
+.audio-player-admin__tab:hover {
+  color: var(--color-text-primary);
+  background: rgb(255 255 255 / 5%);
+}
+
+.audio-player-admin__tab.active {
+  background: var(--color-accent);
+  color: #121212;
+}
+
+.audio-player-admin__content {
+  /* Content wrapper */
 }
 
 .audio-player-admin__error {
   padding: 1rem;
-  background: rgba(239, 68, 68, 0.1);
+  background: rgb(239 68 68 / 10%);
   border: 1px solid var(--color-error);
   border-radius: 0.75rem;
   color: var(--color-error);
@@ -63,14 +80,18 @@
 }
 
 /* Mobile */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .audio-player-admin__header {
     flex-direction: column;
     align-items: stretch;
   }
   
-  .audio-player-admin__create-btn {
+  .audio-player-admin__tabs {
     width: 100%;
+  }
+  
+  .audio-player-admin__tab {
+    flex: 1;
   }
   
   .audio-player-admin__title {

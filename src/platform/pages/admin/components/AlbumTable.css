@@ -1,0 +1,185 @@
+/**
+ * AlbumTable Styles
+ */
+
+.album-table {
+  background: #1E1E1E;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.album-table__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.album-table__table thead {
+  background: rgb(255 255 255 / 5%);
+}
+
+.album-table__table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.album-table__row {
+  border-top: 1px solid rgb(255 255 255 / 5%);
+  transition: background 0.2s ease;
+}
+
+.album-table__row:hover {
+  background: rgb(255 255 255 / 3%);
+}
+
+.album-table__table td {
+  padding: 1rem;
+  font-size: 0.9375rem;
+  vertical-align: middle;
+}
+
+.album-table__cover-cell {
+  width: 60px;
+}
+
+.album-table__cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.375rem;
+  object-fit: cover;
+}
+
+.album-table__cover-placeholder {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 5%);
+  border-radius: 0.375rem;
+  font-size: 1.5rem;
+}
+
+.album-table__name {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.album-table__type,
+.album-table__difficulty,
+.album-table__status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.album-table__type--challenge {
+  background: rgb(139 92 246 / 20%);
+  color: #A78BFA;
+}
+
+.album-table__type--course {
+  background: rgb(59 130 246 / 20%);
+  color: #60A5FA;
+}
+
+.album-table__type--training {
+  background: rgb(16 185 129 / 20%);
+  color: #34D399;
+}
+
+.album-table__type--decharna {
+  background: rgb(251 191 36 / 20%);
+  color: #FCD34D;
+}
+
+.album-table__difficulty--easy {
+  background: rgb(34 197 94 / 20%);
+  color: #4ADE80;
+}
+
+.album-table__difficulty--medium {
+  background: rgb(251 191 36 / 20%);
+  color: #FCD34D;
+}
+
+.album-table__difficulty--hard {
+  background: rgb(239 68 68 / 20%);
+  color: #F87171;
+}
+
+.album-table__difficulty--extreme {
+  background: rgb(168 85 247 / 20%);
+  color: #C084FC;
+}
+
+.album-table__status--locked {
+  background: rgb(239 68 68 / 20%);
+  color: #F87171;
+}
+
+.album-table__status--unlocked {
+  background: rgb(34 197 94 / 20%);
+  color: #4ADE80;
+}
+
+.album-table__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.album-table__action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.album-table__action-btn--edit {
+  background: rgb(59 130 246 / 10%);
+  color: #60A5FA;
+}
+
+.album-table__action-btn--edit:hover {
+  background: rgb(59 130 246 / 20%);
+}
+
+.album-table__action-btn--delete {
+  background: rgb(239 68 68 / 10%);
+  color: #F87171;
+}
+
+.album-table__action-btn--delete:hover {
+  background: rgb(239 68 68 / 20%);
+}
+
+/* Icon styles */
+.album-table__icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+
+.album-table__cover-placeholder svg {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-secondary);
+}
+
+/* Mobile */
+@media (width <= 767px) {
+  .album-table__table {
+    display: none;
+  }
+}

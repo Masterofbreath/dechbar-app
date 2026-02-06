@@ -35,16 +35,31 @@
   flex-direction: column;
   z-index: var(--fullscreen-modal-container-z);
   box-shadow: 0 24px 48px var(--overlay-black-medium);
-  animation: modalSlideUp 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  animation: modal-slide-up 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-@keyframes modalSlideUp {
+@keyframes modal-slide-up {
   from {
     opacity: 0;
     transform: translateY(32px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   MODIFIER: Wide variant (admin forms, wider content)
+   ============================================================ */
+
+.fullscreen-modal--wide .fullscreen-modal__container {
+  max-width: 720px; /* Wider for admin forms */
+}
+
+@media (width <= 768px) {
+  .fullscreen-modal--wide .fullscreen-modal__container {
+    max-width: 100%; /* Mobile: fullscreen */
   }
 }

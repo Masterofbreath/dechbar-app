@@ -11,10 +11,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-top: 60px;
-  padding-bottom: 60px;
-  padding-left: var(--fullscreen-modal-content-padding);
-  padding-right: var(--fullscreen-modal-content-padding);
+  padding: 60px var(--fullscreen-modal-content-padding) 60px var(--fullscreen-modal-content-padding);
   overflow: visible;
   min-height: 420px; /* Desktop - ensures ContentZone consistency */
 }
@@ -26,3 +23,34 @@
 
 /* Auto-centering zajistí, že circle je VŽDY ve středu
    Timer/description jsou absolute, takže neovlivňují centrování */
+
+/* ============================================================
+   MODIFIER: Form variant (admin forms, scrollable content)
+   ============================================================ */
+
+.fullscreen-modal--form .fullscreen-modal__content-zone {
+  justify-content: flex-start; /* Top alignment instead of center */
+  align-items: stretch; /* Full width for form */
+  overflow: hidden auto; /* Enable vertical scrolling */
+  padding: 0; /* Remove padding (form handles its own) */
+  min-height: 0; /* Remove min-height constraint */
+  -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+}
+
+/* Scrollbar styling (Webkit browsers) */
+.fullscreen-modal--form .fullscreen-modal__content-zone::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fullscreen-modal--form .fullscreen-modal__content-zone::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fullscreen-modal--form .fullscreen-modal__content-zone::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 20%);
+  border-radius: 4px;
+}
+
+.fullscreen-modal--form .fullscreen-modal__content-zone::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 30%);
+}

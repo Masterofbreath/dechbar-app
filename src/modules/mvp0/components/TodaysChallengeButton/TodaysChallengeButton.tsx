@@ -84,17 +84,27 @@ export function TodaysChallengeButton({
   if (!isActive && currentDay === 0) {
     return (
       <div className={`todays-challenge-button todays-challenge-button--inactive ${className || ''}`}>
-        <div className="todays-challenge-button__icon">
-          <NavIcon name="calendar" size={24} />
+        <div className="todays-challenge-button__info">
+          <div className="todays-challenge-button__icon">
+            <NavIcon name="calendar" size={24} />
+          </div>
+          <div className="todays-challenge-button__content">
+            <h3 className="todays-challenge-button__title">
+              Březnová výzva
+            </h3>
+            <p className="todays-challenge-button__subtitle">
+              Začíná 1. března 2026
+            </p>
+          </div>
         </div>
-        <div className="todays-challenge-button__content">
-          <h3 className="todays-challenge-button__title">
-            Březnová výzva
-          </h3>
-          <p className="todays-challenge-button__subtitle">
-            Začíná 1. března 2026
-          </p>
-        </div>
+        
+        <button 
+          className="todays-challenge-button__cta-secondary"
+          onClick={handleClick}
+          type="button"
+        >
+          Dnešní dýchačka
+        </button>
       </div>
     );
   }

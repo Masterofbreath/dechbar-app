@@ -10,6 +10,7 @@
  */
 
 import { create } from 'zustand';
+import type { Exercise } from '../../modules/mvp0/types/exercise';
 
 /**
  * Navigation tab IDs
@@ -19,14 +20,15 @@ export type NavTab = 'dnes' | 'cvicit' | 'akademie' | 'pokrok';
 /**
  * Exercise Creator mode
  */
-export type ExerciseCreatorMode = 'create' | 'edit';
+export type ExerciseCreatorMode = 'create' | 'edit' | 'duplicate';
 
 /**
- * Exercise Creator options (for edit mode)
+ * Exercise Creator options (for edit/duplicate mode)
  */
 export interface ExerciseCreatorOptions {
   mode: ExerciseCreatorMode;
-  exerciseId?: string; // For edit mode
+  exerciseId?: string; // For edit/duplicate mode
+  sourceExercise?: Exercise; // For duplicate mode (Exercise object)
 }
 
 /**

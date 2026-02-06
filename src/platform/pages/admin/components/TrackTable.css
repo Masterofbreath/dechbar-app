@@ -46,7 +46,7 @@
 }
 
 .track-table__row:hover {
-  background: rgba(44, 190, 198, 0.03);
+  background: rgb(44 190 198 / 3%);
 }
 
 .track-table__table td {
@@ -85,11 +85,137 @@
 .track-table__category {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  background: rgba(44, 190, 198, 0.1);
+  background: rgb(44 190 198 / 10%);
   color: var(--color-primary);
   border-radius: 0.375rem;
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+.track-table__badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.track-table__badge--ráno {
+  background: rgb(251 191 36 / 20%);
+  color: #FCD34D;
+}
+
+.track-table__badge--energie {
+  background: rgb(239 68 68 / 20%);
+  color: #F87171;
+}
+
+.track-table__badge--klid {
+  background: rgb(59 130 246 / 20%);
+  color: #60A5FA;
+}
+
+.track-table__badge--soustředění {
+  background: rgb(139 92 246 / 20%);
+  color: #A78BFA;
+}
+
+.track-table__badge--večer {
+  background: rgb(99 102 241 / 20%);
+  color: #818CF8;
+}
+
+.track-table__badge--special {
+  background: rgb(236 72 153 / 20%);
+  color: #F472B6;
+}
+
+/* Difficulty badges */
+.track-table__badge--difficulty-easy {
+  background: rgb(34 197 94 / 20%);
+  color: #4ADE80;
+}
+
+.track-table__badge--difficulty-medium {
+  background: rgb(251 191 36 / 20%);
+  color: #FCD34D;
+}
+
+.track-table__badge--difficulty-hard {
+  background: rgb(251 146 60 / 20%);
+  color: #FB923C;
+}
+
+.track-table__badge--difficulty-extreme {
+  background: rgb(239 68 68 / 20%);
+  color: #F87171;
+}
+
+/* Exercise format badges */
+.track-table__badge--format-dechpresso {
+  background: rgb(251 146 60 / 20%);
+  color: #FB923C;
+}
+
+.track-table__badge--format-meditace {
+  background: rgb(59 130 246 / 20%);
+  color: #60A5FA;
+}
+
+.track-table__badge--format-breathwork {
+  background: rgb(168 85 247 / 20%);
+  color: #C084FC;
+}
+
+/* Intensity badges */
+.track-table__badge--intensity-jemna {
+  background: rgb(34 197 94 / 20%);
+  color: #4ADE80;
+}
+
+.track-table__badge--intensity-stredni {
+  background: rgb(251 191 36 / 20%);
+  color: #FCD34D;
+}
+
+.track-table__badge--intensity-vysoka {
+  background: rgb(251 146 60 / 20%);
+  color: #FB923C;
+}
+
+.track-table__badge--intensity-extremni {
+  background: rgb(239 68 68 / 20%);
+  color: #F87171;
+}
+
+/* KP badges */
+.track-table__badge--kp {
+  background: rgb(139 92 246 / 15%);
+  color: #A78BFA;
+  font-size: 0.6875rem;
+}
+
+.track-table__duration-cat {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.track-table__status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.track-table__status--published {
+  background: rgb(34 197 94 / 20%);
+  color: #4ADE80;
+}
+
+.track-table__status--draft {
+  background: rgb(156 163 175 / 20%);
+  color: #9CA3AF;
 }
 
 .track-table__actions {
@@ -109,13 +235,22 @@
   white-space: nowrap;
 }
 
+.track-table__action-btn--play {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.track-table__action-btn--play:hover {
+  background: rgb(44 190 198 / 10%);
+}
+
 .track-table__action-btn--edit {
   color: var(--color-primary);
   border-color: var(--color-primary);
 }
 
 .track-table__action-btn--edit:hover {
-  background: rgba(44, 190, 198, 0.1);
+  background: rgb(44 190 198 / 10%);
 }
 
 .track-table__action-btn--delete {
@@ -124,11 +259,34 @@
 }
 
 .track-table__action-btn--delete:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgb(239 68 68 / 10%);
+}
+
+.track-table__action-btn--delete:hover {
+  background: rgb(239 68 68 / 10%);
+}
+
+/* Icon styles */
+.track-table__icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+
+.track-table__action-btn--play .track-table__icon {
+  margin-right: 0; /* Play button has no text */
+}
+
+.track-table__cover-placeholder svg {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-secondary);
 }
 
 /* Mobile: Card layout */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .track-table__table,
   .track-table__table thead,
   .track-table__table tbody,
@@ -167,7 +325,7 @@
     padding-top: 1rem;
   }
 
-  .track-table__table td:before {
+  .track-table__table td::before {
     content: attr(data-label);
     font-weight: 600;
     color: var(--color-text-secondary);
@@ -180,7 +338,7 @@
     width: auto;
   }
 
-  .track-table__cover-cell:before {
+  .track-table__cover-cell::before {
     content: 'Cover';
   }
 

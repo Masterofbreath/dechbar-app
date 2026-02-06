@@ -82,6 +82,7 @@ export interface ExerciseCreatorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveSuccess: (exercise: Exercise) => void;
-  mode?: 'create' | 'edit';
-  exerciseId?: string;
+  mode?: 'create' | 'edit' | 'duplicate';
+  exerciseId?: string; // For edit/duplicate mode
+  sourceExercise?: Exercise; // For duplicate mode (pre-fill data)
 }

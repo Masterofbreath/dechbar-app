@@ -6,7 +6,8 @@
 
 import { useMachine } from '@xstate/react';
 import { setup, assign } from 'xstate';
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { Exercise } from '../../../types/exercise';
 import type {
   ExerciseCreatorContext,
   ExerciseCreatorEvent,
@@ -201,15 +202,17 @@ const exerciseCreatorMachine = setup({
  * Manages state, validation, and persistence
  * 
  * @param onSaveSuccess - Callback when exercise is saved
- * @param mode - 'create' or 'edit'
- * @param exerciseId - Exercise ID for edit mode
+ * @param mode - 'create', 'edit', or 'duplicate'
+ * @param exerciseId - Exercise ID for edit/duplicate mode
  * @param isOpen - Modal open state (for cleanup)
+ * @param sourceExercise - Source exercise for duplicate mode
  */
 export function useExerciseCreator(
-  onSaveSuccess: (exercise: any) => void,
-  mode: 'create' | 'edit' = 'create',
+  onSaveSuccess: (exercise: Exercise) => void,
+  mode: 'create' | 'edit' | 'duplicate' = 'create',
   exerciseId?: string,
-  isOpen: boolean = true
+  isOpen: boolean = true,
+  sourceExercise?: Exercise
 ) {
   const [state, send] = useMachine(exerciseCreatorMachine);
   const { validateExercise } = useBreathingValidation();
@@ -225,8 +228,9 @@ export function useExerciseCreator(
   // Track if pre-fill has been completed (to avoid re-running)
   const [hasPrefilled, setHasPrefilled] = useState(false);
 
-  // Pre-fill draft when loading existing exercise (edit mode)
+  // Pre-fill draft when loading existing exercise (edit or duplicate mode)
   useEffect(() => {
+    // EDIT MODE: Load from API
     if (mode === 'edit' && existingExercise && !hasPrefilled && !isLoading) {
       const pattern = existingExercise.breathing_pattern.phases[0]?.pattern;
       
@@ -241,31 +245,71 @@ export function useExerciseCreator(
       send({ type: 'UPDATE_HOLD_INHALE', value: pattern.hold_after_inhale_seconds });
       send({ type: 'UPDATE_EXHALE', value: pattern.exhale_seconds });
       send({ type: 'UPDATE_HOLD_EXHALE', value: pattern.hold_after_exhale_seconds });
-      send({ type: 'UPDATE_REPETITIONS', value: existingExercise.breathing_pattern.phases[0].cycles_count });
+      send({ type: 'UPDATE_REPETITIONS', value: existingExercise.breathing_pattern.phases[0].cycles_count || 10 });
       if (existingExercise.card_color) {
         send({ type: 'UPDATE_COLOR', value: existingExercise.card_color });
       }
       
-      setHasPrefilled(true);
-      
       // Reset hasUnsavedChanges after pre-fill (with timeout to ensure all updates processed)
       setTimeout(() => {
         send({ type: 'CONFIRM_DISCARD' });
+        setHasPrefilled(true);
       }, 0);
     }
-  }, [mode, existingExercise, hasPrefilled, isLoading, send]);
+    
+    // DUPLICATE MODE: Load from sourceExercise prop
+    if (mode === 'duplicate' && sourceExercise && !hasPrefilled) {
+      const pattern = sourceExercise.breathing_pattern.phases[0]?.pattern;
+      
+      if (!pattern) return;
+      
+      // Calculate optimal cycles from total duration
+      const cycleDuration = 
+        pattern.inhale_seconds + 
+        pattern.hold_after_inhale_seconds + 
+        pattern.exhale_seconds + 
+        pattern.hold_after_exhale_seconds;
+      
+      // Calculate cycles to match original duration (round up to ensure >= original duration)
+      const calculatedCycles = cycleDuration > 0
+        ? Math.ceil(sourceExercise.total_duration_seconds / cycleDuration)
+        : 10; // fallback if pattern is invalid
+      
+      // Pre-fill all fields from source exercise
+      send({ type: 'UPDATE_NAME', value: sourceExercise.name + ' (kopie)' });
+      if (sourceExercise.description) {
+        send({ type: 'UPDATE_DESCRIPTION', value: sourceExercise.description });
+      }
+      send({ type: 'UPDATE_INHALE', value: pattern.inhale_seconds });
+      send({ type: 'UPDATE_HOLD_INHALE', value: pattern.hold_after_inhale_seconds });
+      send({ type: 'UPDATE_EXHALE', value: pattern.exhale_seconds });
+      send({ type: 'UPDATE_HOLD_EXHALE', value: pattern.hold_after_exhale_seconds });
+      send({ type: 'UPDATE_REPETITIONS', value: calculatedCycles });
+      if (sourceExercise.card_color) {
+        send({ type: 'UPDATE_COLOR', value: sourceExercise.card_color });
+      }
+      
+      // Reset hasUnsavedChanges after pre-fill
+      setTimeout(() => {
+        send({ type: 'CONFIRM_DISCARD' });
+        setHasPrefilled(true);
+      }, 0);
+    }
+  }, [mode, existingExercise, sourceExercise, hasPrefilled, isLoading, send]);
   
-  // Reset prefill flag when exerciseId changes
-  useEffect(() => {
-    setHasPrefilled(false);
-  }, [exerciseId]);
-  
-  // Reset prefill flag when modal closes (ensures clean state on next open)
+  // Reset prefill flag when modal closes or exerciseId changes
   useEffect(() => {
     if (!isOpen) {
-      setHasPrefilled(false);
+      // Use setTimeout to avoid setState during render
+      setTimeout(() => setHasPrefilled(false), 0);
     }
   }, [isOpen]);
+  
+  useEffect(() => {
+    if (exerciseId) {
+      setTimeout(() => setHasPrefilled(false), 0);
+    }
+  }, [exerciseId]);
   
   // Cleanup on unmount (defense in depth)
   useEffect(() => {
@@ -343,7 +387,7 @@ export function useExerciseCreator(
         pattern.hold_after_exhale_seconds;
       const totalSeconds = cycleSeconds * state.context.draft.repetitions;
 
-      const breathingPattern: any = {
+      const breathingPattern = {
         version: '1.0',
         type: 'simple',
         phases: [
@@ -379,6 +423,7 @@ export function useExerciseCreator(
       };
 
       // Create or update based on mode
+      // Duplicate always creates NEW exercise (never updates)
       const exercise = mode === 'edit' && exerciseId
         ? await updateExercise({ exerciseId, updates: payload })
         : await createExercise(payload);

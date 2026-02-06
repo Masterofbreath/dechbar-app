@@ -167,7 +167,7 @@ export const PRESET_EXERCISES: Exercise[] = [
     name: 'BOX breathing',
     duration: 300, // 5 min
     total_duration_seconds: 300, // MVp0 compatibility
-    description: 'Klasická technika 4-4-4-4 pro okamžité uklidnění a focus',
+    description: 'Technika 4 | 4 | 4 | 4 pro okamžitou soustředěnost',
     category: 'preset' as const,
     subcategory: 'focus' as const,
     difficulty: 'beginner' as const,

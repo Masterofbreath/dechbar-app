@@ -11,7 +11,7 @@
  * - Unsaved changes protection
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useScrollLock } from '@/platform/hooks';
 import { CloseButton } from '@/components/shared';
 import { useExerciseCreator } from './hooks/useExerciseCreator';
@@ -21,7 +21,6 @@ import './ExerciseCreator.css';
 import './ExerciseCreator-mobile.css';
 
 // Import all sub-components
-import { BasicInfoSection } from './components/BasicInfoSection';
 import { BreathingPatternSection } from './components/BreathingPatternSection';
 import { DurationSection } from './components/DurationSection';
 import { ColorPickerSection } from './components/ColorPickerSection';
@@ -33,6 +32,7 @@ export function ExerciseCreatorModal({
   onSaveSuccess,
   mode = 'create',
   exerciseId,
+  sourceExercise,
 }: ExerciseCreatorModalProps) {
   useScrollLock(isOpen);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -61,7 +61,7 @@ export function ExerciseCreatorModal({
     cancel,
     confirmDiscard,
     cancelDiscard,
-  } = useExerciseCreator(onSaveSuccess, mode, exerciseId, isOpen);
+  } = useExerciseCreator(onSaveSuccess, mode, exerciseId, isOpen, sourceExercise);
 
   // Reset machine state when modal opens in CREATE mode only
   useEffect(() => {
@@ -89,13 +89,13 @@ export function ExerciseCreatorModal({
   const cycleDuration = calculateCycleDuration(draft.breathingPattern);
 
   // Close handler with unsaved changes check
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (hasUnsavedChanges) {
       cancel(); // Trigger confirmation dialog
     } else {
       onClose();
     }
-  };
+  }, [hasUnsavedChanges, cancel, onClose]);
 
   // Handle Escape key
   useEffect(() => {
@@ -109,7 +109,7 @@ export function ExerciseCreatorModal({
 
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [isOpen, hasUnsavedChanges]);
+  }, [isOpen, hasUnsavedChanges, handleClose]);
 
   if (!isOpen) return null;
 

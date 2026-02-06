@@ -184,7 +184,7 @@ INSERT INTO public.exercises (
   contraindications
 ) VALUES (
   'Box Breathing',
-  'Klasická technika 4-4-4-4 pro okamžité uklidnění a focus',
+  'Technika 4 | 4 | 4 | 4 pro okamžité soustředění.',
   'preset',
   'focus',
   NULL,

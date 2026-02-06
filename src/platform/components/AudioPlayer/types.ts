@@ -14,14 +14,25 @@ export interface Track {
   id: string;
   album_id: string | null;
   title: string;
+  artist: string | null;
+  album: string | null; // Legacy string field
   duration: number; // seconds
   audio_url: string; // Bunny CDN URL
   cover_url: string | null;
-  category: string | null; // "Ráno", "Klid", "Energie", "Večer"
+  duration_category: '3-9' | '10-25' | '26-60' | 'kurz' | 'reels' | null;
+  mood_category: 'Ráno' | 'Energie' | 'Klid' | 'Soustředění' | 'Večer' | 'Special' | null;
+  difficulty_level: 'easy' | 'medium' | 'hard' | 'extreme' | null; // Track difficulty
+  kp_suitability: 'pod-10s' | '11s-20s' | '20s-30s' | 'nad-30s' | null; // Recommended for KP range
+  media_type: 'audio' | 'video'; // Content type
+  exercise_format: 'dechpresso' | 'meditace' | 'breathwork' | null; // Exercise type
+  intensity_level: 'jemna' | 'stredni' | 'vysoka' | 'extremni' | null; // Physical intensity
+  narration_type: 'pribeh' | 'bez-pribehu' | 'guided' | null; // Narration style
   tags: string[]; // ["Funkční probuzení", "Wim Hof"]
   description: string | null;
   track_order: number;
   waveform_peaks?: number[]; // Phase 2: [0.5, 0.7, ...] (80 values, 0-1 range)
+  is_published: boolean;
+  play_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -34,12 +45,14 @@ export interface Album {
   name: string;
   description: string | null;
   cover_url: string | null;
-  type: 'challenge' | 'course' | 'decharna';
-  difficulty: 'easy' | 'medium' | 'hard';
+  type: 'challenge' | 'course' | 'training' | 'decharna';
+  difficulty: 'easy' | 'medium' | 'hard' | 'extreme';
   is_locked: boolean;
-  required_tier: 'FREE' | 'PREMIUM' | 'STUDENT';
+  required_tier: 'FREE' | 'SMART' | 'AI_COACH';
+  points: number;
   start_date: string | null; // ISO date (for challenges)
   end_date: string | null;
+  day_count: number | null;
   created_at: string;
   updated_at: string;
 }

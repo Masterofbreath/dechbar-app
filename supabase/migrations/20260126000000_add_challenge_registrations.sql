@@ -28,6 +28,18 @@ CREATE TABLE IF NOT EXISTS public.challenge_registrations (
   UNIQUE(email, challenge_id)
 );
 
+-- Add columns if table already exists but missing them
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_schema = 'public' 
+                 AND table_name = 'challenge_registrations' 
+                 AND column_name = 'smart_access_granted') THEN
+    ALTER TABLE public.challenge_registrations 
+    ADD COLUMN smart_access_granted BOOLEAN NOT NULL DEFAULT false;
+  END IF;
+END $$;
+
 -- Enable RLS
 ALTER TABLE public.challenge_registrations ENABLE ROW LEVEL SECURITY;
 

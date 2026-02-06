@@ -113,6 +113,7 @@ function GlobalModals() {
           }}
           mode={exerciseCreatorOptions?.mode || 'create'}
           exerciseId={exerciseCreatorOptions?.exerciseId}
+          sourceExercise={exerciseCreatorOptions?.sourceExercise}
         />
       )}
       
