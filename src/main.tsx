@@ -29,6 +29,7 @@ import './styles/components/exercise-card.css' // Exercise card component
 import './styles/components/exercise-list.css' // Exercise list with tabs
 import './styles/components/session-engine/index.css' // Session engine modal (modular)
 import './styles/components/safety-questionnaire.css' // Safety questionnaire
+import './styles/components/settings-page.css' // Settings page (audio & haptics)
 import './styles/layouts/app-layout.css'    // AppLayout wrapper
 import './styles/pages/dnes.css'            // DNES dashboard
 import './styles/pages/cvicit.css'          // CVICIT exercise library

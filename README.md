@@ -200,6 +200,7 @@ VITE_ENV=development
 - 💻 **Development:** [docs/development/](docs/development/)
 - 📦 **Product:** [docs/product/](docs/product/)
 - 🔌 **API:** [docs/api/](docs/api/)
+- ☁️ **Infrastructure:** [docs/infrastructure/](docs/infrastructure/) ⭐ **NEW!** - CDN, Supabase, Vercel, Stripe
 
 ### Quick Links:
 - 🗄️ **Database:** [Supabase Dashboard](https://supabase.com/dashboard/project/iqyahebbteiwzwyrtmns)
@@ -217,7 +218,7 @@ VITE_ENV=development
 
 - **Hosting:** Vercel (auto-deploy from GitHub)
 - **Domain:** dechbar.cz (DNS via Wedos)
-- **CDN:** Supabase Storage (built-in)
+- **CDN:** Bunny.net (`dechbar-cdn.b-cdn.net`) - See [Bunny.net Docs](docs/infrastructure/BUNNYNET_QUICK_START.md)
 
 ## 📝 Important Notes
 

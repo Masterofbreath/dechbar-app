@@ -81,6 +81,7 @@ export interface Exercise {
   tags: string[];
   contraindications: Contraindication[];
   card_color?: string | null; // Hex color for custom exercises (#RRGGBB)
+  is_meditation_mode?: boolean; // NEW: If true, runs as meditation (no breathing pattern guidance)
   deleted_at: string | null; // ISO timestamp
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp

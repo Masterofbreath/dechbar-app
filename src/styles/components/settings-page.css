@@ -1,0 +1,271 @@
+/**
+ * Settings Page Styles
+ * 
+ * Glassmorphism design for settings UI.
+ * Flat grouped cards layout.
+ * 
+ * @package DechBar_App
+ * @subpackage Styles/Components
+ */
+
+/* ==================== SETTINGS PAGE ==================== */
+
+.settings-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.settings-page__header {
+  margin-bottom: 32px;
+}
+
+.settings-page__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary, #121212);
+  margin-bottom: 8px;
+}
+
+.settings-page__subtitle {
+  font-size: 16px;
+  color: var(--color-text-secondary, #666);
+}
+
+.settings-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-page__footer {
+  margin-top: 32px;
+  text-align: center;
+}
+
+/* ==================== SETTINGS CARD ==================== */
+
+.settings-card {
+  background: rgb(255 255 255 / 80%);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+}
+
+.settings-card__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary, #121212);
+  margin-bottom: 16px;
+}
+
+.settings-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-card__section {
+  padding-top: 12px;
+}
+
+.settings-card__info {
+  font-size: 14px;
+  color: var(--color-text-secondary, #666);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.settings-card__info--premium {
+  color: var(--color-gold, #F8CA00);
+  font-weight: 500;
+}
+
+/* ==================== TOGGLE SWITCH ==================== */
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  cursor: pointer;
+}
+
+.settings-toggle__label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-primary, #121212);
+}
+
+.settings-toggle__input {
+  width: 48px;
+  height: 28px;
+  cursor: pointer;
+  accent-color: var(--color-gold, #F8CA00);
+}
+
+/* ==================== VOLUME SLIDER ==================== */
+
+.volume-slider {
+  padding: 12px 0;
+}
+
+.volume-slider__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 8px;
+}
+
+.volume-slider__value {
+  font-weight: 600;
+  color: var(--color-text-primary, #121212);
+}
+
+.volume-slider__input {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  accent-color: var(--color-gold, #F8CA00);
+  border-radius: 3px;
+}
+
+/* ==================== INTENSITY SELECTOR ==================== */
+
+.intensity-selector {
+  padding: 12px 0;
+}
+
+.intensity-selector__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 12px;
+}
+
+.intensity-selector__options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.intensity-selector__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.intensity-selector__option:hover {
+  border-color: var(--color-gold, #F8CA00);
+  background: rgb(248 202 0 / 5%);
+}
+
+.intensity-selector__option input[type="radio"] {
+  accent-color: var(--color-gold, #F8CA00);
+}
+
+.intensity-selector__option span {
+  font-size: 14px;
+  color: var(--color-text-primary, #121212);
+}
+
+/* ==================== TRACK SELECTOR ==================== */
+
+.track-selector {
+  padding: 12px 0;
+}
+
+.track-selector__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 8px;
+}
+
+.track-selector__select {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  color: var(--color-text-primary, #121212);
+}
+
+.track-selector__select:focus {
+  outline: none;
+  border-color: var(--color-gold, #F8CA00);
+}
+
+/* ==================== CHECKBOX ==================== */
+
+.settings-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  cursor: pointer;
+}
+
+.settings-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--color-gold, #F8CA00);
+}
+
+.settings-checkbox span {
+  font-size: 14px;
+  color: var(--color-text-primary, #121212);
+}
+
+/* ==================== RESET BUTTON ==================== */
+
+.settings-reset-button {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #666);
+  background: transparent;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-reset-button:hover {
+  border-color: var(--color-gold, #F8CA00);
+  color: var(--color-gold, #F8CA00);
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (width <= 480px) {
+  .settings-page {
+    padding: 16px 12px;
+  }
+  
+  .settings-page__title {
+    font-size: 24px;
+  }
+  
+  .settings-card {
+    padding: 20px 16px;
+  }
+  
+  .intensity-selector__options {
+    grid-template-columns: 1fr;
+  }
+}

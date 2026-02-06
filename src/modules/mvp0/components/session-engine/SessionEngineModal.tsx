@@ -19,7 +19,11 @@ import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
 import { useAudioCues } from './hooks/useAudioCues';
-import { useWakeLock } from '../../hooks/useWakeLock'; // ✅ NEW v2.42.11
+import { useWakeLock } from '../../hooks/useWakeLock';
+import { useHaptics } from '../../hooks/useHaptics';
+import { useBreathingCues } from '../../hooks/useBreathingCues';
+import { useBackgroundMusic } from '../../hooks/useBackgroundMusic';
+import { useSessionSettings } from '../../stores/sessionSettingsStore';
 import { isProtocol } from '@/utils/exerciseHelpers';
 import {
   SessionStartScreen,
@@ -70,9 +74,15 @@ export function SessionEngineModal({
   const completeSession = useCompleteSession();
   
   // Custom hooks
-  const { playBell } = useAudioCues();
+  const { playBell } = useAudioCues(); // Legacy bell sound (fallback)
   const { circleRef, animateBreathingCircle, cleanup: cleanupAnimation } = useBreathingAnimation();
-  const wakeLock = useWakeLock(); // ✅ NEW v2.42.11: Keep screen on during session
+  const wakeLock = useWakeLock();
+  
+  // NEW: Audio & Haptics system
+  const haptics = useHaptics();
+  const breathingCues = useBreathingCues();
+  const backgroundMusic = useBackgroundMusic();
+  const { walkingModeEnabled, backgroundMusicEnabled } = useSessionSettings();
   
   useScrollLock(isOpen);
   
@@ -102,16 +112,44 @@ export function SessionEngineModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skipFlow, sessionState]);
   
-  // ✅ NEW v2.42.11: Wake Lock - Keep screen on during active session
+  // ✅ Wake Lock - Keep screen on during active session
   useEffect(() => {
     if (sessionState === 'active') {
-      // Session started → request wake lock
       wakeLock.request();
     } else {
-      // Session ended/paused → release wake lock
       wakeLock.release();
     }
   }, [sessionState, wakeLock]);
+  
+  // ✅ NEW: Preload audio during countdown
+  useEffect(() => {
+    if (sessionState === 'countdown') {
+      breathingCues.preloadAll();
+    }
+  }, [sessionState, breathingCues]);
+  
+  // ✅ NEW: Background music lifecycle
+  useEffect(() => {
+    if (sessionState === 'active' && backgroundMusicEnabled) {
+      backgroundMusic.play();
+    } else if (sessionState !== 'active') {
+      backgroundMusic.pause();
+    }
+  }, [sessionState, backgroundMusicEnabled, backgroundMusic]);
+  
+  // ✅ NEW: Walking mode display dimming
+  useEffect(() => {
+    if (sessionState === 'active' && walkingModeEnabled) {
+      // Dim display to minimum brightness
+      document.body.style.filter = 'brightness(0.1)';
+    } else {
+      document.body.style.filter = '';
+    }
+    
+    return () => {
+      document.body.style.filter = '';
+    };
+  }, [sessionState, walkingModeEnabled]);
   
   // =====================================================
   // SESSION FLOW: State Machine
@@ -127,7 +165,9 @@ export function SessionEngineModal({
   const startCountdown = useCallback(() => {
     setSessionState('countdown');
     setCountdownNumber(5);
-    playBell();
+    
+    // Play start bell (use new breathingCues or fallback to legacy)
+    breathingCues.playBell('start').catch(() => playBell());
     
     let count = 5;
     const countdownInterval = window.setInterval(() => {
@@ -135,28 +175,33 @@ export function SessionEngineModal({
       setCountdownNumber(count);
       
       if (count > 0) {
-        playBell();
+        breathingCues.playBell('start').catch(() => playBell());
       } else {
         window.clearInterval(countdownInterval);
         setSessionState('active');
         setSessionStartTime(new Date());
         setCurrentPhaseIndex(0);
-        playBell();
+        breathingCues.playBell('start').catch(() => playBell());
       }
     }, 1000);
-  }, [playBell]);
+  }, [breathingCues, playBell]);
   
   // Complete exercise
   const completeExercise = useCallback(() => {
     setSessionState('completed');
-    playBell();
+    
+    // Play end bell (use new breathingCues or fallback to legacy)
+    breathingCues.playBell('end').catch(() => playBell());
     
     // Stop all animations
     cleanupAnimation();
     if (timerRef.current) {
       window.clearInterval(timerRef.current);
     }
-  }, [playBell, cleanupAnimation]);
+    
+    // Stop background music
+    backgroundMusic.stop();
+  }, [breathingCues, playBell, cleanupAnimation, backgroundMusic]);
   
   // Calculate session progress
   useEffect(() => {
@@ -208,48 +253,56 @@ export function SessionEngineModal({
         if (cyclePosition < inhale_seconds) {
           newInstruction = 'NÁDECH';
           if (lastInstruction !== 'NÁDECH') {
+            // ✅ NEW: Trigger haptics + audio cues
+            haptics.trigger('inhale');
+            breathingCues.playCue('inhale');
+            
             animateBreathingCircle('inhale', inhale_seconds * 1000);
             
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--exhale', 'breathing-circle--hold');
               circleRef.current.classList.add('breathing-circle--inhale');
-              
-              // Gold pulse removed - Calm by Default
             }
             lastInstruction = 'NÁDECH';
           }
         } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds) {
           newInstruction = hold_after_inhale_seconds > 0 ? 'ZADRŽ' : '';
           if (lastInstruction !== 'ZADRŽ' && hold_after_inhale_seconds > 0) {
+            // ✅ NEW: Trigger haptics + audio cues
+            haptics.trigger('hold');
+            breathingCues.playCue('hold');
+            
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--exhale');
               circleRef.current.classList.add('breathing-circle--hold');
-              
-              // Gold pulse removed - Calm by Default
             }
             lastInstruction = 'ZADRŽ';
           }
         } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds + exhale_seconds) {
           newInstruction = 'VÝDECH';
           if (lastInstruction !== 'VÝDECH') {
+            // ✅ NEW: Trigger haptics + audio cues
+            haptics.trigger('exhale');
+            breathingCues.playCue('exhale');
+            
             animateBreathingCircle('exhale', exhale_seconds * 1000);
             
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--hold');
               circleRef.current.classList.add('breathing-circle--exhale');
-              
-              // Gold pulse removed - Calm by Default
             }
             lastInstruction = 'VÝDECH';
           }
         } else {
           newInstruction = hold_after_exhale_seconds > 0 ? 'ZADRŽ' : '';
           if (lastInstruction !== 'ZADRŽ' && hold_after_exhale_seconds > 0) {
+            // ✅ NEW: Trigger haptics + audio cues (second hold)
+            haptics.trigger('hold');
+            breathingCues.playCue('hold');
+            
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--exhale');
               circleRef.current.classList.add('breathing-circle--hold');
-              
-              // Gold pulse removed - Calm by Default
             }
             lastInstruction = 'ZADRŽ';
           }
@@ -312,7 +365,7 @@ export function SessionEngineModal({
       if (breathingIntervalId) window.clearInterval(breathingIntervalId);
       cleanupAnimation();
     };
-  }, [sessionState, currentPhase, totalPhases, animateBreathingCircle, playBell, completeExercise, cleanupAnimation, circleRef]);
+  }, [sessionState, currentPhase, totalPhases, animateBreathingCircle, playBell, completeExercise, cleanupAnimation, circleRef, haptics, breathingCues]);
   
   // Handle modal close
   const handleClose = useCallback(() => {
