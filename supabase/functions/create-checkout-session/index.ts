@@ -71,29 +71,17 @@ serve(async (req) => {
       );
     }
 
-    if (!userId && !emailFromBody) {
-      return new Response(
-        JSON.stringify({ error: 'Email je povinný pro nákup bez přihlášení' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      );
-    }
-
     if (!userEmail && emailFromBody) {
       userEmail = emailFromBody;
     }
 
-    if (!userEmail) {
-      return new Response(
-        JSON.stringify({ error: 'Email not found' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      );
-    }
-
     // ── Stripe Customer ────────────────────────────────────────────
+    // Pro přihlášeného uživatele: najdeme/vytvoříme zákazníka
+    // Pro hosta: email sbírá Stripe sám v checkoutu — customer vytvoří webhook
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     let customerId: string | undefined;
 
-    if (userId) {
+    if (userId && userEmail) {
       const { data: membership } = await supabase
         .from('memberships')
         .select('stripe_customer_id')
@@ -114,13 +102,8 @@ serve(async (req) => {
           .update({ stripe_customer_id: customerId })
           .eq('user_id', userId);
       }
-    } else {
-      const customer = await stripe.customers.create({
-        email: userEmail,
-        metadata: { is_guest: 'true' },
-      });
-      customerId = customer.id;
     }
+    // Guest: customerId zůstane undefined — Stripe sbírá email v checkoutu
 
     // ── Determine payment mode ────────────────────────────────────
     // Zkontroluje Stripe price object — one_time vs recurring
@@ -133,17 +116,23 @@ serve(async (req) => {
 
     // ── Session config ────────────────────────────────────────────
     const sessionConfig: Record<string, unknown> = {
-      customer: customerId,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: paymentMode,
+      // Stripe sbírá email v checkoutu pro guest — ulož ho v session
+      customer_creation: customerId ? undefined : 'always',
       metadata: {
         user_id: userId ?? 'guest',
         module_id: moduleId,
-        email: userEmail,
+        email: userEmail ?? '',
         is_guest: userId ? 'false' : 'true',
       },
     };
+
+    // Přiřaď existujícího zákazníka jen pokud ho máme
+    if (customerId) {
+      sessionConfig.customer = customerId;
+    }
 
     // Subscription-specific data
     if (paymentMode === 'subscription') {

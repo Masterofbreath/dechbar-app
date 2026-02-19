@@ -157,7 +157,9 @@ serve(async (req) => {
       const session = event.data.object as Stripe.Checkout.Session;
 
       const isGuest = session.metadata?.is_guest === 'true';
-      const email = session.metadata?.email;
+      // Email: přednostně z customer_details (Stripe ho sbírá v checkoutu),
+      // fallback na metadata (přihlášený uživatel)
+      const email = session.customer_details?.email ?? session.metadata?.email;
       const moduleId = session.metadata?.module_id;
       const stripeCustomerId = session.customer as string;
 
