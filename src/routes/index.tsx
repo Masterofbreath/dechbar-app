@@ -31,6 +31,8 @@ import { LandingPage } from '@/modules/public-web/pages/LandingPage';
 import { SciencePage } from '@/modules/public-web/pages/SciencePage';
 import { ChallengePage } from '@/modules/public-web/pages/ChallengePage';
 import { ChallengeThankYouPage } from '@/modules/public-web/pages/ChallengeThankYouPage';
+import { DigitalniTichoPage } from '@/modules/public-web/pages/DigitalniTichoPage';
+import { DigitalniTichoThankYouPage } from '@/modules/public-web/pages/DigitalniTichoThankYouPage';
 
 // Auth pages
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
@@ -48,6 +50,7 @@ import {
   PokrokPage,
   ProfilPage
 } from '@/modules/mvp0';
+import { SettingsPage } from '@/modules/mvp0/pages/SettingsPage';
 
 // MVP0 Global Modals
 import { ExerciseCreatorModal } from '@/modules/mvp0/components';
@@ -226,6 +229,14 @@ export const router = createBrowserRouter([
         element: <ChallengeThankYouPage />,
       },
       {
+        path: 'digitalni-ticho',
+        element: <DigitalniTichoPage />,
+      },
+      {
+        path: 'digitalni-ticho/dekujeme',
+        element: <DigitalniTichoThankYouPage />,
+      },
+      {
         path: 'reset-password',
         element: <ResetPasswordPage />,
       },
@@ -257,6 +268,12 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <AppLayoutWrapper />,
+          },
+          
+          // Settings page (Základní nastavení - Dechové cvičení)
+          {
+            path: 'settings',
+            element: <SettingsPage />,
           },
           
           // ============================================================

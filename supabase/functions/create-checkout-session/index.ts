@@ -1,13 +1,16 @@
 /**
  * Supabase Edge Function: Create Stripe Checkout Session
- * 
- * Purpose: Creates a Stripe Checkout session for membership subscriptions
- * Triggered by: Frontend (useCheckout hook)
- * Returns: Stripe Checkout URL
- * 
+ *
+ * Podporuje:
+ * - One-time payment (mode: 'payment') pro jednorázové produkty (Digitální ticho, série)
+ * - Embedded Checkout (ui_mode: 'embedded') → vrací clientSecret
+ * - Hosted Checkout (výchozí) → vrací url
+ * - Authenticated i guest checkout
+ *
  * @package DechBar
- * @since 2026-01-20
+ * @since 2026-02-19
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@14.11.0?target=deno';
@@ -28,77 +31,69 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Optional auth - support both authenticated and guest checkout
+    // ── Auth (optional — guest checkout supported) ──────────────
     const authHeader = req.headers.get('Authorization');
     let userId: string | null = null;
     let userEmail: string | null = null;
 
     if (authHeader) {
-      // Authenticated user - use anon key for proper JWT verification
       const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } },
-        auth: { persistSession: false }
+        auth: { persistSession: false },
       });
-      
       const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
-      
       if (user && !authError) {
         userId = user.id;
-        userEmail = user.email!;
+        userEmail = user.email ?? null;
       }
     }
 
-    // Get request body
-    const { price_id, interval, module_id, email, ui_mode } = await req.json();
+    // ── Parse body ────────────────────────────────────────────────
+    // Přijímáme camelCase (z frontendu) i snake_case (pro zpětnou kompatibilitu)
+    const body = await req.json();
+    const priceId: string | undefined = body.priceId ?? body.price_id;
+    const moduleId: string | undefined = body.moduleId ?? body.module_id;
+    const emailFromBody: string | undefined = body.email;
+    const uiMode: string | undefined = body.uiMode ?? body.ui_mode;
+    const successUrl: string | undefined = body.successUrl ?? body.success_url;
+    const cancelUrl: string | undefined = body.cancelUrl ?? body.cancel_url;
 
-    // Validate required fields
-    if (!price_id || !interval || !module_id) {
+    // ── Validace ──────────────────────────────────────────────────
+    if (!priceId || !moduleId) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Missing required fields: price_id, interval, module_id' 
-        }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: 'Missing required fields: priceId, moduleId' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    // Guest checkout: email required if not authenticated
-    if (!userId && !email) {
+    if (!userId && !emailFromBody) {
       return new Response(
         JSON.stringify({ error: 'Email je povinný pro nákup bez přihlášení' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    // Use email from request if guest
-    if (!userEmail && email) {
-      userEmail = email;
+    if (!userEmail && emailFromBody) {
+      userEmail = emailFromBody;
     }
 
     if (!userEmail) {
       return new Response(
         JSON.stringify({ error: 'Email not found' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    // Get or create Stripe customer
+    // ── Stripe Customer ────────────────────────────────────────────
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     let customerId: string | undefined;
 
     if (userId) {
-      // Authenticated user: check for existing customer
       const { data: membership } = await supabase
         .from('memberships')
         .select('stripe_customer_id')
@@ -108,116 +103,96 @@ serve(async (req) => {
       customerId = membership?.stripe_customer_id;
 
       if (!customerId) {
-        // Create new Stripe customer
         const customer = await stripe.customers.create({
           email: userEmail,
-          metadata: {
-            supabase_user_id: userId,
-          },
+          metadata: { supabase_user_id: userId },
         });
         customerId = customer.id;
 
-        // Update membership with customer ID
         await supabase
           .from('memberships')
           .update({ stripe_customer_id: customerId })
           .eq('user_id', userId);
       }
     } else {
-      // Guest checkout: create customer without linking to Supabase yet
       const customer = await stripe.customers.create({
         email: userEmail,
-        metadata: {
-          is_guest: 'true',
-        },
+        metadata: { is_guest: 'true' },
       });
       customerId = customer.id;
     }
 
-    // Determine success/cancel URLs based on environment
-    const baseUrl = Deno.env.get('VITE_APP_URL') || 'http://localhost:5173';
-    
-    // Determine if embedded or hosted mode
-    const isEmbedded = ui_mode === 'embedded';
+    // ── Determine payment mode ────────────────────────────────────
+    // Zkontroluje Stripe price object — one_time vs recurring
+    const priceObject = await stripe.prices.retrieve(priceId);
+    const paymentMode = priceObject.type === 'recurring' ? 'subscription' : 'payment';
 
-    // Build session configuration
+    // ── URL defaults ──────────────────────────────────────────────
+    const baseUrl = Deno.env.get('VITE_APP_URL') || 'https://app.dechbar.cz';
+    const isEmbedded = uiMode === 'embedded';
+
+    // ── Session config ────────────────────────────────────────────
     const sessionConfig: Record<string, unknown> = {
       customer: customerId,
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price: price_id,
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode: paymentMode,
       metadata: {
-        user_id: userId || 'guest',
-        module_id,
-        interval,
+        user_id: userId ?? 'guest',
+        module_id: moduleId,
         email: userEmail,
         is_guest: userId ? 'false' : 'true',
       },
-      subscription_data: {
+    };
+
+    // Subscription-specific data
+    if (paymentMode === 'subscription') {
+      sessionConfig.subscription_data = {
         metadata: {
-          user_id: userId || 'guest',
-          module_id,
-          interval,
+          user_id: userId ?? 'guest',
+          module_id: moduleId,
           email: userEmail,
           is_guest: userId ? 'false' : 'true',
         },
-      },
-    };
-
-    if (isEmbedded) {
-      // Embedded Checkout
-      sessionConfig.ui_mode = 'embedded';
-      sessionConfig.return_url = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-    } else {
-      // Hosted Checkout (fallback)
-      sessionConfig.success_url = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-      sessionConfig.cancel_url = `${baseUrl}/checkout/cancel`;
+      };
     }
 
-    // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create(sessionConfig);
+    // Embedded vs Hosted checkout
+    if (isEmbedded) {
+      sessionConfig.ui_mode = 'embedded';
+      sessionConfig.return_url = successUrl
+        ?? `${baseUrl}/digitalni-ticho/dekujeme?session_id={CHECKOUT_SESSION_ID}`;
+    } else {
+      sessionConfig.success_url = successUrl
+        ?? `${baseUrl}/digitalni-ticho/dekujeme?session_id={CHECKOUT_SESSION_ID}`;
+      sessionConfig.cancel_url = cancelUrl
+        ?? `${baseUrl}/digitalni-ticho`;
+    }
 
-    console.log(`✅ Checkout session created: ${session.id} for ${userId ? 'user ' + userId : 'guest ' + userEmail} (${isEmbedded ? 'embedded' : 'hosted'})`);
+    // ── Create session ────────────────────────────────────────────
+    const session = await stripe.checkout.sessions.create(sessionConfig as any);
 
-    // Return appropriate response based on mode
+    console.log(
+      `✅ Checkout session created: ${session.id} | mode: ${paymentMode} | user: ${userId ?? 'guest:' + userEmail}`,
+    );
+
     if (isEmbedded) {
       return new Response(
-        JSON.stringify({ 
-          clientSecret: session.client_secret,
-          session_id: session.id,
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ clientSecret: session.client_secret, session_id: session.id }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     } else {
       return new Response(
-        JSON.stringify({ 
-          url: session.url,
-          session_id: session.id,
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ url: session.url, session_id: session.id }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
   } catch (error: unknown) {
     console.error('❌ Checkout session error:', error);
-    
     return new Response(
-      JSON.stringify({ 
-        error: (error as Error).message || 'Failed to create checkout session' 
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: (error as Error).message || 'Failed to create checkout session' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
 });

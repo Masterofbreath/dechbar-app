@@ -1,0 +1,1755 @@
+/**
+ * Digitální Ticho Landing Page Styles
+ * 
+ * Apple Premium aesthetic: Méně je více, sebevědomá jednoduchost
+ * Breathing animation jako hero element (mirror neurons fyziologický priming)
+ * 
+ * Design kritéria:
+ * - Tight letter-spacing (-0.02em) na headlines
+ * - Gold button glow (--shadow-gold)
+ * - Dark backgrounds (#121212)
+ * - Off-white text (#E0E0E0)
+ * - Breathing animation: 8s cycle (4s in, 4s out)
+ * - Generous breathing space
+ * 
+ * @package DechBar_App
+ * @subpackage Modules/PublicWeb/DigitalniTicho
+ */
+
+/* ===================================
+   PAGE BASE
+   =================================== */
+
+.digitalni-ticho-page {
+  background: var(--color-background);  /* Dark #121212 */
+  color: var(--color-text-primary);     /* Off-white #E0E0E0 */
+  min-height: 100vh;
+}
+
+.digitalni-ticho-page__main {
+  width: 100%;
+}
+
+/* ===================================
+   HERO SECTION
+   =================================== */
+
+.digitalni-ticho-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-20) var(--spacing-6);  /* 80px 24px */
+  overflow: hidden;
+
+  /* Foto pozadí — umísti soubor do /public/assets/images/digitalni-ticho-hero.jpg */
+  background-image: url('/assets/images/digitalni-ticho-hero.jpg');
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
+}
+
+/* Tmavý overlay přes foto — zachovává čitelnost textu */
+.digitalni-ticho-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgb(18 18 18 / 72%) 0%, rgb(18 18 18 / 85%) 60%, rgb(18 18 18 / 98%) 100%),
+    radial-gradient(ellipse 70% 50% at 50% 30%, rgb(214 162 58 / 6%) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.digitalni-ticho-hero__container,
+.digitalni-ticho-hero__content {
+  position: relative;
+  z-index: 1;
+}
+
+.digitalni-ticho-hero__container {
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.digitalni-ticho-hero__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-6);
+  width: 100%;
+}
+
+/* Headline - zlatá (brand gold) + tight letter-spacing (Apple Premium) */
+.digitalni-ticho-hero__headline {
+  font-size: 52px;
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
+  color: var(--color-accent);  /* Brand gold #D6A23A */
+  margin: 0;
+}
+
+/* Starý subtitle — nahrazen rotating blokem */
+.digitalni-ticho-hero__subtitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Rotating subtitle — 2řádkový layout */
+.digitalni-ticho-hero__subtitle-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  text-align: center;
+}
+
+.digitalni-ticho-hero__subtitle-fixed {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.digitalni-ticho-hero__subtitle-rotating {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  line-height: 1.4;
+
+  /* Pevná výška pro 2 řádky — zabraňuje layout shiftu při rotaci */
+  min-height: 2.8em;
+  display: block;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.digitalni-ticho-hero__subtitle-rotating.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.digitalni-ticho-hero__subtitle-rotating.is-hidden {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* CTA Button - Gold with glow */
+.digitalni-ticho-hero__cta {
+  background: var(--color-accent) !important;
+  color: var(--color-background) !important;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  padding: var(--spacing-4) var(--spacing-8) !important;
+  border-radius: 8px;
+  box-shadow: var(--shadow-gold);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  min-width: 260px;
+  width: auto;
+}
+
+.digitalni-ticho-hero__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-gold);
+}
+
+.digitalni-ticho-hero__cta:active {
+  transform: translateY(0);
+}
+
+/* Error message */
+.digitalni-ticho-hero__error {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: 8px;
+  font-size: var(--font-size-base);
+  background: rgb(255 50 50 / 10%);
+  border: 1px solid rgb(255 50 50 / 30%);
+  color: #FF5252;
+}
+
+/* Trust Signals */
+.digitalni-ticho-hero__trust {
+  display: flex;
+  flex-flow: row wrap;
+  gap: var(--spacing-6);
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--spacing-3);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.trust-signal {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);  /* 8px */
+}
+
+.trust-signal svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-accent);  /* Gold */
+  flex-shrink: 0;
+}
+
+.digitalni-ticho-hero__trust--secondary {
+  margin-top: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.digitalni-ticho-hero__trust--secondary .trust-signal svg {
+  color: var(--color-primary);
+  width: 20px;
+  height: 20px;
+}
+
+.digitalni-ticho-countdown {
+  white-space: nowrap;
+}
+
+/* Audio badge nad headline */
+.digitalni-ticho-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  background: rgb(214 162 58 / 10%);
+  border: 1px solid rgb(214 162 58 / 30%);
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-accent);
+  letter-spacing: 0.03em;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.digitalni-ticho-hero__badge svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* Popis programu pod subtitle */
+.digitalni-ticho-hero__description {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin: 0;
+  max-width: 560px;
+  text-align: center;
+}
+
+/* Desktop: odstavce jako inline text (jeden blok) */
+.digitalni-ticho-hero__description p {
+  display: inline;
+  margin: 0;
+}
+
+.digitalni-ticho-hero__description p::after {
+  content: ' ';
+}
+
+/* Audio sample link pod CTA */
+.digitalni-ticho-hero__audio-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  padding: var(--spacing-2) 0;
+  transition: color 0.2s ease;
+  letter-spacing: 0.01em;
+}
+
+.digitalni-ticho-hero__audio-link:hover {
+  color: var(--color-accent);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.digitalni-ticho-hero__audio-link svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Breathing Animation Visual */
+.digitalni-ticho-hero__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Video Introduction (V3 - Replace breathing circle) */
+.digitalni-ticho-hero__video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.digitalni-ticho-hero__video {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--color-surface);
+}
+
+.digitalni-ticho-hero__video-note {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin-top: var(--spacing-3);
+  font-style: italic;
+}
+
+/* Video Placeholder (když video není ready) */
+.digitalni-ticho-hero__video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  background: var(--color-surface);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 16px;
+  padding: var(--spacing-8);
+  text-align: center;
+}
+
+.video-placeholder__icon {
+  margin-bottom: var(--spacing-4);
+  opacity: 0.6;
+}
+
+.video-placeholder__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2);
+}
+
+.video-placeholder__note {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ===================================
+   STORYTELLING SECTION (V2 - NEW!)
+   Pain → Solution → Transformation
+   =================================== */
+
+.digitalni-ticho-story {
+  padding: var(--spacing-20) var(--spacing-6);
+  background: var(--color-surface);  /* Subtle contrast */
+}
+
+.digitalni-ticho-story__container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.digitalni-ticho-story__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-8);  /* 32px */
+  margin-bottom: var(--spacing-8);
+}
+
+.digitalni-ticho-story__card {
+  background: var(--color-background);
+  border-radius: 16px;
+  padding: var(--spacing-8);
+  border: 1px solid rgb(255 255 255 / 5%);
+  transition: all 0.3s ease;
+}
+
+.digitalni-ticho-story__card--highlight {
+  border-color: var(--color-primary);
+  background: rgb(44 190 198 / 3%);
+}
+
+.digitalni-ticho-story__card:hover {
+  border-color: rgb(44 190 198 / 20%);
+  transform: translateY(-4px);
+}
+
+.digitalni-ticho-story__card-headline {
+  font-size: var(--font-size-2xl);  /* 24px */
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-4);
+  letter-spacing: -0.01em;
+}
+
+.digitalni-ticho-story__card-text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.digitalni-ticho-story__card-text p {
+  margin: 0;
+}
+
+.digitalni-ticho-story__card-text p + p {
+  margin-top: var(--spacing-3);
+}
+
+/* ===================================
+   HIGHLIGHTS SECTION
+   =================================== */
+
+.digitalni-ticho-highlights {
+  padding: var(--spacing-20) var(--spacing-6);  /* 80px 24px */
+}
+
+.digitalni-ticho-highlights__container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.digitalni-ticho-highlights__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-8);  /* 32px */
+}
+
+.digitalni-ticho-highlight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-4);  /* 16px */
+}
+
+.digitalni-ticho-highlight__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-2);
+  color: var(--color-primary);  /* Teal */
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.digitalni-ticho-highlight__icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+.digitalni-ticho-highlight__headline {
+  font-size: var(--font-size-xl);  /* 20px */
+  font-weight: 600;
+  color: var(--color-accent);  /* Gold */
+  margin: 0;
+}
+
+.digitalni-ticho-highlight__text {
+  font-size: var(--font-size-base);  /* 16px */
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ===================================
+   AUDIO PREVIEW SECTION
+   =================================== */
+
+.digitalni-ticho-preview {
+  padding: var(--spacing-20) var(--spacing-6);
+  background: var(--color-background);
+}
+
+.digitalni-ticho-preview__container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.digitalni-ticho-preview__title {
+  font-size: var(--font-size-3xl);  /* 30px */
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--spacing-3);
+  color: var(--color-text-primary);
+}
+
+.digitalni-ticho-preview__player {
+  width: 100%;
+  max-width: 700px;
+  margin: var(--spacing-6) auto 0;
+  border-radius: 8px;
+}
+
+/* Audio Placeholder (když audio není ready) */
+.digitalni-ticho-preview__placeholder {
+  padding: var(--spacing-8);
+  background: var(--color-surface);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  text-align: center;
+  margin-top: var(--spacing-6);
+}
+
+.preview-placeholder__text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ===================================
+   CUSTOM AUDIO PLAYER
+   =================================== */
+
+.digitalni-ticho-preview__audio-player {
+  width: 100%;
+  max-width: 680px;
+  margin: var(--spacing-8) auto 0;
+  background: var(--color-surface);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 16px;
+  padding: var(--spacing-6) var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.audio-player__track-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.audio-player__track-icon {
+  width: 44px;
+  height: 44px;
+  background: rgb(214 162 58 / 12%);
+  border: 1px solid rgb(214 162 58 / 25%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.audio-player__track-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.audio-player__track-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1);
+}
+
+.audio-player__track-duration {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.audio-player__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.audio-player__play-btn {
+  width: 44px;
+  height: 44px;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  color: var(--color-background);
+}
+
+.audio-player__play-btn:hover {
+  transform: scale(1.06);
+  opacity: 0.92;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.audio-player__play-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.audio-player__progress-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.audio-player__progress {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  appearance: none;
+  background: rgb(255 255 255 / 10%);
+  border-radius: 2px;
+  cursor: pointer;
+  outline: none;
+}
+
+.audio-player__progress::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -5px;
+}
+
+.audio-player__progress::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+.audio-player__time {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.audio-player__note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: 0;
+  font-style: italic;
+}
+
+.digitalni-ticho-preview__cta-wrapper {
+  margin-top: var(--spacing-8);
+  text-align: center;
+}
+
+/* ===================================
+   PRO KOHO SECTION (Pro koho to je/není)
+   =================================== */
+
+.digitalni-ticho-pro {
+  padding: var(--spacing-20) var(--spacing-6);
+  background: var(--color-background);
+}
+
+.digitalni-ticho-pro__container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.digitalni-ticho-pro__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 var(--spacing-8);
+  color: var(--color-text-primary);
+}
+
+.digitalni-ticho-pro__subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0 0 var(--spacing-10);
+}
+
+.digitalni-ticho-pro__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-10);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.digitalni-ticho-pro__cta-wrapper {
+  margin-top: var(--spacing-12);
+  text-align: center;
+}
+
+.digitalni-ticho-pro__column {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: var(--spacing-8);
+  border: 1px solid rgb(255 255 255 / 8%);
+}
+
+.digitalni-ticho-pro__column--for {
+  border-color: rgb(44 190 198 / 20%);
+  background: rgb(44 190 198 / 3%);
+}
+
+.digitalni-ticho-pro__column-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-4);
+}
+
+.digitalni-ticho-pro__column--for .digitalni-ticho-pro__column-title {
+  color: var(--color-primary);
+}
+
+.digitalni-ticho-pro__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.digitalni-ticho-pro__list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-3);
+}
+
+.digitalni-ticho-pro__list-item:last-child {
+  margin-bottom: 0;
+}
+
+.digitalni-ticho-pro__list-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.digitalni-ticho-pro__list-icon--check {
+  color: var(--color-primary);
+}
+
+.digitalni-ticho-pro__list-icon--x {
+  color: #E05252;
+}
+
+@media (width <= 767px) {
+  .digitalni-ticho-pro__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================
+   TIMELINE SECTION
+   =================================== */
+
+.digitalni-ticho-timeline {
+  padding: var(--spacing-20) var(--spacing-6);
+  background: var(--color-background);
+}
+
+.digitalni-ticho-timeline__container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.digitalni-ticho-timeline__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 var(--spacing-3);
+  color: var(--color-text-primary);
+}
+
+.digitalni-ticho-timeline__steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-10);
+  max-width: 700px;
+  margin: 0 auto var(--spacing-8);
+  position: relative;
+}
+
+.digitalni-ticho-timeline__steps::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--color-primary) 0%,
+    var(--color-primary) 70%,
+    transparent 100%
+  );
+  z-index: 0;
+}
+
+.digitalni-ticho-timeline__step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: 0 var(--spacing-8);
+  text-align: center;
+  background: var(--color-background);
+  z-index: 1;
+}
+
+.digitalni-ticho-timeline__phase-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.digitalni-ticho-timeline__phase-days {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.digitalni-ticho-timeline__phase-description {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  padding-bottom: var(--spacing-3);
+}
+
+/* Vzduch nad každým krokem kromě prvního */
+.digitalni-ticho-timeline__step + .digitalni-ticho-timeline__step .digitalni-ticho-timeline__phase-title {
+  padding-top: var(--spacing-3);
+}
+
+.digitalni-ticho-timeline__note {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Sound Identity section removed in V2 - too technical for pre-sale */
+
+/* Dech section removed in V2 - optional info not needed for pre-sale */
+
+/* ===================================
+   PRICING SECTION
+   =================================== */
+
+.digitalni-ticho-pricing {
+  padding: var(--spacing-20) var(--spacing-6);
+  background: var(--color-surface);
+}
+
+.digitalni-ticho-pricing__container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.digitalni-ticho-pricing__card {
+  background: var(--color-background);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 16px;
+  padding: var(--spacing-10);
+  position: relative;
+}
+
+.digitalni-ticho-pricing__badge {
+  display: inline-block;
+  padding: var(--spacing-2) var(--spacing-4);
+  background: rgb(44 190 198 / 10%);
+  border: 1px solid var(--color-primary);
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-6);
+}
+
+.digitalni-ticho-pricing__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--spacing-2);
+  color: var(--color-text-primary);
+}
+
+.digitalni-ticho-pricing__subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-8);
+}
+
+.digitalni-ticho-pricing__price-wrapper {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+
+.digitalni-ticho-pricing__price {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+}
+
+.digitalni-ticho-pricing__price-normal {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-tertiary);
+  text-decoration: line-through;
+}
+
+/* V3 - Simple pricing (NO value stacking) */
+.digitalni-ticho-pricing__price-wrapper {
+  text-align: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.digitalni-ticho-pricing__price {
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+  display: block;
+}
+
+.digitalni-ticho-pricing__per-day {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: var(--spacing-8);
+}
+
+.digitalni-ticho-pricing__features-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-4);
+  color: var(--color-text-primary);
+}
+
+.digitalni-ticho-pricing__features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.digitalni-ticho-pricing__features li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.digitalni-ticho-pricing__features li::before {
+  content: '✓';
+  color: var(--color-primary);
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Guarantee removed from separate box - now in features list */
+
+/* ===================================
+   FAQ SECTION
+   =================================== */
+
+.digitalni-ticho-faq {
+  padding: var(--spacing-20) var(--spacing-6);
+}
+
+.digitalni-ticho-faq__container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.digitalni-ticho-faq__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 var(--spacing-3);
+  color: var(--color-text-primary);
+}
+
+.digitalni-ticho-faq__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.digitalni-ticho-faq__item {
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  padding-bottom: var(--spacing-4);
+}
+
+.digitalni-ticho-faq__item:last-child {
+  border-bottom: none;
+}
+
+.digitalni-ticho-faq__question {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4) 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.digitalni-ticho-faq__question:hover {
+  color: var(--color-primary);
+}
+
+.digitalni-ticho-faq__question-text {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.digitalni-ticho-faq__item--open .digitalni-ticho-faq__question-text {
+  color: var(--color-primary);
+}
+
+.digitalni-ticho-faq__icon {
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--color-primary);
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.digitalni-ticho-faq__answer {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  padding: var(--spacing-3) 0 var(--spacing-4);
+  animation: fade-in 0.2s ease;
+}
+
+.digitalni-ticho-faq__answer-paragraph {
+  margin: 0;
+}
+
+.digitalni-ticho-faq__answer-paragraph + .digitalni-ticho-faq__answer-paragraph {
+  margin-top: var(--spacing-3);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===================================
+   FINAL CTA SECTION
+   =================================== */
+
+.digitalni-ticho-final-cta {
+  padding: var(--spacing-20) var(--spacing-6) var(--spacing-24);
+  background: var(--color-background);
+  text-align: center;
+}
+
+.digitalni-ticho-final-cta__container {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.digitalni-ticho-final-cta__headline {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.digitalni-ticho-final-cta__subtext {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.digitalni-ticho-final-cta__button {
+  background: var(--color-accent) !important;
+  color: var(--color-background) !important;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  padding: var(--spacing-4) var(--spacing-8) !important;
+  border-radius: 8px;
+  box-shadow: var(--shadow-gold);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.digitalni-ticho-final-cta__button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-gold);
+}
+
+/* ===================================
+   STICKY CTA BAR (mobile conversion)
+   Zobrazí se po 180px scrollu
+   =================================== */
+
+.digitalni-ticho-sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgb(18 18 18 / 98%);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgb(255 255 255 / 8%);
+  padding: var(--spacing-3) var(--spacing-4);
+  padding-bottom: calc(var(--spacing-3) + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 24px rgb(0 0 0 / 30%);
+  animation: sticky-cta-slide-up 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+@keyframes sticky-cta-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .digitalni-ticho-sticky-cta {
+    animation: none;
+  }
+}
+
+.digitalni-ticho-sticky-cta__container {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+}
+
+.digitalni-ticho-sticky-cta__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.digitalni-ticho-sticky-cta__button {
+  flex-shrink: 0;
+  background: var(--color-accent) !important;
+  color: var(--color-background) !important;
+  font-size: var(--font-size-base) !important;
+  font-weight: 600 !important;
+  padding: var(--spacing-3) var(--spacing-6) !important;
+  border-radius: 8px;
+  box-shadow: var(--shadow-gold);
+  min-height: 44px;
+}
+
+/* ===================================
+   FOOTER (V3 - Reuses challenge-footer styles)
+   Okopírováno z /vyzva pro konzistenci
+   =================================== */
+
+/* Footer now uses .challenge-footer classes (defined in challenge.css) */
+
+/* No custom digitalni-ticho-footer styles needed */
+
+/* ===================================
+   RESPONSIVE - TABLET
+   =================================== */
+
+@media (width <= 768px) {
+  /* Hero — mobilní fotografie */
+  .digitalni-ticho-hero {
+    padding: var(--spacing-12) var(--spacing-4);
+    background-image: url('/assets/images/digitalni-ticho-hero-mobile.jpg');
+    background-position: center 20%;
+  }
+
+  .digitalni-ticho-hero__headline {
+    font-size: 36px;
+  }
+  
+  .digitalni-ticho-hero__subtitle {
+    font-size: var(--font-size-base);
+  }
+
+  .digitalni-ticho-hero__cta {
+    width: 100%;
+    max-width: 400px;
+    min-width: unset;
+  }
+
+  /* Trust row — vedle sebe na mobilu, bez sloupce */
+  .digitalni-ticho-hero__trust {
+    flex-flow: row wrap;
+    justify-content: center;
+    gap: var(--spacing-4);
+    align-items: center;
+  }
+
+  .digitalni-ticho-hero__trust--secondary {
+    flex-flow: row wrap;
+    justify-content: center;
+    gap: var(--spacing-3);
+  }
+
+  /* Trust signal text mírně menší na mobilu */
+  .digitalni-ticho-hero__trust .trust-signal,
+  .digitalni-ticho-hero__trust--secondary .trust-signal {
+    font-size: var(--font-size-sm);
+  }
+  
+  .digitalni-ticho-story__grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-6);
+  }
+  
+  .digitalni-ticho-highlights__grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-12);
+  }
+
+  /* Description — na mobilu 2 odstavce + větší boční padding */
+  .digitalni-ticho-hero__description p {
+    display: block;
+  }
+
+  .digitalni-ticho-hero__description p::after {
+    content: none;
+  }
+
+  .digitalni-ticho-hero__description p + p {
+    margin-top: var(--spacing-3);
+  }
+
+  .digitalni-ticho-hero__description {
+    padding: 0 var(--spacing-4);
+  }
+
+  /* Zmenšit padding pro obsazenější sekce */
+  .digitalni-ticho-pricing,
+  .digitalni-ticho-story,
+  .digitalni-ticho-pro {
+    padding-left: var(--spacing-3);
+    padding-right: var(--spacing-3);
+  }
+
+  /* Social proof — mobile overrides jsou níže v souboru (po base stylech) */
+
+  /* Pricing karta — větší šířka + kompaktnější padding */
+  .digitalni-ticho-pricing__container {
+    max-width: 100%;
+    padding: 0 var(--spacing-2);
+  }
+
+  .digitalni-ticho-pricing__card {
+    padding: var(--spacing-6) var(--spacing-5);
+  }
+
+  .digitalni-ticho-pricing__price {
+    font-size: 44px;
+  }
+
+  .digitalni-ticho-pricing__per-day {
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  .digitalni-ticho-pricing__subtitle {
+    white-space: nowrap;
+  }
+
+  .digitalni-ticho-pricing__stats {
+    gap: var(--spacing-3);
+  }
+
+  /* Pricing stat — menší font, aby se vešel 47 Kč */
+  .digitalni-ticho-pricing__stat-value {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* ===================================
+   RESPONSIVE - MOBILE
+   =================================== */
+
+@media (width <= 390px) {
+  .digitalni-ticho-hero {
+    padding: var(--spacing-16) var(--spacing-4);
+  }
+  
+  .digitalni-ticho-hero__headline {
+    font-size: 30px;
+  }
+  
+  .digitalni-ticho-hero__subtitle {
+    font-size: var(--font-size-sm);
+  }
+
+  .digitalni-ticho-hero__cta {
+    padding: 18px 24px !important;
+    min-width: unset;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .digitalni-ticho-pricing__card {
+    padding: var(--spacing-5) var(--spacing-4);
+  }
+
+  .digitalni-ticho-pricing__subtitle {
+    font-size: var(--font-size-sm);
+    white-space: normal;
+  }
+}
+
+/* ===================================
+   THANK YOU PAGE
+   =================================== */
+
+.digitalni-ticho-thank-you {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12) var(--spacing-6);
+  background: var(--color-background);
+}
+
+.digitalni-ticho-thank-you__container {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-6);
+}
+
+.digitalni-ticho-thank-you__logo {
+  margin-bottom: var(--spacing-4);
+}
+
+.digitalni-ticho-thank-you__icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: var(--spacing-2);
+}
+
+.digitalni-ticho-thank-you__title {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.digitalni-ticho-thank-you__subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-8);
+}
+
+.digitalni-ticho-thank-you__steps {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin-bottom: var(--spacing-8);
+}
+
+.digitalni-ticho-thank-you__step {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: var(--spacing-6);
+  text-align: left;
+}
+
+.digitalni-ticho-thank-you__step-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-3);
+}
+
+.digitalni-ticho-thank-you__step-text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.digitalni-ticho-thank-you__preparation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.digitalni-ticho-thank-you__preparation-list li {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  padding-left: var(--spacing-6);
+  position: relative;
+}
+
+.digitalni-ticho-thank-you__preparation-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+/* ===================================
+   SOCIAL PROOF SECTION (placeholder)
+   =================================== */
+
+.digitalni-ticho-social-proof {
+  padding: var(--spacing-20) var(--spacing-6);
+  background: var(--color-background);
+}
+
+.digitalni-ticho-social-proof__container {
+  max-width: 1280px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.digitalni-ticho-social-proof__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--spacing-3);
+  color: var(--color-text-primary);
+}
+
+.digitalni-ticho-social-proof__subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-8);
+}
+
+/* Desktop grid (výchozí) */
+.digitalni-ticho-social-proof__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-6);
+}
+
+/* Mobile slider — skrytý na desktopu */
+.digitalni-ticho-social-proof__grid--mobile {
+  display: none;
+}
+
+/* Desktop grid — skrytý na mobilu */
+.digitalni-ticho-social-proof__grid--desktop {
+  display: grid;
+}
+
+.digitalni-ticho-social-proof__card {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: var(--spacing-6);
+  border: 1px solid rgb(255 255 255 / 5%);
+}
+
+.digitalni-ticho-social-proof__quote {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  font-style: italic;
+  margin: 0 0 var(--spacing-4);
+}
+
+.digitalni-ticho-social-proof__author {
+  border-top: 1px solid rgb(255 255 255 / 5%);
+  padding-top: var(--spacing-3);
+}
+
+.digitalni-ticho-social-proof__author-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1);
+}
+
+.digitalni-ticho-social-proof__author-role {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* Expand button */
+.digitalni-ticho-social-proof__expand {
+  margin-top: var(--spacing-8);
+  text-align: center;
+}
+
+.digitalni-ticho-social-proof__expand-btn {
+  background: transparent;
+  border: 1px solid rgb(214 162 58 / 40%);
+  color: var(--color-accent);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  padding: var(--spacing-3) var(--spacing-8);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.01em;
+}
+
+.digitalni-ticho-social-proof__expand-btn:hover {
+  background: rgb(214 162 58 / 8%);
+  border-color: var(--color-accent);
+}
+
+/* ===================================
+   PRICING ERROR MESSAGE
+   =================================== */
+
+/* Value Stats (pod CTA) */
+.digitalni-ticho-pricing__stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-8);
+  margin-top: var(--spacing-5);
+  padding-top: var(--spacing-5);
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+.digitalni-ticho-pricing__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.digitalni-ticho-pricing__stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.digitalni-ticho-pricing__stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.digitalni-ticho-pricing__error {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: 8px;
+  font-size: var(--font-size-base);
+  text-align: center;
+  background: rgb(255 50 50 / 10%);
+  border: 1px solid rgb(255 50 50 / 30%);
+  color: #FF5252;
+  margin-top: var(--spacing-4);
+}
+
+/* ===================================
+   SOUND IDENTITY SECTION TITLE
+   =================================== */
+
+.digitalni-ticho-sound__section-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: var(--spacing-8) 0 var(--spacing-4);
+  text-align: center;
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* No animations for this page in reduced motion */
+}
+
+/* ===================================
+   VISUAL ENHANCEMENTS
+   Apple Premium — Gold & Teal accenty
+   =================================== */
+
+/* Pricing sekce — hero foto na pozadí + tmavý overlay */
+.digitalni-ticho-pricing {
+  background-image: url('/assets/images/digitalni-ticho-hero.jpg');
+  background-size: cover;
+  background-position: center 65%;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.digitalni-ticho-pricing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgb(18 18 18 / 88%) 0%, rgb(18 18 18 / 92%) 100%),
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgb(214 162 58 / 5%) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.digitalni-ticho-pricing__container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Pricing karta — gold border glow */
+.digitalni-ticho-pricing__card {
+  border-color: rgb(214 162 58 / 25%);
+  box-shadow:
+    0 0 48px rgb(214 162 58 / 8%),
+    inset 0 1px 0 rgb(214 162 58 / 12%);
+}
+
+/* Gold oddělovač před pricing sekcí */
+.digitalni-ticho-timeline + .digitalni-ticho-pricing::after {
+  content: none;
+}
+
+.digitalni-ticho-pricing {
+  border-top: 1px solid rgb(214 162 58 / 15%);
+}
+
+/* Story sekce — warm gold ambient glow */
+.digitalni-ticho-story {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 50%, rgb(214 162 58 / 4%) 0%, transparent 65%),
+    var(--color-surface);
+}
+
+/* Social proof sekce — subtle teal ambient */
+.digitalni-ticho-social-proof {
+  background: linear-gradient(
+    180deg,
+    var(--color-background) 0%,
+    rgb(44 190 198 / 3%) 50%,
+    var(--color-background) 100%
+  );
+}
+
+/* ===================================
+   SOCIAL PROOF — MOBILE SLIDER
+   (Musí být ZA base styly, jinak cascade přepíše)
+   =================================== */
+
+@media (width <= 768px) {
+  .digitalni-ticho-social-proof__grid--desktop {
+    display: none;
+  }
+
+  .digitalni-ticho-social-proof__grid--mobile {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: var(--spacing-4);
+    padding-bottom: var(--spacing-3);
+
+    /* 50% - polovina šířky karty = karta vždy přesně uprostřed */
+    padding-left: calc(50% - 130px);
+    padding-right: calc(50% - 130px);
+    width: 100vw;
+    margin-left: calc(-1 * var(--spacing-6));
+    box-sizing: border-box;
+  }
+
+  .digitalni-ticho-social-proof__grid--mobile::-webkit-scrollbar {
+    display: none;
+  }
+
+  .digitalni-ticho-social-proof__grid--mobile .digitalni-ticho-social-proof__card {
+    flex: 0 0 260px;
+    scroll-snap-align: center;
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .digitalni-ticho-social-proof__expand {
+    display: none;
+  }
+}
