@@ -11,21 +11,29 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/platform/components';
+import { EmailInputModal } from '@/platform/components/EmailInputModal';
 import { PaymentModal } from '@/platform/payments';
-import { supabase } from '@/platform/api/supabase';
 import { MESSAGES } from '@/config/messages';
 import { DigitalniTichoCountdown } from './DigitalniTichoCountdown';
+import { useDigitalniTichoCheckout } from './useDigitalniTichoCheckout';
 
 const STICKY_SCROLL_THRESHOLD = 180;
 
 export function DigitalniTichoStickyCTA() {
   const [isVisible, setIsVisible] = useState(false);
-  const [isPaymentOpen, setPaymentOpen] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  const {
+    emailModalOpen,
+    setEmailModalOpen,
+    paymentOpen,
+    setPaymentOpen,
+    clientSecret,
+    loadingEmail,
+    handleCTAClick,
+    handleEmailSubmit,
+  } = useDigitalniTichoCheckout();
 
   useEffect(() => {
-    // Respektuj prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
@@ -34,37 +42,9 @@ export function DigitalniTichoStickyCTA() {
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  async function handleCheckout() {
-    setLoading(true);
-    try {
-      const { data, error: invokeError } = await supabase.functions.invoke(
-        'create-checkout-session',
-        {
-          body: {
-            priceId: import.meta.env.VITE_STRIPE_PRICE_DIGITALNI_TICHO || 'price_digitalni_ticho_990',
-            moduleId: 'digitalni-ticho',
-            successUrl: `${window.location.origin}/digitalni-ticho/dekujeme`,
-            cancelUrl: `${window.location.origin}/digitalni-ticho`,
-          },
-        }
-      );
-
-      if (invokeError) throw invokeError;
-
-      if (data?.clientSecret) {
-        setClientSecret(data.clientSecret);
-        setPaymentOpen(true);
-      }
-    } catch (err) {
-      console.error('Checkout error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   if (!isVisible) return null;
 
@@ -78,8 +58,7 @@ export function DigitalniTichoStickyCTA() {
           <Button
             variant="primary"
             size="md"
-            onClick={handleCheckout}
-            loading={loading}
+            onClick={handleCTAClick}
             className="digitalni-ticho-sticky-cta__button"
           >
             {MESSAGES.digitalniTicho.pricing.cta}
@@ -87,8 +66,17 @@ export function DigitalniTichoStickyCTA() {
         </div>
       </div>
 
+      {/* Krok 1: Email modal pro guest */}
+      <EmailInputModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSubmit={handleEmailSubmit}
+        isLoading={loadingEmail}
+      />
+
+      {/* Krok 2: Stripe Embedded Checkout */}
       <PaymentModal
-        isOpen={isPaymentOpen}
+        isOpen={paymentOpen}
         onClose={() => setPaymentOpen(false)}
         clientSecret={clientSecret}
         moduleTitle="Digitální ticho"

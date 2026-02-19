@@ -10,24 +10,31 @@
  * - Garance: 7denní vrácení peněz (realistic)
  * 
  * Stripe Integration:
- * - Embedded Checkout (NO redirect = dark mode preserved)
+ * - Email-first flow → Embedded Checkout (NO redirect = dark mode preserved)
  * - Apple Pay / Google Pay support
  * 
  * @package DechBar_App
  * @subpackage Modules/PublicWeb/DigitalniTicho
  */
 
-import { useState } from 'react';
 import { Button } from '@/platform/components';
+import { EmailInputModal } from '@/platform/components/EmailInputModal';
 import { PaymentModal } from '@/platform/payments';
-import { supabase } from '@/platform/api/supabase';
 import { MESSAGES } from '@/config/messages';
+import { useDigitalniTichoCheckout } from './useDigitalniTichoCheckout';
 
 export function DigitalniTichoPricing() {
-  const [isPaymentOpen, setPaymentOpen] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const {
+    emailModalOpen,
+    setEmailModalOpen,
+    paymentOpen,
+    setPaymentOpen,
+    clientSecret,
+    loadingEmail,
+    error,
+    handleCTAClick,
+    handleEmailSubmit,
+  } = useDigitalniTichoCheckout();
 
   const { 
     price,
@@ -41,44 +48,6 @@ export function DigitalniTichoPricing() {
     cta,
     stats
   } = MESSAGES.digitalniTicho.pricing;
-
-  async function handleCheckout() {
-    setLoading(true);
-    setError('');
-
-    try {
-      const { data, error: invokeError } = await supabase.functions.invoke(
-        'create-checkout-session',
-        {
-          body: {
-            priceId: import.meta.env.VITE_STRIPE_PRICE_DIGITALNI_TICHO,
-            moduleId: 'digitalni-ticho',
-            uiMode: 'embedded',
-            successUrl: `${window.location.origin}/digitalni-ticho/dekujeme`,
-            cancelUrl: `${window.location.origin}/digitalni-ticho`,
-          },
-        }
-      );
-
-      if (invokeError) throw invokeError;
-
-      if (data?.clientSecret) {
-        // Embedded checkout — otevři modal
-        setClientSecret(data.clientSecret);
-        setPaymentOpen(true);
-      } else if (data?.url) {
-        // Hosted checkout fallback — přesměruj
-        window.location.href = data.url;
-      } else {
-        throw new Error('Stripe session failed — no clientSecret or url returned');
-      }
-    } catch (err) {
-      console.error('Checkout error:', err);
-      setError('Něco se pokazilo. Zkus to znovu nebo nás kontaktuj.');
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <section id="pricing" className="digitalni-ticho-pricing">
@@ -125,8 +94,7 @@ export function DigitalniTichoPricing() {
             variant="primary"
             size="lg"
             fullWidth
-            onClick={handleCheckout}
-            loading={loading}
+            onClick={handleCTAClick}
           >
             {cta}
           </Button>
@@ -149,9 +117,17 @@ export function DigitalniTichoPricing() {
         </div>
       </div>
 
-      {/* Stripe Payment Modal */}
+      {/* Krok 1: Email modal pro guest */}
+      <EmailInputModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSubmit={handleEmailSubmit}
+        isLoading={loadingEmail}
+      />
+
+      {/* Krok 2: Stripe Embedded Checkout */}
       <PaymentModal
-        isOpen={isPaymentOpen}
+        isOpen={paymentOpen}
         onClose={() => setPaymentOpen(false)}
         clientSecret={clientSecret}
         moduleTitle="Digitální ticho"

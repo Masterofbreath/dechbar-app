@@ -134,6 +134,11 @@ serve(async (req) => {
       sessionConfig.customer = customerId;
     }
 
+    // Pre-fill email v Stripe checkout formuláři (z email-first flow)
+    if (!customerId && userEmail) {
+      sessionConfig.customer_email = userEmail;
+    }
+
     // Subscription-specific data
     if (paymentMode === 'subscription') {
       sessionConfig.subscription_data = {
