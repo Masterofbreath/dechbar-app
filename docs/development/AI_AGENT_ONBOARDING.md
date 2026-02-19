@@ -81,6 +81,21 @@
 ### **Media Components** (Audio Player, Video, etc.)
 → **Study Guide:** `docs/development/agent-tests/components/MEDIA_COMPONENTS.md`
 
+### **Session Audio & Haptics** (Breathing exercise feedback)
+→ **Feature Guide:** `docs/features/SESSION_AUDIO_HAPTICS.md`  
+→ **Audio Specs:** `docs/audio/` (README.md → production specs & frequencies)
+
+**Klíčová slova:** haptika, vibrace, zvuk, audio, dechové cvičení, breathing cues, Solfeggio, background music, walking mode
+
+**Kdy číst:**
+- Modifikuješ haptic patterns (vibrace při nádechu/výdechu)
+- Přidáváš nové audio cues (zvuky změny rytmu)
+- Integruješ audio/haptics do nové session komponenty
+- Debugguješ audio/vibration issues
+- Vytvářeš audio soubory (production)
+
+---
+
 ### **Feature/Page** (Login, Dashboard, Profile, etc.)
 → **Study Guide:** `docs/development/agent-tests/02_FEATURE_IMPLEMENTATION.md`
 

@@ -85,7 +85,7 @@ async function addToEcomailQueue(
   payload: Record<string, unknown>,
 ) {
   try {
-    await supabase.from('sync_queue').insert({
+    await supabase.from('ecomail_sync_queue').insert({
       user_id: userId,
       email,
       event_type: eventType,

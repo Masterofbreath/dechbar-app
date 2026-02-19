@@ -1,0 +1,91 @@
+================================================================================
+  DIGITÁLNÍ TICHO - CO UDĚLAT TEĎ
+================================================================================
+
+Status: ✅ Landing page HOTOVÁ!
+URL: http://localhost:5174/digitalni-ticho (local)
+     https://dechbar.cz/digitalni-ticho (po deploy)
+
+================================================================================
+  LAUNCH DNES VEČER (20 MINUT)
+================================================================================
+
+1. STRIPE PRICE ID (5 min) ⚠️ CRITICAL
+   
+   https://dashboard.stripe.com
+   → Products → + Add Product
+   → Name: "Digitální ticho"
+   → Price: 990 CZK (one-time)
+   → Copy Price ID: price_xxxxx
+   
+   Edit: .env.local
+   Add: VITE_STRIPE_PRICE_DIGITALNI_TICHO=price_xxxxx
+   
+   Restart: npm run dev
+
+2. TEST (5 min)
+   
+   http://localhost:5174/digitalni-ticho
+   → Klikni "Odemkni program"
+   → Stripe modal otevře
+   → Test card: 4242 4242 4242 4242
+   → Funguje? → Deploy!
+
+3. DEPLOY (10 min)
+   
+   cd /Users/DechBar/dechbar-app
+   git checkout test
+   git add .
+   git commit -m "feat: Digitální ticho V3 FINAL"
+   git push origin test
+   
+   (Wait 2 min)
+   
+   git checkout main
+   git merge test
+   git push origin main
+   
+   ✅ LIVE: https://dechbar.cz/digitalni-ticho
+
+================================================================================
+  VIDEO/AUDIO (OPTIONAL - lze později)
+================================================================================
+
+Stránka FUNGUJE bez videa/audia! Placeholders zobrazí "Brzy dostupné".
+
+Když budeš mít:
+  - Upload to /public/videos/ a /public/audio/
+  - Set VIDEO_AVAILABLE = true + AUDIO_AVAILABLE = true
+  - Redeploy
+
+Video script: public/videos/README_VIDEO.md
+
+================================================================================
+  DOKUMENTACE (pro nového agenta)
+================================================================================
+
+START_HERE_NEW_AGENT.md  ⭐ Nový agent začíná tady
+README_DIGITALNI_TICHO.md  ⭐ Master spec
+DOCS_INDEX_DIGITALNI_TICHO.md  ⭐ Index všech docs
+
+================================================================================
+  POSITIONING (klíč k úspěchu!)
+================================================================================
+
+"Trénink odpočinku pro moderního člověka"
+
+✅ ANO: Trénink, umění, neurověda, regulace nervového systému
+❌ NE: Meditace, ezo, spa, pasivní poslech
+
+Headline: "Vypni hluk. Zapni sebe."
+Subheadline: "Program, který učí moderního člověka umění odpočinku."
+
+================================================================================
+  HOTOVO! JDI NA LAUNCH! 🚀
+================================================================================
+
+Otevři: LAUNCH_DNES_VECER.md (step-by-step)
+
+Status: READY
+Time to launch: 20 min
+Let's go! 🚀

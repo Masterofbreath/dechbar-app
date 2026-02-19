@@ -142,6 +142,11 @@ export function SettingsDrawer() {
     navigate('/app/admin');
   };
   
+  const handleSettingsClick = () => {
+    handleClose();
+    navigate('/app/settings');
+  };
+  
   return (
     <>
       <div 
@@ -188,7 +193,7 @@ export function SettingsDrawer() {
             <span>Účet</span>
           </button>
           
-          <button className="settings-menu-item">
+          <button className="settings-menu-item" onClick={handleSettingsClick}>
             <NavIcon name="settings" size={20} />
             <span>Základní nastavení</span>
           </button>

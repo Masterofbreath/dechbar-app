@@ -18,7 +18,10 @@ export function useBreathingAnimation() {
     type: 'inhale' | 'exhale',
     durationMs: number
   ) => {
-    if (!circleRef.current) return;
+    
+    if (!circleRef.current) {
+      return;
+    }
     
     // Cancel previous animation first
     if (animationFrameRef.current) {
@@ -37,11 +40,13 @@ export function useBreathingAnimation() {
         : 1 - Math.pow(-2 * t + 2, 3) / 2;
     };
     
+    
     const tick = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / durationMs, 1);
       const easedProgress = easeInOutCubic(progress);
       const scale = startScale + (endScale - startScale) * easedProgress;
+      
       
       if (circleRef.current) {
         circleRef.current.style.transform = `scale(${scale})`;

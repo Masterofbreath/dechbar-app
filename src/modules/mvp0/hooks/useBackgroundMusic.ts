@@ -249,14 +249,16 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     if (selectedTrackSlug && !currentTrack) {
       setTrack(selectedTrackSlug);
     }
-  }, [selectedTrackSlug, currentTrack, setTrack]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTrackSlug, currentTrack]); // FIXED: Removed setTrack from deps
   
   // Auto-pause when disabled
   useEffect(() => {
     if (!backgroundMusicEnabled && state === 'playing') {
       pause();
     }
-  }, [backgroundMusicEnabled, state, pause]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backgroundMusicEnabled, state]); // FIXED: Removed pause from deps
   
   return {
     play,

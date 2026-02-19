@@ -83,7 +83,7 @@ export function useDigitalniTichoCheckout() {
 
   async function captureEmail(email: string) {
     try {
-      await supabase.from('sync_queue').insert({
+      await supabase.from('ecomail_sync_queue').insert({
         user_id: null,
         email,
         event_type: 'checkout_started',

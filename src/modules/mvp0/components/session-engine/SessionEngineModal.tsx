@@ -12,7 +12,7 @@
  * @subpackage MVP0/Components/SessionEngine
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useScrollLock } from '@/platform/hooks';
 import { ConfirmModal, FullscreenModal } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
@@ -86,7 +86,10 @@ export function SessionEngineModal({
   
   useScrollLock(isOpen);
   
-  const currentPhase = exercise.breathing_pattern.phases[currentPhaseIndex];
+  const currentPhase = useMemo(
+    () => exercise.breathing_pattern.phases[currentPhaseIndex],
+    [exercise.breathing_pattern.phases, currentPhaseIndex]
+  );
   const totalPhases = exercise.breathing_pattern.phases.length;
   
   // Update ref when phase index changes
@@ -119,23 +122,29 @@ export function SessionEngineModal({
     } else {
       wakeLock.release();
     }
-  }, [sessionState, wakeLock]);
+  }, [sessionState]); // FIXED: Removed wakeLock from deps
   
   // ✅ NEW: Preload audio during countdown
   useEffect(() => {
     if (sessionState === 'countdown') {
       breathingCues.preloadAll();
     }
-  }, [sessionState, breathingCues]);
+  }, [sessionState]); // FIXED: Removed breathingCues from deps
   
   // ✅ NEW: Background music lifecycle
   useEffect(() => {
-    if (sessionState === 'active' && backgroundMusicEnabled) {
+    if (!backgroundMusicEnabled) {
+      // Music is disabled - don't call pause/play (prevents mounting loop)
+      return;
+    }
+    
+    if (sessionState === 'active') {
       backgroundMusic.play();
-    } else if (sessionState !== 'active') {
+    } else {
       backgroundMusic.pause();
     }
-  }, [sessionState, backgroundMusicEnabled, backgroundMusic]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState, backgroundMusicEnabled]); // backgroundMusic deliberately excluded
   
   // ✅ NEW: Walking mode display dimming
   useEffect(() => {
@@ -163,13 +172,18 @@ export function SessionEngineModal({
   
   // Start countdown after mood selection (or skip)
   const startCountdown = useCallback(() => {
+    
     setSessionState('countdown');
     setCountdownNumber(5);
     
+    
     // Play start bell (use new breathingCues or fallback to legacy)
-    breathingCues.playBell('start').catch(() => playBell());
+    breathingCues.playBell('start').catch(() => {
+      playBell();
+    });
     
     let count = 5;
+    
     const countdownInterval = window.setInterval(() => {
       count--;
       setCountdownNumber(count);
@@ -222,9 +236,14 @@ export function SessionEngineModal({
 
   // Run current phase
   useEffect(() => {
-    if (sessionState !== 'active' || !currentPhase) return;
+    
+    if (sessionState !== 'active' || !currentPhase) {
+      return;
+    }
+    
     
     setPhaseTimeRemaining(currentPhase.duration_seconds);
+    
     
     let breathingIntervalId: number | null = null;
     let currentCyclePosition = 0;
@@ -248,14 +267,18 @@ export function SessionEngineModal({
         const cyclePosition = elapsedTime % cycleTime;
         currentCyclePosition = cyclePosition;
         
+        
         let newInstruction = '';
         
         if (cyclePosition < inhale_seconds) {
           newInstruction = 'NÁDECH';
           if (lastInstruction !== 'NÁDECH') {
+            
             // ✅ NEW: Trigger haptics + audio cues
-            haptics.trigger('inhale');
-            breathingCues.playCue('inhale');
+            try {
+              haptics.trigger('inhale');
+              breathingCues.playCue('inhale');
+            } catch { /* ignore audio/haptics errors during breathing */ }
             
             animateBreathingCircle('inhale', inhale_seconds * 1000);
             
@@ -308,16 +331,21 @@ export function SessionEngineModal({
           }
         }
         
+        
         setCurrentInstruction(newInstruction);
       };
+      
       
       breathingIntervalId = window.setInterval(updateBreathingState, 100);
     }
     
+    
     // Countdown timer
     timerRef.current = window.setInterval(() => {
+      
       setPhaseTimeRemaining((prev) => {
         if (prev <= 1) {
+          
           if (currentPhase.type === 'breathing' && currentPhase.pattern) {
             const { inhale_seconds, hold_after_inhale_seconds, exhale_seconds } = currentPhase.pattern;
             const endOfExhalePosition = inhale_seconds + hold_after_inhale_seconds + exhale_seconds;
@@ -365,7 +393,8 @@ export function SessionEngineModal({
       if (breathingIntervalId) window.clearInterval(breathingIntervalId);
       cleanupAnimation();
     };
-  }, [sessionState, currentPhase, totalPhases, animateBreathingCircle, playBell, completeExercise, cleanupAnimation, circleRef, haptics, breathingCues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState, currentPhaseIndex, totalPhases]); // FIXED: Only primitive values - functions are stable via useCallback
   
   // Handle modal close
   const handleClose = useCallback(() => {
