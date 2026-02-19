@@ -1,242 +1,281 @@
-# 🗄️ Supabase CLI - Database Management
+# 🗄️ Supabase — Kompletní průvodce pro DechBar App
 
-## 📋 PŘEHLED
-
-DechBar App používá **Supabase CLI** pro správu databáze pomocí migration souborů.
-
-**Výhody:**
-- ✅ Git version control pro DB změny
-- ✅ Rychlé aplikování změn (1 příkaz)
-- ✅ Snadný rollback (git revert)
-- ✅ Jasná historie změn
-- ✅ AI agent může vytvářet migrace
+> **Pro AI agenty:** Přečti celý dokument před první prací se Supabase.
 
 ---
 
-## 🔧 SETUP (Pro nové vývojáře)
+## 📋 Přehled projektů
 
-### 1. Instalace CLI
+DechBar App používá **2 oddělené Supabase projekty**:
+
+| Prostředí | Project Ref | URL | Kdy |
+|---|---|---|---|
+| **DEV** | `nrlqzighwaeuxcicuhse` | `https://nrlqzighwaeuxcicuhse.supabase.co` | Lokální vývoj + testování |
+| **PROD** | `iqyahebbteiwzwyrtmns` | `https://iqyahebbteiwzwyrtmns.supabase.co` | Živý provoz na dechbar.cz |
+
+**Jak poznat, které prostředí frontend používá:**
+- `.env.local` → DEV (`nrlqzighwaeuxcicuhse`)
+- `.env.production` → PROD (`iqyahebbteiwzwyrtmns`)
+- Vercel používá PROD automaticky
+
+---
+
+## 🔧 Nastavení CLI
 
 ```bash
-# macOS
+# Instalace
 brew install supabase/tap/supabase
 
-# Ověření
-supabase --version
-```
-
-### 2. Přihlášení
-
-```bash
-# Přihlaš se k Supabase
+# Přihlášení (otevře browser)
 supabase login
 
-# Browser se otevře → přihlaš se
-# CLI získá token
+# Propojení s DEV projektem (spustit v dechbar-app/)
+supabase link --project-ref nrlqzighwaeuxcicuhse
 ```
 
-### 3. Propojení projektu
-
-```bash
-cd /Users/DechBar/dechbar-app
-
-# Propoj s remote projektem
-supabase link --project-ref iqyahebbteiwzwyrtmns
-```
-
-**Project Info:**
-- **Project ID:** `iqyahebbteiwzwyrtmns`
-- **Name:** DechBar App
-- **Region:** West EU (Ireland)
+Propojení je uloženo v `supabase/.temp/project-ref`. Příkazy jako `supabase db push --linked` pak automaticky míří na DEV.
 
 ---
 
-## 🔄 WORKFLOW (Práce s databází)
+## 🗂️ Struktura databáze
 
-### 1️⃣ **Vytvoř novou migraci**
+### Hlavní tabulky
 
-```bash
-cd /Users/DechBar/dechbar-app
+| Tabulka | Popis |
+|---|---|
+| `auth.users` | Spravuje Supabase Auth (nelze přímo editovat) |
+| `public.profiles` | Rozšířený profil uživatele (jméno, avatar, etc.) |
+| `public.user_roles` | Role uživatele (`member`, `admin`, `vip_member`, etc.) |
+| `public.memberships` | Typ členství (`ZDARMA`, `SMART`, `AI_COACH`) + Stripe Customer ID |
+| `public.modules` | Katalog produktů (programy, série, kurzy) |
+| `public.user_modules` | Zakoupené produkty — kdo má co přístupné |
+| `public.tracks` | Audio stopy |
+| `public.albums` | Skupiny stop (výzvy, kurzy, série) |
+| `public.exercises` | Dechová cvičení |
+| `public.ecomail_sync_queue` | Fronta eventů pro Ecomail (checkout, registrace, tagy) |
+| `public.ecomail_failed_syncs` | Dead letter queue — eventy po max. retry |
 
-# CLI vytvoří prázdný migration soubor s timestampem
-supabase migration new add_exercises_table
-```
-
-**Vytvoří:**
-```
-supabase/migrations/20260109130000_add_exercises_table.sql
-```
-
-### 2️⃣ **Napiš SQL do migration souboru**
+### Klíčová schémata pro platby
 
 ```sql
--- supabase/migrations/20260109130000_add_exercises_table.sql
+-- modules: Katalog produktů
+modules (
+  id UUID,
+  slug TEXT UNIQUE,           -- 'digitalni-ticho', 'serie-pribeh'
+  name TEXT,
+  price_czk INTEGER,
+  stripe_price_id TEXT,       -- 'price_1T2SBJK...' (LIVE) nebo 'price_1T2asN...' (TEST)
+  is_active BOOLEAN,
+  access_type TEXT            -- 'lifetime', 'subscription'
+)
 
-CREATE TABLE public.exercises (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  duration_seconds INTEGER NOT NULL,
-  breathing_pattern JSONB NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- Enable RLS
-ALTER TABLE public.exercises ENABLE ROW LEVEL SECURITY;
-
--- RLS Policies
-CREATE POLICY "Users can view own exercises"
-  ON public.exercises FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create own exercises"
-  ON public.exercises FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own exercises"
-  ON public.exercises FOR UPDATE
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own exercises"
-  ON public.exercises FOR DELETE
-  USING (auth.uid() = user_id);
-
--- Indexes
-CREATE INDEX exercises_user_idx ON public.exercises(user_id);
-CREATE INDEX exercises_created_idx ON public.exercises(created_at DESC);
-
-COMMENT ON TABLE public.exercises IS 'User-created breathing exercises';
-```
-
-### 3️⃣ **Aplikuj migraci na remote DB**
-
-```bash
-# Pushni všechny nové migrace na remote
-supabase db push
-
-# CLI:
-# - Detekuje nové migrace
-# - Aplikuje je v pořadí (podle timestampu)
-# - Zaloguje úspěch/chyby
-```
-
-### 4️⃣ **Commit do Gitu**
-
-```bash
-git add supabase/migrations/
-git commit -m "feat(db): add exercises table"
-git push
+-- user_modules: Zakoupené produkty
+user_modules (
+  id UUID,
+  user_id UUID,               -- NULL pro guest (dokud si nezaregistruje)
+  module_id UUID,
+  stripe_session_id TEXT,     -- ID Stripe checkout session
+  guest_email TEXT,           -- Email hosta při nákupu
+  granted_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ      -- NULL = lifetime
+)
 ```
 
 ---
 
-## 🛠️ UŽITEČNÉ PŘÍKAZY
+## 📦 Migrace
 
-### Zobrazit seznam migrací
+### Jak vytvořit migraci
+
 ```bash
-supabase migration list
+# Název souboru: supabase/migrations/YYYYMMDDHHMMSS_popis.sql
+# Příklad:
+touch supabase/migrations/20260219160000_create_ecomail_sync_queue.sql
 ```
 
-### Ověřit status projektu
+**Konvence pojmenování:**
+- Timestamp musí být unikátní — zkontroluj existující soubory!
+- Používej popisný název anglicky: `add_stripe_price_id`, `fix_rls_policy`, `create_table`
+
+### Aplikovat migrace na DEV
+
 ```bash
-supabase projects list
+cd dechbar-app/
+supabase db push --linked          # Aplikuje nové migrace
+supabase db push --linked --include-all  # Pokud jsou přeskočené migrace
 ```
 
-### Zobrazit tabulky v DB
+### Aplikovat na PROD
+
+**⚠️ NIKDY neaplikuj migrace na PROD bez předchozího testování na DEV!**
+
 ```bash
-supabase inspect db table-stats --linked
+supabase db push --db-url "postgresql://postgres:[PASSWORD]@db.iqyahebbteiwzwyrtmns.supabase.co:5432/postgres"
 ```
 
-### Stáhnout aktuální DB schéma
-```bash
-# Vytvoří migration z aktuálního stavu DB
-supabase db pull --schema public
-```
+Password najdeš v Supabase Dashboard → PROD projekt → Settings → Database.
 
-### Rollback (vrátit změny)
-```bash
-# 1. Git revert migration souboru
-git revert HEAD
+### Rollback
 
-# 2. Vytvoř "down" migraci (manuálně)
-supabase migration new revert_exercises_table
+Migrace nejde "zrušit" automaticky. Vytvoř novou migraci, která reverts změny:
 
-# 3. Napiš DROP TABLE ... do migration souboru
-
-# 4. Pushni
-supabase db push
+```sql
+-- 20260219999999_rollback_stripe_columns.sql
+ALTER TABLE public.modules DROP COLUMN IF EXISTS stripe_price_id;
 ```
 
 ---
 
-## 🤖 PRO AI AGENTY
+## ⚡ Edge Functions
 
-### Pravidla pro tvorbu migrací:
+### Nasazené funkce
 
-1. **Vytvoř soubor v:** `supabase/migrations/`
-2. **Název:** `YYYYMMDDHHMMSS_popis_zmeny.sql`
-3. **Obsah:**
-   ```sql
-   -- Vždy zahrň:
-   CREATE TABLE ...
-   ALTER TABLE ... ENABLE ROW LEVEL SECURITY;
-   CREATE POLICY ...
-   CREATE INDEX ...
-   COMMENT ON TABLE ...
-   ```
+| Funkce | DEV | PROD | Popis |
+|---|---|---|---|
+| `create-checkout-session` | ✅ | ✅ | Vytvoří Stripe Checkout Session |
+| `stripe-webhooks` | ✅ | ✅ | Zpracovává Stripe webhook eventy |
+| `sync-to-ecomail` | ✅ | ✅ | Synchronizuje kontakty do Ecomail |
+| `activate-smart-trial` | ✅ | ✅ | Aktivuje zkušební SMART členství |
+| `deactivate-smart-trial` | ✅ | ✅ | Deaktivuje zkušební SMART členství |
 
-4. **Developer spustí:** `supabase db push`
+### Deploy funkce
 
-### Checklist pro každou migraci:
+```bash
+# Deploy na DEV
+supabase functions deploy create-checkout-session --project-ref nrlqzighwaeuxcicuhse
 
-- [ ] CREATE TABLE s UUID primary key
-- [ ] Foreign keys s `ON DELETE CASCADE`
-- [ ] RLS enabled (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY`)
-- [ ] RLS policies (SELECT, INSERT, UPDATE, DELETE)
-- [ ] Indexes pro foreign keys a často queryované sloupce
-- [ ] Comments pro dokumentaci (`COMMENT ON TABLE ...`)
-- [ ] Timestamp sloupce: `created_at`, `updated_at`
+# Deploy s vypnutou JWT verifikací (pro public checkouty)
+supabase functions deploy create-checkout-session --project-ref nrlqzighwaeuxcicuhse --no-verify-jwt
 
----
+# Deploy na PROD
+supabase functions deploy create-checkout-session --project-ref iqyahebbteiwzwyrtmns --no-verify-jwt
+```
 
-## 📊 EXISTUJÍCÍ TABULKY
+### Kdy použít `--no-verify-jwt`
 
-| Tabulka | Účel | Řádky |
-|---------|------|-------|
-| `profiles` | User profiles | 0 |
-| `modules` | Available products | 5 |
-| `user_modules` | User purchases | 0 |
-| `memberships` | User membership plans | 0 |
-| `roles` | User roles | 6 |
-| `user_roles` | User-role junction | 0 |
-
-**Detaily:** Viz [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)
+Použij pro funkce, které musí fungovat bez přihlášení (guest uživatelé):
+- `create-checkout-session` — guest i přihlášení mohou koupit
+- Funkce sama si JWT ověří interně přes `supabase.auth.getUser()`
 
 ---
 
-## ⚠️ DŮLEŽITÉ
+## 🔐 Secrets (Environment Variables)
 
-### ✅ VŽDY:
-- Commit migrace do Gitu
-- Testuj na DEV před nasazením
-- Zahrň RLS policies pro VŠECHNY tabulky
-- Používej `IF NOT EXISTS` pro idempotenci
+Edge Functions čtou secrets přes `Deno.env.get('KEY')`.
 
-### ❌ NIKDY:
-- Neupravuj staré migration soubory (vytvoř novou)
-- Nemaž migration soubory
-- Neobcházej RLS (vždy enabled)
-- Nespouštěj SQL přímo v Supabase Dashboard (jen pro debug)
+### Nastavit secret
+
+```bash
+# Na DEV
+supabase secrets set STRIPE_SECRET_KEY="sk_test_..." --project-ref nrlqzighwaeuxcicuhse
+
+# Na PROD
+supabase secrets set STRIPE_SECRET_KEY="sk_live_..." --project-ref iqyahebbteiwzwyrtmns
+
+# Více secrets najednou
+supabase secrets set KEY1="value1" KEY2="value2" --project-ref nrlqzighwaeuxcicuhse
+```
+
+### Aktuální secrets na DEV
+
+| Secret | Hodnota | Popis |
+|---|---|---|
+| `STRIPE_SECRET_KEY` | `sk_test_...` | Stripe TEST secret key |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_...` | Webhook secret pro `stripe listen` (localhost) |
+| `ECOMAIL_API_KEY` | `***` | API klíč Ecomail |
+| `SUPABASE_URL` | `https://nrlqzighwaeuxcicuhse...` | Vlastní URL (nastaveno automaticky) |
+| `SUPABASE_ANON_KEY` | `eyJ...` | Anon klíč |
+| `SUPABASE_SERVICE_ROLE_KEY` | `eyJ...` | Service role klíč |
+
+### Zobrazit seznam secrets
+
+```bash
+supabase secrets list --project-ref nrlqzighwaeuxcicuhse
+```
 
 ---
 
-## 🔗 ODKAZY
+## 🔒 Row Level Security (RLS)
 
-- **Supabase Docs:** https://supabase.com/docs/guides/cli
-- **Migration Best Practices:** https://supabase.com/docs/guides/cli/local-development#database-migrations
-- **RLS Documentation:** https://supabase.com/docs/guides/auth/row-level-security
+Všechny tabulky mají RLS zapnuté. Pravidla:
+
+- `service_role` = plný přístup (Edge Functions)
+- `authenticated` = přístup k vlastním datům
+- `anon` = omezený přístup (jen nutné operace, např. INSERT do `ecomail_sync_queue`)
+
+### Přidat RLS policy
+
+```sql
+-- Přidat do migrace
+CREATE POLICY "Popis politiky"
+  ON public.nazev_tabulky
+  FOR INSERT           -- nebo SELECT, UPDATE, DELETE, ALL
+  TO authenticated     -- nebo anon, service_role
+  WITH CHECK (
+    user_id = auth.uid()  -- podmínka
+  );
+```
 
 ---
 
-*Last updated: 2026-01-09*
+## 🧪 Testování lokálně
+
+### Spuštění na localhostu
+
+1. Frontend čte z `.env.local` → DEV Supabase
+2. Edge Functions jsou nasazeny na DEV Supabase (ne lokálně)
+3. Stripe webhooks je potřeba forwardovat přes `stripe listen`
+
+```bash
+# Spustit dev server
+npm run dev
+
+# V druhém terminálu — Stripe webhooks na DEV Supabase
+# Stripe TEST klíč najdeš v: stripe config --list
+stripe listen --forward-to https://nrlqzighwaeuxcicuhse.supabase.co/functions/v1/stripe-webhooks \
+  --api-key sk_test_51S3eJ5...  # viz stripe config --list
+```
+
+---
+
+## 📊 Ecomail Sync Queue
+
+Fronta pro asynchronní synchronizaci do Ecomail.
+
+### Povolené event_type hodnoty
+
+```
+user_registered       - Nová registrace
+user_upgraded         - Upgrade členství
+user_downgraded       - Downgrade členství
+challenge_registered  - Registrace do výzvy
+product_purchased     - Zakoupení produktu (po Stripe webhook)
+checkout_started      - Kliknutí na Koupit (email-first flow)
+checkout_completed    - Po dokončení platby
+tag_update            - Aktualizace tagů
+```
+
+### Vložení eventu z frontendu
+
+```typescript
+await supabase.from('ecomail_sync_queue').insert({
+  user_id: user?.id ?? null,   // null pro hosta
+  email: 'user@example.com',
+  event_type: 'checkout_started',
+  payload: { module_id: 'digitalni-ticho', price_czk: 990 },
+  status: 'pending',
+});
+```
+
+---
+
+## 🚨 Časté chyby a řešení
+
+| Chyba | Příčina | Řešení |
+|---|---|---|
+| `duplicate key value violates unique constraint "schema_migrations_pkey"` | Dva soubory se stejným timestamp | Přejmenuj jeden soubor |
+| `Found local migration files to be inserted before last migration` | Chybí `--include-all` | `supabase db push --linked --include-all` |
+| `401 Unauthorized` na Edge Function | JWT mismatch nebo funkce potřebuje `--no-verify-jwt` | Redeploy s `--no-verify-jwt` |
+| `403 Forbidden` na REST API | Chybí RLS policy | Přidej policy pro danou roli |
+| `400 Bad Request` s check constraint | Hodnota není v povoleném seznamu | Uprav constraint v nové migraci |
+| `Bundle generation timed out` při deploy | Supabase dočasný problém | Počkej a zkus znovu |

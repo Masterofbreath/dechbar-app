@@ -154,6 +154,8 @@ serve(async (req) => {
     // Embedded vs Hosted checkout
     if (isEmbedded) {
       sessionConfig.ui_mode = 'embedded';
+      // 'if_required' = platba proběhne v embedded checkoutu, redirect jen pokud platební metoda vyžaduje
+      sessionConfig.redirect_on_completion = 'if_required';
       sessionConfig.return_url = successUrl
         ?? `${baseUrl}/digitalni-ticho/dekujeme?session_id={CHECKOUT_SESSION_ID}`;
     } else {

@@ -12,8 +12,6 @@
 import { useEffect } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import type { BillingInterval } from './types';
-
 // Load Stripe.js (cached after first load)
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -21,9 +19,6 @@ export interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   clientSecret: string | null;
-  moduleTitle: string;
-  price: string;
-  interval: BillingInterval;
 }
 
 /**
@@ -56,9 +51,6 @@ export function PaymentModal({
   isOpen,
   onClose,
   clientSecret,
-  moduleTitle,
-  price,
-  interval,
 }: PaymentModalProps) {
   // Lock body scroll when modal open
   useEffect(() => {
@@ -95,9 +87,9 @@ export function PaymentModal({
   const options = {
     clientSecret,
     onComplete: () => {
-      console.log('✅ Payment completed');
-      // Stripe will redirect to return_url (CheckoutSuccessPage)
-      // Modal will auto-close on navigation
+      // Zavolá se po úspěšné platbě kartou (redirect_on_completion: 'if_required')
+      // Pro platby vyžadující redirect (3DS, banky) Stripe přesměruje sám na return_url
+      onClose();
     },
   };
 
@@ -108,7 +100,7 @@ export function PaymentModal({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="payment-modal-title"
+        aria-label="Platební formulář"
       >
         {/* Close Button */}
         <button 
@@ -126,27 +118,6 @@ export function PaymentModal({
             />
           </svg>
         </button>
-
-        {/* Logo */}
-        <div className="payment-modal__logo-wrapper">
-          <img 
-            src="/assets/brand/logo/payment-logo-512.png" 
-            alt="DechBar" 
-            className="payment-modal__logo"
-            width="80"
-            height="80"
-          />
-        </div>
-
-        {/* Header */}
-        <div className="modal-header">
-          <h2 id="payment-modal-title" className="modal-title">
-            {moduleTitle}
-          </h2>
-          <p className="modal-subtitle">
-            {price} / {interval === 'monthly' ? 'měsíc' : 'rok'}
-          </p>
-        </div>
 
         {/* Stripe Embedded Checkout */}
         <div className="payment-modal__stripe-wrapper">

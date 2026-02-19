@@ -57,9 +57,6 @@ export function PricingCard({
     closePaymentModal, 
     clientSecret, 
     isModalOpen,
-    moduleTitle: modalModuleTitle,
-    price: modalPrice,
-    interval: modalInterval,
     isLoading,
     error 
   } = useEmbeddedCheckout();
@@ -223,9 +220,6 @@ export function PricingCard({
       isOpen={isModalOpen}
       onClose={closePaymentModal}
       clientSecret={clientSecret}
-      moduleTitle={modalModuleTitle}
-      price={modalPrice}
-      interval={modalInterval}
     />
     </>
   );

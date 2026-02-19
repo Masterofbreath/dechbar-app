@@ -130,9 +130,6 @@ export function DigitalniTichoPricing() {
         isOpen={paymentOpen}
         onClose={() => setPaymentOpen(false)}
         clientSecret={clientSecret}
-        moduleTitle="Digitální ticho"
-        price="990 Kč"
-        interval="lifetime"
       />
     </section>
   );
