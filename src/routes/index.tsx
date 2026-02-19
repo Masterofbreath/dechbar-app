@@ -27,7 +27,7 @@ import { useNavigation } from '@/platform/hooks';
 import { useKeyboardShortcuts } from '@/platform/hooks';
 
 // Public pages (eager load for landing)
-import { LandingPage } from '@/modules/public-web/pages/LandingPage';
+// import { LandingPage } from '@/modules/public-web/pages/LandingPage'; // TEMPORARY: redirecting to /vyzva until 2026-02-26
 import { SciencePage } from '@/modules/public-web/pages/SciencePage';
 import { ChallengePage } from '@/modules/public-web/pages/ChallengePage';
 import { ChallengeThankYouPage } from '@/modules/public-web/pages/ChallengeThankYouPage';
@@ -213,8 +213,10 @@ export const router = createBrowserRouter([
       // PUBLIC ROUTES (No auth required)
       // ============================================================
       {
+        // TEMPORARY REDIRECT: dechbar.cz → /vyzva (until 2026-02-26)
+        // After that date: revert to <LandingPage />
         index: true,
-        element: <LandingPage />,
+        element: <Navigate to="/vyzva" replace />,
       },
       {
         path: 'veda',

@@ -449,6 +449,318 @@ export const MESSAGES = {
       subtext: "Zdarma. 7 minut denně.",
     },
   },
+
+  // ============================================================
+  // 🎵 DIGITÁLNÍ TICHO LANDING PAGE (/digitalni-ticho)
+  // Audio program strukturovaného klidu - 21denní REŽIM
+  // Tone: Tykání, imperativ, krátké věty, BEZ emoji (Apple Premium)
+  // Cena: 990 Kč (předprodej) → 1290 Kč (po startu 1.3.2026)
+  // ============================================================
+  digitalniTicho: {
+    // Hero section (V3 FINAL - Umění odpočinku positioning)
+    hero: {
+      headline: "Vypni hluk. Zapni sebe.",
+      subheadline: "15 minut denně – regulace nervového systému, která funguje.",
+      description: [
+        "Cítíš se přehlcený a mysl i tělo potřebují reset? Program REŽIM tě naučí odpočívat v době, kdy to nejvíce potřebuješ.",
+        "Žádná meditace – čistá neurověda. Stačí ti 15 minut, sluchátka a chuť cítit se lépe."
+      ],
+      badge: "21 audio tréninků × 15 min",
+      cta: "Odemkni program →",
+      audioSampleLabel: "Poslechni si ukázku prvního dne →",
+      videoNote: "5 minut o tom, proč umění odpočinku změní tvůj den",
+      trustBar: {
+        start: "Start 1. 3. 2026",
+        duration: "21 tréninků × 15 min",
+        lifetime: "Přístup navždy",
+        guarantee: "7denní garance vrácení",
+        stripe: "Bezpečná platba Stripe",
+        members: "1000+ členů DechBaru"
+      }
+    },
+    
+    // Storytelling section (V3 FINAL - Extended use cases + neurověda)
+    story: {
+      pain: {
+        headline: "Poznáváš to?",
+        paragraphs: [
+          "Je 8 ráno. Máš před sebou náročný den - schůzky, e-maily, úkoly. Hlava ti vrčí ještě ze včerejška.",
+          "Potřebuješ trénink odpočinku. Ne kávu. Ne motivaci. Opravdový RESET systému."
+        ]
+      },
+      solution: {
+        headline: "Program REŽIM",
+        paragraphs: [
+          "Mezi schůzkami, před poradou, o polední pauze - kdykoli. Nasadíš sluchátka, pustíš a dýcháš.",
+          "15 minut tréninku odpočinku. Jasné instrukce regulující nervový systém."
+        ]
+      },
+      transformation: {
+        headline: "Co se stane?",
+        paragraphs: [
+          "Ve 3. minutě cítíš jak se dech prohlubuje. V 10. minutě je hlava čistá.",
+          "A po 15 minutách? Klid v těle. Jasno v hlavě.",
+          "Program REŽIM učí umění odpočinku v době, kdy je to nejvíce potřeba."
+        ]
+      }
+    },
+    
+    // Highlights section (V3 - Program struktura místo benefitů)
+    highlights: {
+      title: "", // No title (Apple Premium style - clean)
+      items: [
+        { 
+          headline: "Od Příběhu k Tichu",
+          text: "3 týdny. 3 fáze. Postupné prohlubování od stimulu k vlastnímu prostoru."
+        },
+        {
+          headline: "Každý den jinak",
+          text: "21 unikátních audio nahrávek. Žádné opakování. Každý den tě posune dál."
+        },
+        {
+          headline: "Doživotně tvoje",
+          text: "Jedna platba. Přístup navždy. Můžeš pustit offline kdekoli a kdykoli."
+        }
+      ]
+    },
+    
+    // Audio preview section (V3 - Single preview, no subtitle)
+    audioPreview: {
+      title: "Poslechni si ukázku z prvního dne"
+    },
+    
+    // Pro koho to je / není
+    pro: {
+      title: "Pro koho je program REŽIM?",
+      subtitle: "",
+      forTitle: "Program je pro tebe, pokud…",
+      forItems: [
+        "Chceš vyčistit mysl od přebytečného informačního šumu",
+        "Hledáš funkční reset – mezi schůzkami, před náročným úkolem nebo na konci dne",
+        "Chceš se naučit vědomě regulovat nervový systém a cítit se klidněji",
+        "Stačí ti 15 minut denně a chceš z toho reálný výsledek"
+      ],
+      notForTitle: "Program není pro tebe, pokud…",
+      notForItems: [
+        "Nechceš pracovat na svém klidu ani soustředěnosti",
+        "Hledáš motivační obsah, který tě bude povzbuzovat a chválit",
+        "Preferuješ zábavu, body a odměny místo skutečné práce na sobě",
+        "Chceš dál číst teorie a stahovat PDFka místo skutečné praxe",
+        "Volíš poslouchat další podcast místo toho, abys začal"
+      ]
+    },
+    
+    // Timeline (V3 FINAL - Regulace nervového systému emphasis)
+    timeline: {
+      title: "Jak to funguje",
+      phases: [
+        {
+          title: "Týden 1: Příběh",
+          days: "Den 1-7",
+          description: "Nervový systém se začíná uklidňovat. Vedu tě hlasem, příběhem a rytmem dechu."
+        },
+        {
+          title: "Týden 2: Vedení",
+          days: "Den 8-14",
+          description: "Jdeme hlouběji. Příběh ustupuje a regulace nervového systému se prohlubuje."
+        },
+        {
+          title: "Týden 3: Ticho",
+          days: "Den 15-21",
+          description: "Prostor pro tebe. Ticho, které funguje. Pozornost bez námahy."
+        }
+      ],
+      note: ""
+    },
+    
+    // Sound Identity (detail pro melancholiky)
+    soundIdentity: {
+      title: "Sound Identity",
+      subtitle: "Pro ty, kdo chtějí vědět, co poslouchají",
+      architectureTitle: "Architektura nahrávky",
+      architecture: [
+        { phase: "Brand Intro Sting", duration: "6-9s", bpm: "-" },
+        { phase: "Počátek", duration: "5-6 min", bpm: "58-60" },
+        { phase: "Hluboká práce", duration: "5-6 min", bpm: "52-55" },
+        { phase: "Doznění", duration: "4-5 min", bpm: "56-58" },
+        { phase: "Brand Outro Sting", duration: "6-9s", bpm: "-" }
+      ],
+      elementsTitle: "Zvukové elementy",
+      allowedTitle: "Povolené prvky",
+      allowed: [
+        "Analogové synth pads (teplé, pomalé)",
+        "Sub sine pulse (jemný, strukturální)",
+        "Sub drone (stabilní základ)",
+        "Granulární mikro-textura (pomalu se mění)",
+        "Airy shimmer (vysoké spektrum, jemně)"
+      ],
+      forbiddenTitle: "Zakázané prvky",
+      forbidden: [
+        "Vokály / slova",
+        "Výrazná melodie",
+        "Piano jako default nástroj",
+        "Perkusní beat (kick/snare/hat)",
+        "Kapky vody, ptáci, les (spa klišé)"
+      ]
+    },
+    
+    // Dech block (optional)
+    dech: {
+      title: "Dechové módy",
+      subtitle: "Doporučené způsoby dýchání (ne povinnost)",
+      modes: [
+        {
+          name: "Tichý nos",
+          description: "Pomalý nádech nosem, pomalý výdech nosem. Minimální pohyb hrudníku."
+        },
+        {
+          name: "Dlouhý výdech",
+          description: "Nádech 4s, výdech 8s. Aktivuje parasympatikus (zklidnění)."
+        },
+        {
+          name: "Box breathing",
+          description: "Nádech 4s, zadrž 4s, výdech 4s, zadrž 4s. Navy SEALs technika."
+        }
+      ],
+      note: "Opřeno o HRV research a stress regulation meta-analýzy."
+    },
+    
+    // Pricing section (V3 FINAL - Product name title, lifetime first)
+    pricing: {
+      price: "990 Kč",
+      perDay: "47 Kč/den",
+      coffeeNote: "(Méně než ranní káva)",
+      title: "Digitální ticho",
+      subtitle: "Zajisti si místo. Program startuje 1. 3. 2026.",
+      badge: "PŘEDPRODEJ",
+      featuresTitle: "Co dostaneš",
+      features: [
+        "Plný přístup – jedna platba, žádné předplatné",
+        "21 unikátních audio tréninků (každé 15 min)",
+        "Jasné vedení hlasem – vždy víš, co dělat",
+        "Funguje offline – stáhneš a posloucháš kdekoli",
+        "7denní garance vrácení peněz"
+      ],
+      cta: "Koupit za 990 Kč →",
+      stats: [
+        { value: "21", label: "tréninků" },
+        { value: "315", label: "minut obsahu" },
+        { value: "47 Kč", label: "za den" }
+      ]
+    },
+    
+    // Social proof (V2 - Zkušební vlna testimonials)
+    socialProof: {
+      title: "Co říkají lidé",
+      subtitle: "Zpětná vazba ze zkušební vlny",
+      quotes: [
+        {
+          text: "První den jsem byla skeptická. Čtvrtý den jsem to poslouchala dvakrát. Teď to pouštím každé ráno a je to můj rituál.",
+          author: "Petra, 34",
+          role: "Podnikatelka"
+        },
+        {
+          text: "Nečekal jsem, že audio bez hlasu může něco udělat. Ale po týdnu jsem si všiml, že se mi líp dýchá. A hlava je klidnější.",
+          author: "Martin, 42",
+          role: "Freelancer"
+        },
+        {
+          text: "Pustila jsem to poprvé mezi schůzkami. 15 minut. A pak jsem šla na call úplně jinak. V klidu. Tohle je game changer.",
+          author: "Jana, 38",
+          role: "Manažerka"
+        },
+        {
+          text: "Myslela jsem, že potřebuju další kurz. Nepotřebovala. Stačilo tohle. Každý den 15 minut a cítím rozdíl.",
+          author: "Lucie, 29",
+          role: "Maminka"
+        },
+        {
+          text: "Pouštím si to i v práci, když je toho na mě moc. Sluchátka, 15 minut a jsem zpátky. Lepší než přestávka na kafe.",
+          author: "Tomáš, 45",
+          role: "IT manager"
+        },
+      {
+        text: "Nečekala jsem, že to bude mít takový dopad. Po týdnu cítím, jak se mi líp dýchá. A hlava? Čistší. Používám to denně.",
+        author: "Kateřina, 31",
+        role: "Grafička"
+      }
+      ]
+    },
+    
+    // FAQ section (V3 FINAL - Neurověda + 2026 přestimulování positioning)
+    faq: {
+      title: "Časté otázky",
+      questions: [
+        {
+          question: "Bude to fungovat i na mě?",
+          answer: [
+            "Neslibujeme zázrak, ale vyčištění hlavy a regulaci nervového systému.",
+            "Toto je fyziologie a neurověda. Otestuj a poznej na vlastní kůži. Navíc máš 7denní garanci vrácení peněz – bez otázek."
+          ]
+        },
+        {
+          question: "Je to meditace?",
+          answer: [
+            "Ne. V meditaci člověk spočívá v tichu uvnitř sebe, v prostém bytí.",
+            "Trénink odpočinku je jiný – cíleně regulujeme nervový systém, uvolňujeme napětí v těle a čistíme mysl od přebytečného informačního šumu. Neurověda, ne spiritualita.",
+            "Na konci tě to může dostat do podobného stavu – ale cestu volíme jinou."
+          ]
+        },
+        {
+          question: "Co když nemám zkušenosti?",
+          answer: "Nepotřebuješ žádnou praxi. Nasadíš sluchátka, pustíš a dýcháš dle instrukcí. Vše ostatní se děje samo."
+        },
+        {
+          question: "Proč bych do programu měl jít?",
+          answer: [
+            "Protože tvůj nervový systém je v roce 2026 každý den přestimulovaný. Konstantní hluk a digitální rozptýlení. Notifikace, pracovní tlak, ekonomické nároky.",
+            "Program REŽIM učí moderního člověka umění odpočinku. Dovednost, kterou využiješ každý den."
+          ]
+        },
+        {
+          question: "Je platba bezpečná?",
+          answer: "Platební data jsou kvalitně zabezpečena a šifrována přes Stripe. Navíc máš 7denní garanci vrácení peněz při nespokojenosti."
+        },
+        {
+          question: "Co dostanu a kdy?",
+          answer: [
+            "Kupuješ vstup do programu REŽIM – Digitální ticho.",
+            "Program startuje 1. 3. 2026. V den startu dostaneš přístupy ke všem 21 tréninkům a můžeš okamžitě začít odpočinek trénovat."
+          ]
+        }
+      ]
+    },
+    
+    // Final CTA section (V3 FINAL)
+    finalCTA: {
+      headline: "Chceš se naučit umění odpočinku?",
+      subtext: "Předprodej • Start 1. 3. 2026 • 7denní garance vrácení",
+      cta: "Ano, chci začít →"
+    },
+    
+    // Footer (V3 - Trénink odpočinku tagline)
+    footer: {
+      tagline: "Trénink odpočinku pro moderní člověka.",
+      copyright: "© 2026 DechBar"
+    },
+    
+    // Thank You Page (po nákupu)
+    thankYou: {
+      title: "Děkujeme!",
+      subtitle: "Tvoje místo v Digitálním tichu je zajištěno.",
+      emailTitle: "Co dál?",
+      emailText: "Za chvíli ti přijde potvrzovací e-mail s detaily.",
+      startTitle: "Kdy to začne?",
+      startText: "Program startuje 1.3.2026. V den startu dostaneš přístup.",
+      preparationTitle: "Příprava",
+      preparationItems: [
+        "Připrav si sluchátka (doporučujeme přes-the-ear)",
+        "Najdi si tiché místo (15 min bez rušení)",
+        "Hlasitost drž níž (ambient má fungovat v pozadí)"
+      ],
+      ctaDashboard: "Zpět na DechBar →"
+    }
+  },
 } as const;
 
 // Type for autocomplete
