@@ -526,7 +526,7 @@ export const MESSAGES = {
     
     // Audio preview section (V3 - Single preview, no subtitle)
     audioPreview: {
-      title: "Poslechni si ukázku z prvního dne"
+      title: "Poslechni si první den zdarma"
     },
     
     // Pro koho to je / není

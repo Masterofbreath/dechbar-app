@@ -116,7 +116,7 @@ serve(async (req) => {
 
     // ── Session config ────────────────────────────────────────────
     const sessionConfig: Record<string, unknown> = {
-      payment_method_types: ['card'],
+      payment_method_types: ['card'],  // Apple Pay & Google Pay se zobrazí automaticky v embedded checkoutu (domain registration)
       line_items: [{ price: priceId, quantity: 1 }],
       mode: paymentMode,
       // Stripe sbírá email v checkoutu pro guest — ulož ho v session

@@ -17,7 +17,7 @@
 
 /* Payment Modal Specific Styling */
 .payment-modal {
-  max-width: 760px;
+  max-width: clamp(440px, 80vw, 1100px);
   max-height: 92vh;
   overflow-y: auto;
   overscroll-behavior: contain;
