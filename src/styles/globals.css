@@ -40,6 +40,7 @@
 /* Public Web Module */
 @import url('../modules/public-web/styles/landing.css');
 @import url('../modules/public-web/styles/challenge.css');
+@import url('../modules/public-web/styles/digitalni-ticho.css');
 @import url('../modules/public-web/styles/animations.css');
 
 /* ===================================
@@ -121,13 +122,11 @@ select,
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
-  user-select: none;
 }
 
 /* Allow text selection in inputs */
 input,
 textarea {
-  user-select: text;
   user-select: text;
 }
 
