@@ -200,9 +200,12 @@ serve(async (req) => {
       const session = event.data.object as Stripe.Checkout.Session;
 
       const isGuest = session.metadata?.is_guest === 'true';
-      // Email: přednostně z customer_details (Stripe ho sbírá v checkoutu),
-      // fallback na metadata (přihlášený uživatel)
-      const email = session.customer_details?.email ?? session.metadata?.email;
+      // Email: pro guesta preferujeme metadata.email (vědomě zadaný v EmailInputModal),
+      // aby Apple Pay / Google Pay email nepřepsal registrační email.
+      // Pro přihlášeného uživatele preferujeme customer_details (Stripe ho ověřil).
+      const email = isGuest
+        ? (session.metadata?.email || session.customer_details?.email)
+        : (session.customer_details?.email ?? session.metadata?.email);
       const moduleId = session.metadata?.module_id;
       const stripeCustomerId = session.customer as string;
 

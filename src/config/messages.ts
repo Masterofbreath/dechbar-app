@@ -538,7 +538,8 @@ export const MESSAGES = {
         "Chceš vyčistit mysl od přebytečného informačního šumu",
         "Hledáš funkční reset – mezi schůzkami, před náročným úkolem nebo na konci dne",
         "Chceš se naučit vědomě regulovat nervový systém a cítit se klidněji",
-        "Stačí ti 15 minut denně a chceš z toho reálný výsledek"
+        "Stačí ti 15 minut denně a chceš z toho reálný výsledek",
+        "Vnímáš, že jsi zapomněl/a, jaké to je být skutečně v klidu"
       ],
       notForTitle: "Program není pro tebe, pokud…",
       notForItems: [
