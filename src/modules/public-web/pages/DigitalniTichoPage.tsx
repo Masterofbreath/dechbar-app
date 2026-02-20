@@ -29,6 +29,7 @@ import { DigitalniTichoStory } from '../components/digitalni-ticho/DigitalniTich
 import { DigitalniTichoPro } from '../components/digitalni-ticho/DigitalniTichoPro';
 import { DigitalniTichoHighlights } from '../components/digitalni-ticho/DigitalniTichoHighlights';
 import { DigitalniTichoTimeline } from '../components/digitalni-ticho/DigitalniTichoTimeline';
+import { DigitalniTichoAuthor } from '../components/digitalni-ticho/DigitalniTichoAuthor';
 import { DigitalniTichoPricing } from '../components/digitalni-ticho/DigitalniTichoPricing';
 import { DigitalniTichoFAQ } from '../components/digitalni-ticho/DigitalniTichoFAQ';
 import { DigitalniTichoFinalCTA } from '../components/digitalni-ticho/DigitalniTichoFinalCTA';
@@ -81,6 +82,9 @@ export function DigitalniTichoPage() {
 
         {/* 7. Timeline - 3 fáze (výsledky od Týdne 1) */}
         <DigitalniTichoTimeline />
+
+        {/* 7.5 Author — Jakub's personal story + authority bridge před cenovou sekcí */}
+        <DigitalniTichoAuthor />
 
         {/* 8. Pricing */}
         <DigitalniTichoPricing onCTAClick={handleCTAClick} />

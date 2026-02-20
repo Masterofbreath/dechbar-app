@@ -760,6 +760,24 @@ export const MESSAGES = {
         "Hlasitost drž níž (ambient má fungovat v pozadí)"
       ],
       ctaDashboard: "Zpět na DechBar →"
+    },
+
+    // Author / Founder story section
+    // Placement: between Timeline and Pricing (authority bridge)
+    author: {
+      headline: "Proč jsem program REŽIM vytvořil",
+      paragraphs: [
+        "Minulý rok byl pro mě extrémně náročný. Práce, podnikání, finance, rodina. V říjnu jsem pil tři kávy denně a chodil spát pozdě v noci. Hledal jsem způsob, jak z toho ven. A pak mi to došlo — moderní člověk neumí odpočívat. Skutečně odpočívat. Jdeme do wellness, do parku — ale furt v ruce mobil, v uších sluchátka. Umět se zastavit a jen být? To nás nikdo neučil.",
+        "Proto vznikl program REŽIM. Jako certifikovaný instruktor funkčního dýchání (Oxygen Advantage) jsem za poslední rok vytvořil přes 150 audio nahrávek a provedl stovky lidí na festivalech, ve firmách i v osobním mentoringu. Program REŽIM jsem vytvořil jako první pro sebe. Funguje. A teď ho dávám tobě. Věřím, že 15 minut tréninku odpočinku denně je v roce 2026 jedna z nejcennějších dovedností, kterou si můžeš dopřát."
+      ],
+      name: "Jakub",
+      title: "Instruktor funkčního dýchání · Zakladatel DechBar",
+      photoAlt: "Jakub — instruktor funkčního dýchání a zakladatel DechBar",
+      credentials: [
+        { value: "150+", label: "audio nahrávek" },
+        { value: "1000+", label: "členů DechBaru" },
+        { value: "3+ roky", label: "praxe s lidmi" }
+      ]
     }
   },
 } as const;

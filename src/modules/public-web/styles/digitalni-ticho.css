@@ -1755,6 +1755,149 @@
 }
 
 /* ===================================
+   AUTHOR SECTION
+   Founder story — splits to photo + text
+   =================================== */
+
+.digitalni-ticho-author {
+  padding: var(--spacing-20) var(--spacing-6);
+  background: var(--color-surface);  /* #1E1E1E — odliší se od Timeline (black) i Pricing */
+}
+
+.digitalni-ticho-author__container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Desktop: grid 2 sloupce (foto 40% / text 60%) */
+.digitalni-ticho-author__layout {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: var(--spacing-16);  /* 64px */
+  align-items: center;
+}
+
+/* FOTO strana */
+.digitalni-ticho-author__photo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.digitalni-ticho-author__photo {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-2xl);  /* 20px */
+  display: block;
+}
+
+.digitalni-ticho-author__name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+.digitalni-ticho-author__title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* TEXT strana */
+.digitalni-ticho-author__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.digitalni-ticho-author__headline {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+  color: var(--color-accent);  /* Brand gold */
+  margin: 0;
+}
+
+.digitalni-ticho-author__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.digitalni-ticho-author__text p {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);  /* 1.75 — dlouhý text, více breathing space */
+  margin: 0;
+}
+
+/* Credentials strip — 3 čísla */
+.digitalni-ticho-author__credentials {
+  display: flex;
+  gap: var(--spacing-8);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.digitalni-ticho-author__credential {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.digitalni-ticho-author__credential-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+}
+
+.digitalni-ticho-author__credential-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* Mobile: stack vertikálně */
+@media (width <= 768px) {
+  .digitalni-ticho-author__layout {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-10);
+  }
+
+  .digitalni-ticho-author__photo {
+    max-width: 200px;
+    border-radius: 50%;  /* Kruh na mobilu — intimnější */
+  }
+
+  .digitalni-ticho-author__headline {
+    font-size: var(--font-size-2xl);
+    text-align: center;
+  }
+
+  .digitalni-ticho-author__text p {
+    text-align: left;
+  }
+
+  .digitalni-ticho-author__credentials {
+    justify-content: center;
+    gap: var(--spacing-6);
+  }
+
+  .digitalni-ticho-author__credential {
+    align-items: center;
+  }
+}
+
+/* ===================================
    ACCESSIBILITY
    =================================== */
 
