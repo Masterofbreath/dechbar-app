@@ -11,27 +11,17 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/platform/components';
-import { EmailInputModal } from '@/platform/components/EmailInputModal';
-import { PaymentModal } from '@/platform/payments';
 import { MESSAGES } from '@/config/messages';
 import { DigitalniTichoCountdown } from './DigitalniTichoCountdown';
-import { useDigitalniTichoCheckout } from './useDigitalniTichoCheckout';
 
 const STICKY_SCROLL_THRESHOLD = 180;
 
-export function DigitalniTichoStickyCTA() {
-  const [isVisible, setIsVisible] = useState(false);
+interface DigitalniTichoStickyCTAProps {
+  onCTAClick: () => void;
+}
 
-  const {
-    emailModalOpen,
-    setEmailModalOpen,
-    paymentOpen,
-    setPaymentOpen,
-    clientSecret,
-    loadingEmail,
-    handleCTAClick,
-    handleEmailSubmit,
-  } = useDigitalniTichoCheckout();
+export function DigitalniTichoStickyCTA({ onCTAClick }: DigitalniTichoStickyCTAProps) {
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -49,37 +39,20 @@ export function DigitalniTichoStickyCTA() {
   if (!isVisible) return null;
 
   return (
-    <>
-      <div className="digitalni-ticho-sticky-cta">
-        <div className="digitalni-ticho-sticky-cta__container">
-          <span className="digitalni-ticho-sticky-cta__label">
-            <DigitalniTichoCountdown />
-          </span>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={handleCTAClick}
-            className="digitalni-ticho-sticky-cta__button"
-          >
-            {MESSAGES.digitalniTicho.pricing.cta}
-          </Button>
-        </div>
+    <div className="digitalni-ticho-sticky-cta">
+      <div className="digitalni-ticho-sticky-cta__container">
+        <span className="digitalni-ticho-sticky-cta__label">
+          <DigitalniTichoCountdown />
+        </span>
+        <Button
+          variant="primary"
+          size="md"
+          onClick={onCTAClick}
+          className="digitalni-ticho-sticky-cta__button"
+        >
+          {MESSAGES.digitalniTicho.pricing.cta}
+        </Button>
       </div>
-
-      {/* Krok 1: Email modal pro guest */}
-      <EmailInputModal
-        isOpen={emailModalOpen}
-        onClose={() => setEmailModalOpen(false)}
-        onSubmit={handleEmailSubmit}
-        isLoading={loadingEmail}
-      />
-
-      {/* Krok 2: Stripe Embedded Checkout */}
-      <PaymentModal
-        isOpen={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        clientSecret={clientSecret}
-      />
-    </>
+    </div>
   );
 }

@@ -18,24 +18,13 @@
  */
 
 import { Button } from '@/platform/components';
-import { EmailInputModal } from '@/platform/components/EmailInputModal';
-import { PaymentModal } from '@/platform/payments';
 import { MESSAGES } from '@/config/messages';
-import { useDigitalniTichoCheckout } from './useDigitalniTichoCheckout';
 
-export function DigitalniTichoPricing() {
-  const {
-    emailModalOpen,
-    setEmailModalOpen,
-    paymentOpen,
-    setPaymentOpen,
-    clientSecret,
-    loadingEmail,
-    error,
-    handleCTAClick,
-    handleEmailSubmit,
-  } = useDigitalniTichoCheckout();
+interface DigitalniTichoPricingProps {
+  onCTAClick: () => void;
+}
 
+export function DigitalniTichoPricing({ onCTAClick }: DigitalniTichoPricingProps) {
   const { 
     price,
     perDay,
@@ -94,7 +83,7 @@ export function DigitalniTichoPricing() {
             variant="primary"
             size="lg"
             fullWidth
-            onClick={handleCTAClick}
+            onClick={onCTAClick}
           >
             {cta}
           </Button>
@@ -108,29 +97,8 @@ export function DigitalniTichoPricing() {
               </div>
             ))}
           </div>
-
-          {error && (
-            <div className="digitalni-ticho-pricing__error">
-              {error}
-            </div>
-          )}
         </div>
       </div>
-
-      {/* Krok 1: Email modal pro guest */}
-      <EmailInputModal
-        isOpen={emailModalOpen}
-        onClose={() => setEmailModalOpen(false)}
-        onSubmit={handleEmailSubmit}
-        isLoading={loadingEmail}
-      />
-
-      {/* Krok 2: Stripe Embedded Checkout */}
-      <PaymentModal
-        isOpen={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        clientSecret={clientSecret}
-      />
     </section>
   );
 }

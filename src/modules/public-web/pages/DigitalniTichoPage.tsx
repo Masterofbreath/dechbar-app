@@ -34,8 +34,25 @@ import { DigitalniTichoFAQ } from '../components/digitalni-ticho/DigitalniTichoF
 import { DigitalniTichoFinalCTA } from '../components/digitalni-ticho/DigitalniTichoFinalCTA';
 import { DigitalniTichoFooter } from '../components/digitalni-ticho/DigitalniTichoFooter';
 import { DigitalniTichoStickyCTA } from '../components/digitalni-ticho/DigitalniTichoStickyCTA';
+import { EmailInputModal } from '@/platform/components/EmailInputModal';
+import { PaymentModal } from '@/platform/payments';
+import { useDigitalniTichoCheckout } from '../components/digitalni-ticho/useDigitalniTichoCheckout';
 
 export function DigitalniTichoPage() {
+  // Jediná instance checkout stavu pro celou stránku.
+  // CTA komponenty dostávají pouze handleCTAClick jako prop —
+  // tím je zaručeno, že na stránce existuje vždy právě 1× EmbeddedCheckout.
+  const {
+    emailModalOpen,
+    setEmailModalOpen,
+    paymentOpen,
+    clientSecret,
+    loadingEmail,
+    handleCTAClick,
+    handleEmailSubmit,
+    handlePaymentClose,
+  } = useDigitalniTichoCheckout();
+
   useEffect(() => {
     document.title = 'Digitální ticho | DechBar';
     window.scrollTo(0, 0);
@@ -66,19 +83,34 @@ export function DigitalniTichoPage() {
         <DigitalniTichoTimeline />
 
         {/* 8. Pricing */}
-        <DigitalniTichoPricing />
+        <DigitalniTichoPricing onCTAClick={handleCTAClick} />
 
         {/* 9. FAQ */}
         <DigitalniTichoFAQ />
 
         {/* 10. Final CTA */}
-        <DigitalniTichoFinalCTA />
+        <DigitalniTichoFinalCTA onCTAClick={handleCTAClick} />
       </main>
 
       {/* Sticky CTA - po 180px scrollu */}
-      <DigitalniTichoStickyCTA />
+      <DigitalniTichoStickyCTA onCTAClick={handleCTAClick} />
 
       <DigitalniTichoFooter />
+
+      {/* Jediný email modal pro celou stránku — žádné race conditions */}
+      <EmailInputModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSubmit={handleEmailSubmit}
+        isLoading={loadingEmail}
+      />
+
+      {/* Jediný PaymentModal — zaručuje 1× EmbeddedCheckout na stránce (Stripe constraint) */}
+      <PaymentModal
+        isOpen={paymentOpen}
+        onClose={handlePaymentClose}
+        clientSecret={clientSecret}
+      />
     </div>
   );
 }

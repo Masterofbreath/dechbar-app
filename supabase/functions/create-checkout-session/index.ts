@@ -172,6 +172,34 @@ serve(async (req) => {
       `✅ Checkout session created: ${session.id} | mode: ${paymentMode} | user: ${userId ?? 'guest:' + userEmail}`,
     );
 
+    // ── Ecomail: Tier 1 — checkout zahájen ────────────────────────
+    // Zachytíme email ihned při otevření Stripe formuláře.
+    // Pokud uživatel nezaplatí, můžeme cílit remarketing sekvenci.
+    if (userEmail) {
+      try {
+        const moduleTag = `CHECKOUT_STARTED_${(moduleId ?? 'unknown').toUpperCase().replace(/-/g, '_')}`;
+        await supabase.from('ecomail_sync_queue').insert({
+          user_id: userId ?? null,
+          email: userEmail,
+          event_type: 'contact_add',
+          payload: {
+            list_name: 'UNREG',
+            contact: {
+              email: userEmail,
+              custom_fields: {
+                CHECKOUT_SOURCE: 'landing_page',
+              },
+            },
+            tags: ['CHECKOUT_STARTED', moduleTag],
+          },
+        });
+        console.log(`📧 Ecomail Tier 1: CHECKOUT_STARTED for ${userEmail}`);
+      } catch (ecomailErr) {
+        // Non-critical — neblokujeme checkout
+        console.warn(`⚠️ Ecomail Tier 1 queue failed (non-critical): ${ecomailErr}`);
+      }
+    }
+
     if (isEmbedded) {
       return new Response(
         JSON.stringify({ clientSecret: session.client_secret, session_id: session.id }),

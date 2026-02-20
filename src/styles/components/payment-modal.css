@@ -1,105 +1,157 @@
 /**
  * Payment Modal - Apple Premium Style
- * 
- * Styling for Stripe Embedded Checkout modal with dark theme.
- * Stripe Elements automatically styled to match DechBar brand.
- * 
- * Visual Brand Book compliance:
- * - Dark-first (#121212 background, #2A2A2A surface)
- * - Teal primary (#2CBEC6) for focus/active states
- * - Gold accent (#F8CA00) for premium elements
- * - Glassmorphism (backdrop-filter: blur)
- * - Premium shadows (Apple-style depth)
- * 
+ *
+ * Dva stavy, dva layouty:
+ *
+ * LOADING STATE (.payment-modal--loading)
+ * - Standardní vystředěná modal karta (modal-card)
+ * - Spinner + text "Připravuji platební formulář…"
+ * - Zajišťuje okamžitou vizuální odezvu
+ *
+ * FORM STATE (.payment-modal-overlay)
+ * - Fullscreen overlay — Stripe iframe plave na tmavém pozadí
+ * - Žádný modal-card kontejner → čistší, méně vizuálního šumu
+ * - Frame vertikálně vystředěný přes margin-block: auto
+ *   (= stejný prostor nad i pod iframe, scrolluje když je formulář vyšší než viewport)
+ * - Close button position: absolute uvnitř framu, překrývá tmavý Stripe header
+ *   (overlay click nebo ESC stále zavírají formulář při scrollování)
+ *
+ * CSS specificita:
+ * - .modal-card.payment-modal--loading (0-2-0) bije .modal-card (0-1-0) z modals.css
+ * - .payment-modal-close load order: payment-modal.css (globals.css l.62) po close-button.css (l.53)
+ *   → stejná specificita (0-1-0), payment-modal.css načten SPÄTER → top/right values vyhrají
+ *
  * @package DechBar_App
  * @subpackage Styles/Components
  */
 
-/* Payment Modal Specific Styling */
-.payment-modal {
-  max-width: clamp(440px, 80vw, 1100px);
-  max-height: 92vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  padding: var(--spacing-5) var(--spacing-6);  /* 20px 32px */
-}
+/* ============================================================
+   LOADING STATE — Vystředěná modal karta
+   Zobrazí se okamžitě po CTA kliknutí, před příchodem clientSecret
+   ============================================================ */
 
-/* Stripe Embedded Checkout Wrapper */
-.payment-modal__stripe-wrapper {
-  margin-top: 0;
-  margin-bottom: var(--spacing-4);  /* 16px */
-}
-
-/* Stripe Elements - Dark Theme Configuration */
-.payment-modal__stripe-wrapper iframe {
-  /* Stripe iframe automatically inherits these CSS variables */
-  --colorPrimary: #2CBEC6;  /* Teal - focus/active states */
-  --colorBackground: #1E1E1E;  /* Dark surface */
-  --colorText: #E0E0E0;  /* Off-white text */
-  --colorDanger: #EF4444;  /* Red - errors */
-  --borderRadius: 12px;
-  --fontFamily: 'Inter', -apple-system, blinkmacsystemfont, sans-serif;
-  
-  /* Remove iframe border */
-  border: none;
-  width: 100%;
-}
-
-/* Security Badge */
-.payment-modal__security {
+.modal-card.payment-modal--loading {
+  max-width: 440px;
+  min-height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-2);  /* 8px */
-  margin-top: var(--spacing-4);  /* 16px */
-  padding-top: var(--spacing-4);
-  border-top: 1px solid var(--color-border);
-  font-size: var(--font-size-sm);  /* 14px */
-  color: var(--color-text-secondary);  /* #A0A0A0 */
 }
 
-.payment-modal__security svg {
-  color: var(--color-success);  /* Green lock icon */
+.payment-modal__loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-8) 0;
+  color: var(--color-text-secondary);
 }
 
-/* Mobile Responsive */
-@media (width <= 768px) {
-  .payment-modal {
-    max-width: 100%;
-    max-height: 96vh;
-    padding: var(--spacing-4) var(--spacing-4);  /* 16px */
-  }
+.payment-modal__loader-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
 }
 
-/*
- * Scrolling fix pro PaymentModal na iOS/Android
- *
- * Problém: .modal-overlay má align-items: center + overflow: hidden (implicitní),
- * na iOS Safari scroll v child elementu nefunguje pokud overlay zachytí touch eventy.
- *
- * Řešení: Při otevřeném PaymentModal overlay přepne na scroll mode a karta
- * se zarovná nahoru — uživatel scrolluje overlay, ne kartu.
- */
-.modal-overlay:has(.payment-modal) {
+.payment-modal__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgb(255 255 255 / 8%);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: payment-modal-spin 0.8s linear infinite;
+}
+
+@keyframes payment-modal-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   FORM STATE OVERLAY — Page-level scrolling
+   Fullscreen tmavé pozadí, iframe plave uprostřed
+   ============================================================ */
+
+.payment-modal-overlay {
+  /* Nutné pro margin-block: auto trick + scroll overflow při vysokém formuláři */
   align-items: flex-start;
-  overflow-y: auto;
+  overflow: hidden auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+
+  /* Breathing room u okrajů viewportu */
   padding: var(--spacing-4);
 }
 
-.modal-overlay:has(.payment-modal) .payment-modal {
-  margin: auto;
-  max-height: none;
-  overflow-y: visible;
+/* Dekorativní ::before (ambient particles, height: 200%) z modals.css způsobuje
+   scrollovatelnou plochu 2× výška viewportu při overflow-y: auto.
+   Platební overlay gradient nepotřebuje — vypneme ho úplně. */
+.payment-modal-overlay::before {
+  display: none;
 }
 
-/* Loading State - Stripe takes 1-2s to load */
-.payment-modal__stripe-wrapper:empty::before {
-  content: 'Načítám platební formulář...';
+/* ============================================================
+   FORM FRAME — Layout wrapper + anchor pro close button
+   
+   margin-block: auto = vertikální centrování v flex kontejneru:
+   - Kratší než viewport → stejný prostor nad i pod iframe
+   - Vyšší než viewport → přilne k horní hraně, overlay scrolluje
+   ============================================================ */
+
+.payment-modal-frame {
+  /* Anchor pro position: absolute close button */
+  position: relative;
+  width: 100%;
+  max-width: clamp(440px, 80vw, 540px);
+
+  /* Horizontální centrování */
+  margin-inline: auto;
+
+  /* Vertikální centrování — distribuje volný prostor rovnoměrně nad i pod */
+  margin-block: auto;
+}
+
+/* ============================================================
+   STRIPE IFRAME WRAPPER
+   overflow:hidden ořízne cross-origin iframe na zaoblené rohy
+   ============================================================ */
+
+.payment-modal__stripe-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.payment-modal__stripe-wrapper iframe {
+  border: none;
+  width: 100%;
   display: block;
-  text-align: center;
-  padding: var(--spacing-6) 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+}
+
+/* ============================================================
+   CLOSE BUTTON — Absolutně v pravém rohu framu
+   
+   Vizuálně překrývá pravý horní roh tmavého Stripe headeru.
+   Scrolluje spolu s formulářem — při scrollování zavírá:
+   - Klik na tmavé pozadí overlay (onClick na .payment-modal-overlay)
+   - Klávesa ESC
+   
+   Specificita: .payment-modal-close (0-1-0) = .close-button (0-1-0)
+   payment-modal.css načten PO close-button.css → top: 14px / right: 14px vyhrají
+   ============================================================ */
+
+.payment-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10001;
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE
+   ============================================================ */
+
+@media (width <= 768px) {
+  .payment-modal-frame {
+    max-width: 100%;
+  }
 }

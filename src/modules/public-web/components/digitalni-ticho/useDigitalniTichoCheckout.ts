@@ -43,15 +43,33 @@ export function useDigitalniTichoCheckout() {
   const handleEmailSubmit = useCallback(async (email: string) => {
     setLoadingEmail(true);
     setError('');
+    setEmailModalOpen(false); // Zavři email modal PŘED otevřením Stripe — předchází probliknutí
     try {
       await createSession(email);
-      setEmailModalOpen(false);
+    } catch {
+      // Při chybě: zavři payment modal (který createSession otevřel) a vrať email modal
+      setPaymentOpen(false);
+      setClientSecret(null);
+      setEmailModalOpen(true);
     } finally {
       setLoadingEmail(false);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Správné zavření payment modalu — resetuje clientSecret aby EmbeddedCheckoutProvider
+  // se plně odmontoval a příští otevření začalo čistě bez staré Stripe session
+  const handlePaymentClose = useCallback(() => {
+    setPaymentOpen(false);
+    setClientSecret(null);
+  }, []);
+
   async function createSession(email: string) {
+    // Otevři modal IHNED → uživatel vidí loading spinner okamžitě
+    // clientSecret je ještě null → PaymentModal renderuje loading stav
+    // React 18 batching by jinak sloučil setPaymentOpen + setClientSecret do jednoho renderu
+    // a loading stav by nikdy nebyl vidět
+    setPaymentOpen(true);
+
     // Zachyť email pro remarketing (checkout_started event)
     await captureEmail(email);
 
@@ -72,8 +90,7 @@ export function useDigitalniTichoCheckout() {
     if (invokeError) throw invokeError;
 
     if (data?.clientSecret) {
-      setClientSecret(data.clientSecret);
-      setPaymentOpen(true);
+      setClientSecret(data.clientSecret);  // paymentOpen je již true → přepne loading → formulář
     } else if (data?.url) {
       window.location.href = data.url;
     } else {
@@ -103,11 +120,11 @@ export function useDigitalniTichoCheckout() {
     emailModalOpen,
     setEmailModalOpen,
     paymentOpen,
-    setPaymentOpen,
     clientSecret,
     loadingEmail,
     error,
     handleCTAClick,
     handleEmailSubmit,
+    handlePaymentClose,
   };
 }

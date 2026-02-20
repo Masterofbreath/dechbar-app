@@ -57,8 +57,8 @@ export function EmailInputModal({
 
     try {
       await onSubmit(email);
-    } catch (err: any) {
-      setError(err.message || 'Něco se pokazilo. Zkus to znovu.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Něco se pokazilo. Zkus to znovu.');
     }
   };
 
@@ -92,7 +92,7 @@ export function EmailInputModal({
         {/* Header - using global modal-header */}
         <div className="modal-header">
           <h2 className="modal-title">
-            Začni dýchat s námi
+            Vstup do programu
           </h2>
         </div>
 

@@ -12,23 +12,13 @@
  */
 
 import { Button } from '@/platform/components';
-import { EmailInputModal } from '@/platform/components/EmailInputModal';
-import { PaymentModal } from '@/platform/payments';
 import { MESSAGES } from '@/config/messages';
-import { useDigitalniTichoCheckout } from './useDigitalniTichoCheckout';
 
-export function DigitalniTichoFinalCTA() {
-  const {
-    emailModalOpen,
-    setEmailModalOpen,
-    paymentOpen,
-    setPaymentOpen,
-    clientSecret,
-    loadingEmail,
-    handleCTAClick,
-    handleEmailSubmit,
-  } = useDigitalniTichoCheckout();
+interface DigitalniTichoFinalCTAProps {
+  onCTAClick: () => void;
+}
 
+export function DigitalniTichoFinalCTA({ onCTAClick }: DigitalniTichoFinalCTAProps) {
   const { headline, subtext, cta } = MESSAGES.digitalniTicho.finalCTA;
 
   return (
@@ -45,27 +35,12 @@ export function DigitalniTichoFinalCTA() {
         <Button
           variant="primary"
           size="lg"
-          onClick={handleCTAClick}
+          onClick={onCTAClick}
           className="digitalni-ticho-final-cta__button"
         >
           {cta}
         </Button>
       </div>
-
-      {/* Krok 1: Email modal pro guest */}
-      <EmailInputModal
-        isOpen={emailModalOpen}
-        onClose={() => setEmailModalOpen(false)}
-        onSubmit={handleEmailSubmit}
-        isLoading={loadingEmail}
-      />
-
-      {/* Krok 2: Stripe Embedded Checkout */}
-      <PaymentModal
-        isOpen={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        clientSecret={clientSecret}
-      />
     </section>
   );
 }

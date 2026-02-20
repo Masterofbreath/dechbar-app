@@ -36,7 +36,13 @@ function getModuleFromPriceId(priceId: string): {
 } | null {
   const priceMap: Record<string, any> = {
     // ── One-time products ──────────────────────────────────────
+    // LIVE price (990 CZK)
     'price_1T2SBJK0OYr7u1q9HkiaSKYY': {
+      module_id: 'digitalni-ticho',
+      payment_type: 'one_time',
+    },
+    // TEST price (990 CZK) — používá se v .env.local / DEV prostředí
+    'price_1T2asNK0OYr7u1q9VEmHDEme': {
       module_id: 'digitalni-ticho',
       payment_type: 'one_time',
     },
@@ -71,6 +77,33 @@ function getModuleFromPriceId(priceId: string): {
   };
 
   return priceMap[priceId] ?? null;
+}
+
+// ============================================================
+// HELPER: Debug log to DB (pro diagnostiku)
+// ============================================================
+
+async function dbLog(
+  supabase: any,
+  step: string,
+  message: string,
+  data?: Record<string, unknown>,
+  eventId?: string,
+  eventType?: string,
+  errorMessage?: string,
+) {
+  try {
+    await supabase.from('webhook_debug_logs').insert({
+      event_id: eventId,
+      event_type: eventType,
+      step,
+      message,
+      data: data ?? null,
+      error_message: errorMessage ?? null,
+    });
+  } catch {
+    // Logging failure nesmí zastavit zpracování
+  }
 }
 
 // ============================================================
@@ -133,6 +166,10 @@ async function grantModuleAccess(
 }
 
 // ============================================================
+// HELPER: Find user by email (handles pagination)
+// ============================================================
+
+// ============================================================
 // MAIN HANDLER
 // ============================================================
 
@@ -145,10 +182,16 @@ serve(async (req) => {
 
   try {
     const body = await req.text();
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    console.log(`🔔 Webhook: ${event.type}`);
+    // constructEventAsync je nutný v Deno/Edge Runtime (SubtleCrypto = async Web Crypto API)
+    const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+    console.log(`🔔 Webhook: ${event.type} | ${event.id}`);
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    await dbLog(supabase, 'received', `Webhook received: ${event.type}`, {
+      event_type: event.type,
+      api_version: event.api_version,
+    }, event.id, event.type);
 
     // ──────────────────────────────────────────────────────────
     // CHECKOUT SESSION COMPLETED
@@ -163,86 +206,124 @@ serve(async (req) => {
       const moduleId = session.metadata?.module_id;
       const stripeCustomerId = session.customer as string;
 
+      await dbLog(supabase, 'session_parsed', 'Session metadata parsed', {
+        session_id: session.id,
+        session_status: session.status,
+        payment_status: session.payment_status,
+        is_guest: isGuest,
+        email,
+        module_id: moduleId,
+        customer_id: stripeCustomerId,
+        metadata: session.metadata,
+        customer_details: session.customer_details,
+      }, event.id, event.type);
+
       if (!email || !moduleId) {
         console.error('❌ Missing email or module_id in session metadata');
+        await dbLog(supabase, 'error', 'Missing email or module_id', {
+          email,
+          module_id: moduleId,
+        }, event.id, event.type, 'Missing email or module_id in session metadata');
         return new Response('Missing metadata', { status: 400 });
       }
 
       // Určení payment type z price
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-      const priceId = lineItems.data[0]?.price?.id;
+      let priceId: string | undefined;
+      let lineItemAmount: number | undefined;
+      try {
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+        priceId = lineItems.data[0]?.price?.id;
+        lineItemAmount = lineItems.data[0]?.amount_total ?? undefined;
+        await dbLog(supabase, 'line_items', 'Line items fetched', {
+          price_id: priceId,
+          amount: lineItemAmount,
+        }, event.id, event.type);
+      } catch (lineItemsErr: any) {
+        console.warn(`⚠️ Could not fetch line items (synthetic event?): ${lineItemsErr.message}`);
+        await dbLog(supabase, 'line_items_warn', 'Could not fetch line items', {}, event.id, event.type, lineItemsErr.message);
+      }
       const moduleInfo = priceId ? getModuleFromPriceId(priceId) : null;
       const isOneTime = session.mode === 'payment' || moduleInfo?.payment_type === 'one_time';
 
-      console.log(`✅ Checkout completed — guest: ${isGuest}, module: ${moduleId}, one_time: ${isOneTime}`);
+      console.log(`✅ Checkout completed — guest: ${isGuest}, module: ${moduleId}, one_time: ${isOneTime}, price: ${priceId}`);
 
-      // ── GUEST CHECKOUT: vytvoř Supabase uživatele ────────────
+      // ── GUEST CHECKOUT: vytvoř Supabase uživatele via DB RPC ────────────
+      // POZOR: admin.createUser() selhává kvůli trigger chain v Supabase Auth HTTP API
+      // Používáme přímou DB funkci create_user_for_purchase (SQL INSERT do auth.users)
       if (isGuest) {
         try {
-          // Zkontroluj, zda user s tímto emailem již existuje
-          const { data: existingUsers } = await supabase.auth.admin.listUsers();
-          const existingUser = existingUsers?.users?.find((u: any) => u.email === email);
+          await dbLog(supabase, 'guest_start', 'Starting guest user flow', { email, module_id: moduleId }, event.id, event.type);
 
-          let userId: string;
+          const { data: rpcResult, error: rpcError } = await supabase.rpc('create_user_for_purchase', {
+            p_email: email,
+            p_module_id: moduleId,
+            p_session_id: session.id,
+            p_stripe_customer_id: stripeCustomerId ?? null,
+          });
 
-          if (existingUser) {
-            userId = existingUser.id;
-            console.log(`ℹ️ User already exists: ${userId}`);
-          } else {
-            // Vytvoř nového uživatele bez hesla (magic link)
-            const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-              email,
-              email_confirm: true,
-              user_metadata: {
-                source: 'stripe_checkout',
-                module_id: moduleId,
-                checkout_session_id: session.id,
-              },
-            });
-
-            if (createError) throw createError;
-            userId = newUser.user.id;
-            console.log(`✅ Created user: ${userId}`);
-
-            // Vytvoř membership záznam (ZDARMA default)
-            await supabase.from('memberships').insert({
-              user_id: userId,
-              plan: 'ZDARMA',
-              status: 'active',
-              type: 'lifetime',
-              stripe_customer_id: stripeCustomerId,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }).single();
+          if (rpcError) {
+            await dbLog(supabase, 'rpc_error', 'create_user_for_purchase RPC failed', { email }, event.id, event.type, rpcError.message);
+            throw rpcError;
           }
 
-          // Přiřaď modul uživateli
-          if (isOneTime && priceId) {
-            await grantModuleAccess(supabase, userId, moduleId, session.id);
+          if (rpcResult?.error) {
+            await dbLog(supabase, 'rpc_db_error', 'DB function returned error', { email }, event.id, event.type, rpcResult.error);
+            throw new Error(rpcResult.error);
           }
 
-          // Pošli magic link (přihlašovací email)
+          const userId: string = rpcResult.user_id;
+          const isNew: boolean = rpcResult.is_new;
+          console.log(`✅ User ready: ${userId} (new: ${isNew})`);
+          await dbLog(supabase, 'user_ready', isNew ? 'New user + module access created' : 'Existing user, module access granted', {
+            user_id: userId, is_new: isNew, module_id: moduleId,
+          }, event.id, event.type);
+
+          // Magic link pro přihlášení uživatele
           const appUrl = Deno.env.get('VITE_APP_URL') || 'https://app.dechbar.cz';
-          await supabase.auth.admin.generateLink({
+          const { error: magicLinkError } = await supabase.auth.admin.generateLink({
             type: 'magiclink',
             email,
             options: {
               redirectTo: `${appUrl}/app?welcome=true&module=${moduleId}`,
             },
           });
-          console.log(`✅ Magic link sent to: ${email}`);
+          if (magicLinkError) {
+            console.warn(`⚠️ Magic link failed (non-critical): ${magicLinkError.message}`);
+            await dbLog(supabase, 'magic_link_warn', 'Magic link failed (non-critical)', {}, event.id, event.type, magicLinkError.message);
+          } else {
+            console.log(`✅ Magic link sent to: ${email}`);
+            await dbLog(supabase, 'magic_link_sent', 'Magic link sent', { email }, event.id, event.type);
+          }
 
-          // Ecomail — přidat do PREMIUM listu
-          await addToEcomailQueue(supabase, userId, email, 'product_purchased', {
-            module_id: moduleId,
-            price_czk: lineItems.data[0]?.amount_total ? lineItems.data[0].amount_total / 100 : 990,
-            stripe_session_id: session.id,
-            is_guest: true,
+          // Ecomail: Tier 2 — zaplatil, čeká na verifikaci emailu
+          // contact_add do UNREG (sync-to-ecomail zná tento event type)
+          const moduleTag = `PRODUCT_${moduleId.toUpperCase().replace(/-/g, '_')}`;
+          const purchaseDate = new Date().toISOString().split('T')[0];
+          await addToEcomailQueue(supabase, userId, email, 'contact_add', {
+            list_name: 'UNREG',
+            contact: {
+              email,
+              custom_fields: {
+                PURCHASE_DATE: purchaseDate,
+                PRODUCT_ID: moduleId,
+                PRICE_CZK: lineItemAmount ? lineItemAmount / 100 : 990,
+              },
+            },
+            tags: [
+              'PRODUCT_PURCHASED',
+              moduleTag,
+              'STRIPE_BUYER',
+              'AWAITING_VERIFICATION',
+              'MAGIC_LINK_SENT',
+            ],
           });
+
+          await dbLog(supabase, 'guest_done', 'Guest flow completed successfully', { user_id: userId }, event.id, event.type);
 
         } catch (err: any) {
           console.error('❌ Guest registration failed:', err);
-          // Neházet — platba proběhla, retry možný
+          await dbLog(supabase, 'guest_error', 'Guest registration FAILED', {}, event.id, event.type, err.message ?? String(err));
+          // Neházet — platba proběhla, Stripe bude opakovat webhook
         }
       }
 
@@ -251,14 +332,14 @@ serve(async (req) => {
         const userId = session.metadata?.user_id;
         if (!userId || userId === 'guest') {
           console.error('❌ No valid user_id for authenticated checkout');
-        } else if (isOneTime && priceId) {
+          await dbLog(supabase, 'auth_error', 'No valid user_id for authenticated checkout', { user_id: userId }, event.id, event.type);
+        } else if (isOneTime) {
           await grantModuleAccess(supabase, userId, moduleId, session.id);
 
-          // Ecomail sync
-          await addToEcomailQueue(supabase, userId, email, 'product_purchased', {
-            module_id: moduleId,
-            stripe_session_id: session.id,
-            is_guest: false,
+          // Ecomail: authenticated user purchase — přidáme tagy k existujícímu kontaktu
+          const moduleTag = `PRODUCT_${moduleId.toUpperCase().replace(/-/g, '_')}`;
+          await addToEcomailQueue(supabase, userId, email, 'contact_update', {
+            add_tags: ['PRODUCT_PURCHASED', moduleTag, 'STRIPE_BUYER'],
           });
         }
       }
