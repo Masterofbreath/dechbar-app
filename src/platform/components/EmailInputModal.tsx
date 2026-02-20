@@ -103,9 +103,13 @@ export function EmailInputModal({
               type="email"
               placeholder="tvuj@email.cz"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError('');
+              }}
               className={`email-modal-input ${error ? 'email-modal-input--error' : ''}`}
-              autoFocus
+              autoFocus={window.innerWidth > 768}
+              autoComplete="email"
               disabled={isLoading}
             />
             {error && (
