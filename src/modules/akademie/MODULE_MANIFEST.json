@@ -1,0 +1,63 @@
+{
+  "id": "akademie",
+  "name": "Akademie — Program REŽIM",
+  "version": "1.0.0",
+  "description": "Sekce Akademie s audio programy a výzvami. Základ: Program REŽIM (Digitální ticho, 21 lekcí). Škálovatelné na 8-10 kategorií.",
+  "pricing": {
+    "source": "supabase.modules",
+    "model": "lifetime",
+    "note": "Přístup via user_modules table (Varianta A). Nákup na zdravedychej.cz → Stripe webhook → user_modules INSERT."
+  },
+  "dependencies": {
+    "platform": ["auth", "navigation", "audioPlayer"],
+    "modules": ["mvp0"],
+    "tables": {
+      "existing": ["modules", "user_modules"],
+      "new": [
+        "akademie_categories",
+        "akademie_programs",
+        "akademie_series",
+        "akademie_lessons",
+        "user_lesson_progress"
+      ]
+    }
+  },
+  "api": {
+    "routes": ["/app/akademie"],
+    "hooks": [
+      "useAkademieCatalog",
+      "useAkademieProgram",
+      "useAkademieProgress",
+      "useAkademiePlayback"
+    ]
+  },
+  "navigation": {
+    "tab": "akademie",
+    "type": "zustand-stack",
+    "store": "useAkademieNav",
+    "routes": ["home", "program", "series"]
+  },
+  "permissions": {
+    "free": ["browse categories", "view locked program cards"],
+    "lifetime_digitalni-ticho": ["play all 21 lessons", "track progress"]
+  },
+  "features": {
+    "v1.0": [
+      "CategoryPills navigation (scalable to 8-10 categories)",
+      "ProgramGrid with owned/locked state",
+      "ProgramDetail with series breakdown",
+      "SeriesDetail with lesson list",
+      "Inline StickyAudioPlayer playback",
+      "80% completion progress tracking",
+      "LockedFeatureModal for upsell (redirect to website)"
+    ],
+    "future": [
+      "Výzvy category (21-day free challenges)",
+      "Granular series purchase",
+      "Challenge start date picker",
+      "Date-based lesson unlock for challenges"
+    ]
+  },
+  "migration": "supabase/migrations/20260221100000_akademie_module.sql",
+  "seed_notes": "Lekce dny 2-21 mají placeholder audio_url. Doplnit po nahrání do Bunny CDN."
+}

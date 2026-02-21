@@ -541,9 +541,9 @@ export const MESSAGES = {
       subtitle: "",
       forTitle: "Program je pro tebe, pokud…",
       forItems: [
-        "Chceš vyčistit mysl od šumu a znovu se soustředit",
+        "Chceš vyčistit mysl a znovu se soustředit",
         "Potřebuješ funkční reset — kdykoli během dne",
-        "Chceš se naučit vědomě regulovat nervový systém",
+        "Chceš se naučit regulovat nervový systém",
         "Stačí ti 15 minut denně",
         "Zapomněl/a jsi, co je skutečný klid",
         "Víš, že akce je víc než teorie"

@@ -8,7 +8,7 @@
 export const moduleRegistry = {
   studio: () => import('@/modules/studio'),
   // challenges: () => import('@/modules/challenges'),
-  // akademie: () => import('@/modules/akademie'),
+  akademie: () => import('@/modules/akademie'),
   // game: () => import('@/modules/game'),
   // 'ai-coach': () => import('@/modules/ai-coach'),
 } as const;

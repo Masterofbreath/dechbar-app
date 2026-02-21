@@ -1,0 +1,161 @@
+/* =====================================================
+ * Akademie — Program Grid + Program Card
+ * ===================================================== */
+
+.akademie-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--akademie-grid-gap);
+  padding: 0 var(--akademie-page-px);
+}
+
+/* Full-width layout pro jedinou kartu nebo první vlastněnou */
+.akademie-grid--single {
+  grid-template-columns: 1fr;
+}
+
+/* ---- Card ---- */
+
+.akademie-program-card {
+  position: relative;
+  background: var(--akademie-card-bg);
+  border: 1px solid var(--akademie-card-border);
+  border-radius: var(--akademie-card-radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.akademie-program-card:active {
+  transform: scale(0.97);
+}
+
+.akademie-program-card--locked {
+  opacity: var(--akademie-card-locked-opacity);
+}
+
+.akademie-program-card--owned {
+  border-color: var(--color-primary);
+}
+
+/* Cover image */
+.akademie-program-card__cover {
+  position: relative;
+  width: 100%;
+  padding-top: var(--akademie-card-cover-ratio);
+  background: var(--color-surface-elevated);
+  overflow: hidden;
+}
+
+.akademie-program-card__cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cover placeholder (při chybějícím obrázku) */
+.akademie-program-card__cover-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-surface-elevated), var(--color-surface));
+}
+
+.akademie-program-card__cover-placeholder svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.3;
+  color: var(--color-primary);
+}
+
+/* Lock overlay */
+.akademie-program-card__lock {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--akademie-lock-bg);
+  backdrop-filter: blur(4px);
+  color: var(--akademie-lock-color);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.akademie-program-card__lock svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* Content area */
+.akademie-program-card__body {
+  padding: 10px 12px 12px;
+}
+
+.akademie-program-card__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.akademie-program-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+.akademie-program-card__price {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* Owned badge */
+.akademie-program-card__owned-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: #121212;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.akademie-program-card__owned-badge svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* Section label */
+.akademie-section-label {
+  padding: 0 var(--akademie-page-px);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+  margin-bottom: 10px;
+}

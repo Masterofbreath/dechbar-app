@@ -1,0 +1,157 @@
+/* =====================================================
+ * Akademie — Program Detail + Series Card
+ * ===================================================== */
+
+/* Back nav */
+.akademie-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px var(--akademie-page-px);
+  color: var(--akademie-back-color);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  border: none;
+  background: none;
+}
+
+.akademie-back:active {
+  opacity: 0.7;
+}
+
+.akademie-back svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Program header */
+.akademie-program-detail__hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-surface-elevated);
+}
+
+.akademie-program-detail__hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.akademie-program-detail__hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-elevated),
+    var(--color-surface)
+  );
+}
+
+.akademie-program-detail__hero-placeholder svg {
+  width: 64px;
+  height: 64px;
+  opacity: 0.2;
+  color: var(--color-primary);
+}
+
+.akademie-program-detail__info {
+  padding: 20px var(--akademie-page-px) 8px;
+}
+
+.akademie-program-detail__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.akademie-program-detail__desc {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+/* Series list */
+.akademie-series-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px var(--akademie-page-px) 24px;
+}
+
+.akademie-series-list__heading {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+  padding: 8px 0 4px;
+}
+
+/* Series card */
+.akademie-series-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--akademie-series-bg);
+  border: 1px solid var(--akademie-series-border);
+  border-radius: var(--akademie-series-radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.akademie-series-card:active {
+  opacity: 0.8;
+}
+
+.akademie-series-card__week {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.akademie-series-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.akademie-series-card__name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 3px;
+}
+
+.akademie-series-card__meta {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+.akademie-series-card__chevron {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  width: 18px;
+  height: 18px;
+}

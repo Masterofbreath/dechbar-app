@@ -148,6 +148,9 @@ export interface AudioPlayerState {
   
   // Actions
   play: (track: Track) => Promise<void>;
+  /** Spustí track v sticky režimu (inline playback pro Akademie lekce).
+   *  KRITICKÉ: musí být voláno synchronně v onClick handleru (iOS Safari). */
+  playSticky: (track: Track) => void;
   pause: () => void;
   seek: (time: number) => void;
   setVolume: (vol: number) => void;

@@ -1,0 +1,55 @@
+/* =====================================================
+ * Akademie Module — CSS Variables
+ * Všechny hodnoty odkazují na globální design tokeny.
+ * Lokální proměnné umožňují přepsat celý look modulu z jednoho místa.
+ * ===================================================== */
+
+:root {
+  /* Category pills */
+  --akademie-pill-bg: var(--color-surface);
+  --akademie-pill-bg-active: var(--color-primary);
+  --akademie-pill-color: var(--color-text-secondary);
+  --akademie-pill-color-active: #121212;
+  --akademie-pill-border: var(--color-border);
+  --akademie-pill-border-active: var(--color-primary);
+  --akademie-pill-radius: 9999px;
+  --akademie-pill-height: 36px;
+  --akademie-pill-gap: 8px;
+
+  /* Program cards */
+  --akademie-card-bg: var(--color-surface);
+  --akademie-card-bg-hover: var(--color-surface-elevated);
+  --akademie-card-border: var(--color-border);
+  --akademie-card-radius: 16px;
+  --akademie-card-cover-ratio: 56.25%; /* 16:9 */
+  --akademie-card-locked-opacity: 0.55;
+
+  /* Lock badge */
+  --akademie-lock-bg: rgb(18 18 18 / 75%);
+  --akademie-lock-color: var(--color-accent);
+
+  /* Series cards */
+  --akademie-series-bg: var(--color-surface);
+  --akademie-series-border: var(--color-border);
+  --akademie-series-radius: 12px;
+
+  /* Lesson rows */
+  --akademie-lesson-bg: transparent;
+  --akademie-lesson-bg-hover: var(--color-surface-hover);
+  --akademie-lesson-bg-playing: rgb(44 190 198 / 8%);
+  --akademie-lesson-border: var(--color-border);
+  --akademie-lesson-radius: 10px;
+  --akademie-lesson-height: 60px;
+  --akademie-lesson-icon-size: 40px;
+  --akademie-lesson-check-color: var(--color-success);
+  --akademie-lesson-playing-color: var(--color-primary);
+
+  /* Back button & header */
+  --akademie-back-color: var(--color-text-secondary);
+  --akademie-header-gap: 16px;
+
+  /* Spacing shortcuts */
+  --akademie-section-gap: 24px;
+  --akademie-grid-gap: 12px;
+  --akademie-page-px: 16px;
+}

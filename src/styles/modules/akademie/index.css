@@ -1,0 +1,11 @@
+/* =====================================================
+ * Akademie Module — CSS Entry Point
+ * Importuje všechny sub-soubory modulu.
+ * Přidán do src/styles/globals.css
+ * ===================================================== */
+
+@import url('./_variables.css');
+@import url('./_category-pills.css');
+@import url('./_program-grid.css');
+@import url('./_program-detail.css');
+@import url('./_series-detail.css');

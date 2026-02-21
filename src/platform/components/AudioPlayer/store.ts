@@ -45,6 +45,22 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       error: null,
     });
   },
+
+  // Inline playback pro Akademie lekce — zůstává v sticky módu, bez fullscreen.
+  // KRITICKÉ: volat synchronně v onClick (iOS Safari požaduje audio.play() v user gesture).
+  playSticky: (track: Track) => {
+    set({
+      currentTrack: track,
+      mode: 'sticky',
+      isExpanded: false,
+      isPlaying: true,
+      isLoading: true,
+      currentTime: 0,
+      listenedSegments: [],
+      isCompleted: false,
+      error: null,
+    });
+  },
   
   pause: () => {
     set({ isPlaying: false });

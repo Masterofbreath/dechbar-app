@@ -1,0 +1,198 @@
+/* =====================================================
+ * Akademie — Series Detail + Lesson Row
+ * ===================================================== */
+
+/* Series header */
+.akademie-series-detail__header {
+  padding: 16px var(--akademie-page-px) 8px;
+}
+
+.akademie-series-detail__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.akademie-series-detail__subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Lesson list */
+.akademie-lesson-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px var(--akademie-page-px) 120px; /* bottom padding pro StickyPlayer */
+}
+
+/* Lesson row */
+.akademie-lesson-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: var(--akademie-lesson-height);
+  padding: 10px 12px;
+  border-radius: var(--akademie-lesson-radius);
+  background: var(--akademie-lesson-bg);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  border: 1px solid transparent;
+}
+
+.akademie-lesson-row:active {
+  background: var(--color-surface-hover);
+}
+
+.akademie-lesson-row--playing {
+  background: var(--akademie-lesson-bg-playing);
+  border-color: rgb(44 190 198 / 20%);
+}
+
+/* Day number / play button */
+.akademie-lesson-row__icon {
+  flex-shrink: 0;
+  width: var(--akademie-lesson-icon-size);
+  height: var(--akademie-lesson-icon-size);
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.akademie-lesson-row--playing .akademie-lesson-row__icon {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #121212;
+}
+
+.akademie-lesson-row__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Content */
+.akademie-lesson-row__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.akademie-lesson-row__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.akademie-lesson-row--playing .akademie-lesson-row__title {
+  color: var(--color-primary);
+}
+
+.akademie-lesson-row__duration {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Checkmark (completion indicator) */
+.akademie-lesson-row__check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--akademie-lesson-check-color);
+}
+
+.akademie-lesson-row__check svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Playing indicator (animated equalizer dots) */
+.akademie-lesson-row__playing-indicator {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+
+.akademie-lesson-row__playing-indicator span {
+  display: block;
+  width: 3px;
+  background: var(--color-primary);
+  border-radius: 2px;
+  animation: akademie-eq-bar 0.8s ease-in-out infinite alternate;
+}
+
+.akademie-lesson-row__playing-indicator span:nth-child(1) {
+  height: 6px;
+  animation-delay: 0s;
+}
+
+.akademie-lesson-row__playing-indicator span:nth-child(2) {
+  height: 12px;
+  animation-delay: 0.15s;
+}
+
+.akademie-lesson-row__playing-indicator span:nth-child(3) {
+  height: 8px;
+  animation-delay: 0.3s;
+}
+
+@keyframes akademie-eq-bar {
+  from {
+    opacity: 0.4;
+    transform: scaleY(0.4);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* Divider between lessons */
+.akademie-lesson-row + .akademie-lesson-row {
+  border-top: 1px solid var(--color-border);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* Day label shorthand */
+.akademie-lesson-row__day-badge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+  margin-bottom: 2px;
+}
+
+/* Progress bar for currently playing lesson */
+.akademie-lesson-row__progress {
+  height: 2px;
+  width: 100%;
+  background: var(--color-border);
+  border-radius: 1px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.akademie-lesson-row__progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 1px;
+  transition: width 1s linear;
+}

@@ -1,0 +1,54 @@
+/* =====================================================
+ * Akademie — Category Pills
+ * Horizontálně scrollovatelná navigace (iOS App Store styl)
+ * ===================================================== */
+
+.akademie-pills {
+  display: flex;
+  gap: var(--akademie-pill-gap);
+  overflow-x: auto;
+  padding: 0 var(--akademie-page-px) 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.akademie-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.akademie-pills__item {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--akademie-pill-height);
+  padding: 0 14px;
+  border-radius: var(--akademie-pill-radius);
+  border: 1px solid var(--akademie-pill-border);
+  background: var(--akademie-pill-bg);
+  color: var(--akademie-pill-color);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.akademie-pills__item:active {
+  opacity: 0.8;
+}
+
+.akademie-pills__item--active {
+  background: var(--akademie-pill-bg-active);
+  border-color: var(--akademie-pill-border-active);
+  color: var(--akademie-pill-color-active);
+}
+
+.akademie-pills__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}

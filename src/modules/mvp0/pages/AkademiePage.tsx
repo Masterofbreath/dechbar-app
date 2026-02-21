@@ -1,29 +1,16 @@
 /**
- * AkademiePage - Education & Modules (Placeholder)
- * 
- * Future: Complete academy with:
- * - Free science articles
- * - DechBar STUDIO (locked - 990 Kč)
- * - Výzvy (locked - 490 Kč)
- * - Courses & educational content
- * 
+ * AkademiePage — vstupní bod sekce Akademie.
+ *
+ * Renderuje AkademieRoot z modulu akademie.
+ * Navigace uvnitř sekce je řízena useAkademieNav (Zustand drill-down store).
+ *
  * @package DechBar_App
  * @subpackage MVP0/Pages
- * @since 0.1.0
+ * @since 1.0.0 — Akademie modul (Program REŽIM)
  */
 
-import { EmptyState } from '@/platform/components/EmptyState';
+import { AkademieRoot } from '@/modules/akademie/components/AkademieRoot';
 
-/**
- * AkademiePage - Placeholder for education content
- */
 export function AkademiePage() {
-  return (
-    <EmptyState
-      icon="🎓"
-      title="Akademie"
-      message="Vzdělávací obsah bude dostupný brzy."
-      subtext="Zde najdeš vědecké články, kurzy a prémiové moduly (Studio, Výzvy)."
-    />
-  );
+  return <AkademieRoot />;
 }
