@@ -416,6 +416,23 @@
   margin-top: var(--spacing-3);
 }
 
+/* Transformation karta — timeline formát "X min — popis." */
+.digitalni-ticho-story__card-text--timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.digitalni-ticho-story__timeline-item {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  padding-left: var(--spacing-4);
+  border-left: 2px solid rgb(214 162 58 / 35%);  /* Jemná zlatá linka vlevo */
+}
+
 /* ===================================
    HIGHLIGHTS SECTION
    =================================== */
@@ -1822,7 +1839,7 @@
   font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
   line-height: var(--line-height-tight);
-  color: var(--color-accent);  /* Brand gold */
+  color: var(--color-text-primary);  /* Off-white — konzistentní s ostatními section headings */
   margin: 0;
 }
 

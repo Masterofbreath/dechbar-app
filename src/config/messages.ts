@@ -479,28 +479,31 @@ export const MESSAGES = {
       }
     },
     
-    // Storytelling section (V3 FINAL - Extended use cases + neurověda)
+    // Storytelling section (V4 - Kratší, emocionálnější, Apple Premium)
     story: {
       pain: {
-        headline: "Poznáváš to?",
+        headline: "Hlava vrčí.",
         paragraphs: [
-          "Je 8 ráno. Máš před sebou náročný den - schůzky, e-maily, úkoly. Hlava ti vrčí ještě ze včerejška.",
-          "Potřebuješ trénink odpočinku. Ne kávu. Ne motivaci. Opravdový RESET systému."
+          "Je 8 ráno. Schůzky, e-maily, úkoly.",
+          "Hlava ti vrčí ještě ze včerejška.",
+          "Nepotřebuješ kávu — potřebuješ reset."
         ]
       },
       solution: {
-        headline: "Program REŽIM",
+        headline: "Stačí sluchátka.",
         paragraphs: [
-          "Mezi schůzkami, před poradou, o polední pauze - kdykoli. Nasadíš sluchátka, pustíš a dýcháš.",
-          "15 minut tréninku odpočinku. Jasné instrukce regulující nervový systém."
+          "Nasadíš sluchátka. Pustíš a dýcháš.",
+          "15 minut tréninku odpočinku.",
+          "Kdykoli, kdekoli."
         ]
       },
       transformation: {
-        headline: "Co se stane?",
+        headline: "Za 15 minut jsi jiný.",
+        // Transformation uses timeline format — rendered as list in component
         paragraphs: [
-          "Ve 3. minutě cítíš jak se dech prohlubuje. V 10. minutě je hlava čistá.",
-          "A po 15 minutách? Klid v těle. Jasno v hlavě.",
-          "Program REŽIM učí umění odpočinku v době, kdy je to nejvíce potřeba."
+          "3 min — dech se prohlubuje.",
+          "10 min — hlava se čistí.",
+          "15 min — vstaneš jiný."
         ]
       }
     },
@@ -543,11 +546,10 @@ export const MESSAGES = {
       ],
       notForTitle: "Program není pro tebe, pokud…",
       notForItems: [
-        "Nechceš pracovat na svém klidu ani soustředěnosti",
-        "Hledáš motivační obsah, který tě bude povzbuzovat a chválit",
-        "Preferuješ zábavu, body a odměny místo skutečné práce na sobě",
-        "Chceš dál číst teorie a stahovat PDFka místo skutečné praxe",
-        "Volíš poslouchat další podcast místo toho, abys začal"
+        "Nechceš věnovat 15 minut denně sobě",
+        "Hledáš motivaci nebo zábavný obsah",
+        "Čekáš na výsledky bez vlastní praxe",
+        "Stahuješ tipy a PDFka místo toho, abys začal"
       ]
     },
     
@@ -732,11 +734,11 @@ export const MESSAGES = {
       ]
     },
     
-    // Final CTA section (V3 FINAL)
+    // Final CTA section (V4 - Statement místo otázky, imperativ)
     finalCTA: {
-      headline: "Chceš se naučit umění odpočinku?",
+      headline: "Nauč se umění odpočinku.",
       subtext: "Předprodej • Start 1. 3. 2026 • 7denní garance vrácení",
-      cta: "Ano, chci začít →"
+      cta: "Dnes chci začít →"
     },
     
     // Footer (V3 - Trénink odpočinku tagline)
