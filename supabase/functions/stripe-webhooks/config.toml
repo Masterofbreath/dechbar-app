@@ -1,0 +1,5 @@
+# Stripe webhooks MUST have verify_jwt disabled.
+# Stripe calls this endpoint without a Supabase JWT — it uses stripe-signature header instead.
+# The function validates the signature itself via stripe.webhooks.constructEventAsync().
+[functions.stripe-webhooks]
+verify_jwt = false

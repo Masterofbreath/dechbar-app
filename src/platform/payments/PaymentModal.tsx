@@ -28,12 +28,14 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 export interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onPaymentComplete?: () => void;
   clientSecret: string | null;
 }
 
 export function PaymentModal({
   isOpen,
   onClose,
+  onPaymentComplete,
   clientSecret,
 }: PaymentModalProps) {
   // Lock body scroll when modal open
@@ -94,6 +96,7 @@ export function PaymentModal({
     clientSecret,
     onComplete: () => {
       onClose();
+      onPaymentComplete?.();
     },
   };
 

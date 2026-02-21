@@ -220,16 +220,30 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# DechBar email templates — dark brand design
+[auth.email.template.invite]
+subject = "Pozvánka do DechBar"
+content_path = "./supabase/templates/invite.html"
 
-# Uncomment to customize notification email template
-# [auth.email.notification.password_changed]
-# enabled = true
-# subject = "Your password has been changed"
-# content_path = "./templates/password_changed_notification.html"
+[auth.email.template.confirmation]
+subject = "Potvrď svůj účet – DechBar"
+content_path = "./supabase/templates/confirm.html"
+
+[auth.email.template.recovery]
+subject = "Obnova přístupu – DechBar"
+content_path = "./supabase/templates/reset.html"
+
+[auth.email.template.magic_link]
+subject = "Přihlásit se do DechBar"
+content_path = "./supabase/templates/magic-link.html"
+
+[auth.email.template.email_change]
+subject = "Potvrď změnu e-mailu – DechBar"
+content_path = "./supabase/templates/change-email.html"
+
+[auth.email.template.reauthentication]
+subject = "Ověřovací kód – DechBar"
+content_path = "./supabase/templates/reauthentication.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.

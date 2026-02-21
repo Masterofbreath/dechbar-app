@@ -25,13 +25,15 @@ const ECOMAIL_BASE_URL = 'https://api2.ecomailapp.cz';
 const BATCH_SIZE = 50; // Max items to process per run
 const RETRY_DELAYS = [0, 30000, 300000]; // 0s, 30s, 5min
 
-// List IDs - Updated 2026-01-28
+// List IDs - Updated 2026-02-21
 const LIST_IDS: Record<string, string> = {
   UNREG: Deno.env.get('ECOMAIL_LIST_UNREG') || '5',
   REG: Deno.env.get('ECOMAIL_LIST_REG') || '6',
   ENGAGED: Deno.env.get('ECOMAIL_LIST_ENGAGED') || '7',
   PREMIUM: Deno.env.get('ECOMAIL_LIST_PREMIUM') || '8',
-  CHURNED: Deno.env.get('ECOMAIL_LIST_CHURNED') || '9'
+  CHURNED: Deno.env.get('ECOMAIL_LIST_CHURNED') || '9',
+  // Product-specific lists — one list per product for clean autoresponder automation
+  DIGITALNI_TICHO: Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO') || '10',
 };
 
 // =====================================================
@@ -209,17 +211,28 @@ async function removeTag(email: string, tag: string): Promise<void> {
 /**
  * Move contact between lists
  */
-async function moveList(email: string, fromListId: string, toListId: string, tags?: string[]): Promise<void> {
-  // Use tags from payload (already complete list from DB trigger)
-  // No need to fetch existing tags from Ecomail - DB is source of truth
+async function moveList(
+  email: string,
+  fromListId: string,
+  toListId: string,
+  tags?: string[],
+  customFields?: Record<string, unknown>,
+): Promise<void> {
+  const subscriberData: any = {
+    email,
+    tags: tags || [],
+  };
+
+  if (customFields && Object.keys(customFields).length > 0) {
+    subscriberData.custom_fields = customFields;
+  }
+
   const payload: any = {
-    subscriber_data: { 
-      email,
-      tags: tags || []  // Full list from DB trigger
-    },
+    subscriber_data: subscriberData,
     update_existing: true,
     resubscribe: true,
-    skip_confirmation: true
+    trigger_autoresponders: true,
+    skip_confirmation: true,
   };
   
   console.log(`[Move List] ${email} from list ${fromListId} to ${toListId} with tags:`, JSON.stringify(tags));
@@ -312,7 +325,8 @@ async function processQueueItem(supabase: any, item: QueueItem): Promise<SyncRes
         const fromListId = LIST_IDS[item.payload.from_list_name] || item.payload.from_list;
         const toListId = LIST_IDS[item.payload.to_list_name] || item.payload.to_list;
         const tags = item.payload.tags && Array.isArray(item.payload.tags) ? item.payload.tags : [];
-        await moveList(item.email, fromListId, toListId, tags);
+        const customFields = item.payload.contact?.custom_fields ?? undefined;
+        await moveList(item.email, fromListId, toListId, tags, customFields);
         break;
       }
       

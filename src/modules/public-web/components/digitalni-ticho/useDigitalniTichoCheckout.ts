@@ -21,6 +21,7 @@ import { supabase } from '@/platform/api/supabase';
 export function useDigitalniTichoCheckout() {
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [thankYouOpen, setThankYouOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [error, setError] = useState('');
@@ -63,6 +64,13 @@ export function useDigitalniTichoCheckout() {
     setClientSecret(null);
   }, []);
 
+  // Platba proběhla úspěšně → zavři Stripe modal, otevři poděkování
+  const handlePaymentComplete = useCallback(() => {
+    setPaymentOpen(false);
+    setClientSecret(null);
+    setThankYouOpen(true);
+  }, []);
+
   async function createSession(email: string) {
     // Otevři modal IHNED → uživatel vidí loading spinner okamžitě
     // clientSecret je ještě null → PaymentModal renderuje loading stav
@@ -103,11 +111,16 @@ export function useDigitalniTichoCheckout() {
       await supabase.from('ecomail_sync_queue').insert({
         user_id: null,
         email,
-        event_type: 'checkout_started',
+        event_type: 'contact_add',
         payload: {
-          module_id: 'digitalni-ticho',
-          price_czk: 990,
-          source: 'landing_page',
+          list_name: 'UNREG',
+          contact: {
+            email,
+            custom_fields: {
+              CHECKOUT_SOURCE: 'landing_page',
+            },
+          },
+          tags: ['CHECKOUT_STARTED', 'digitalni-ticho'],
         },
         status: 'pending',
       });
@@ -121,10 +134,13 @@ export function useDigitalniTichoCheckout() {
     setEmailModalOpen,
     paymentOpen,
     clientSecret,
+    thankYouOpen,
+    setThankYouOpen,
     loadingEmail,
     error,
     handleCTAClick,
     handleEmailSubmit,
     handlePaymentClose,
+    handlePaymentComplete,
   };
 }

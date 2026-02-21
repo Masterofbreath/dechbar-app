@@ -38,6 +38,7 @@ import { DigitalniTichoStickyCTA } from '../components/digitalni-ticho/Digitalni
 import { EmailInputModal } from '@/platform/components/EmailInputModal';
 import { PaymentModal } from '@/platform/payments';
 import { useDigitalniTichoCheckout } from '../components/digitalni-ticho/useDigitalniTichoCheckout';
+import { DigitalniTichoThankYouModal } from '../components/digitalni-ticho/DigitalniTichoThankYouModal';
 
 export function DigitalniTichoPage() {
   // Jediná instance checkout stavu pro celou stránku.
@@ -48,10 +49,13 @@ export function DigitalniTichoPage() {
     setEmailModalOpen,
     paymentOpen,
     clientSecret,
+    thankYouOpen,
+    setThankYouOpen,
     loadingEmail,
     handleCTAClick,
     handleEmailSubmit,
     handlePaymentClose,
+    handlePaymentComplete,
   } = useDigitalniTichoCheckout();
 
   useEffect(() => {
@@ -113,7 +117,17 @@ export function DigitalniTichoPage() {
       <PaymentModal
         isOpen={paymentOpen}
         onClose={handlePaymentClose}
+        onPaymentComplete={handlePaymentComplete}
         clientSecret={clientSecret}
+      />
+
+      {/* Po úspěšné platbě — poděkování, po zavření redirect na homepage */}
+      <DigitalniTichoThankYouModal
+        isOpen={thankYouOpen}
+        onClose={() => {
+          setThankYouOpen(false);
+          window.location.href = 'https://dechbar.cz';
+        }}
       />
     </div>
   );

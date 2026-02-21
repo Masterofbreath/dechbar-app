@@ -12,6 +12,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { Button } from './Button';
+import { CloseButton } from '@/components/shared';
 import { useSwipeToDismiss } from '@/platform/hooks';
 
 export interface EmailInputModalProps {
@@ -72,22 +73,7 @@ export function EmailInputModal({
         {...handlers}
         style={style}
       >
-        {/* Close button - using global modal-close class */}
-        <button 
-          className="modal-close"
-          onClick={onClose}
-          aria-label="Zavřít"
-          type="button"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path 
-              d="M18 6L6 18M6 6l12 12" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
+        <CloseButton onClick={onClose} />
 
         {/* Header - using global modal-header */}
         <div className="modal-header">
@@ -127,14 +113,19 @@ export function EmailInputModal({
           >
             Pokračuj na platbu →
           </Button>
-        </form>
 
-        {/* Footer - using global modal-footer */}
-        <div className="modal-footer">
-          <p className="modal-footer-text">
-            Po platbě ti pošleme přihlašovací odkaz emailem.
+          <p className="gdpr-notice">
+            Pokračováním souhlasíš s{' '}
+            <a href="/terms" target="_blank" rel="noopener noreferrer">
+              obchodními podmínkami
+            </a>
+            {' '}a{' '}
+            <a href="/gdpr" target="_blank" rel="noopener noreferrer">
+              ochranou osobních údajů
+            </a>
+            .
           </p>
-        </div>
+        </form>
       </div>
     </div>
   );

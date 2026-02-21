@@ -126,6 +126,22 @@ async function addToEcomailQueue(
       status: 'pending',
     });
     console.log(`📧 Ecomail queue: ${eventType} for ${email}`);
+
+    // Okamžitě spustit sync-to-ecomail bez čekání na CRON (fire-and-forget)
+    // Tím uživatel spadne do Ecomailu do ~2 sekund místo až 5 minut
+    const syncUrl = `${supabaseUrl}/functions/v1/sync-to-ecomail`;
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
+    fetch(syncUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${anonKey}`,
+      },
+      body: '{}',
+    }).catch((syncErr) => {
+      // Non-critical — CRON zpracuje jako fallback
+      console.warn('⚠️ Immediate Ecomail sync failed (CRON will retry):', syncErr.message);
+    });
   } catch (err) {
     console.error('⚠️ Failed to add to Ecomail queue:', err);
     // Don't throw — payment already succeeded
@@ -298,12 +314,15 @@ serve(async (req) => {
             await dbLog(supabase, 'magic_link_sent', 'Magic link sent', { email }, event.id, event.type);
           }
 
-          // Ecomail: Tier 2 — zaplatil, čeká na verifikaci emailu
-          // contact_add do UNREG (sync-to-ecomail zná tento event type)
+          // Ecomail: přesuň z UNREG do produktového seznamu a spusť autoresponder
+          // list_move: odstraní z UNREG, přidá do DIGITALNI_TICHO (nebo jiného produktového listu)
+          // trigger_autoresponders: true → spustí uvítací sekvenci nastavenou v Ecomail dashboardu
           const moduleTag = `PRODUCT_${moduleId.toUpperCase().replace(/-/g, '_')}`;
           const purchaseDate = new Date().toISOString().split('T')[0];
-          await addToEcomailQueue(supabase, userId, email, 'contact_add', {
-            list_name: 'UNREG',
+          const productListName = moduleId === 'digitalni-ticho' ? 'DIGITALNI_TICHO' : 'PREMIUM';
+          await addToEcomailQueue(supabase, userId, email, 'list_move', {
+            from_list_name: 'UNREG',
+            to_list_name: productListName,
             contact: {
               email,
               custom_fields: {
@@ -339,10 +358,22 @@ serve(async (req) => {
         } else if (isOneTime) {
           await grantModuleAccess(supabase, userId, moduleId, session.id);
 
-          // Ecomail: authenticated user purchase — přidáme tagy k existujícímu kontaktu
+          // Ecomail: přihlášený uživatel zakoupil produkt → přidat do produktového seznamu
+          // contact_add s trigger_autoresponders: true → spustí uvítací email v Ecomail
           const moduleTag = `PRODUCT_${moduleId.toUpperCase().replace(/-/g, '_')}`;
-          await addToEcomailQueue(supabase, userId, email, 'contact_update', {
-            add_tags: ['PRODUCT_PURCHASED', moduleTag, 'STRIPE_BUYER'],
+          const purchaseDate = new Date().toISOString().split('T')[0];
+          const productListName = moduleId === 'digitalni-ticho' ? 'DIGITALNI_TICHO' : 'PREMIUM';
+          await addToEcomailQueue(supabase, userId, email, 'contact_add', {
+            list_name: productListName,
+            contact: {
+              email,
+              custom_fields: {
+                PURCHASE_DATE: purchaseDate,
+                PRODUCT_ID: moduleId,
+                PRICE_CZK: lineItemAmount ? lineItemAmount / 100 : 990,
+              },
+            },
+            tags: ['PRODUCT_PURCHASED', moduleTag, 'STRIPE_BUYER'],
           });
         }
       }

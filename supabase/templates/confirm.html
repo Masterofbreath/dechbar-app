@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Potvrď svůj účet – DechBar</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #0a0a0a; padding: 48px 16px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #121212; border-radius: 20px; border: 1px solid rgba(44, 190, 198, 0.15); max-width: 100%; overflow: hidden;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding: 40px 32px 32px; text-align: center; background: linear-gradient(135deg, #2CBEC6 0%, #15939A 100%);">
+              <p style="margin: 0 0 8px 0; color: rgba(18,18,18,0.7); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">DechBar</p>
+              <h1 style="margin: 0; color: #121212; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;">
+                Potvrď svůj účet
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 36px 32px 32px;">
+              <p style="margin: 0 0 12px 0; color: #E0E0E0; font-size: 17px; font-weight: 500; line-height: 1.5;">
+                Ahoj!
+              </p>
+              <p style="margin: 0 0 32px 0; color: #A0A0A0; font-size: 15px; line-height: 1.7;">
+                Klikni níže a potvrď svůj e-mail. Poté se přihlásíš do DechBar app, kde najdeš vše, co sis zakoupil/a.
+              </p>
+
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td align="center" style="padding: 0 0 36px 0;">
+                    <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 16px 44px; background-color: #D6A23A; color: #121212; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; letter-spacing: -0.01em; box-shadow: 0 4px 20px rgba(214, 162, 58, 0.35);">
+                      Potvrdit e-mail →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Info Box -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #1A1A1A; border-radius: 12px; border: 1px solid #2A2A2A; margin: 0 0 28px 0;">
+                <tr>
+                  <td style="padding: 20px 24px;">
+                    <p style="margin: 0; color: #707070; font-size: 13px; line-height: 1.6;">
+                      Odkaz je platný <strong style="color: #A0A0A0;">24 hodin</strong>. Pokud ses o registraci nepokusil/a, ignoruj tento e-mail.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0; color: #505050; font-size: 12px; line-height: 1.5; text-align: center; word-break: break-all;">
+                Nebo zkopíruj odkaz: {{ .ConfirmationURL }}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 32px; border-top: 1px solid #222; text-align: center;">
+              <p style="margin: 0 0 4px 0; color: #A0A0A0; font-size: 14px; font-weight: 500;">Kuba | Dechový barista</p>
+              <p style="margin: 0; color: #505050; font-size: 13px;">tým DechBar · dechbar.cz</p>
+            </td>
+          </tr>
+
+        </table>
+        <p style="margin: 28px 0 0; color: #505050; font-size: 12px; text-align: center;">Dech je nový kofein!</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
