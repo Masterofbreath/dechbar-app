@@ -368,6 +368,17 @@
   margin: 0 auto;
 }
 
+/* Eyebrow label nad 3 kartami */
+.digitalni-ticho-story__label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: 0 0 var(--spacing-8);
+}
+
 .digitalni-ticho-story__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -899,7 +910,19 @@
 }
 
 /* ===================================
-   TIMELINE SECTION
+   PRO SEKCE — Mobile font optimalizace (6B)
+   Menší font = položky na 1 řádek
+   =================================== */
+@media (width <= 768px) {
+  .digitalni-ticho-pro__list-item {
+    font-size: var(--font-size-sm);  /* 14px → položky se vejdou na 1 řádek */
+    line-height: 1.5;
+  }
+}
+
+/* ===================================
+   TIMELINE SECTION — V5
+   21 dílů + accordion na mobilu
    =================================== */
 
 .digitalni-ticho-timeline {
@@ -908,7 +931,7 @@
 }
 
 .digitalni-ticho-timeline__container {
-  max-width: 1280px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -917,74 +940,121 @@
   font-weight: 600;
   letter-spacing: -0.02em;
   text-align: center;
-  margin: 0 0 var(--spacing-3);
+  margin: 0 0 var(--spacing-16);
   color: var(--color-text-primary);
 }
 
+/* 3 kroky — grid na desktopu, stack na mobilu */
 .digitalni-ticho-timeline__steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-8);
+  align-items: start;
+}
+
+/* Každý krok — karta */
+.digitalni-ticho-timeline__step {
+  background: var(--color-surface);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-left: 2px solid rgb(214 162 58 / 30%);  /* Jemná gold linka — Apple Premium touch */
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-10);
-  max-width: 700px;
-  margin: 0 auto var(--spacing-8);
-  position: relative;
+  gap: var(--spacing-4);
 }
 
-.digitalni-ticho-timeline__steps::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: linear-gradient(
-    to bottom,
-    var(--color-primary) 0%,
-    var(--color-primary) 70%,
-    transparent 100%
-  );
-  z-index: 0;
-}
-
-.digitalni-ticho-timeline__step {
-  position: relative;
+/* Phase header */
+.digitalni-ticho-timeline__phase-header {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
-  padding: 0 var(--spacing-8);
-  text-align: center;
-  background: var(--color-background);
-  z-index: 1;
 }
 
-.digitalni-ticho-timeline__phase-title {
-  font-size: var(--font-size-xl);
-  font-weight: 600;
-  color: var(--color-primary);
-  margin: 0;
+.digitalni-ticho-timeline__phase-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
 }
 
 .digitalni-ticho-timeline__phase-days {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 0;
+  letter-spacing: 0.12em;
+  font-weight: 500;
 }
 
-.digitalni-ticho-timeline__phase-description {
-  font-size: var(--font-size-base);
+.digitalni-ticho-timeline__phase-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.digitalni-ticho-timeline__phase-arc {
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: 1.6;
   margin: 0;
-  padding-bottom: var(--spacing-3);
+  padding-top: var(--spacing-2);
+  border-top: 1px solid rgb(255 255 255 / 6%);
 }
 
-/* Vzduch nad každým krokem kromě prvního */
-.digitalni-ticho-timeline__step + .digitalni-ticho-timeline__step .digitalni-ticho-timeline__phase-title {
-  padding-top: var(--spacing-3);
+/* Episode list */
+.digitalni-ticho-timeline__episode-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.digitalni-ticho-timeline__episode {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-3);
+}
+
+.digitalni-ticho-timeline__episode-day {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-primary);
+  min-width: 20px;
+  flex-shrink: 0;
+}
+
+.digitalni-ticho-timeline__episode-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  flex: 1;  /* Zabere zbývající místo → preview button zůstane vpravo */
+}
+
+/* "Poslechni si →" — pouze u Den 1 */
+.digitalni-ticho-timeline__episode-preview {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);  /* Teal */
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.digitalni-ticho-timeline__episode-preview:hover {
+  opacity: 1;
+}
+
+/* Mobile toggle — skrytý na desktopu */
+.digitalni-ticho-timeline__toggle {
+  display: none;
 }
 
 .digitalni-ticho-timeline__note {
@@ -992,12 +1062,54 @@
   color: var(--color-text-tertiary);
   text-align: center;
   font-style: italic;
-  margin: 0;
+  margin: var(--spacing-10) 0 0;
 }
 
-/* Sound Identity section removed in V2 - too technical for pre-sale */
+/* ===================================
+   TIMELINE — Mobile
+   =================================== */
+@media (width <= 768px) {
+  .digitalni-ticho-timeline__title {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-10);
+  }
 
-/* Dech section removed in V2 - optional info not needed for pre-sale */
+  .digitalni-ticho-timeline__steps {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+  }
+
+  /* Na mobilu episodes defaultně skryté */
+  .digitalni-ticho-timeline__episodes {
+    display: none;
+  }
+
+  /* Rozbalené přes JS */
+  .digitalni-ticho-timeline__episodes--open {
+    display: block;
+  }
+
+  /* Toggle viditelný na mobilu */
+  .digitalni-ticho-timeline__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+    font-weight: 500;
+    text-decoration: none;
+    margin-top: var(--spacing-1);
+    transition: opacity 0.2s ease;
+  }
+
+  .digitalni-ticho-timeline__toggle:hover {
+    opacity: 0.75;
+  }
+}
 
 /* ===================================
    PRICING SECTION
@@ -1429,12 +1541,15 @@
     padding: 0 var(--spacing-4);
   }
 
-  /* Zmenšit padding pro obsazenější sekce */
+  /* Zmenšit padding pro obsazenější sekce (6D) */
   .digitalni-ticho-pricing,
   .digitalni-ticho-story,
-  .digitalni-ticho-pro {
-    padding-left: var(--spacing-3);
-    padding-right: var(--spacing-3);
+  .digitalni-ticho-pro,
+  .digitalni-ticho-author,
+  .digitalni-ticho-timeline,
+  .digitalni-ticho-preview {
+    padding-left: var(--spacing-4);
+    padding-right: var(--spacing-4);
   }
 
   /* Social proof — mobile overrides jsou níže v souboru (po base stylech) */
@@ -1469,6 +1584,47 @@
   /* Pricing stat — menší font, aby se vešel 47 Kč */
   .digitalni-ticho-pricing__stat-value {
     font-size: var(--font-size-xl);
+  }
+
+  /* 1 — Audio Preview title */
+  .digitalni-ticho-preview__title {
+    font-size: var(--font-size-xl);  /* 20px → méně do krajů, vzdušnější */
+  }
+
+  /* 2 — Story card padding — více místa pro text */
+  .digitalni-ticho-story__card {
+    padding: var(--spacing-5);  /* 20px místo 32px */
+  }
+
+  /* 3 — Pro koho title */
+  .digitalni-ticho-pro__title {
+    font-size: var(--font-size-2xl);  /* 24px → 1 řádek */
+  }
+
+  /* 5 — "Program není pro tebe, pokud…" column title */
+  .digitalni-ticho-pro__column-title {
+    font-size: var(--font-size-lg);  /* 18px → 1 řádek */
+  }
+
+  /* 6 — Credentials — hodnota nesmí zalamovat */
+  .digitalni-ticho-author__credential-value {
+    white-space: nowrap;
+  }
+
+  /* 7 — Pricing features — kompaktnější mezery */
+  .digitalni-ticho-pricing__features {
+    gap: var(--spacing-2);  /* 8px místo 12px */
+  }
+
+  /* 1 — Social Proof + FAQ title sjednocení na 24px */
+  .digitalni-ticho-social-proof__title,
+  .digitalni-ticho-faq__title {
+    font-size: var(--font-size-2xl);
+  }
+
+  /* 2a — Timeline items — kompaktnější mezery */
+  .digitalni-ticho-story__card-text--timeline {
+    gap: var(--spacing-3);  /* 12px místo 16px */
   }
 }
 
@@ -1676,7 +1832,7 @@
 .digitalni-ticho-social-proof__author-name {
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-accent);  /* Gold — jméno recenzenta = klíčová důvěryhodnost */
   margin: 0 0 var(--spacing-1);
 }
 
@@ -1821,7 +1977,7 @@
 
 .digitalni-ticho-author__title {
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  color: var(--color-primary);  /* Teal — certifikace/role = odborná autorita */
   margin: 0;
   text-align: center;
   line-height: 1.5;
@@ -1875,7 +2031,7 @@
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
-  color: var(--color-text-primary);
+  color: var(--color-accent);  /* Gold — čísla = data = důvěra */
 }
 
 .digitalni-ticho-author__credential-label {
@@ -1896,7 +2052,7 @@
   }
 
   .digitalni-ticho-author__headline {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);  /* 20px → headline se vejde na 1 řádek na 390px */
     text-align: center;
   }
 

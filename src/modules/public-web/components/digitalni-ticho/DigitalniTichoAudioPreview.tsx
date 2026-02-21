@@ -235,7 +235,7 @@ function AudioPlayer({ src }: { src: string }) {
 }
 
 export function DigitalniTichoAudioPreview() {
-  const { title } = MESSAGES.digitalniTicho.audioPreview;
+  const { title, cta } = MESSAGES.digitalniTicho.audioPreview;
 
   return (
     <section className="digitalni-ticho-preview">
@@ -252,7 +252,7 @@ export function DigitalniTichoAudioPreview() {
             size="lg"
             onClick={scrollToPricing}
           >
-            Odemkni program →
+            {cta}
           </Button>
         </div>
       </div>

@@ -4,7 +4,7 @@
  * Storytelling section - Janina Hradiská model
  * PAIN → SOLUTION → TRANSFORMATION
  *
- * V4: Kratší texty, emocionálnější headlines, timeline formát v Transformation kartě
+ * V5: Eyebrow label, polední pauza, osobnější copy
  * Pattern: 3-column grid (desktop) / stack (mobile)
  *
  * @package DechBar_App
@@ -14,11 +14,16 @@
 import { MESSAGES } from '@/config/messages';
 
 export function DigitalniTichoStory() {
-  const { pain, solution, transformation } = MESSAGES.digitalniTicho.story;
+  const { sectionLabel, pain, solution, transformation } = MESSAGES.digitalniTicho.story;
 
   return (
     <section className="digitalni-ticho-story">
       <div className="digitalni-ticho-story__container">
+
+        {/* Eyebrow label — minimalistický nadpis sekce */}
+        {sectionLabel && (
+          <p className="digitalni-ticho-story__label">{sectionLabel}</p>
+        )}
 
         {/* 3-column grid (desktop) */}
         <div className="digitalni-ticho-story__grid">

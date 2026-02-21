@@ -479,13 +479,14 @@ export const MESSAGES = {
       }
     },
     
-    // Storytelling section (V4 - Kratší, emocionálnější, Apple Premium)
+    // Storytelling section (V5 - Polední pauza, osobnější, rytmické věty)
     story: {
+      sectionLabel: "Proč program REŽIM funguje",
       pain: {
         headline: "Hlava vrčí.",
         paragraphs: [
-          "Je 8 ráno. Schůzky, e-maily, úkoly.",
-          "Hlava ti vrčí ještě ze včerejška.",
+          "Je půl jedné. Dopoledne za tebou.",
+          "Hlava vrčí. Pozornost odchází.",
           "Nepotřebuješ kávu — potřebuješ reset."
         ]
       },
@@ -493,17 +494,18 @@ export const MESSAGES = {
         headline: "Stačí sluchátka.",
         paragraphs: [
           "Nasadíš sluchátka. Pustíš a dýcháš.",
-          "15 minut tréninku odpočinku.",
-          "Kdykoli, kdekoli."
+          "Tvých 15 minut tréninku odpočinku.",
+          "Ráno, před schůzkou nebo v parku."
         ]
       },
       transformation: {
         headline: "Za 15 minut jsi jiný.",
         // Transformation uses timeline format — rendered as list in component
         paragraphs: [
-          "3 min — dech se prohlubuje.",
-          "10 min — hlava se čistí.",
-          "15 min — vstaneš jiný."
+          "3 min — pozornost se vrací.",
+          "7 min — hlava se čistí.",
+          "12 min — nervový systém se uvolňuje.",
+          "15 min — jsi zpět v síle."
         ]
       }
     },
@@ -527,9 +529,10 @@ export const MESSAGES = {
       ]
     },
     
-    // Audio preview section (V3 - Single preview, no subtitle)
+    // Audio preview section (V4 - CTA tahá ke koupi = přístupu k Day 2+)
     audioPreview: {
-      title: "Poslechni si první den zdarma"
+      title: "Poslechni si první den zdarma",
+      cta: "Chci druhý den →"
     },
     
     // Pro koho to je / není
@@ -538,39 +541,67 @@ export const MESSAGES = {
       subtitle: "",
       forTitle: "Program je pro tebe, pokud…",
       forItems: [
-        "Chceš vyčistit mysl od přebytečného informačního šumu",
-        "Hledáš funkční reset – mezi schůzkami, před náročným úkolem nebo na konci dne",
-        "Chceš se naučit vědomě regulovat nervový systém a cítit se klidněji",
-        "Stačí ti 15 minut denně a chceš z toho reálný výsledek",
-        "Vnímáš, že jsi zapomněl/a, jaké to je být skutečně v klidu"
+        "Chceš vyčistit mysl od šumu a znovu se soustředit",
+        "Potřebuješ funkční reset — kdykoli během dne",
+        "Chceš se naučit vědomě regulovat nervový systém",
+        "Stačí ti 15 minut denně",
+        "Zapomněl/a jsi, co je skutečný klid",
+        "Víš, že akce je víc než teorie"
       ],
       notForTitle: "Program není pro tebe, pokud…",
       notForItems: [
         "Nechceš věnovat 15 minut denně sobě",
         "Hledáš motivaci nebo zábavný obsah",
         "Čekáš na výsledky bez vlastní praxe",
-        "Stahuješ tipy a PDFka místo toho, abys začal"
+        "Stahuješ PDFka místo toho, abys začal"
       ]
     },
     
-    // Timeline (V3 FINAL - Regulace nervového systému emphasis)
+    // Timeline (V5 - Plný seznam 21 dílů + Týdenní oblouky)
     timeline: {
-      title: "Jak to funguje",
+      title: "21 dní. Každý den jinak.",
       phases: [
         {
-          title: "Týden 1: Příběh",
-          days: "Den 1-7",
-          description: "Nervový systém se začíná uklidňovat. Vedu tě hlasem, příběhem a rytmem dechu."
+          title: "Level 1 — Příběh",
+          days: "Den 1–7",
+          arc: "Učíš se vnímat zahlcení, pojmenovat ho a vědomě ho zmenšit.",
+          episodes: [
+            { day: 1, name: "Zavři záložky" },
+            { day: 2, name: "Notifikace v těle" },
+            { day: 3, name: "Jeden kanál" },
+            { day: 4, name: "Digitální půst" },
+            { day: 5, name: "Prázdná obrazovka" },
+            { day: 6, name: "Reset po dni" },
+            { day: 7, name: "Jeden směr" }
+          ]
         },
         {
-          title: "Týden 2: Vedení",
-          days: "Den 8-14",
-          description: "Jdeme hlouběji. Příběh ustupuje a regulace nervového systému se prohlubuje."
+          title: "Level 2 — Vedení",
+          days: "Den 8–14",
+          arc: "Buduješ konkrétní návyk: výdech jako brzdu, tělo jako kotvu a pozornost jako nástroj.",
+          episodes: [
+            { day: 8,  name: "Tělo jako filtr" },
+            { day: 9,  name: "Prodloužený výdech" },
+            { day: 10, name: "Měkká čelist" },
+            { day: 11, name: "Pomalejší rytmus" },
+            { day: 12, name: "Jedna věc" },
+            { day: 13, name: "Širší pole pozornosti" },
+            { day: 14, name: "Stabilní tempo" }
+          ]
         },
         {
-          title: "Týden 3: Ticho",
-          days: "Den 15-21",
-          description: "Prostor pro tebe. Ticho, které funguje. Pozornost bez námahy."
+          title: "Level 3 — Ticho",
+          days: "Den 15–21",
+          arc: "Prostor pro tebe. Minimum slov. Ticho, které funguje. Pozornost bez námahy.",
+          episodes: [
+            { day: 15, name: "5 minut bez řeči" },
+            { day: 16, name: "Dech jako rytmus" },
+            { day: 17, name: "Prostor mezi myšlenkami" },
+            { day: 18, name: "Bez hodnocení" },
+            { day: 19, name: "Ticho pod šumem" },
+            { day: 20, name: "Jednoduchost" },
+            { day: 21, name: "Ticho jako nástroj" }
+          ]
         }
       ],
       note: ""
@@ -638,16 +669,16 @@ export const MESSAGES = {
       badge: "PŘEDPRODEJ",
       featuresTitle: "Co dostaneš",
       features: [
-        "Plný přístup – jedna platba, žádné předplatné",
-        "21 unikátních audio tréninků (každé 15 min)",
-        "Jasné vedení hlasem – vždy víš, co dělat",
-        "Funguje offline – stáhneš a posloucháš kdekoli",
+        "Jedna platba, přístup navždy",
+        "21 audio tréninků · každý 15 min",
+        "Jasné vedení hlasem – víš, co dělat",
+        "Funguje offline – posloucháš kdekoli",
         "7denní garance vrácení peněz"
       ],
       cta: "Koupit za 990 Kč →",
       stats: [
         { value: "21", label: "tréninků" },
-        { value: "315", label: "minut obsahu" },
+        { value: "315", label: "minut" },
         { value: "47 Kč", label: "za den" }
       ]
     },
@@ -737,7 +768,7 @@ export const MESSAGES = {
     // Final CTA section (V4 - Statement místo otázky, imperativ)
     finalCTA: {
       headline: "Nauč se umění odpočinku.",
-      subtext: "Předprodej • Start 1. 3. 2026 • 7denní garance vrácení",
+      subtext: "Předprodej • Start 1. 3. • 7denní garance vrácení",
       cta: "Dnes chci začít →"
     },
     
@@ -769,16 +800,18 @@ export const MESSAGES = {
     author: {
       headline: "Proč jsem program REŽIM vytvořil",
       paragraphs: [
-        "Minulý rok byl pro mě extrémně náročný. Práce, podnikání, finance, rodina. V říjnu jsem pil tři kávy denně a chodil spát pozdě v noci. Hledal jsem způsob, jak z toho ven. A pak mi to došlo — moderní člověk neumí odpočívat. Skutečně odpočívat. Jdeme do wellness, do parku — ale furt v ruce mobil, v uších sluchátka. Umět se zastavit a jen být? To nás nikdo neučil.",
-        "Proto vznikl program REŽIM. Jako certifikovaný instruktor funkčního dýchání (Oxygen Advantage) jsem za poslední rok vytvořil přes 150 audio nahrávek a provedl stovky lidí na festivalech, ve firmách i v osobním mentoringu. Program REŽIM jsem vytvořil jako první pro sebe. Funguje. A teď ho dávám tobě. Věřím, že 15 minut tréninku odpočinku denně je v roce 2026 jedna z nejcennějších dovedností, kterou si můžeš dopřát."
+        "Minulý rok byl pro mě extrémně náročný. Práce, podnikání, finance, rodina. V říjnu jsem pil tři kávy denně a chodil spát pozdě v noci. Hledal jsem způsob, jak z toho ven.",
+        "A pak mi to došlo — moderní člověk neumí odpočívat. Skutečně odpočívat. Jdeme do wellness, do parku — ale furt v ruce mobil, v uších sluchátka. Umět se zastavit a jen být? To nás nikdo neučil.",
+        "Proto vznikl program REŽIM. Jako certifikovaný instruktor funkčního dýchání (Oxygen Advantage) jsem za poslední rok vytvořil přes 150 audio nahrávek a provedl stovky lidí na festivalech, ve firmách i v osobním mentoringu.",
+        "Program REŽIM jsem vytvořil jako první pro sebe. Funguje. A teď ho dávám tobě. Věřím, že 15 minut tréninku odpočinku denně je v roce 2026 jedna z nejcennějších dovedností, kterou si můžeš dopřát."
       ],
       name: "Jakub",
       title: "Instruktor funkčního dýchání · Zakladatel DechBar",
       photoAlt: "Jakub — instruktor funkčního dýchání a zakladatel DechBar",
       credentials: [
-        { value: "150+", label: "audio nahrávek" },
+        { value: "150+", label: "nahrávek" },
         { value: "1000+", label: "členů DechBaru" },
-        { value: "3+ roky", label: "praxe s lidmi" }
+        { value: "3+ roky", label: "zkušeností" }
       ]
     }
   },
