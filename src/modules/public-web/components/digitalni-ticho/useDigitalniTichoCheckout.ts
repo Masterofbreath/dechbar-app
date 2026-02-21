@@ -108,19 +108,23 @@ export function useDigitalniTichoCheckout() {
 
   async function captureEmail(email: string) {
     try {
+      // Přidáme do BEFORE listu (abandoned cart remarketing).
+      // Až uživatel zaplatí, stripe-webhooks ho přesune do IN listu
+      // a automaticky odhlásí z BEFORE.
       await supabase.from('ecomail_sync_queue').insert({
         user_id: null,
         email,
         event_type: 'contact_add',
         payload: {
-          list_name: 'UNREG',
+          list_name: 'DIGITALNI_TICHO_BEFORE',
           contact: {
             email,
             custom_fields: {
               CHECKOUT_SOURCE: 'landing_page',
+              CHECKOUT_STARTED_AT: new Date().toISOString(),
             },
           },
-          tags: ['CHECKOUT_STARTED', 'digitalni-ticho'],
+          tags: ['CHECKOUT_STARTED', 'digitalni-ticho', 'ABANDONED_CART_CANDIDATE'],
         },
         status: 'pending',
       });

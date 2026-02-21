@@ -32,8 +32,9 @@ const LIST_IDS: Record<string, string> = {
   ENGAGED: Deno.env.get('ECOMAIL_LIST_ENGAGED') || '7',
   PREMIUM: Deno.env.get('ECOMAIL_LIST_PREMIUM') || '8',
   CHURNED: Deno.env.get('ECOMAIL_LIST_CHURNED') || '9',
-  // Product-specific lists — one list per product for clean autoresponder automation
+  // Product-specific lists — IN = zaplatil, BEFORE = zadal email ale nezaplatil
   DIGITALNI_TICHO: Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO') || '10',
+  DIGITALNI_TICHO_BEFORE: Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO_BEFORE') || '11',
 };
 
 // =====================================================
