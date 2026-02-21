@@ -541,11 +541,11 @@ export const MESSAGES = {
       subtitle: "",
       forTitle: "Program je pro tebe, pokud…",
       forItems: [
-        "Chceš vyčistit mysl a znovu se soustředit",
-        "Potřebuješ funkční reset — kdykoli během dne",
-        "Chceš se naučit regulovat nervový systém",
-        "Stačí ti 15 minut denně",
-        "Zapomněl/a jsi, co je skutečný klid",
+        "Chceš vyčistit mysl a lépe se soustředit",
+        "Potřebuješ reset kdykoli během dne",
+        "Chceš umět regulovat nervový systém",
+        "Ti stačí 15 minut denně",
+        "Jsi zapomněl/a, co je skutečný klid",
         "Víš, že akce je víc než teorie"
       ],
       notForTitle: "Program není pro tebe, pokud…",
@@ -553,7 +553,8 @@ export const MESSAGES = {
         "Nechceš věnovat 15 minut denně sobě",
         "Hledáš motivaci nebo zábavný obsah",
         "Čekáš na výsledky bez vlastní praxe",
-        "Stahuješ PDFka místo toho, abys začal"
+        "Chceš další teorii místo akce",
+        "Digitální přetížení tě netrápí"
       ]
     },
     
