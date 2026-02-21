@@ -159,3 +159,52 @@
   color: var(--color-text-tertiary);
   margin-bottom: 10px;
 }
+
+/* Favorites button (hvězdička na owned kartách) */
+.akademie-program-card__favorite {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: color 0.15s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+
+.akademie-program-card__favorite:active {
+  transform: scale(0.85);
+}
+
+.akademie-program-card__favorite--active {
+  color: var(--color-accent);
+}
+
+.akademie-program-card__favorite svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Favorite badge (malá hvězdička v levém horním rohu u vlastněných favorit) */
+.akademie-program-card__fav-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.akademie-program-card__fav-indicator svg {
+  width: 14px;
+  height: 14px;
+}

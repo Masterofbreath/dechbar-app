@@ -27,58 +27,99 @@
   flex-shrink: 0;
 }
 
-/* Program header */
-.akademie-program-detail__hero {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: var(--color-surface-elevated);
+/* Program header — side-by-side layout (obrázek vlevo, info vpravo) */
+.akademie-program-detail__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px var(--akademie-page-px) 16px;
 }
 
-.akademie-program-detail__hero img {
+/* Čtvercový thumbnail vlevo */
+.akademie-program-detail__thumb {
+  flex-shrink: 0;
+  width: 88px;
+  height: 88px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+}
+
+.akademie-program-detail__thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.akademie-program-detail__hero-placeholder {
+.akademie-program-detail__thumb-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    var(--color-surface-elevated),
-    var(--color-surface)
-  );
+  background: linear-gradient(135deg, var(--color-surface-elevated), var(--color-surface));
 }
 
-.akademie-program-detail__hero-placeholder svg {
-  width: 64px;
-  height: 64px;
-  opacity: 0.2;
+.akademie-program-detail__thumb-placeholder svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.25;
   color: var(--color-primary);
 }
 
+/* Info vpravo */
 .akademie-program-detail__info {
-  padding: 20px var(--akademie-page-px) 8px;
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
 }
 
 .akademie-program-detail__title {
-  font-size: 1.25rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1.25;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
+}
+
+.akademie-program-detail__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin-bottom: 8px;
 }
 
 .akademie-program-detail__desc {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--color-text-secondary);
-  line-height: 1.6;
-  margin-bottom: 0;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Rozbalovací popis (full text) */
+.akademie-program-detail__desc--expanded {
+  -webkit-line-clamp: unset;
+}
+
+.akademie-program-detail__desc-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* Legacy hero — zachováno pro kompatibilitu, ale nepoužíváme */
+.akademie-program-detail__hero {
+  display: none;
 }
 
 /* Series list */

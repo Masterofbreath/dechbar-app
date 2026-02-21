@@ -121,12 +121,16 @@ export function DigitalniTichoPage() {
         clientSecret={clientSecret}
       />
 
-      {/* Po úspěšné platbě — poděkování, po zavření redirect na homepage */}
+      {/* Po úspěšné platbě — poděkování, po zavření redirect.
+          Do 26. 2. 2026 jde uživatel na /vyzva, od 26. 2. přímo na dechbar.cz. */}
       <DigitalniTichoThankYouModal
         isOpen={thankYouOpen}
         onClose={() => {
           setThankYouOpen(false);
-          window.location.href = 'https://dechbar.cz';
+          const isFullWebLive = new Date() >= new Date('2026-02-26T00:00:00');
+          window.location.href = isFullWebLive
+            ? 'https://dechbar.cz'
+            : 'https://dechbar.cz/vyzva';
         }}
       />
     </div>

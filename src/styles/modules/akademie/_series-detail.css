@@ -2,6 +2,159 @@
  * Akademie — Series Detail + Lesson Row
  * ===================================================== */
 
+/* =====================================================
+ * Accordion série (inline v ProgramDetail)
+ * ===================================================== */
+
+.akademie-accordion-series {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 var(--akademie-page-px) 24px;
+}
+
+.akademie-accordion-series__heading {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+  padding: 4px 0 8px;
+}
+
+/* Accordion item = série */
+.akademie-accordion-item {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.akademie-accordion-item--open {
+  border-color: rgba(44, 190, 198, 0.3);
+}
+
+/* Trigger = SeriesCard v accordion verzi */
+.akademie-accordion-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border: none;
+  width: 100%;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.akademie-accordion-trigger:active {
+  opacity: 0.8;
+}
+
+.akademie-accordion-item--open .akademie-accordion-trigger {
+  background: var(--color-surface-elevated);
+}
+
+/* Týden badge */
+.akademie-accordion-trigger__week {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.akademie-accordion-item--open .akademie-accordion-trigger__week {
+  background: rgba(44, 190, 198, 0.1);
+  border-color: rgba(44, 190, 198, 0.3);
+}
+
+/* Zámek na sérii */
+.akademie-accordion-trigger__lock {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--color-accent);
+  opacity: 0.7;
+}
+
+.akademie-accordion-trigger__lock svg {
+  width: 14px;
+  height: 14px;
+}
+
+.akademie-accordion-trigger__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.akademie-accordion-trigger__name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.akademie-accordion-trigger__meta {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+/* Počet dokončených lekcí */
+.akademie-accordion-trigger__progress {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.akademie-accordion-trigger__chevron {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.akademie-accordion-item--open .akademie-accordion-trigger__chevron {
+  transform: rotate(90deg);
+}
+
+/* Content panel (lekce) */
+.akademie-accordion-panel {
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  /* Animace výšky přes CSS transition */
+  overflow: hidden;
+}
+
+/* Lekce v accordion panelu mají mírně odlišný padding */
+.akademie-accordion-panel .akademie-lesson-row {
+  padding: 10px 16px;
+  border-radius: 0;
+}
+
+.akademie-accordion-panel .akademie-lesson-row + .akademie-lesson-row {
+  border-top: 1px solid var(--color-border);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* =====================================================
+ * Series header (pro standalone SeriesDetail — zachováno)
+ * ===================================================== */
+
 /* Series header */
 .akademie-series-detail__header {
   padding: 16px var(--akademie-page-px) 8px;

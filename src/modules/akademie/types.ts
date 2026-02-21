@@ -12,8 +12,19 @@ export interface AkademieCategory {
   slug: string
   icon: string | null
   description: string | null
+  cover_image_url: string | null
   sort_order: number
   is_active: boolean
+  /** Pokud nastaveno, kategorie vyžaduje ownership tohoto module_id */
+  required_module_id: string | null
+}
+
+/** Category enriched s access stavem */
+export interface AkademieCategoryVM extends AkademieCategory {
+  /** Uživatel má přístup (required_module_id === null nebo vlastní modul) */
+  isAccessible: boolean
+  /** Počet programů v kategorii */
+  programCount?: number
 }
 
 export interface AkademieProgram {
@@ -67,6 +78,20 @@ export interface AkademieProgramVM extends AkademieProgram {
   isOwned: boolean
   /** True if user does NOT own this (shows padlock) */
   isLocked: boolean
+  /** True if user marked as favorite */
+  isFavorite: boolean
+}
+
+/** Series enriched with access state */
+export interface AkademieSeriesVM extends AkademieSeries {
+  /** True if user has access to this series (owns parent program or this specific series) */
+  isOwned: boolean
+  /** True if locked (neither parent program nor series owned) */
+  isLocked: boolean
+  /** Number of completed lessons */
+  completedCount?: number
+  /** Total lessons in this series */
+  totalCount?: number
 }
 
 /** Lesson enriched with completion state */
@@ -105,4 +130,10 @@ export interface UseAkademieCatalogParams {
 export interface UseAkademieProgramParams {
   moduleId: string
   userId: string | undefined
+}
+
+export interface ToggleFavoriteParams {
+  userId: string
+  programId: string
+  isFavorite: boolean
 }

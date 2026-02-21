@@ -1,5 +1,24 @@
 # Akademie Module — Changelog
 
+## [1.1.0] — 2026-02-21
+
+### Přidáno
+- **CategoryGrid** — nová úvodní obrazovka Akademie (mřížka karet, 2 sloupce mobile / 3 tablet+)
+- **Placeholder kategorie** — "21denní výzvy", "Kurzy", "Dechopedie", "Bonusy", "VIP sekce"
+- **required_module_id** na `akademie_categories` — připraveno pro budoucí zamykání
+- **user_program_favorites** tabulka + mutation `useToggleFavorite`
+- **ProgramDetail refactor** — side-by-side header (thumbnail vlevo, info vpravo) + inline accordion série
+- **Favorites tlačítko** — hvězdička na owned kartách, oblíbené zobrazeny první
+- **BottomNav re-tap reset** — klik na aktivní Akademie tab vrátí na CategoryGrid
+- **3 nové programy REŽIM** v DB: "Když je toho moc", "Dobrou noc", "Jasný směr"
+- **PROD migrace** — kompletní schema + seed data nasazeny na produkci
+
+### Změněno
+- `CategoryPills` nahrazeny `CategoryGrid` jako primární navigace Akademie
+- `AkademieRoot` flow: CategoryGrid → ProgramGrid (v kategorii) → ProgramDetail
+- `SeriesDetail` stránka odstraněna, série jsou accordion v ProgramDetail
+- `useAkademiePlayback` má volitelné params a nový helper `isCurrentlyPlaying`
+
 ## [1.0.0] — 2026-02-21
 
 ### Added

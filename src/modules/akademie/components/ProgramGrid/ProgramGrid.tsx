@@ -4,10 +4,11 @@ import type { AkademieProgramVM } from '../../types'
 interface ProgramGridProps {
   programs: AkademieProgramVM[]
   isLoading: boolean
+  userId: string | undefined
   onOpenProgram: (programId: string) => void
 }
 
-export function ProgramGrid({ programs, isLoading, onOpenProgram }: ProgramGridProps) {
+export function ProgramGrid({ programs, isLoading, userId, onOpenProgram }: ProgramGridProps) {
   if (isLoading) {
     return (
       <div className="akademie-grid">
@@ -38,39 +39,48 @@ export function ProgramGrid({ programs, isLoading, onOpenProgram }: ProgramGridP
     )
   }
 
-  const owned = programs.filter((p) => p.isOwned)
+  // Oblíbené (owned + isFavorite) — zobrazeny první
+  const favorites = programs.filter((p) => p.isOwned && p.isFavorite)
+  const owned = programs.filter((p) => p.isOwned && !p.isFavorite)
   const locked = programs.filter((p) => p.isLocked)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Owned programs — full-width if single, grid if multiple */}
+      {/* Oblíbené programy */}
+      {favorites.length > 0 && (
+        <section>
+          <p className="akademie-section-label">Oblíbené</p>
+          <div className="akademie-grid">
+            {favorites.map((p) => (
+              <ProgramCard key={p.id} program={p} userId={userId} onOpen={onOpenProgram} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Owned programs */}
       {owned.length > 0 && (
         <section>
-          {owned.length === 1 ? (
-            <div style={{ padding: '0 var(--akademie-page-px)' }}>
-              <ProgramCard program={owned[0]} onOpen={onOpenProgram} />
-            </div>
-          ) : (
-            <div className="akademie-grid">
-              {owned.map((p) => (
-                <ProgramCard key={p.id} program={p} onOpen={onOpenProgram} />
-              ))}
-            </div>
+          {favorites.length > 0 && (
+            <p className="akademie-section-label">Moje programy</p>
           )}
+          <div className="akademie-grid">
+            {owned.map((p) => (
+              <ProgramCard key={p.id} program={p} userId={userId} onOpen={onOpenProgram} />
+            ))}
+          </div>
         </section>
       )}
 
       {/* Locked programs */}
       {locked.length > 0 && (
         <section>
-          {owned.length > 0 && (
-            <p className="akademie-section-label" style={{ marginBottom: 10 }}>
-              Další programy
-            </p>
+          {(owned.length > 0 || favorites.length > 0) && (
+            <p className="akademie-section-label">Další programy</p>
           )}
-          <div className={`akademie-grid${locked.length === 1 ? ' akademie-grid--single' : ''}`}>
+          <div className="akademie-grid">
             {locked.map((p) => (
-              <ProgramCard key={p.id} program={p} onOpen={onOpenProgram} />
+              <ProgramCard key={p.id} program={p} userId={userId} onOpen={onOpenProgram} />
             ))}
           </div>
         </section>

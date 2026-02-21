@@ -16,6 +16,7 @@
 
 import { NavIcon } from '../NavIcon';
 import { useNavigation, type NavTab } from '@/platform/hooks';
+import { useAkademieNav } from '@/modules/akademie/hooks/useAkademieNav';
 
 /**
  * Navigation item configuration
@@ -46,8 +47,14 @@ const NAV_ITEMS: NavItem[] = [
  */
 export function BottomNav() {
   const { currentTab, setCurrentTab } = useNavigation();
+  const resetAkademie = useAkademieNav((s) => s.reset);
   
   function handleTabClick(tabId: NavTab) {
+    if (tabId === currentTab) {
+      // Re-tap aktivního tabu: reset vnitřní navigace
+      if (tabId === 'akademie') resetAkademie();
+      return;
+    }
     setCurrentTab(tabId);
   }
   

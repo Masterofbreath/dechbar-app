@@ -10,7 +10,7 @@ import type { Track } from '@/platform/components/AudioPlayer/types'
 
 const COMPLETION_THRESHOLD = 0.8 // 80%
 
-function lessonToTrack(lesson: AkademieLesson): Track {
+function lessonToTrack(lesson: AkademieLesson | LessonWithProgress): Track {
   return {
     id: lesson.id,
     album_id: lesson.series_id,
@@ -43,11 +43,19 @@ function lessonToTrack(lesson: AkademieLesson): Track {
 // --------------------------------------------------
 
 interface UseAkademiePlaybackParams {
-  userId: string | undefined
-  seriesId: string
+  userId?: string
+  seriesId?: string
 }
 
-export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackParams) {
+/**
+ * useAkademiePlayback
+ *
+ * Propojuje Akademie lekce s globálním AudioPlayerStore.
+ * - playLesson: KRITICKÉ — musí být voláno synchronně v onClick (iOS Safari)
+ * - isCurrentlyPlaying: true pokud je daná lekce právě hrána
+ * - handleTimeUpdate: zaznamenat 80% dokončení lekce
+ */
+export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackParams = {}) {
   const playSticky = useAudioPlayerStore((s) => s.playSticky)
   const currentTrack = useAudioPlayerStore((s) => s.currentTrack)
   const isPlaying = useAudioPlayerStore((s) => s.isPlaying)
@@ -59,7 +67,10 @@ export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackPar
   // Ref pro deduplikaci — zabrání dvojitému callbacku
   const completedLessonsRef = useRef<Set<string>>(new Set())
 
-  // KRITICKÉ: synchronní volání v onClick handleru (iOS Safari)
+  /**
+   * KRITICKÉ: musí být voláno synchronně v onClick handleru (iOS Safari vyžaduje
+   * audio.play() bez async přerušení v user gesture callbacku).
+   */
   const playLesson = useCallback(
     (lesson: LessonWithProgress | AkademieLesson) => {
       const track = lessonToTrack(lesson)
@@ -68,7 +79,10 @@ export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackPar
     [playSticky],
   )
 
-  // Volat z audio time update event (přes AudioPlayer store watcher nebo StickyPlayer)
+  /**
+   * Volat z audio time update event.
+   * Zaznamená dokončení lekce při >= 80% přehrání.
+   */
   const handleTimeUpdate = useCallback(
     (lessonId: string, currentTimeSec: number, durationSec: number) => {
       if (!userId) return
@@ -81,7 +95,7 @@ export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackPar
         markComplete({
           userId,
           lessonId,
-          seriesId,
+          seriesId: seriesId ?? '',
           playDurationSeconds: Math.floor(currentTimeSec),
         })
       }
@@ -89,6 +103,15 @@ export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackPar
     [userId, seriesId, markComplete],
   )
 
+  /**
+   * Vrátí true, pokud je daná lekce (lesson.id) právě aktivní a hraje.
+   */
+  const isCurrentlyPlaying = useCallback(
+    (lessonId: string) => currentTrack?.id === lessonId && isPlaying,
+    [currentTrack, isPlaying],
+  )
+
+  /** Vrátí true, pokud je daná lekce načtená (i pozastavená). */
   const isCurrentLesson = useCallback(
     (lessonId: string) => currentTrack?.id === lessonId,
     [currentTrack],
@@ -98,6 +121,7 @@ export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackPar
     playLesson,
     handleTimeUpdate,
     isCurrentLesson,
+    isCurrentlyPlaying,
     currentTrack,
     isPlaying,
     currentTime,

@@ -14,10 +14,13 @@ export { useAkademieNav } from './hooks/useAkademieNav'
 // Types (pro re-use v budoucích modulech)
 export type {
   AkademieCategory,
+  AkademieCategoryVM,
   AkademieProgram,
   AkademieProgramVM,
   AkademieSeries,
+  AkademieSeriesVM,
   AkademieLesson,
   LessonWithProgress,
   AkademieRoute,
+  ToggleFavoriteParams,
 } from './types'

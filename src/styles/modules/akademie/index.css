@@ -5,6 +5,7 @@
  * ===================================================== */
 
 @import url('./_variables.css');
+@import url('./_category-grid.css');
 @import url('./_category-pills.css');
 @import url('./_program-grid.css');
 @import url('./_program-detail.css');

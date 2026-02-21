@@ -213,10 +213,12 @@ export const router = createBrowserRouter([
       // PUBLIC ROUTES (No auth required)
       // ============================================================
       {
-        // TEMPORARY REDIRECT: dechbar.cz → /vyzva (until 2026-02-26)
-        // After that date: revert to <LandingPage />
+        // Na PROD: dočasný redirect → /vyzva (kampaň)
+        // Na DEV/localhost: zobrazí se LandingPage (nebo /app pro rychlý vývoj)
         index: true,
-        element: <Navigate to="/vyzva" replace />,
+        element: import.meta.env.PROD
+          ? <Navigate to="/vyzva" replace />
+          : <Navigate to="/app" replace />,
       },
       {
         path: 'veda',
