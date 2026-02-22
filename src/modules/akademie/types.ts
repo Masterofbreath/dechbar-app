@@ -111,11 +111,14 @@ export type AkademieRoute =
 export interface AkademieNavState {
   activeCategorySlug: string
   routeStack: AkademieRoute[]
+  /** module_id čekající na auto-otevření po načtení programů (deep link z emailu) */
+  pendingModuleId: string | null
   selectCategory: (slug: string) => void
   openProgram: (programId: string) => void
   openSeries: (seriesId: string, programId: string) => void
   back: () => void
   reset: () => void
+  setPendingModuleId: (id: string | null) => void
 }
 
 // --------------------------------------------------

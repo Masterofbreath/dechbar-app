@@ -14,8 +14,8 @@
  * @since 2.45.0
  */
 
-import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { createBrowserRouter, Navigate, Outlet, useSearchParams } from 'react-router-dom';
 import { RootLayout } from './layouts/RootLayout';
 import { ErrorPage } from './layouts/ErrorPage';
 import { authLoader } from './loaders/authLoader';
@@ -25,6 +25,14 @@ import { AdminLayout } from '@/platform/layouts/AdminLayout';
 import { Loader } from '@/platform/components';
 import { useNavigation } from '@/platform/hooks';
 import { useKeyboardShortcuts } from '@/platform/hooks';
+import { useAkademieNav } from '@/modules/akademie/hooks/useAkademieNav';
+
+/** Mapování module_id → kategorie slug v Akademii */
+const MODULE_CATEGORY_MAP: Record<string, string> = {
+  'digitalni-ticho': 'rezim',
+  'membership-smart': 'rezim',
+  'membership-ai-coach': 'rezim',
+};
 
 // Public pages (eager load for landing)
 // import { LandingPage } from '@/modules/public-web/pages/LandingPage'; // TEMPORARY: redirecting to /vyzva until 2026-02-26
@@ -173,9 +181,30 @@ function GlobalModals() {
 
 /**
  * AppLayoutWrapper - Wraps AppLayout with keyboard shortcuts
+ * Handles deep link params from magic link emails (?module=digitalni-ticho&welcome=true)
  */
 function AppLayoutWrapper() {
   useKeyboardShortcuts();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { setCurrentTab } = useNavigation();
+  const { selectCategory, setPendingModuleId } = useAkademieNav();
+
+  useEffect(() => {
+    const moduleId = searchParams.get('module');
+    if (!moduleId) return;
+
+    const categorySlug = MODULE_CATEGORY_MAP[moduleId] ?? 'rezim';
+
+    // Přepni na Akademii, otevři správnou kategorii, nastav pending program
+    setCurrentTab('akademie');
+    selectCategory(categorySlug);
+    setPendingModuleId(moduleId);
+
+    // Vyčisti URL params (zachová čisté /app)
+    setSearchParams({}, { replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Záměrně pouze při mount — deep link se zpracuje jednou
   
   return (
     <>

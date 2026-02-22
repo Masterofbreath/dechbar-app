@@ -6,6 +6,7 @@ const DEFAULT_CATEGORY = 'rezim'
 export const useAkademieNav = create<AkademieNavState>((set, get) => ({
   activeCategorySlug: DEFAULT_CATEGORY,
   routeStack: [],
+  pendingModuleId: null,
 
   selectCategory: (slug: string) => {
     set({ activeCategorySlug: slug, routeStack: [] })
@@ -29,5 +30,9 @@ export const useAkademieNav = create<AkademieNavState>((set, get) => ({
 
   reset: () => {
     set({ activeCategorySlug: DEFAULT_CATEGORY, routeStack: [] })
+  },
+
+  setPendingModuleId: (id: string | null) => {
+    set({ pendingModuleId: id })
   },
 }))

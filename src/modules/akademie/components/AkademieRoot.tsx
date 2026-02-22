@@ -1,6 +1,6 @@
 import { useAuth } from '@/platform/auth'
 import { LockedFeatureModal } from '@/modules/mvp0/components'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAkademieNav } from '../hooks/useAkademieNav'
 import { useAkademieCategories, useAkademieCatalog } from '../api/useAkademieCatalog'
 import { CategoryGrid } from './CategoryGrid'
@@ -16,10 +16,14 @@ import { ProgramDetail } from './ProgramDetail'
  *   top.type === 'program'                          → ProgramDetail (s accordion sériemi)
  *
  * Series se otevírají inline jako accordion v ProgramDetail — žádná samostatná SeriesDetail stránka.
+ *
+ * Deep link flow (magic link z emailu):
+ *   pendingModuleId je nastaven z AppLayoutWrapper po detekci ?module= query param.
+ *   Po načtení programs najdeme program podle module_id a rovnou otevřeme ProgramDetail.
  */
 export function AkademieRoot() {
   const { user } = useAuth()
-  const { activeCategorySlug, routeStack, selectCategory, openProgram, back, reset } =
+  const { activeCategorySlug, routeStack, selectCategory, openProgram, back, reset, pendingModuleId, setPendingModuleId } =
     useAkademieNav()
 
   const [lockedModalOpen, setLockedModalOpen] = useState(false)
@@ -29,6 +33,16 @@ export function AkademieRoot() {
     activeCategorySlug,
     user?.id,
   )
+
+  // Deep link: po načtení programs auto-otevři program dle module_id
+  useEffect(() => {
+    if (!pendingModuleId || !programs || programs.length === 0) return
+    const target = programs.find((p) => p.module_id === pendingModuleId)
+    if (target) {
+      openProgram(target.id)
+      setPendingModuleId(null)
+    }
+  }, [programs, pendingModuleId, openProgram, setPendingModuleId])
 
   const currentRoute = routeStack[routeStack.length - 1]
 

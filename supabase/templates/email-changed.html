@@ -1,9 +1,15 @@
 <!DOCTYPE html>
+<!--
+  BEZPEČNOSTNÍ NOTIFIKACE: E-mail byl změněn
+  ⚠️  Tato šablona NENÍ nativní Supabase auth šablona.
+  Odesílat ručně z Edge Function na PŮVODNÍ e-mail po potvrzení změny.
+  Proměnné: {{ .OldEmail }}, {{ .NewEmail }} — přidat dle vlastní implementace.
+-->
 <html lang="cs">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pozvánka do DechBaru</title>
+  <title>E-mail byl změněn – DechBar</title>
 </head>
 <body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#0a0a0a;padding:40px 16px 48px;">
@@ -22,10 +28,10 @@
                 </tr>
               </table>
               <div style="text-align:center;">
-                <h1 style="margin:0 0 4px;color:#F0F0F0;font-size:26px;font-weight:700;letter-spacing:-0.02em;line-height:1.3;">Pozvánka do DechBaru</h1>
-                <p style="margin:0 0 16px;color:#5A8080;font-size:14px;font-weight:500;">Umění dechu v kapse</p>
-                <div style="display:inline-block;padding:5px 14px;background-color:rgba(214,162,58,0.12);border:1px solid rgba(214,162,58,0.35);border-radius:100px;">
-                  <span style="color:#D6A23A;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;">Speciální pozvánka ✦</span>
+                <h1 style="margin:0 0 4px;color:#F0F0F0;font-size:26px;font-weight:700;letter-spacing:-0.02em;line-height:1.3;">E-mail byl změněn</h1>
+                <p style="margin:0 0 16px;color:#5A8080;font-size:14px;font-weight:500;">Bezpečnostní oznámení</p>
+                <div style="display:inline-block;padding:5px 14px;background-color:rgba(44,190,198,0.1);border:1px solid rgba(44,190,198,0.28);border-radius:100px;">
+                  <span style="color:#2CBEC6;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;">Změna účtu ✓</span>
                 </div>
               </div>
             </td>
@@ -36,42 +42,42 @@
             <td style="padding:32px 32px 0;">
               <p style="margin:0 0 10px;color:#C8C8C8;font-size:17px;font-weight:600;line-height:1.4;">Ahoj!</p>
               <p style="margin:0 0 28px;color:#888;font-size:15px;line-height:1.75;">
-                Byl/a jsi pozván/a do DechBaru — místa, kde si každý den trochu vydechnout je na prvním místě. Klikni níže, vytvoř si účet a přijmi pozvánku.
+                Toto je potvrzení, že e-mailová adresa tvého DechBar účtu byla úspěšně změněna. Od teď se přihlásíš pomocí nové adresy.
               </p>
 
-              <!-- CTA -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+              <!-- Change summary box -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#1C1C1C;border-radius:12px;border:1px solid #252525;margin:0 0 24px;">
                 <tr>
-                  <td align="center" style="padding:0 0 28px;">
-                    <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:16px 48px;background-color:#D6A23A;color:#0a0a0a;text-decoration:none;border-radius:12px;font-weight:700;font-size:16px;letter-spacing:-0.01em;">
-                      Přijmout pozvánku &#8594;
+                  <td style="padding:18px 20px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                      <tr>
+                        <td style="color:#555;font-size:13px;padding-bottom:8px;">Akce</td>
+                        <td align="right" style="color:#D0D0D0;font-size:13px;font-weight:600;padding-bottom:8px;">Změna e-mailu</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#555;font-size:13px;padding-bottom:8px;border-top:1px solid #252525;padding-top:8px;">Původní e-mail</td>
+                        <td align="right" style="color:#666;font-size:13px;padding-bottom:8px;border-top:1px solid #252525;padding-top:8px;">{{ .OldEmail }}</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#555;font-size:13px;border-top:1px solid #252525;padding-top:8px;">Nový e-mail</td>
+                        <td align="right" style="color:#D0D0D0;font-size:13px;font-weight:600;border-top:1px solid #252525;padding-top:8px;">{{ .NewEmail }}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Warning for unauthorized change -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#1C1C1C;border-radius:12px;border:1px solid rgba(214,162,58,0.25);margin:0 0 32px;">
+                <tr>
+                  <td style="padding:18px 20px;">
+                    <p style="margin:0 0 6px;color:#D6A23A;font-size:14px;font-weight:600;">Tuto změnu jsi neprovedl/a?</p>
+                    <p style="margin:0 0 14px;color:#606060;font-size:13px;line-height:1.65;">
+                      Pokud jsi e-mail nemenil/a ty, okamžitě nás kontaktuj. Tvůj účet mohl být kompromitován.
+                    </p>
+                    <a href="mailto:info@dechbar.cz?subject=Bezpe%C4%8Dnostn%C3%AD%20incident%20%E2%80%94%20ne%C5%BEadan%C3%A1%20zm%C4%9Bna%20emailu" style="display:inline-block;padding:10px 24px;background-color:rgba(214,162,58,0.15);color:#D6A23A;text-decoration:none;border-radius:8px;font-weight:600;font-size:13px;border:1px solid rgba(214,162,58,0.3);">
+                      Nahlásit problém &#8594;
                     </a>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Info box -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#1C1C1C;border-radius:12px;border:1px solid #252525;margin:0 0 32px;">
-                <tr>
-                  <td style="padding:18px 20px;">
-                    <p style="margin:0;color:#606060;font-size:13px;line-height:1.65;">
-                      Pozvánka je platná <strong style="color:#909090;">7 dní</strong>. Pokud si myslíš, že jsi tuto pozvánku dostal/a omylem, e-mail ignoruj.
-                    </p>
-                    <p style="margin:8px 0 0;color:#404040;font-size:12px;word-break:break-all;">
-                      Nebo zkopíruj odkaz: {{ .ConfirmationURL }}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Support -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#1C1C1C;border-radius:12px;border:1px solid #252525;margin:0 0 32px;">
-                <tr>
-                  <td style="padding:18px 20px;">
-                    <p style="margin:0 0 4px;color:#C8C8C8;font-size:14px;font-weight:600;">M&#225;&#353; ot&#225;zky?</p>
-                    <p style="margin:0;color:#606060;font-size:13px;line-height:1.65;">
-                      Napi&#353; n&#225;m na <a href="mailto:info@dechbar.cz" style="color:#2CBEC6;text-decoration:none;font-weight:500;">info@dechbar.cz</a> — r&#225;di ti odpov&#237;me do 24 hodin.
-                    </p>
                   </td>
                 </tr>
               </table>
@@ -99,7 +105,7 @@
           <tr>
             <td style="padding:14px 32px;border-top:1px solid #1A1A1A;background-color:#0E0E0E;text-align:center;">
               <p style="margin:0;color:#404040;font-size:12px;line-height:1.6;">
-                Aby ti na&#353;e emaily v&#382;dy dorazily, ozna&#269; <a href="mailto:info@dechbar.cz" style="color:#2CBEC6;text-decoration:none;font-weight:500;">info@dechbar.cz</a> jako d&#367;v&#283;ryhodnou adresu.
+                Tento e-mail byl odeslán na tvou <strong style="color:#505050;">původní adresu</strong> jako bezpečnostní oznámení o změně účtu.
               </p>
             </td>
           </tr>
