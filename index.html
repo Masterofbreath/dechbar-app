@@ -7,6 +7,20 @@
     <!-- Performance: Preconnect to Supabase (faster auth + API calls) -->
     <link rel="preconnect" href="https://nrlqzighwaeuxcicuhse.supabase.co" />
     <link rel="dns-prefetch" href="https://nrlqzighwaeuxcicuhse.supabase.co" />
+
+    <!-- Performance: Preconnect to Google Analytics -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <!-- Google Analytics 4 (G-LVJSDXT0L6) -->
+    <!-- send_page_view: false — page views are tracked via React Router (RootLayout) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LVJSDXT0L6"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-LVJSDXT0L6', { send_page_view: false });
+    </script>
     
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />

@@ -8,10 +8,18 @@
  * @subpackage Routes/Layouts
  * @since 2.45.0
  * @updated 2.47.0 - Added unified real-time user state sync
+ * @updated 2.48.0 - Added Google Analytics SPA page tracking
  */
 
+declare global {
+  interface Window {
+    gtag: (...args: unknown[]) => void;
+    dataLayer: unknown[];
+  }
+}
+
 import { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
 import { useInitializeAuth } from '@/platform/auth';
 import { useRealtimeUserState } from '@/platform/user/useRealtimeUserState';
@@ -20,6 +28,7 @@ import { Toast } from '@/components/shared';
 
 export function RootLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Initialize auth (runs once on app mount)
   useInitializeAuth();
@@ -27,6 +36,16 @@ export function RootLayout() {
   // ✅ NEW: Real-time sync for user state (roles + membership + modules)
   // Replaces useLoadUserRoles - now handles ALL user data with real-time updates
   useRealtimeUserState();
+
+  // Google Analytics — SPA page tracking
+  // Fires on every route change (index.html config has send_page_view: false to avoid duplicate)
+  useEffect(() => {
+    if (typeof window.gtag === 'undefined') return;
+    window.gtag('event', 'page_view', {
+      page_path: location.pathname + location.search,
+      page_title: document.title,
+    });
+  }, [location.pathname, location.search]);
   
   // Deep Link Handler (Native only)
   useEffect(() => {
