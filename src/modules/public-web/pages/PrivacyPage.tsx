@@ -291,7 +291,6 @@ export function PrivacyPage() {
       <Header />
       <LegalPageLayout
         title="Ochrana osobních údajů"
-        subtitle="Co sbíráme, proč to sbíráme a jak to máš pod kontrolou."
         lastUpdated={LAST_UPDATED}
         sections={sections}
       />
