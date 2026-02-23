@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/platform/api/supabase'
 import { akademieKeys } from './keys'
-import type { AkademieSeries, LessonWithProgress } from '../types'
+import type { AkademieSeries, LessonWithProgress, ToggleLessonFavoriteParams } from '../types'
 
 // --------------------------------------------------
 // Fetch: series for a module (program)
@@ -63,10 +63,13 @@ async function fetchLessonsWithProgress(
 
   const rawLessons = (lessons ?? []) as RawLesson[]
 
-  // 2. Načti progress pro přihlášeného uživatele
   const completedIds = new Set<string>()
+  const favoriteIds = new Set<string>()
+
   if (userId && rawLessons.length > 0) {
     const lessonIds = rawLessons.map((l) => l.id)
+
+    // 2. Progress
     const { data: progress } = await supabase
       .from('user_lesson_progress')
       .select('lesson_id, completed_at')
@@ -76,11 +79,23 @@ async function fetchLessonsWithProgress(
     ;(progress as ProgressRow[] ?? []).forEach((row) => {
       completedIds.add(row.lesson_id)
     })
+
+    // 3. Oblíbené lekce
+    const { data: favs } = await supabase
+      .from('user_lesson_favorites')
+      .select('lesson_id')
+      .eq('user_id', userId)
+      .in('lesson_id', lessonIds)
+
+    ;(favs ?? []).forEach((row: { lesson_id: string }) => {
+      favoriteIds.add(row.lesson_id)
+    })
   }
 
   return rawLessons.map((lesson) => ({
     ...lesson,
     isCompleted: completedIds.has(lesson.id),
+    isFavorite: favoriteIds.has(lesson.id),
   }))
 }
 
@@ -93,5 +108,56 @@ export function useAkademieLessons(
     queryFn: () => fetchLessonsWithProgress(seriesId, userId),
     staleTime: 1000 * 60 * 2,
     enabled: !!seriesId,
+  })
+}
+
+// --------------------------------------------------
+// Mutation: toggle lesson favorite (optimistic)
+// --------------------------------------------------
+
+export function useToggleLessonFavorite() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ userId, lessonId, isFavorite }: ToggleLessonFavoriteParams) => {
+      if (isFavorite) {
+        const { error } = await supabase
+          .from('user_lesson_favorites')
+          .delete()
+          .eq('user_id', userId)
+          .eq('lesson_id', lessonId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('user_lesson_favorites')
+          .upsert({ user_id: userId, lesson_id: lessonId })
+        if (error) throw error
+      }
+    },
+    onMutate: async ({ lessonId, seriesId, isFavorite }) => {
+      await qc.cancelQueries({ queryKey: akademieKeys.lessons(seriesId) })
+
+      const previousData = qc.getQueryData<LessonWithProgress[]>(
+        akademieKeys.lessons(seriesId),
+      )
+
+      qc.setQueryData<LessonWithProgress[]>(
+        akademieKeys.lessons(seriesId),
+        (old) =>
+          old?.map((l) =>
+            l.id === lessonId ? { ...l, isFavorite: !isFavorite } : l,
+          ),
+      )
+
+      return { previousData }
+    },
+    onError: (_err, { seriesId }, context) => {
+      if (context?.previousData) {
+        qc.setQueryData(akademieKeys.lessons(seriesId), context.previousData)
+      }
+    },
+    onSettled: (_data, _err, { seriesId }) => {
+      qc.invalidateQueries({ queryKey: akademieKeys.lessons(seriesId) })
+    },
   })
 }

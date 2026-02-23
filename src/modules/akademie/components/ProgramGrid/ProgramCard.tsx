@@ -140,6 +140,7 @@ export function ProgramCard({ program, userId, onOpen }: ProgramCardProps) {
         onClose={() => setShowLocked(false)}
         featureName={program.name}
         productType="product"
+        productDescription={program.description_long ?? undefined}
         websiteUrl="https://zdravedychej.cz"
       />
     </>

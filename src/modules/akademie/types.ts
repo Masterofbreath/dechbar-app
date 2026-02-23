@@ -94,9 +94,17 @@ export interface AkademieSeriesVM extends AkademieSeries {
   totalCount?: number
 }
 
-/** Lesson enriched with completion state */
+/** Lesson enriched with completion state and favorite */
 export interface LessonWithProgress extends AkademieLesson {
   isCompleted: boolean
+  isFavorite: boolean
+}
+
+export interface ToggleLessonFavoriteParams {
+  userId: string
+  lessonId: string
+  seriesId: string
+  isFavorite: boolean
 }
 
 // --------------------------------------------------

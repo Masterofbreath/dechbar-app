@@ -31,7 +31,7 @@
 }
 
 .akademie-accordion-item--open {
-  border-color: rgba(44, 190, 198, 0.3);
+  border-color: rgb(44 190 198 / 30%);
 }
 
 /* Trigger = SeriesCard v accordion verzi */
@@ -74,8 +74,8 @@
 }
 
 .akademie-accordion-item--open .akademie-accordion-trigger__week {
-  background: rgba(44, 190, 198, 0.1);
-  border-color: rgba(44, 190, 198, 0.3);
+  background: rgb(44 190 198 / 10%);
+  border-color: rgb(44 190 198 / 30%);
 }
 
 /* Zámek na sérii */
@@ -135,20 +135,9 @@
 .akademie-accordion-panel {
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
+
   /* Animace výšky přes CSS transition */
   overflow: hidden;
-}
-
-/* Lekce v accordion panelu mají mírně odlišný padding */
-.akademie-accordion-panel .akademie-lesson-row {
-  padding: 10px 16px;
-  border-radius: 0;
-}
-
-.akademie-accordion-panel .akademie-lesson-row + .akademie-lesson-row {
-  border-top: 1px solid var(--color-border);
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 
 /* =====================================================
@@ -256,6 +245,38 @@
   color: var(--color-text-tertiary);
 }
 
+/* Favourite star button na lekci */
+.akademie-lesson-row__star {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  opacity: 0.4;
+  transition: color 0.15s ease, opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+
+.akademie-lesson-row__star:active {
+  transform: scale(0.88);
+}
+
+.akademie-lesson-row__star--active {
+  color: var(--color-accent);
+  opacity: 1;
+}
+
+.akademie-lesson-row:hover .akademie-lesson-row__star,
+.akademie-lesson-row:focus-within .akademie-lesson-row__star {
+  opacity: 0.7;
+}
+
 /* Checkmark (completion indicator) */
 .akademie-lesson-row__check {
   flex-shrink: 0;
@@ -318,6 +339,18 @@
 
 /* Divider between lessons */
 .akademie-lesson-row + .akademie-lesson-row {
+  border-top: 1px solid var(--color-border);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* Accordion panel overrides — musí být za base .akademie-lesson-row (specificity order) */
+.akademie-accordion-panel .akademie-lesson-row {
+  padding: 10px 16px;
+  border-radius: 0;
+}
+
+.akademie-accordion-panel .akademie-lesson-row + .akademie-lesson-row {
   border-top: 1px solid var(--color-border);
   border-top-left-radius: 0;
   border-top-right-radius: 0;

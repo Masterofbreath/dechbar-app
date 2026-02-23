@@ -46,6 +46,12 @@ export interface LockedFeatureModalProps {
    * @default 'subscription'
    */
   productType?: 'subscription' | 'product';
+
+  /**
+   * Volitelný popis produktu/obsahu — zobrazí se pod hlavní description
+   * @example "21denní ranní audio program pro zklidnění nervového systému."
+   */
+  productDescription?: string;
   
   /**
    * Website URL for copy-to-clipboard (optional)
@@ -79,6 +85,7 @@ export function LockedFeatureModal({
   featureName,
   tierRequired,
   productType = 'subscription',
+  productDescription,
   websiteUrl = 'https://dechbar.cz'
 }: LockedFeatureModalProps) {
   
@@ -157,6 +164,13 @@ export function LockedFeatureModal({
             : <>Tato funkce je dostupná od tarifu <strong>{tierRequired}</strong>.</>
           }
         </p>
+
+        {/* Popis produktu (volitelný) */}
+        {productDescription && (
+          <p className="locked-feature__product-desc">
+            {productDescription}
+          </p>
+        )}
         
         {/* Info */}
         <p className="locked-feature__info">

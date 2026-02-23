@@ -39,31 +39,15 @@ export function ProgramGrid({ programs, isLoading, userId, onOpenProgram }: Prog
     )
   }
 
-  // Oblíbené (owned + isFavorite) — zobrazeny první
-  const favorites = programs.filter((p) => p.isOwned && p.isFavorite)
-  const owned = programs.filter((p) => p.isOwned && !p.isFavorite)
+  // API vrací programy seřazené: oblíbené → vlastněné → zamčené
+  const owned = programs.filter((p) => p.isOwned)
   const locked = programs.filter((p) => p.isLocked)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Oblíbené programy */}
-      {favorites.length > 0 && (
-        <section>
-          <p className="akademie-section-label">Oblíbené</p>
-          <div className="akademie-grid">
-            {favorites.map((p) => (
-              <ProgramCard key={p.id} program={p} userId={userId} onOpen={onOpenProgram} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Owned programs */}
+      {/* Vlastněné programy (oblíbené jsou první díky sort z API) */}
       {owned.length > 0 && (
         <section>
-          {favorites.length > 0 && (
-            <p className="akademie-section-label">Moje programy</p>
-          )}
           <div className="akademie-grid">
             {owned.map((p) => (
               <ProgramCard key={p.id} program={p} userId={userId} onOpen={onOpenProgram} />
@@ -72,10 +56,10 @@ export function ProgramGrid({ programs, isLoading, userId, onOpenProgram }: Prog
         </section>
       )}
 
-      {/* Locked programs */}
+      {/* Zamčené programy */}
       {locked.length > 0 && (
         <section>
-          {(owned.length > 0 || favorites.length > 0) && (
+          {owned.length > 0 && (
             <p className="akademie-section-label">Další programy</p>
           )}
           <div className="akademie-grid">

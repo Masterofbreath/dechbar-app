@@ -111,7 +111,7 @@ export function AkademieRoot() {
             className="akademie-back"
             onClick={reset}
             type="button"
-            style={{ margin: '12px 16px 0' }}
+            aria-label="Zpět na Akademie"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="15 18 9 12 15 6" />
@@ -119,14 +119,18 @@ export function AkademieRoot() {
             Akademie
           </button>
 
-          {/* Nadpis kategorie */}
-          {categories && (
-            <div style={{ padding: '8px 16px 4px' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                {categories.find((c) => c.slug === activeCategorySlug)?.name}
-              </h2>
-            </div>
-          )}
+          {/* Nadpis a popis kategorie */}
+          {categories && (() => {
+            const cat = categories.find((c) => c.slug === activeCategorySlug)
+            return cat ? (
+              <div className="akademie-category-heading">
+                <h2 className="akademie-category-heading__title">{cat.name}</h2>
+                {cat.description && (
+                  <p className="akademie-category-heading__desc">{cat.description}</p>
+                )}
+              </div>
+            ) : null
+          })()}
 
           <ProgramGrid
             programs={programs ?? []}
@@ -143,6 +147,7 @@ export function AkademieRoot() {
           program={currentProgram}
           userId={user?.id}
           onBack={back}
+          backLabel={categories?.find((c) => c.slug === activeCategorySlug)?.name ?? 'Zpět'}
         />
       )}
 

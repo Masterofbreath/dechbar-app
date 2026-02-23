@@ -51,6 +51,15 @@
   font-weight: 600;
 }
 
+/* Volitelný popis produktu */
+.locked-feature__product-desc {
+  font-size: var(--font-size-sm); /* 14px */
+  color: var(--color-text-tertiary);
+  line-height: 1.55;
+  margin-bottom: var(--spacing-4); /* 16px */
+  margin-top: -12px;
+}
+
 /* Info Text */
 .locked-feature__info {
   font-size: var(--font-size-sm); /* 14px */

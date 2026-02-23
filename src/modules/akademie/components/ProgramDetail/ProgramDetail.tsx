@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAkademieSeries, useAkademieLessons } from '../../api/useAkademieProgram'
+import { useAkademieSeries, useAkademieLessons, useToggleLessonFavorite } from '../../api/useAkademieProgram'
 import { useAkademiePlayback } from '../../hooks/useAkademiePlayback'
 import { LockedFeatureModal } from '@/modules/mvp0/components'
 import type { AkademieProgramVM, AkademieSeries, LessonWithProgress } from '../../types'
@@ -8,6 +8,7 @@ interface ProgramDetailProps {
   program: AkademieProgramVM
   userId: string | undefined
   onBack: () => void
+  backLabel?: string
 }
 
 // --------------------------------------------------
@@ -16,7 +17,9 @@ interface ProgramDetailProps {
 
 interface LessonRowProps {
   lesson: LessonWithProgress
+  seriesId: string
   isSeriesLocked: boolean
+  userId: string | undefined
   onLockedPlay: () => void
 }
 
@@ -36,8 +39,21 @@ function CheckIcon() {
   )
 }
 
-function LessonRow({ lesson, isSeriesLocked, onLockedPlay }: LessonRowProps) {
+function LessonStarIcon({ filled }: { filled: boolean }) {
+  return filled ? (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ width: 14, height: 14 }}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14 }}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  )
+}
+
+function LessonRow({ lesson, seriesId, isSeriesLocked, userId, onLockedPlay }: LessonRowProps) {
   const { playLesson, isCurrentlyPlaying } = useAkademiePlayback()
+  const toggleFavorite = useToggleLessonFavorite()
   const playing = isCurrentlyPlaying(lesson.id)
 
   function handleClick() {
@@ -46,6 +62,17 @@ function LessonRow({ lesson, isSeriesLocked, onLockedPlay }: LessonRowProps) {
       return
     }
     playLesson(lesson)
+  }
+
+  function handleFavorite(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!userId || isSeriesLocked) return
+    toggleFavorite.mutate({
+      userId,
+      lessonId: lesson.id,
+      seriesId,
+      isFavorite: lesson.isFavorite,
+    })
   }
 
   return (
@@ -60,7 +87,7 @@ function LessonRow({ lesson, isSeriesLocked, onLockedPlay }: LessonRowProps) {
         .join(' ')}
       role="button"
       tabIndex={0}
-      aria-label={`${lesson.title}${lesson.isCompleted ? ', dokončeno' : ''}`}
+      aria-label={`${lesson.title}${lesson.isCompleted ? ', dokončeno' : ''}${lesson.isFavorite ? ', oblíbené' : ''}`}
       onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -76,6 +103,22 @@ function LessonRow({ lesson, isSeriesLocked, onLockedPlay }: LessonRowProps) {
       <div className="akademie-lesson-row__content">
         <span className="akademie-lesson-row__title">{lesson.title}</span>
       </div>
+
+      {/* Favourite star — pouze pro vlastněné série */}
+      {!isSeriesLocked && userId && (
+        <button
+          className={[
+            'akademie-lesson-row__star',
+            lesson.isFavorite ? 'akademie-lesson-row__star--active' : '',
+          ].filter(Boolean).join(' ')}
+          onClick={handleFavorite}
+          type="button"
+          aria-label={lesson.isFavorite ? 'Odebrat z oblíbených' : 'Přidat do oblíbených'}
+          aria-pressed={lesson.isFavorite}
+        >
+          <LessonStarIcon filled={lesson.isFavorite} />
+        </button>
+      )}
 
       <div className="akademie-lesson-row__status">
         {lesson.isCompleted ? (
@@ -101,7 +144,8 @@ interface AccordionSeriesProps {
   seriesIndex: number
   isOwned: boolean
   userId: string | undefined
-  isInitiallyOpen?: boolean
+  isOpen: boolean
+  onToggle: () => void
 }
 
 function LockIcon() {
@@ -121,8 +165,7 @@ function ChevronRightIcon() {
   )
 }
 
-function AccordionSeries({ series, seriesIndex, isOwned, userId, isInitiallyOpen = false }: AccordionSeriesProps) {
-  const [isOpen, setIsOpen] = useState(isInitiallyOpen)
+function AccordionSeries({ series, seriesIndex, isOwned, userId, isOpen, onToggle }: AccordionSeriesProps) {
   const [lockedModalOpen, setLockedModalOpen] = useState(false)
 
   const { data: lessons, isLoading } = useAkademieLessons(
@@ -130,13 +173,12 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, isInitiallyOpen
     userId,
   )
 
-
   return (
     <div className={['akademie-accordion-item', isOpen ? 'akademie-accordion-item--open' : ''].filter(Boolean).join(' ')}>
       {/* Trigger */}
       <button
         className="akademie-accordion-trigger"
-        onClick={() => setIsOpen((v) => !v)}
+        onClick={onToggle}
         type="button"
         aria-expanded={isOpen}
         aria-controls={`accordion-panel-${series.id}`}
@@ -188,7 +230,9 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, isInitiallyOpen
               <LessonRow
                 key={lesson.id}
                 lesson={lesson}
+                seriesId={series.id}
                 isSeriesLocked={!isOwned}
+                userId={userId}
                 onLockedPlay={() => setLockedModalOpen(true)}
               />
             ))}
@@ -210,24 +254,26 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, isInitiallyOpen
 // ProgramDetail — hlavní komponenta
 // --------------------------------------------------
 
-export function ProgramDetail({ program, userId, onBack }: ProgramDetailProps) {
+export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět' }: ProgramDetailProps) {
   const { data: series, isLoading: seriesLoading } = useAkademieSeries(program.module_id)
+  // Pouze jedna série může být otevřená naráz
+  const [openSeriesId, setOpenSeriesId] = useState<string | null>(null)
 
   const durationDays = (series?.length ?? 0) * 7
 
   return (
     <div>
-      {/* Zpět tlačítko — subdued styl */}
+      {/* Zpět tlačítko */}
       <button
         className="akademie-back akademie-back--subtle"
         onClick={onBack}
         type="button"
-        aria-label="Zpět na programy"
+        aria-label={`Zpět na ${backLabel}`}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        Zpět
+        {backLabel}
       </button>
 
       {/* Side-by-side header */}
@@ -295,7 +341,8 @@ export function ProgramDetail({ program, userId, onBack }: ProgramDetailProps) {
               seriesIndex={index}
               isOwned={program.isOwned}
               userId={userId}
-              isInitiallyOpen={false}
+              isOpen={openSeriesId === s.id}
+              onToggle={() => setOpenSeriesId((prev) => (prev === s.id ? null : s.id))}
             />
           ))}
       </div>
