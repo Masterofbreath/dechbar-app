@@ -15,6 +15,7 @@ declare global {
   interface Window {
     gtag: (...args: unknown[]) => void;
     dataLayer: unknown[];
+    fbq: (...args: unknown[]) => void;
   }
 }
 
@@ -45,6 +46,13 @@ export function RootLayout() {
       page_path: location.pathname + location.search,
       page_title: document.title,
     });
+  }, [location.pathname, location.search]);
+
+  // Meta Pixel — SPA page tracking
+  // fbq('init') je v index.html, PageView se tracuje tady při každé navigaci
+  useEffect(() => {
+    if (typeof window.fbq === 'undefined') return;
+    window.fbq('track', 'PageView');
   }, [location.pathname, location.search]);
   
   // Deep Link Handler (Native only)
