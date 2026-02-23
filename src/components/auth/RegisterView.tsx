@@ -14,6 +14,7 @@ import { Button, Input, TextLink } from '@/platform/components';
 import { ErrorMessage } from '@/components/shared';
 import { MESSAGES } from '@/config/messages';
 import { useAuth } from '@/platform/auth';
+import { trackMetaEvent } from '@/platform/utils/analytics';
 
 interface RegisterViewProps {
   onSwitchToLogin: () => void;
@@ -122,7 +123,10 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
       });
       
       console.log('✅ Magic link sent to:', email);
-      
+
+      // Meta Pixel: user successfully submitted email → qualifies as Lead
+      trackMetaEvent('Lead', { content_name: 'magic-link-registration' });
+
       setEmailSent(true);
       // ✅ onSuccess() se zavolá až při kliknutí na "Zavřít" v success view
       

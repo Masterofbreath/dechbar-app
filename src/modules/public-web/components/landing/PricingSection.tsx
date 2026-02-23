@@ -9,11 +9,12 @@
  * @subpackage Modules/PublicWeb
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/platform/auth';
 import { PricingCard } from './PricingCard';
 import { BillingToggle, type BillingInterval } from './BillingToggle';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { trackMetaEvent } from '@/platform/utils/analytics';
 
 // Stripe Price IDs (from Stripe Dashboard)
 const PRICE_IDS = {
@@ -106,6 +107,14 @@ export function PricingSection() {
   const { user } = useAuth();
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('annual');
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Meta Pixel: user scrolled to pricing section and saw the plans
+  useEffect(() => {
+    trackMetaEvent('ViewContent', {
+      content_name: 'pricing',
+      content_type: 'product',
+    });
+  }, []);
 
   // Helper to get Price ID for a plan
   const getPriceId = (moduleId: 'smart' | 'ai-coach'): string => {

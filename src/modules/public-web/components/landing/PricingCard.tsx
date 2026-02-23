@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { Button, EmailInputModal } from '@/platform';
 import { useEmbeddedCheckout, PaymentModal } from '@/platform/payments';
 import { useAuth } from '@/platform/auth/useAuth';
+import { trackMetaEvent, trackPurchase, parsePriceString } from '@/platform/utils/analytics';
 import type { BillingInterval } from './BillingToggle';
 
 export interface PricingCardProps {
@@ -75,6 +76,15 @@ export function PricingCard({
       console.error('No priceId provided for paid tier');
       return;
     }
+
+    // Meta Pixel: user clicked "Začít →" on a paid plan
+    trackMetaEvent('InitiateCheckout', {
+      content_name: title,
+      currency: 'CZK',
+      value: parsePriceString(price),
+      content_type: 'product',
+      num_items: 1,
+    });
 
     // Authenticated user: Open payment modal directly
     if (user) {
@@ -220,6 +230,13 @@ export function PricingCard({
       isOpen={isModalOpen}
       onClose={closePaymentModal}
       clientSecret={clientSecret}
+      onPaymentComplete={() => {
+        trackPurchase({
+          value: parsePriceString(price),
+          currency: 'CZK',
+          itemName: `${title} ${billingInterval === 'annual' ? 'roční' : 'měsíční'}`,
+        });
+      }}
     />
     </>
   );
