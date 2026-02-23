@@ -85,6 +85,18 @@ export function ChallengeHero() {
             >
               {MESSAGES.challenge.hero.cta}
             </Button>
+
+            <p className="challenge-hero__consent">
+              Pokračováním souhlasíš s{' '}
+              <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer">
+                Obchodními podmínkami
+              </a>
+              {' '}a{' '}
+              <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer">
+                Ochranou osobních údajů
+              </a>
+              .
+            </p>
           </form>
 
           {/* Success/Error Messages */}

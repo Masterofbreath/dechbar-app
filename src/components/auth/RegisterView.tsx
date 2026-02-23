@@ -88,7 +88,7 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
       await signInWithOAuth(provider, {
         redirectTo: `${window.location.origin}/app`
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`OAuth ${provider} error:`, err);
       setFormError(MESSAGES.error.oauthFailed);
     }
@@ -126,10 +126,10 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
       setEmailSent(true);
       // ✅ onSuccess() se zavolá až při kliknutí na "Zavřít" v success view
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Register error:', err);
       
-      const errorMessage = err.message || MESSAGES.error.registrationFailed;
+      const errorMessage = err instanceof Error ? err.message : MESSAGES.error.registrationFailed;
       
       // ✅ PARSOVAT DYNAMICKÝ ČAS ZE SUPABASE + COUNTDOWN
       if (errorMessage.includes('For security purposes') || errorMessage.includes('Email rate limit')) {
@@ -296,15 +296,15 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
 
         {/* GDPR Notice - Informational text (VARIANTA A: below OAuth) */}
         <p className="gdpr-notice">
-          Registrací souhlasíš s{' '}
-          <a href="/gdpr" target="_blank" rel="noopener noreferrer">
-            GDPR
+          Pokračováním souhlasíš s{' '}
+          <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer">
+            Obchodními podmínkami
           </a>
           {' '}a{' '}
-          <a href="/terms" target="_blank" rel="noopener noreferrer">
-            obchodními podmínkami
+          <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer">
+            Ochranou osobních údajů
           </a>
-          {' '}včetně používání souborů Cookie.
+          .
         </p>
       </div>
 

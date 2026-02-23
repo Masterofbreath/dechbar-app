@@ -164,13 +164,13 @@ export function DemoEmailModal({
         
         {/* Privacy Notice */}
         <p className="demo-email-modal__privacy">
-          Registrací souhlasíš s{' '}
-          <a href="/gdpr" target="_blank" rel="noopener noreferrer" className="demo-email-modal__link">
-            GDPR
+          Pokračováním souhlasíš s{' '}
+          <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer" className="demo-email-modal__link">
+            Obchodními podmínkami
           </a>
           {' '}a{' '}
-          <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer" className="demo-email-modal__link">
-            obchodními podmínkami
+          <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer" className="demo-email-modal__link">
+            Ochranou osobních údajů
           </a>
           .
         </p>

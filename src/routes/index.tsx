@@ -35,12 +35,14 @@ const MODULE_CATEGORY_MAP: Record<string, string> = {
 };
 
 // Public pages (eager load for landing)
-// import { LandingPage } from '@/modules/public-web/pages/LandingPage'; // TEMPORARY: redirecting to /vyzva until 2026-02-26
+import { LandingPage } from '@/modules/public-web/pages/LandingPage';
 import { SciencePage } from '@/modules/public-web/pages/SciencePage';
 import { ChallengePage } from '@/modules/public-web/pages/ChallengePage';
 import { ChallengeThankYouPage } from '@/modules/public-web/pages/ChallengeThankYouPage';
 import { DigitalniTichoPage } from '@/modules/public-web/pages/DigitalniTichoPage';
 import { DigitalniTichoThankYouPage } from '@/modules/public-web/pages/DigitalniTichoThankYouPage';
+import { TermsPage } from '@/modules/public-web/pages/TermsPage';
+import { PrivacyPage } from '@/modules/public-web/pages/PrivacyPage';
 
 // Auth pages
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
@@ -71,10 +73,49 @@ const AdminComingSoon = lazy(() => import('@/platform/pages/admin/AdminComingSoo
 /**
  * NavigationRouter - Renders current tab content
  * (Used inside AppLayout)
+ *
+ * Deep link support:
+ *   ?module=digitalni-ticho  → otevře Akademie tab + přímo ProgramDetail pro daný modul
+ *   ?tab=akademie             → otevře Akademie tab (na CategoryGrid)
+ *
+ * Příklad magic link z emailu po platbě:
+ *   https://app.zdravedychej.cz/app?module=digitalni-ticho
  */
 function NavigationRouter() {
-  const { currentTab } = useNavigation();
-  
+  const { currentTab, setCurrentTab } = useNavigation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Deep link: přečti ?module= a nastav pendingModuleId v akademie nav
+  useEffect(() => {
+    const moduleId = searchParams.get('module');
+    const tab = searchParams.get('tab');
+
+    if (moduleId) {
+      // Lazy import — nechceme circular dependency
+      import('@/modules/akademie/hooks/useAkademieNav').then(({ useAkademieNav }) => {
+        const { setPendingModuleId, selectCategory } = useAkademieNav.getState();
+        selectCategory('rezim'); // zajisti, že jsme v správné kategorii
+        setPendingModuleId(moduleId);
+      });
+      setCurrentTab('akademie');
+      // Smaž query param z URL (čistá URL)
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('module');
+        next.delete('tab');
+        return next;
+      }, { replace: true });
+    } else if (tab === 'akademie') {
+      setCurrentTab('akademie');
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('tab');
+        return next;
+      }, { replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Záměrně pouze při mount — čteme URL jednou
+
   switch (currentTab) {
     case 'dnes':
       return <DnesPage />;
@@ -242,12 +283,12 @@ export const router = createBrowserRouter([
       // PUBLIC ROUTES (No auth required)
       // ============================================================
       {
-        // Na PROD: dočasný redirect → /vyzva (kampaň)
-        // Na DEV/localhost: zobrazí se LandingPage (nebo /app pro rychlý vývoj)
+        // Na PROD: dočasný redirect → /vyzva (kampaň, aktivní do 2026-02-26)
+        // Na DEV/localhost: zobrazí LandingPage (hlavní homepage s Header + login)
         index: true,
         element: import.meta.env.PROD
           ? <Navigate to="/vyzva" replace />
-          : <Navigate to="/app" replace />,
+          : <LandingPage />,
       },
       {
         path: 'veda',
@@ -268,6 +309,14 @@ export const router = createBrowserRouter([
       {
         path: 'digitalni-ticho/dekujeme',
         element: <DigitalniTichoThankYouPage />,
+      },
+      {
+        path: 'obchodni-podminky',
+        element: <TermsPage />,
+      },
+      {
+        path: 'ochrana-osobnich-udaju',
+        element: <PrivacyPage />,
       },
       {
         path: 'reset-password',

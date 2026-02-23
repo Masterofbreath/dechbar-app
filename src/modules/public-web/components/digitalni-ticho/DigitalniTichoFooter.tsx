@@ -31,11 +31,11 @@ export function DigitalniTichoFooter() {
         
         {/* Legal links */}
         <div className="challenge-footer__links">
-          <a href="/privacy">Ochrana soukromí</a>
+          <a href="/ochrana-osobnich-udaju">Ochrana osobních údajů</a>
           <span className="challenge-footer__separator">•</span>
-          <a href="/terms">Smluvní podmínky</a>
+          <a href="/obchodni-podminky">Obchodní podmínky</a>
           <span className="challenge-footer__separator">•</span>
-          <a href="/contact">Kontakt</a>
+          <a href="mailto:info@dechbar.cz">Kontakt</a>
         </div>
         
         {/* Copyright */}

@@ -116,12 +116,12 @@ export function EmailInputModal({
 
           <p className="gdpr-notice">
             Pokračováním souhlasíš s{' '}
-            <a href="/terms" target="_blank" rel="noopener noreferrer">
-              obchodními podmínkami
+            <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer">
+              Obchodními podmínkami
             </a>
             {' '}a{' '}
-            <a href="/gdpr" target="_blank" rel="noopener noreferrer">
-              ochranou osobních údajů
+            <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer">
+              Ochranou osobních údajů
             </a>
             .
           </p>

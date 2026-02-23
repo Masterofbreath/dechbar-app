@@ -69,6 +69,18 @@ export function ChallengeFinalCTA() {
           >
             {MESSAGES.challenge.final.cta}
           </Button>
+
+          <p className="challenge-final-cta__consent">
+            Pokračováním souhlasíš s{' '}
+            <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer">
+              Obchodními podmínkami
+            </a>
+            {' '}a{' '}
+            <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer">
+              Ochranou osobních údajů
+            </a>
+            .
+          </p>
         </form>
 
         {/* Success/Error Messages */}

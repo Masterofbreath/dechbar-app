@@ -223,14 +223,23 @@ export function ChallengeRegistrationModal({
             
             {/* Privacy Notice */}
             <p className="demo-email-modal__privacy">
-              Registrací souhlasíš s{' '}
-              <a 
-                href="/obchodni-podminky" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              Pokračováním souhlasíš s{' '}
+              <a
+                href="/obchodni-podminky"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="demo-email-modal__link"
               >
-                obchodními podmínkami
+                Obchodními podmínkami
+              </a>
+              {' '}a{' '}
+              <a
+                href="/ochrana-osobnich-udaju"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="demo-email-modal__link"
+              >
+                Ochranou osobních údajů
               </a>
               .
             </p>

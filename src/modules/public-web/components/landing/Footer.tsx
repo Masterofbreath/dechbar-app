@@ -20,21 +20,17 @@ export function Footer() {
         <div className="landing-footer__brand">
           <Logo variant="off-white" />
           <p className="landing-footer__tagline">
-            Tvůj dechový průvodce v kapse.
+            umění dechu v kapse
           </p>
         </div>
         
-        {/* Inline navigation links */}
+        {/* Legal + contact links */}
         <div className="landing-footer__links">
-          <a href="/veda">Věda</a>
+          <a href="/obchodni-podminky">Obchodní podmínky</a>
           <span className="landing-footer__separator">•</span>
-          <a href="/vyzva">Výzva</a>
+          <a href="/ochrana-osobnich-udaju">Ochrana osobních údajů</a>
           <span className="landing-footer__separator">•</span>
-          <a href="/privacy">Ochrana soukromí</a>
-          <span className="landing-footer__separator">•</span>
-          <a href="/terms">Podmínky</a>
-          <span className="landing-footer__separator">•</span>
-          <a href="https://www.instagram.com/jakub_rozdycha_cesko/" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="mailto:info@dechbar.cz">Kontakt</a>
         </div>
         
         {/* Copyright */}
