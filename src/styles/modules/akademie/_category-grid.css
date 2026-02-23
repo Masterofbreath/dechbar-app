@@ -4,6 +4,11 @@
  * 2 sloupce mobile, 3 sloupce tablet+
  * ===================================================== */
 
+.akademie-root {
+  max-width: var(--akademie-max-width);
+  margin: 0 auto;
+}
+
 .akademie-category-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -11,7 +16,7 @@
   padding: 8px var(--akademie-page-px) 24px;
 }
 
-@media (min-width: 640px) {
+@media (width >= 640px) {
   .akademie-category-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -100,7 +105,7 @@
   width: 28px;
   height: 28px;
   border-radius: 7px;
-  background: rgba(18, 18, 18, 0.7);
+  background: rgb(18 18 18 / 70%);
   backdrop-filter: blur(4px);
   color: var(--color-accent);
 }

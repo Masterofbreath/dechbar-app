@@ -1,10 +1,8 @@
 import { create } from 'zustand'
 import type { AkademieNavState, AkademieRoute } from '../types'
 
-const DEFAULT_CATEGORY = 'rezim'
-
 export const useAkademieNav = create<AkademieNavState>((set, get) => ({
-  activeCategorySlug: DEFAULT_CATEGORY,
+  activeCategorySlug: null,
   routeStack: [],
   pendingModuleId: null,
 
@@ -29,7 +27,7 @@ export const useAkademieNav = create<AkademieNavState>((set, get) => ({
   },
 
   reset: () => {
-    set({ activeCategorySlug: DEFAULT_CATEGORY, routeStack: [] })
+    set({ activeCategorySlug: null, routeStack: [] })
   },
 
   setPendingModuleId: (id: string | null) => {

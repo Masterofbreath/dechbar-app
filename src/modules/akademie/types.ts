@@ -109,7 +109,7 @@ export type AkademieRoute =
   | { type: 'series'; seriesId: string; programId: string }
 
 export interface AkademieNavState {
-  activeCategorySlug: string
+  activeCategorySlug: string | null
   routeStack: AkademieRoute[]
   /** module_id čekající na auto-otevření po načtení programů (deep link z emailu) */
   pendingModuleId: string | null

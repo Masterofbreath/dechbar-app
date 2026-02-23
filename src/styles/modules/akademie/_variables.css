@@ -52,4 +52,7 @@
   --akademie-section-gap: 24px;
   --akademie-grid-gap: 12px;
   --akademie-page-px: 16px;
+
+  /* Desktop max-width — ladí s mobile-first šířkou */
+  --akademie-max-width: 680px;
 }

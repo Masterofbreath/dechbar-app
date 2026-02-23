@@ -40,8 +40,6 @@ function LessonRow({ lesson, isSeriesLocked, onLockedPlay }: LessonRowProps) {
   const { playLesson, isCurrentlyPlaying } = useAkademiePlayback()
   const playing = isCurrentlyPlaying(lesson.id)
 
-  const durationMin = Math.round(lesson.duration_seconds / 60)
-
   function handleClick() {
     if (isSeriesLocked) {
       onLockedPlay()
@@ -62,7 +60,7 @@ function LessonRow({ lesson, isSeriesLocked, onLockedPlay }: LessonRowProps) {
         .join(' ')}
       role="button"
       tabIndex={0}
-      aria-label={`${lesson.title}, ${durationMin} min${lesson.isCompleted ? ', dokončeno' : ''}`}
+      aria-label={`${lesson.title}${lesson.isCompleted ? ', dokončeno' : ''}`}
       onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -77,7 +75,6 @@ function LessonRow({ lesson, isSeriesLocked, onLockedPlay }: LessonRowProps) {
 
       <div className="akademie-lesson-row__content">
         <span className="akademie-lesson-row__title">{lesson.title}</span>
-        <span className="akademie-lesson-row__meta">{durationMin} min</span>
       </div>
 
       <div className="akademie-lesson-row__status">
@@ -133,8 +130,6 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, isInitiallyOpen
     userId,
   )
 
-  const completedCount = lessons?.filter((l) => l.isCompleted).length ?? 0
-  const totalCount = lessons?.length ?? 0
 
   return (
     <div className={['akademie-accordion-item', isOpen ? 'akademie-accordion-item--open' : ''].filter(Boolean).join(' ')}>
@@ -154,14 +149,6 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, isInitiallyOpen
         {/* Info */}
         <span className="akademie-accordion-trigger__content">
           <span className="akademie-accordion-trigger__name">{series.name}</span>
-          <span className="akademie-accordion-trigger__meta">
-            {series.description}
-          </span>
-          {isOwned && isOpen && totalCount > 0 && (
-            <span className="akademie-accordion-trigger__progress">
-              {completedCount}/{totalCount} dokončeno
-            </span>
-          )}
         </span>
 
         {/* Lock nebo chevron */}
@@ -265,7 +252,7 @@ export function ProgramDetail({ program, userId, onBack }: ProgramDetailProps) {
             <div className="akademie-program-detail__meta">
               <span>{durationDays} dní</span>
               <span>·</span>
-              <span>7 min/den</span>
+              <span>15 min/den</span>
             </div>
           )}
           {program.description_long && (
@@ -308,7 +295,7 @@ export function ProgramDetail({ program, userId, onBack }: ProgramDetailProps) {
               seriesIndex={index}
               isOwned={program.isOwned}
               userId={userId}
-              isInitiallyOpen={index === 0 && program.isOwned}
+              isInitiallyOpen={false}
             />
           ))}
       </div>

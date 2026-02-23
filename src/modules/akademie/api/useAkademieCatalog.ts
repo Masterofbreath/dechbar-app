@@ -215,7 +215,7 @@ async function fetchProgramsForCategory(
 }
 
 export function useAkademieCatalog(
-  categorySlug: string,
+  categorySlug: string | null,
   userId: string | undefined,
 ) {
   return useQuery({

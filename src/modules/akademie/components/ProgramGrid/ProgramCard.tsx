@@ -105,7 +105,7 @@ export function ProgramCard({ program, userId, onOpen }: ProgramCardProps) {
           <div className="akademie-program-card__meta">
             <span>21 lekcí</span>
             <span>·</span>
-            <span>7 min/den</span>
+            <span>15 min/den</span>
           </div>
         </div>
 

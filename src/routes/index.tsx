@@ -43,6 +43,7 @@ import { DigitalniTichoPage } from '@/modules/public-web/pages/DigitalniTichoPag
 import { DigitalniTichoThankYouPage } from '@/modules/public-web/pages/DigitalniTichoThankYouPage';
 import { TermsPage } from '@/modules/public-web/pages/TermsPage';
 import { PrivacyPage } from '@/modules/public-web/pages/PrivacyPage';
+import { ContactPage } from '@/modules/public-web/pages/ContactPage';
 
 // Auth pages
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
@@ -317,6 +318,10 @@ export const router = createBrowserRouter([
       {
         path: 'ochrana-osobnich-udaju',
         element: <PrivacyPage />,
+      },
+      {
+        path: 'kontakt',
+        element: <ContactPage />,
       },
       {
         path: 'reset-password',
