@@ -74,13 +74,22 @@ export function useAkademieFavorites(userId: string | undefined) {
 // Mutation: toggle favorite
 // --------------------------------------------------
 
+function sortPrograms(programs: AkademieProgramVM[]): AkademieProgramVM[] {
+  return [...programs].sort((a, b) => {
+    if (a.isFavorite && !b.isFavorite) return -1
+    if (!a.isFavorite && b.isFavorite) return 1
+    if (a.isOwned && !b.isOwned) return -1
+    if (!a.isOwned && b.isOwned) return 1
+    return a.sort_order - b.sort_order
+  })
+}
+
 export function useToggleFavorite() {
   const qc = useQueryClient()
 
   return useMutation({
     mutationFn: async ({ userId, programId, isFavorite }: ToggleFavoriteParams) => {
       if (isFavorite) {
-        // Odstranit z oblíbených
         const { error } = await supabase
           .from('user_program_favorites')
           .delete()
@@ -88,27 +97,44 @@ export function useToggleFavorite() {
           .eq('program_id', programId)
         if (error) throw error
       } else {
-        // Přidat do oblíbených
         const { error } = await supabase
           .from('user_program_favorites')
           .upsert({ user_id: userId, program_id: programId })
         if (error) throw error
       }
     },
-    onSuccess: (_data, { userId, programId, isFavorite }) => {
-      // Optimistic-like invalidation
-      qc.setQueryData(
-        [...akademieKeys.all, 'favorites', userId],
-        (prev: Set<string> | undefined) => {
-          const next = new Set(prev ?? [])
-          if (isFavorite) {
-            next.delete(programId)
-          } else {
-            next.add(programId)
-          }
-          return next
+    onMutate: async ({ programId, isFavorite }) => {
+      // Zruš případné refetche, aby nepřepsaly optimistický update
+      await qc.cancelQueries({ queryKey: akademieKeys.programs() })
+
+      // Ulož snapshot pro rollback při chybě
+      const previousEntries = qc.getQueriesData<AkademieProgramVM[]>({
+        queryKey: akademieKeys.programs(),
+      })
+
+      // Okamžitě uprav isFavorite + re-sort ve všech program cache
+      qc.setQueriesData<AkademieProgramVM[]>(
+        { queryKey: akademieKeys.programs() },
+        (old) => {
+          if (!old) return old
+          const updated = old.map((p) =>
+            p.id === programId ? { ...p, isFavorite: !isFavorite } : p,
+          )
+          return sortPrograms(updated)
         },
       )
+
+      return { previousEntries }
+    },
+    onError: (_err, _vars, context) => {
+      // Rollback při chybě
+      context?.previousEntries.forEach(([queryKey, data]) => {
+        qc.setQueryData(queryKey, data)
+      })
+    },
+    onSettled: () => {
+      // Finální sync se serverem
+      qc.invalidateQueries({ queryKey: akademieKeys.programs() })
     },
   })
 }

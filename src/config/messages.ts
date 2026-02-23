@@ -284,7 +284,7 @@ export const MESSAGES = {
   // ============================================================
   header: {
     // Authenticated user CTAs
-    authenticatedPrimaryCTA: "Dýchej s námi →",
+    authenticatedPrimaryCTA: "Aplikace →",
     authenticatedProfileFallback: "Profil",  // Fallback if no vocative_name
     
     // Unauthenticated CTAs

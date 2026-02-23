@@ -284,10 +284,10 @@ export const router = createBrowserRouter([
       // PUBLIC ROUTES (No auth required)
       // ============================================================
       {
-        // Na PROD: dočasný redirect → /vyzva (kampaň, aktivní do 2026-02-26)
-        // Na DEV/localhost: zobrazí LandingPage (hlavní homepage s Header + login)
+        // Na dechbar.cz (PROD doména): dočasný redirect → /vyzva (kampaň)
+        // Na test.dechbar.cz, localhost a všechny ostatní: zobrazí LandingPage
         index: true,
-        element: import.meta.env.PROD
+        element: (window.location.hostname === 'dechbar.cz' || window.location.hostname === 'www.dechbar.cz')
           ? <Navigate to="/vyzva" replace />
           : <LandingPage />,
       },

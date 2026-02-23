@@ -33,7 +33,7 @@ export function ChallengeFooter() {
           <span className="challenge-footer__separator">•</span>
           <a href="/obchodni-podminky">Obchodní podmínky</a>
           <span className="challenge-footer__separator">•</span>
-          <a href="mailto:info@dechbar.cz">Kontakt</a>
+          <a href="/kontakt">Kontakt</a>
         </div>
         
         {/* Copyright */}

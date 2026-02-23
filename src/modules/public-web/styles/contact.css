@@ -29,7 +29,15 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: calc(var(--spacing-20) + var(--spacing-6)) var(--spacing-6) var(--spacing-16);
+
+  /* Mobile: menší top padding (sticky header ~60px + 16px gap) */
+  padding: calc(var(--spacing-16) + var(--spacing-4)) var(--spacing-4) var(--spacing-10);
+}
+
+@media (width >= 480px) {
+  .contact-main {
+    padding: calc(var(--spacing-16) + var(--spacing-6)) var(--spacing-6) var(--spacing-12);
+  }
 }
 
 @media (width >= 1024px) {
@@ -52,7 +60,7 @@
 }
 
 .contact-title {
-  font-size: var(--font-size-4xl);
+  font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--letter-spacing-tight);
   color: var(--color-text-primary);
@@ -60,9 +68,15 @@
   line-height: 1.1;
 }
 
+@media (width >= 480px) {
+  .contact-title {
+    font-size: var(--font-size-3xl);
+  }
+}
+
 @media (width >= 768px) {
   .contact-title {
-    font-size: var(--font-size-5xl);
+    font-size: var(--font-size-4xl);
   }
 }
 
@@ -329,47 +343,3 @@
   color: var(--color-text-primary);
 }
 
-/* ===================================
-   ALTERNATE CONTACT
-   =================================== */
-
-.contact-alternate {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-3);
-  padding-top: var(--spacing-8);
-  border-top: 1px solid var(--color-border);
-  text-align: center;
-}
-
-.contact-alternate p {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-}
-
-.contact-email-link {
-  color: var(--color-text-secondary);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.2s ease;
-}
-
-.contact-email-link:hover {
-  color: var(--color-text-primary);
-}
-
-.contact-instagram {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  color: var(--color-text-tertiary);
-  text-decoration: none;
-  font-size: var(--font-size-sm);
-  transition: color 0.2s ease;
-}
-
-.contact-instagram:hover {
-  color: var(--color-text-secondary);
-}

@@ -30,14 +30,22 @@ export interface LockedFeatureModalProps {
   
   /**
    * Name of locked feature
-   * @example "SMART CVIČENÍ", "NEOMEZENÝ POČET", "DechBar STUDIO", "Výzvy"
+   * @example "SMART CVIČENÍ", "Digitální ticho", "Výzvy"
    */
   featureName: string;
   
   /**
-   * Required tier to unlock
+   * Required tier to unlock (použij pro subscription-based features)
    */
-  tierRequired: 'SMART' | 'AI_COACH' | 'STUDIO' | 'CHALLENGES' | 'AKADEMIE';
+  tierRequired?: 'SMART' | 'AI_COACH' | 'STUDIO' | 'CHALLENGES' | 'AKADEMIE';
+
+  /**
+   * Typ produktu — určuje text v modalu
+   * - 'subscription': "Tato funkce je dostupná od tarifu X." (default)
+   * - 'product': "Tento obsah zatím nevlastníš." (pro jednorázové produkty)
+   * @default 'subscription'
+   */
+  productType?: 'subscription' | 'product';
   
   /**
    * Website URL for copy-to-clipboard (optional)
@@ -70,6 +78,7 @@ export function LockedFeatureModal({
   onClose,
   featureName,
   tierRequired,
+  productType = 'subscription',
   websiteUrl = 'https://dechbar.cz'
 }: LockedFeatureModalProps) {
   
@@ -143,7 +152,10 @@ export function LockedFeatureModal({
         
         {/* Description */}
         <p className="locked-feature__description">
-          Tato funkce je dostupná od tarifu <strong>{tierRequired}</strong>.
+          {productType === 'product'
+            ? 'Tento obsah zatím nevlastníš.'
+            : <>Tato funkce je dostupná od tarifu <strong>{tierRequired}</strong>.</>
+          }
         </p>
         
         {/* Info */}

@@ -103,7 +103,7 @@ export function ProgramCard({ program, userId, onOpen }: ProgramCardProps) {
         <div className="akademie-program-card__body">
           <p className="akademie-program-card__name">{program.name}</p>
           <div className="akademie-program-card__meta">
-            <span>21 lekcí</span>
+            <span>21 dní</span>
             <span>·</span>
             <span>15 min/den</span>
           </div>
@@ -139,7 +139,7 @@ export function ProgramCard({ program, userId, onOpen }: ProgramCardProps) {
         isOpen={showLocked}
         onClose={() => setShowLocked(false)}
         featureName={program.name}
-        tierRequired="AKADEMIE"
+        productType="product"
         websiteUrl="https://zdravedychej.cz"
       />
     </>

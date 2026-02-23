@@ -72,7 +72,6 @@ export function CategoryGrid({ categories, onSelect }: CategoryGridProps) {
     <div>
       <div className="akademie-page-header">
         <h1 className="akademie-page-header__title">Akademie</h1>
-        <p className="akademie-page-header__subtitle">Vyber, kde chceš pokračovat</p>
       </div>
 
       <div className="akademie-category-grid">

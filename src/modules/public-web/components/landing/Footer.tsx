@@ -30,7 +30,7 @@ export function Footer() {
           <span className="landing-footer__separator">•</span>
           <a href="/ochrana-osobnich-udaju">Ochrana osobních údajů</a>
           <span className="landing-footer__separator">•</span>
-          <a href="mailto:info@dechbar.cz">Kontakt</a>
+          <a href="/kontakt">Kontakt</a>
         </div>
         
         {/* Copyright */}
