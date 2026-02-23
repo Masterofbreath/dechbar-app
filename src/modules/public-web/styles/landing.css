@@ -41,7 +41,6 @@ section[id] {
 .landing-header--scrolled {
   background: rgb(30 30 30 / 80%);  /* Surface with transparency */
   backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
   border-bottom: 1px solid rgb(255 255 255 / 5%);
   box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
 }
@@ -499,22 +498,9 @@ section[id] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-6);  /* 24px mezi sekcemi */
+  gap: var(--spacing-4);  /* 16px mezi sekcemi */
 }
 
-/* Logo + tagline */
-.landing-footer__brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-2);  /* 8px mezi logem a tagline */
-}
-
-.landing-footer__tagline {
-  font-size: var(--font-size-sm);  /* 14px */
-  color: var(--color-text-secondary);
-  margin: var(--spacing-4) 0 var(--spacing-6);  /* 16px 0 24px */
-}
 
 /* Inline navigation links */
 .landing-footer__links {

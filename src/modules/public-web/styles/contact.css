@@ -30,19 +30,19 @@
   align-items: flex-start;
   justify-content: center;
 
-  /* Mobile: menší top padding (sticky header ~60px + 16px gap) */
-  padding: calc(var(--spacing-16) + var(--spacing-4)) var(--spacing-4) var(--spacing-10);
+  /* Mobile: sticky header ~60px + 8px gap */
+  padding: calc(var(--spacing-16) + var(--spacing-2)) var(--spacing-4) var(--spacing-10);
 }
 
 @media (width >= 480px) {
   .contact-main {
-    padding: calc(var(--spacing-16) + var(--spacing-6)) var(--spacing-6) var(--spacing-12);
+    padding: calc(var(--spacing-16) + var(--spacing-4)) var(--spacing-6) var(--spacing-12);
   }
 }
 
 @media (width >= 1024px) {
   .contact-main {
-    padding: calc(var(--spacing-20) + var(--spacing-10)) var(--spacing-8) var(--spacing-20);
+    padding: calc(var(--spacing-20) + var(--spacing-4)) var(--spacing-8) var(--spacing-20);
   }
 }
 
@@ -226,11 +226,11 @@
   border: 1px solid rgb(239 68 68 / 20%);
 }
 
-/* Submit button */
+/* Submit button — gold (primary) */
 .contact-submit {
   width: 100%;
   padding: var(--spacing-4) var(--spacing-6);
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: var(--color-background);
   border: none;
   border-radius: var(--radius-base);
@@ -238,7 +238,7 @@
   font-weight: var(--font-weight-semibold);
   font-family: inherit;
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  transition: background 0.2s ease, transform 0.1s ease;
   letter-spacing: -0.01em;
 }
 
@@ -248,10 +248,11 @@
 }
 
 .contact-submit:hover:not(:disabled) {
-  opacity: 0.9;
+  background: var(--color-accent-light);
 }
 
 .contact-submit:active:not(:disabled) {
+  background: var(--color-accent-dark);
   transform: scale(0.99);
 }
 

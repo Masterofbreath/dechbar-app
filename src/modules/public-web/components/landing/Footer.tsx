@@ -16,14 +16,9 @@ export function Footer() {
   return (
     <footer className="landing-footer">
       <div className="landing-footer__container">
-        {/* Logo + tagline */}
-        <div className="landing-footer__brand">
-          <Logo variant="off-white" />
-          <p className="landing-footer__tagline">
-            umění dechu v kapse
-          </p>
-        </div>
-        
+        {/* Logo */}
+        <Logo variant="off-white" />
+
         {/* Legal + contact links */}
         <div className="landing-footer__links">
           <a href="/obchodni-podminky">Obchodní podmínky</a>
