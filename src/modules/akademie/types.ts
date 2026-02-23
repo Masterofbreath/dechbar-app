@@ -11,7 +11,10 @@ export interface AkademieCategory {
   name: string
   slug: string
   icon: string | null
+  /** Krátký popis — zobrazuje se na kartě v CategoryGrid */
   description: string | null
+  /** Dlouhý popis — zobrazuje se jako nadpis v ProgramListView */
+  description_long: string | null
   cover_image_url: string | null
   sort_order: number
   is_active: boolean

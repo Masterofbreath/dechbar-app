@@ -12,38 +12,196 @@
  */
 
 /* ============================================================
-   STICKY PLAYER
+   STICKY PLAYER — Apple Premium Dark Style
+   Shodný vizuál s landing page audio přehrávačem:
+   gold music icon + round gold play btn + thin progress bar
    ============================================================ */
 
 .sticky-player {
-  /* Glassmorphism effect */
-  background: rgba(30, 30, 30, 0.95);
+  background: rgb(22 22 22 / 96%);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  
-  /* Border (subtle) */
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  
-  /* Shadow (subtle top shadow) */
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
-  
-  /* Safe areas (iOS notch, Android gesture bar) */
+  backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgb(255 255 255 / 6%);
+  box-shadow: 0 -4px 20px rgb(0 0 0 / 50%);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
-/* Expanded animation */
-.sticky-player--expanded {
-  animation: slideUp 300ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+/* Fixed position: above BottomNav */
+.sticky-player--positioned {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 60px;
+  z-index: 998;
+  transition: height 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-@keyframes slideUp {
+/* ── Collapsed state ── */
+
+.sticky-player__collapsed {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 12px 0 14px;
+  gap: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Gold music note icon */
+.sticky-player__music-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: rgb(214 162 58 / 12%);
+  border: 1px solid rgb(214 162 58 / 25%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.sticky-player__music-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Track info */
+.sticky-player__track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sticky-player__track-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 2px;
+  line-height: 1.3;
+}
+
+/* Play/pause wrapper — stops propagation to prevent expand */
+.sticky-player__play-wrap {
+  flex-shrink: 0;
+}
+
+/* Close button */
+.sticky-player__close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sticky-player__close-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.sticky-player__close-btn--collapsed {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.sticky-player__close-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Gold progress bar — absolute bottom edge */
+.sticky-player__progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--color-accent);
+  border-radius: 0 1px 1px 0;
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
+/* ── Expanded state ── */
+
+.sticky-player--expanded {
+  height: 380px;
+}
+
+.sticky-player__expanded-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  gap: 12px;
+}
+
+.sticky-player__expanded-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sticky-player__expanded-title {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sticky-player__cover {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 40%);
+  align-self: center;
+}
+
+.sticky-player__waveform {
+  flex: 1;
+}
+
+.sticky-player__expanded-controls {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+
+.sticky-player__expanded-controls-spacer {
+  flex: 1;
+}
+
+.sticky-player__expanded-controls-end {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@keyframes slide-up {
   from {
-    height: 60px;
+    height: 64px;
     opacity: 0.9;
   }
+
   to {
-    height: 400px;
+    height: 380px;
     opacity: 1;
   }
 }
@@ -75,7 +233,7 @@
 }
 
 /* Mobile: Smaller gaps */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .waveform {
     gap: 1px;
     height: 60px;
@@ -88,13 +246,13 @@
 
 /* Gold glow shadow (defined via Tailwind .shadow-gold) */
 .shadow-gold {
-  box-shadow: 0 4px 12px rgba(214, 162, 58, 0.3);
+  box-shadow: 0 4px 12px rgb(214 162 58 / 30%);
 }
 
 /* Pressed state */
 .active\:scale-95:active {
   transform: scale(0.95);
-  box-shadow: 0 2px 8px rgba(214, 162, 58, 0.5);
+  box-shadow: 0 2px 8px rgb(214 162 58 / 50%);
 }
 
 /* Spring bounce animation */
@@ -112,11 +270,11 @@
   width: 200px;
   height: 200px;
   border-radius: 16px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 24px rgb(0 0 0 / 40%);
   object-fit: cover;
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .fullscreen-modal .player-cover {
     width: 150px;
     height: 150px;
@@ -128,11 +286,12 @@
    ============================================================ */
 
 /* Fullscreen modal slide up */
-@keyframes modalSlideUp {
+@keyframes modal-slide-up {
   from {
     opacity: 0;
     transform: translateY(32px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -140,7 +299,7 @@
 }
 
 .fullscreen-modal .fullscreen-modal__container {
-  animation: modalSlideUp 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  animation: modal-slide-up 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* ============================================================

@@ -125,8 +125,10 @@ export function AkademieRoot() {
             return cat ? (
               <div className="akademie-category-heading">
                 <h2 className="akademie-category-heading__title">{cat.name}</h2>
-                {cat.description && (
-                  <p className="akademie-category-heading__desc">{cat.description}</p>
+                {(cat.description_long ?? cat.description) && (
+                  <p className="akademie-category-heading__desc">
+                    {cat.description_long ?? cat.description}
+                  </p>
                 )}
               </div>
             ) : null
