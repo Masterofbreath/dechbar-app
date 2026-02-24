@@ -8,21 +8,21 @@
    ============================================================ */
 
 .bottom-nav {
-  /* ✅ PWA FIX: Fixed position pro konzistentní zobrazení
-     Desktop: relative (flex child v AppLayout)
-     Mobile/PWA: fixed (vždy viditelný na dně obrazovky) */
-  position: relative; /* Desktop default */
-  z-index: 100; /* Match TOP NAV - below modals (10000+) */
-  
-  /* Layout */
+  /* Desktop: relative (flex child v AppLayout)
+     Mobile/PWA: fixed (přes media query níže) */
+  position: relative;
+  z-index: 100;
+
+  /* Layout — height je ČISTÁ výška obsahu, safe area se řeší
+     přes bottom offset na mobilu (viz @media níže) */
   height: 72px;
-  padding-bottom: env(safe-area-inset-bottom); /* iOS home indicator */
-  background: var(--color-surface); /* #1E1E1E */
-  border-top: 1px solid var(--color-border); /* #2A2A2A */
+  padding-bottom: 0;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  flex-shrink: 0; /* Prevent shrinking in flex layout */
+  flex-shrink: 0;
 }
 
 /* ============================================================
@@ -35,8 +35,8 @@
   align-items: center;
   gap: 4px;
   padding: 8px 12px;
-  min-width: 80px; /* Fixed width for stability */
-  min-height: 56px; /* Touch target height */
+  min-width: 80px;
+  min-height: 56px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -54,12 +54,6 @@
   transition: all 0.2s ease;
 }
 
-/* Inactive tabs - simple icon wrapper */
-.bottom-nav__tab:not(.bottom-nav__tab--active) .bottom-nav__icon-wrapper {
-  width: 24px;
-  height: 24px;
-}
-
 /* ============================================================
    Label (Base Styles)
    ============================================================ */
@@ -68,88 +62,93 @@
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.01em;
-  font-family: var(--font-family-base); /* Inter */
+  font-family: var(--font-family-base);
   transition: color 0.2s ease, font-weight 0.2s ease;
-}
-
-/* Inactive label */
-.bottom-nav__tab:not(.bottom-nav__tab--active) .bottom-nav__label {
-  color: var(--color-text-secondary); /* Gray #A0A0A0 */
 }
 
 /* ============================================================
    ACTIVE TAB - FAB Treatment (Gold Circle, Elevated)
+   NOTE: Active selectors (.bottom-nav__tab--active ...) must come
+   BEFORE the higher-specificity :not() overrides below.
    ============================================================ */
 
 .bottom-nav__tab--active {
   position: relative;
-  transform: translateY(-24px); /* Elevated above nav bar - doesn't affect layout */
+  transform: translateY(-24px);
 }
 
-/* Active tab - gold circle wrapper */
 .bottom-nav__tab--active .bottom-nav__icon-wrapper {
   width: 56px;
   height: 56px;
-  background: var(--color-accent); /* Gold #D6A23A */
+  background: var(--color-accent);
   border-radius: 50%;
-  box-shadow: 0 8px 16px rgba(214, 162, 58, 0.4); /* Gold glow */
+  box-shadow: 0 8px 16px rgb(214 162 58 / 40%);
 }
 
-/* Active tab - icon color (dark on gold) */
 .bottom-nav__tab--active .bottom-nav__icon-wrapper svg {
-  color: var(--color-background); /* Dark text #121212 */
+  color: var(--color-background);
 }
 
-/* Active tab - gold label */
 .bottom-nav__tab--active .bottom-nav__label {
-  color: var(--color-accent); /* Gold #D6A23A */
+  color: var(--color-accent);
   font-weight: 600;
 }
 
 /* ============================================================
-   Hover Effects (Gold Preview on Inactive Tabs)
+   INACTIVE TAB - :not() overrides (higher specificity)
    ============================================================ */
 
+.bottom-nav__tab:not(.bottom-nav__tab--active) .bottom-nav__icon-wrapper {
+  width: 24px;
+  height: 24px;
+}
+
+.bottom-nav__tab:not(.bottom-nav__tab--active) .bottom-nav__label {
+  color: var(--color-text-secondary);
+}
+
+/* ============================================================
+   Hover Effects
+   ============================================================ */
+
+.bottom-nav__tab--active:hover .bottom-nav__icon-wrapper {
+  box-shadow: 0 12px 24px rgb(214 162 58 / 50%);
+}
+
 .bottom-nav__tab:not(.bottom-nav__tab--active):hover .bottom-nav__icon-wrapper svg {
-  color: var(--color-accent); /* Gold preview */
+  color: var(--color-accent);
   transform: translateY(-2px);
 }
 
 .bottom-nav__tab:not(.bottom-nav__tab--active):hover .bottom-nav__label {
-  color: var(--color-accent); /* Gold preview */
+  color: var(--color-accent);
 }
 
-/* Active tab hover - enhance shadow */
-.bottom-nav__tab--active:hover .bottom-nav__icon-wrapper {
-  box-shadow: 0 12px 24px rgba(214, 162, 58, 0.5);
+/* ============================================================
+   Accessibility - Focus States
+   NOTE: :focus-visible must come before :not():active below.
+   ============================================================ */
+
+.bottom-nav__tab:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 8px;
 }
 
 /* ============================================================
    Press/Active Animations
    ============================================================ */
 
-/* Inactive tab press */
-.bottom-nav__tab:not(.bottom-nav__tab--active):active {
-  transform: scale(0.92);
-}
-
-/* Active tab press - combine translateY with scale */
 .bottom-nav__tab--active:active {
   transform: translateY(-24px) scale(0.98);
 }
 
 .bottom-nav__tab--active:active .bottom-nav__icon-wrapper {
-  box-shadow: 0 4px 8px rgba(214, 162, 58, 0.3);
+  box-shadow: 0 4px 8px rgb(214 162 58 / 30%);
 }
 
-/* ============================================================
-   Accessibility - Focus States
-   ============================================================ */
-
-.bottom-nav__tab:focus-visible {
-  outline: 2px solid var(--color-accent); /* Gold focus (consistent with active) */
-  outline-offset: 2px;
-  border-radius: 8px;
+.bottom-nav__tab:not(.bottom-nav__tab--active):active {
+  transform: scale(0.92);
 }
 
 /* ============================================================
@@ -161,53 +160,71 @@
   .bottom-nav__icon-wrapper {
     transition: none;
   }
-  
+
   .bottom-nav__tab:active,
   .bottom-nav__tab--active:active .bottom-nav__icon-wrapper {
     transform: none;
   }
-  
+
   .bottom-nav__tab:not(.bottom-nav__tab--active):hover .bottom-nav__icon-wrapper svg {
     transform: none;
   }
 }
 
 /* ============================================================
-   Responsive (optional adjustments)
+   Mobile — Fixed Position + Safe Area Fix
    ============================================================ */
 
-/* Mobile specific - prevent layout shift with active tab elevation */
-@media (max-width: 768px) {
-  /* ✅ PWA FIX: Fixed position pro vždy viditelný bottom nav */
+@media (width <= 768px) {
+  /* ✅ PWA/BROWSER FIX: Nav sedí přesně NAD safe area zónou.
+     bottom: env(safe-area-inset-bottom) → nav se nezasune pod home indicator.
+     ::after pseudo-element vyplní mezeru pod navem stejnou barvou.
+     Výsledek: nav content je vždy přesně 72px, items se vždy centrují
+     do 72px — konzistentní v prohlížeči i PWA. */
   .bottom-nav {
     position: fixed !important;
-    bottom: 0 !important;
+    bottom: env(safe-area-inset-bottom) !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
+    height: 72px !important;
+    padding-bottom: 0 !important;
   }
-  
+
+  /* Vyplnění mezery mezi nav a dolním okrajem obrazovky (home indicator zóna) */
+  .bottom-nav::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-bottom);
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    z-index: 99;
+  }
+
   .bottom-nav__tab {
-    flex: 0 0 80px; /* Fixed flex basis - prevents shifting */
+    flex: 0 0 80px;
   }
-  
+
   .bottom-nav__tab--active {
-    flex: 0 0 80px; /* Same as inactive - maintain spacing */
+    flex: 0 0 80px;
   }
 }
 
 /* Very narrow screens */
-@media (max-width: 375px) {
+@media (width <= 375px) {
   .bottom-nav__tab {
-    flex: 0 0 56px; /* Smaller on narrow screens */
+    flex: 0 0 56px;
     min-width: 56px;
-    padding: 8px 8px;
+    padding: 8px;
   }
-  
+
   .bottom-nav__tab--active {
-    flex: 0 0 56px; /* Same as inactive */
+    flex: 0 0 56px;
   }
-  
+
   .bottom-nav__label {
     font-size: 10px;
   }
