@@ -18,7 +18,10 @@
 .fullscreen-modal__progress {
   width: 100%;
   height: 4px;
-  background: var(--glow-accent-bg-strong);
+
+  /* Track: subtle white (10% opacity) — viditelné na tmavém pozadí.
+     Původní var(--glow-accent-bg-strong) = rgba(214,162,58,0.1) na #121212 = téměř neviditelné tmavohnědé. */
+  background: rgb(255 255 255 / 12%);
   border-radius: var(--radius-full);
   overflow: hidden;
 }

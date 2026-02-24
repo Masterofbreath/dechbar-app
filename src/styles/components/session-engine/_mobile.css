@@ -34,6 +34,14 @@
     overflow: hidden !important;
     scrollbar-width: none;
     -ms-overflow-style: none;
+
+    /* ✅ CRITICAL: Disable animation/transition on mobile.
+       The desktop `animation: modalSlideUp` uses transform: translateY(),
+       which creates a new containing block for position:fixed children (iOS WebKit).
+       This causes the breathing circle to be temporarily displaced during the 300ms animation.
+       On mobile the immersive fullscreen needs no slide-in animation. */
+    animation: none !important;
+    transition: none !important;
   }
   
   .session-engine-modal__content::-webkit-scrollbar {
