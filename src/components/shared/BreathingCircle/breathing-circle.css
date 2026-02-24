@@ -26,6 +26,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
+
   /* Calculate 64% of container size for inner circle */
   width: calc(var(--circle-size, 280px) * 0.64);
   height: calc(var(--circle-size, 280px) * 0.64);
@@ -85,6 +86,7 @@
   box-shadow: none; /* Clean countdown, no glow */
   
   /* No will-change optimization needed */
+
   /* No transitions (instant state changes) */
 }
 
@@ -195,13 +197,17 @@
    Mobile Responsiveness
    Fixed viewport centering for fullscreen immersive mode
    ============================================================ */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .breathing-circle-container {
-    position: fixed !important;    /* ✅ Changed from absolute - viewport reference */
-    top: 50vh !important;          /* ✅ 50% viewport height, not parent */
-    left: 50vw !important;         /* ✅ 50% viewport width, not parent */
+    position: fixed !important;
+
+    /* Střed vizuálního obsahu mezi safe area insets.
+       V Capacitor/PWA: safe-area-top (~47px) > safe-area-bottom (~34px),
+       proto čistý 50vh leží nad vizuálním středem. Formule kompenzuje asymetrii. */
+    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2) !important;
+    left: 50vw !important;
     transform: translate(-50%, -50%) !important;
-    z-index: 2 !important;         /* Above content, below buttons/overlays */
+    z-index: 2 !important;
   }
 }
 

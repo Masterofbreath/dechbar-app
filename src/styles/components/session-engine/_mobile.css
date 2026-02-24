@@ -3,7 +3,7 @@
    Mobile-first responsive styles and immersive mode
    ============================================================ */
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   /* Container - vypnout flex layouting pro fullscreen modal */
   .session-engine-modal {
     display: block !important;
@@ -93,6 +93,7 @@
     flex-direction: column !important;
     align-items: stretch !important;
     justify-content: flex-start !important;
+
     /* ✅ HYBRID APPROACH: No padding on wrapper
        - Fixed elements (circle, close, exercise name, progress) handle safe-area individually
        - Flow elements (timer, instructions) get spacing from child containers */
@@ -139,14 +140,16 @@
   
   /* Breathing circle - FIXED VIEWPORT CENTER (stejné jako KP modal) */
   .breathing-circle-container {
-    position: fixed !important;     /* ✅ Changed from absolute - viewport reference */
-    top: 50vh !important;           /* ✅ 50% viewport height */
-    left: 50vw !important;          /* ✅ 50% viewport width */
+    position: fixed !important;
+
+    /* Stejná safe-area formule jako breathing-circle.css */
+    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2) !important;
+    left: 50vw !important;
     transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
     margin: 0 !important;
-    z-index: 10 !important;  /* Nad headerem */
+    z-index: 10 !important;
   }
   
   .breathing-circle {
@@ -167,14 +170,16 @@
   
   /* Countdown circle container - FIXED VIEWPORT CENTER (stejné jako breathing) */
   .countdown-circle-container {
-    position: fixed !important;     /* ✅ Viewport reference (override desktop) */
-    top: 50vh !important;           /* ✅ TRUE vertical center */
-    left: 50vw !important;          /* ✅ TRUE horizontal center */
+    position: fixed !important;
+
+    /* Stejná safe-area formule pro konzistenci s breathing circle */
+    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2) !important;
+    left: 50vw !important;
     transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
     margin: 0 !important;
-    z-index: 10 !important;  /* Nad vším kromě CloseButton */
+    z-index: 10 !important;
   }
   
   .countdown-circle {
@@ -190,7 +195,9 @@
   .session-countdown__tip,
   .session-countdown__description {
     position: fixed !important;
-    top: calc(50vh + 130px) !important;  /* Below circle (220px/2 + 20px gap) */
+
+    /* Stejná základna jako circle, + offset pod spodní hranou kruhu */
+    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2 + 130px) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 85% !important;
@@ -202,7 +209,9 @@
   /* Timer - BELOW circle with proper margin */
   .session-timer {
     position: fixed !important;
-    top: calc(50vh + 140px) !important;  /* Below circle with margin */
+
+    /* Stejná základna jako circle, + offset */
+    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2 + 140px) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 100% !important;
@@ -298,7 +307,7 @@
 }
 
 /* Landscape mobile (iPhone SE landscape: 667x375) */
-@media (max-width: 768px) and (max-height: 600px) and (orientation: landscape) {
+@media (width <= 768px) and (height <= 600px) and (orientation: landscape) {
   .session-engine-modal__content {
     overflow-y: auto !important;
   }
