@@ -56,6 +56,20 @@
     <meta name="application-name" content="DechBar" />
     <meta name="apple-mobile-web-app-title" content="DechBar" />
     <meta name="description" content="Dechová cvičení, gamifikace a wellbeing" />
+
+    <!-- PWA: Web App Manifest (Android, Chrome, iOS 16.4+) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- PWA: iOS Standalone Mode (Safari "Add to Home Screen")
+         apple-mobile-web-app-capable  → spustí se v standalone módu (bez Safari chrome)
+         apple-mobile-web-app-status-bar-style: black-translucent
+           → WV se roztáhne přes celou obrazovku (včetně status baru)
+           → env(safe-area-inset-top) = 47px (stejné jako Capacitor native app)
+           → 100vh = celá výška obrazovky (stejné jako Capacitor native app)
+         theme-color → barva status baru / browser chrome na Androidu -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#121212" />
     
     <title>DechBar - Dech je nový kofein</title>
   </head>
