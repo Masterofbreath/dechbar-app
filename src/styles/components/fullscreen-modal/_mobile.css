@@ -3,7 +3,7 @@
    Fullscreen immersive experience on mobile devices
    ============================================================ */
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .fullscreen-modal {
     display: block;
     padding: 0;
@@ -23,27 +23,39 @@
     border-radius: 0;
     background: var(--color-background);
     z-index: 10002;
+
+    /* CRITICAL: Zakázat desktop animaci `modal-slide-up`.
+       Tato animace používá transform: translateY(), který v iOS WebKit vytváří
+       nový containing block pro position:fixed potomky (breathing circle, timer).
+       Výsledek: breathing circle je posunut dolů o 32px po dobu animace. */
+    animation: none;
+    transition: none;
   }
   
   .fullscreen-modal__top-bar {
-    height: var(--fullscreen-modal-top-bar-height-mobile);
+    /* CRITICAL: height musí ZAHRNOVAT safe-area-inset-top, ne jen mít padding uvnitř.
+       Pokud TopBar = 60px fixed + padding-top: 47px UVNITŘ, content area = jen 13px.
+       Správně: height = 60px (content) + 47px (safe area) = 107px celkem.
+       Formule pro breathing circle (top: 50vh + (safe_top - safe_bottom)/2) je správná
+       POUZE pokud výška TopBar = base + safe_top a BottomBar = base + safe_bottom. */
+    height: calc(var(--fullscreen-modal-top-bar-height-mobile) + env(safe-area-inset-top, 0px));
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-top: max(16px, env(safe-area-inset-top));
   }
   
   .fullscreen-modal__bottom-bar {
-    height: var(--fullscreen-modal-bottom-bar-height-mobile);
+    /* CRITICAL: Stejný princip jako TopBar — výška zahrnuje safe-area-inset-bottom.
+       V PWA: height = 60px + 34px = 94px. Content (progress bar) ve viditelné oblasti
+       mezi spodní hranou ContentZone a home indicator indikátorem. */
+    height: calc(var(--fullscreen-modal-bottom-bar-height-mobile) + env(safe-area-inset-bottom, 0px));
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
   
   .fullscreen-modal__content-zone {
-    padding-top: 40px;
-    padding-bottom: 40px;
-    padding-left: var(--fullscreen-modal-content-padding-mobile);
-    padding-right: var(--fullscreen-modal-content-padding-mobile);
+    padding: 40px var(--fullscreen-modal-content-padding-mobile) 40px var(--fullscreen-modal-content-padding-mobile);
     min-height: 340px; /* Mobile - ensures consistency */
   }
   
