@@ -167,7 +167,11 @@ body {
 /* Scrollbar gutter - prevents layout shift */
 html {
   scrollbar-gutter: stable; /* Modern CSS - reserves space even when no scroll */
-  overflow-y: scroll; /* Fallback for older browsers */
+
+  /* overflow-y: scroll odstraněno — způsobovalo problémy v iOS PWA/Capacitor:
+     při useScrollLock (body: overflow:hidden) se scroll přesouvá na html,
+     a html scroll offset pak posouvá position:fixed prvky v iOS WebKit. */
+  overflow-y: auto;
 }
 
 /* Body - Dark background by default (Brand Book 2.0) */
@@ -402,11 +406,19 @@ button {
    IOS SAFE AREAS
    =================================== */
 
-@supports (padding: max(0px)) {
-  body {
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  }
-}
+/* POZOR: body { padding: env(safe-area-inset-*) } zde ZÁMĚRNĚ chybí.
+   
+   Tento blok byl odstraněn, protože:
+   1. iOS WebKit bug: padding na body posunuje VŠECHNY position:fixed prvky
+      o stejnou hodnotu dolů (porušení CSS spec, ale takto iOS funguje).
+      Po přidání black-translucent (env-safe-area-inset-top = 47px) způsoboval
+      47px globální posun všech fixed prvků → breathing circle níže, BottomBar
+      mimo viewport → progress bar neviditelný.
+   2. Redundantní: každá komponenta řeší safe areas individuálně:
+      - TopNav:     padding-top: env(safe-area-inset-top)
+      - AppLayout:  padding-top: calc(64px + env(safe-area-inset-top))
+      - BottomNav:  bottom: env(safe-area-inset-bottom)
+      - FullscreenModal TopBar/BottomBar: max(Xpx, env(...)) */
 
 /* ===================================
    ACCESSIBILITY
