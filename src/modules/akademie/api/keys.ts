@@ -26,4 +26,14 @@ export const akademieKeys = {
 
   lessonProgress: (userId: string, lessonId: string) =>
     [...akademieKeys.progress(userId), 'lesson', lessonId] as const,
+
+  // Daily Program System
+  activeProgram: (userId: string) =>
+    [...akademieKeys.all, 'activeProgram', userId] as const,
+
+  featuredProgram: () =>
+    [...akademieKeys.all, 'featuredProgram'] as const,
+
+  nextLesson: (userId: string) =>
+    [...akademieKeys.all, 'nextLesson', userId] as const,
 }

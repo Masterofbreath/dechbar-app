@@ -8,21 +8,38 @@
    ============================================================ */
 
 .dnes-page {
-  padding: var(--spacing-6); /* 24px */
-  max-width: 600px;
-  margin: 0 auto;
-  padding-top: var(--spacing-8); /* 32px from TOP NAV */
   display: flex;
   flex-direction: column;
-  gap: 39px; /* Mobile: 39px breathing room */
-  padding-bottom: var(--spacing-8); /* Normal spacing only */
 }
 
-/* Desktop - ještě více prostoru */
+/* ============================================================
+   Content — pod headerem, centrovaný obsah (stejný princip jako Cvičit)
+   ============================================================ */
+
+.dnes-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px 16px var(--spacing-8);
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Desktop - více prostoru */
 @media (width >= 768px) {
-  .dnes-page {
-    gap: 54px; /* Desktop: extra breathing room */
+  .dnes-page__content {
+    gap: 32px;
+    padding: 16px 24px var(--spacing-8);
   }
+}
+
+/* ============================================================
+   Header — shodná architektura s .cvicit-page__header a .akademie-page-header
+   ============================================================ */
+
+.dnes-page__header {
+  padding: 16px 16px 12px;
 }
 
 /* ============================================================
@@ -30,12 +47,13 @@
    ============================================================ */
 
 .greeting {
-  font-size: 20px; /* Adjusted for hierarchy */
-  font-weight: 600;
-  color: var(--color-text-primary); /* #E0E0E0 */
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
   letter-spacing: var(--letter-spacing-tight); /* -0.02em premium */
-
-  /* Removed margin-bottom - using gap from .dnes-page */
+  line-height: 1.15;
+  margin: 0;
+  text-align: center;
 }
 
 /* ============================================================
@@ -294,8 +312,7 @@
   position: relative; /* For absolute CloseButton positioning */
   
   /* Glassmorphism effect */
-  background: rgb(44 190 198 / 5%); /* Teal 5% tint */
-  backdrop-filter: blur(12px); /* Blur background */
+  background: rgb(44 190 198 / 5%); /* Teal 5% tint */ /* Blur background */
   backdrop-filter: blur(12px); /* Safari */
   border-left: 3px solid var(--color-accent); /* Zlatý akcent */
   border-radius: var(--radius-lg); /* 12px */

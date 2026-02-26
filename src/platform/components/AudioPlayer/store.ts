@@ -14,6 +14,9 @@
 import { create } from 'zustand';
 import type { AudioPlayerState, Track } from './types';
 
+// Ukládá hlasitost před mute — mimo store aby přežil setVolume volání
+let _previousVolume = 1;
+
 export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   // Current track
   currentTrack: null,
@@ -78,11 +81,12 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   toggleMute: () => {
     const state = get();
     if (state.isMuted) {
-      // Unmute: restore previous volume
-      set({ isMuted: false, volume: state.volume || 1 });
+      // Unmute: obnovit hlasitost uloženou před mute
+      set({ isMuted: false, volume: _previousVolume });
     } else {
-      // Mute: set volume to 0
-      set({ isMuted: true, volume: 0 });
+      // Mute: uložit aktuální hlasitost, ale nulovat jen audio (ne volume v store)
+      _previousVolume = state.volume > 0 ? state.volume : 1;
+      set({ isMuted: true });
     }
   },
   
@@ -94,9 +98,11 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   
   close: () => {
     set({ 
+      currentTrack: null,
       mode: null,
       isPlaying: false,
       isExpanded: false,
+      currentTime: 0,
     });
   },
   

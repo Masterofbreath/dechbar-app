@@ -10,7 +10,13 @@ import type { Track } from '@/platform/components/AudioPlayer/types'
 
 const COMPLETION_THRESHOLD = 0.8 // 80%
 
-function lessonToTrack(lesson: AkademieLesson | LessonWithProgress): Track {
+function lessonToTrack(
+  lesson: AkademieLesson | LessonWithProgress,
+  coverUrl?: string | null,
+  programId?: string | null,
+  categorySlug?: string | null,
+  programTitle?: string | null,
+): Track {
   return {
     id: lesson.id,
     album_id: lesson.series_id,
@@ -19,7 +25,7 @@ function lessonToTrack(lesson: AkademieLesson | LessonWithProgress): Track {
     album: null,
     duration: lesson.duration_seconds,
     audio_url: lesson.audio_url,
-    cover_url: null,
+    cover_url: coverUrl ?? null,
     duration_category: null,
     mood_category: null,
     difficulty_level: null,
@@ -35,6 +41,10 @@ function lessonToTrack(lesson: AkademieLesson | LessonWithProgress): Track {
     play_count: 0,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    source_program_id: programId ?? undefined,
+    source_category_slug: categorySlug ?? undefined,
+    source_program_title: programTitle ?? undefined,
+    source_series_id: lesson.series_id ?? undefined,
   }
 }
 
@@ -45,6 +55,13 @@ function lessonToTrack(lesson: AkademieLesson | LessonWithProgress): Track {
 interface UseAkademiePlaybackParams {
   userId?: string
   seriesId?: string
+  coverUrl?: string | null
+  /** UUID programu (akademie_programs.id) — uloží se do track.source_program_id */
+  programId?: string | null
+  /** Slug kategorie programu — uloží se do track.source_category_slug */
+  categorySlug?: string | null
+  /** Název programu pro subtitle v StickyPlayeru (např. "Digitální ticho") */
+  programTitle?: string | null
 }
 
 /**
@@ -55,7 +72,7 @@ interface UseAkademiePlaybackParams {
  * - isCurrentlyPlaying: true pokud je daná lekce právě hrána
  * - handleTimeUpdate: zaznamenat 80% dokončení lekce
  */
-export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackParams = {}) {
+export function useAkademiePlayback({ userId, seriesId, coverUrl, programId, categorySlug, programTitle }: UseAkademiePlaybackParams = {}) {
   const playSticky = useAudioPlayerStore((s) => s.playSticky)
   const currentTrack = useAudioPlayerStore((s) => s.currentTrack)
   const isPlaying = useAudioPlayerStore((s) => s.isPlaying)
@@ -73,10 +90,10 @@ export function useAkademiePlayback({ userId, seriesId }: UseAkademiePlaybackPar
    */
   const playLesson = useCallback(
     (lesson: LessonWithProgress | AkademieLesson) => {
-      const track = lessonToTrack(lesson)
+      const track = lessonToTrack(lesson, coverUrl, programId, categorySlug, programTitle)
       playSticky(track)
     },
-    [playSticky],
+    [playSticky, coverUrl, programId, categorySlug, programTitle],
   )
 
   /**

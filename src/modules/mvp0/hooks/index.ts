@@ -8,3 +8,14 @@
  */
 
 export { useActiveChallenge } from './useActiveChallenge';
+export { useActiveDailyProgram } from './useActiveDailyProgram';
+export type {
+  ActiveDailyProgramData,
+  ActiveDailyProgramInfo,
+  UseActiveDailyProgramReturn,
+} from './useActiveDailyProgram';
+export { usePlatformFeaturedProgram } from './usePlatformFeaturedProgram';
+export type {
+  FeaturedProgramData,
+  UsePlatformFeaturedProgramReturn,
+} from './usePlatformFeaturedProgram';

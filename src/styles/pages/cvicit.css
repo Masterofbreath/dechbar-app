@@ -6,49 +6,60 @@
 /* ============================================================
    Page Container
    ============================================================ */
+
+/* Container — bez top padding, header má svůj vlastní (stejně jako Akademie) */
 .cvicit-page {
-  padding: 24px 16px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
 /* ============================================================
-   Header
+   Header — shodná architektura s .akademie-page-header
    ============================================================ */
 .cvicit-page__header {
-  margin-bottom: 24px;
+  padding: 16px 16px 12px;
   text-align: center;
 }
 
 .cvicit-page__title {
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0 0 8px 0;
+  margin: 0;
   letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 .cvicit-page__subtitle {
   font-size: 16px;
   color: var(--color-text-secondary);
-  margin: 0;
+  margin: 8px 0 0;
+}
+
+/* Content area pod headerem */
+.cvicit-page__content {
+  padding: 0 16px 24px;
 }
 
 /* ============================================================
    Responsive Design
    ============================================================ */
-@media (min-width: 768px) {
-  .cvicit-page {
-    padding: 32px 24px;
-  }
-  
+@media (width >= 768px) {
   .cvicit-page__header {
-    margin-bottom: 32px;
+    padding: 16px 24px 12px;
+  }
+
+  .cvicit-page__content {
+    padding: 0 24px 32px;
   }
 }
 
-@media (min-width: 1024px) {
-  .cvicit-page {
-    padding: 40px 32px;
+@media (width >= 1024px) {
+  .cvicit-page__header {
+    padding: 16px 32px 12px;
+  }
+
+  .cvicit-page__content {
+    padding: 0 32px 40px;
   }
 }

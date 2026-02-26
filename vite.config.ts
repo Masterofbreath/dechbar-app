@@ -11,19 +11,24 @@ export default defineConfig({
     },
   },
   server: {
-    // HMR optimalizace - lepší Hot Module Replacement stability
+    host: '0.0.0.0', // Dostupný z lokální sítě i ngrok
+    // HMR přes ngrok: WebSocket musí jít přes ngrok URL (ne localhost),
+    // jinak mobile prohlížeč nedostane HMR updaty.
     hmr: {
-      overlay: true,  // Zobrazí chyby přímo v browseru
+      overlay: true,
+      // Ngrok HTTPS tunnel → WebSocket přes wss:// na portu 443
+      host: 'cerebellar-celestine-debatingly.ngrok-free.dev',
+      protocol: 'wss',
+      clientPort: 443,
     },
     watch: {
-      // File watching optimalizace pro macOS
-      usePolling: false,  // Rychlejší native file watching
-      interval: 100,      // Check interval v ms
+      usePolling: false,
+      interval: 100,
     },
     allowedHosts: [
-      'cerebellar-celestine-debatingly.ngrok-free.dev', // Current ngrok URL
-      '.ngrok-free.dev', // All ngrok domains
-      '.ngrok.io', // Legacy ngrok domains
+      'cerebellar-celestine-debatingly.ngrok-free.dev',
+      '.ngrok-free.dev',
+      '.ngrok.io',
     ],
   },
   // Cache optimalizace

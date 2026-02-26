@@ -49,12 +49,14 @@ export function CvicitPage() {
       <div className="cvicit-page__header">
         <h1 className="cvicit-page__title">Cvičit</h1>
       </div>
-      
-      <ExerciseList
-        onStartExercise={handleStartExercise}
-        onCreateCustom={handleCreateCustom}
-        onEditExercise={handleEditExercise}
-      />
+
+      <div className="cvicit-page__content">
+        <ExerciseList
+          onStartExercise={handleStartExercise}
+          onCreateCustom={handleCreateCustom}
+          onEditExercise={handleEditExercise}
+        />
+      </div>
       
       {/* Session Engine Modal */}
       {selectedExercise && (

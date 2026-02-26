@@ -37,6 +37,10 @@ export interface AkademieProgram {
   description_long: string | null
   cover_image_url: string | null
   sort_order: number
+  /** Délka programu ve dnech (např. 21). NULL = nezadáno. */
+  duration_days: number | null
+  /** Doporučená délka denní lekce v minutách (např. 15). NULL = nezadáno. */
+  daily_minutes: number | null
 }
 
 export interface AkademieSeries {

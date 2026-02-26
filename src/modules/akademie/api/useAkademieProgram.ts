@@ -7,7 +7,7 @@ import type { AkademieSeries, LessonWithProgress, ToggleLessonFavoriteParams } f
 // Fetch: series for a module (program)
 // --------------------------------------------------
 
-async function fetchSeries(moduleId: string): Promise<AkademieSeries[]> {
+export async function fetchSeries(moduleId: string): Promise<AkademieSeries[]> {
   const { data, error } = await supabase
     .from('akademie_series')
     .select('*')
@@ -47,7 +47,7 @@ interface ProgressRow {
   completed_at: string
 }
 
-async function fetchLessonsWithProgress(
+export async function fetchLessonsWithProgress(
   seriesId: string,
   userId: string | undefined,
 ): Promise<LessonWithProgress[]> {
@@ -134,13 +134,14 @@ export function useToggleLessonFavorite() {
         if (error) throw error
       }
     },
-    onMutate: async ({ lessonId, seriesId, isFavorite }) => {
+    onMutate: async ({ userId, lessonId, seriesId, isFavorite }) => {
       await qc.cancelQueries({ queryKey: akademieKeys.lessons(seriesId) })
 
       const previousData = qc.getQueryData<LessonWithProgress[]>(
         akademieKeys.lessons(seriesId),
       )
 
+      // Optimisticky aktualizuj LessonRow cache
       qc.setQueryData<LessonWithProgress[]>(
         akademieKeys.lessons(seriesId),
         (old) =>
@@ -149,6 +150,9 @@ export function useToggleLessonFavorite() {
           ),
       )
 
+      // Optimisticky aktualizuj StickyPlayer cache (obousměrný sync)
+      qc.setQueryData(['player-lesson-fav', lessonId, userId], !isFavorite)
+
       return { previousData }
     },
     onError: (_err, { seriesId }, context) => {
@@ -156,8 +160,10 @@ export function useToggleLessonFavorite() {
         qc.setQueryData(akademieKeys.lessons(seriesId), context.previousData)
       }
     },
-    onSettled: (_data, _err, { seriesId }) => {
+    onSettled: (_data, _err, { seriesId, lessonId, userId }) => {
       qc.invalidateQueries({ queryKey: akademieKeys.lessons(seriesId) })
+      // Invaliduj i StickyPlayer cache — zajistí refetch ze serveru
+      qc.invalidateQueries({ queryKey: ['player-lesson-fav', lessonId, userId] })
     },
   })
 }

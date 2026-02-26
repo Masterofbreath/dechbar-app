@@ -72,30 +72,6 @@ export function DnesPage() {
     }
   }
   
-  // Handle challenge button click - load today's challenge exercise
-  function handleChallengeClick(currentDay: number) {
-    console.log('🎯 [DnesPage] Challenge kliknuto - den:', currentDay);
-    
-    if (!exercises) {
-      console.warn('⚠️ [DnesPage] Exercises ještě nejsou načteny');
-      return;
-    }
-    
-    // TODO: Implementovat načtení konkrétního cvičení pro daný den výzvy
-    // Pro teď načteme první dostupné cvičení jako placeholder
-    // V budoucnu: SELECT * FROM challenge_exercises WHERE day_number = currentDay
-    
-    const challengeExercise = exercises[0]; // Placeholder
-    
-    if (challengeExercise) {
-      console.log('✅ [DnesPage] Challenge cvičení nalezeno:', challengeExercise.name);
-      setSkipFlow(true); // Direct start
-      setSelectedExercise(challengeExercise);
-    } else {
-      console.error('❌ [DnesPage] Challenge cvičení nenalezeno pro den:', currentDay);
-    }
-  }
-  
   // Show loading state
   if (isLoading) {
     console.log('⏳ [DnesPage] Načítám cvičení...');
@@ -108,61 +84,67 @@ export function DnesPage() {
   
   return (
     <div className="dnes-page">
-      {/* 1. Greeting */}
-      <Greeting userName={user?.full_name} />
-      
-      {/* 2. SMART Exercise Button (tier-aware) */}
-      <SmartExerciseButton 
-        onClick={() => console.log('SMART exercise clicked')}
-      />
-      
-      {/* 2.5 Today's Challenge Button (challenge-aware) */}
-      <TodaysChallengeButton 
-        onClick={(day) => handleChallengeClick(day)}
-      />
-      
-      {/* 3. Preset Protocols Section */}
-      <section className="dnes-page__section">
-        <h2 className="dnes-page__section-title">
-          Doporučené protokoly
-        </h2>
+      {/* 1. Greeting — header shodný s Cvičit a Akademie */}
+      <div className="dnes-page__header">
+        <Greeting
+          userName={user?.full_name}
+          userNameVocative={user?.vocative_name}
+        />
+      </div>
+
+      {/* Content — všechen obsah pod headerem */}
+      <div className="dnes-page__content">
+        {/* 2. SMART Exercise Button (tier-aware) */}
+        <SmartExerciseButton 
+          onClick={() => console.log('SMART exercise clicked')}
+        />
         
-        <div className="dnes-page__protocols">
-          <PresetProtocolButton
-            protocol="rano"
-            icon="sun"
-            label="RÁNO"
-            duration="7 min"
-            onClick={() => handleProtocolClick('RÁNO')}
-          />
-          <PresetProtocolButton
-            protocol="klid"
-            icon="wind"
-            label="KLID"
-            duration="5 min"
-            onClick={() => handleProtocolClick('KLID')}
-          />
-          <PresetProtocolButton
-            protocol="vecer"
-            icon="moon"
-            label="VEČER"
-            duration="10 min"
-            onClick={() => handleProtocolClick('VEČER')}
-          />
-        </div>
-      </section>
-      
-      {/* 4. Daily Tip Widget */}
-      <DailyTipWidget />
+        {/* 2.5 Daily Program Button — self-contained, handles its own data + playback */}
+        <TodaysChallengeButton />
+        
+        {/* 3. Preset Protocols Section */}
+        <section className="dnes-page__section">
+          <h2 className="dnes-page__section-title">
+            Doporučené protokoly
+          </h2>
+          
+          <div className="dnes-page__protocols">
+            <PresetProtocolButton
+              protocol="rano"
+              icon="sun"
+              label="RÁNO"
+              duration="7 min"
+              onClick={() => handleProtocolClick('RÁNO')}
+            />
+            <PresetProtocolButton
+              protocol="klid"
+              icon="wind"
+              label="KLID"
+              duration="5 min"
+              onClick={() => handleProtocolClick('KLID')}
+            />
+            <PresetProtocolButton
+              protocol="vecer"
+              icon="moon"
+              label="VEČER"
+              duration="10 min"
+              onClick={() => handleProtocolClick('VEČER')}
+            />
+          </div>
+        </section>
+        
+        {/* 4. Daily Tip Widget */}
+        <DailyTipWidget />
+      </div>
       
       {/* Session Engine Modal */}
       {selectedExercise && (
         <SessionEngineModal
           exercise={selectedExercise}
-          skipFlow={skipFlow} // NEW: Pass skipFlow flag
+          skipFlow={skipFlow}
           onClose={() => {
             setSelectedExercise(null);
-            setSkipFlow(false); // Reset on close
+            setSkipFlow(false);
           }}
         />
       )}

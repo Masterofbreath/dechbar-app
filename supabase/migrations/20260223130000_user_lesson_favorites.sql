@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS public.user_lesson_favorites (
 -- RLS
 ALTER TABLE public.user_lesson_favorites ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can manage their own lesson favorites" ON public.user_lesson_favorites;
 CREATE POLICY "Users can manage their own lesson favorites"
   ON public.user_lesson_favorites
   FOR ALL

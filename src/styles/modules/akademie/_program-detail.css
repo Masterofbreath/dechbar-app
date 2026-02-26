@@ -216,3 +216,71 @@
   width: 18px;
   height: 18px;
 }
+
+/* =====================================================
+ * Pin Button — "Nastavit jako denní program"
+ * Zobrazuje se pouze pro vlastněné programy (isOwned).
+ * Apple Premium style — sekundární, outline varianta.
+ * ===================================================== */
+
+/* Title row — název + pin button vedle sebe */
+.akademie-program-detail__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+/* Zrušení margin-bottom na titulu (je teď v title-row) */
+.akademie-program-detail__title-row .akademie-program-detail__title {
+  margin-bottom: 0;
+}
+
+/* Pin button — kompaktní, top-right, inline s názvem */
+.akademie-program-detail__pin-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.3125rem 0.625rem;
+  background: transparent;
+  border: 1.5px solid rgb(44 190 198 / 35%);
+  border-radius: 0.4375rem;
+  color: var(--color-primary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.akademie-program-detail__pin-btn svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+.akademie-program-detail__pin-btn:hover {
+  background: rgb(44 190 198 / 10%);
+  border-color: rgb(44 190 198 / 65%);
+}
+
+.akademie-program-detail__pin-btn:active {
+  transform: scale(0.95);
+}
+
+/* Aktivní stav — teal fill, checkmark */
+.akademie-program-detail__pin-btn--active {
+  background: rgb(44 190 198 / 12%);
+  border-color: rgb(44 190 198 / 50%);
+  color: var(--color-primary);
+}
+
+.akademie-program-detail__pin-btn--active:hover {
+  background: rgb(44 190 198 / 6%);
+  border-color: rgb(44 190 198 / 30%);
+  color: var(--color-text-tertiary);
+}

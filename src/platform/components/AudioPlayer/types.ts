@@ -35,6 +35,27 @@ export interface Track {
   play_count: number;
   created_at: string;
   updated_at: string;
+  /**
+   * Volitelné: UUID programu (akademie_programs.id) ze kterého byla lekce spuštěna.
+   * StickyPlayer ho použije pro navigaci zpět na ProgramDetail při kliknutí na cover.
+   * Škálovatelné — funguje pro Akademii, Výzvy i budoucí typy produktů.
+   */
+  source_program_id?: string;
+  /**
+   * Slug kategorie programu (akademie_categories.slug).
+   * Potřebný pro správné načtení programů v AkademieRoot před otevřením detailu.
+   */
+  source_category_slug?: string;
+  /**
+   * Zobrazovaný název programu pro subtitle v StickyPlayeru.
+   * Např. "Digitální ticho" — ukazuje uživateli kontext právě hrané lekce.
+   */
+  source_program_title?: string;
+  /**
+   * UUID série (akademie_series.id) ze které byla lekce spuštěna.
+   * StickyPlayer ho použije pro optimistický update cache (isFavorite sync s LessonRow).
+   */
+  source_series_id?: string;
 }
 
 /**

@@ -141,13 +141,13 @@ export const useAuthStore = create<AuthStore>()(
             // ✅ NEW: Fetch unified user state (roles + membership + modules)
             await useUserState.getState().fetchUserState(session.user.id);
           }
-        } catch (err: any) {
-          if (err.name === 'AbortError') {
+        } catch (err: unknown) {
+          if (err instanceof Error && err.name === 'AbortError') {
             console.log('ℹ️ Session check aborted (component unmounting)');
             return;
           }
           console.error('Error checking session:', err);
-          get()._setError(err as Error);
+          get()._setError(err instanceof Error ? err : new Error(String(err)));
         } finally {
           get()._setIsLoading(false);
         }
@@ -201,6 +201,7 @@ export const useAuthStore = create<AuthStore>()(
               try {
                 await supabase.from('profiles').select('*').limit(1);
                 console.log('✅ Profiles table prefetched');
+              // eslint-disable-next-line no-empty
               } catch {}
             })(),
             
@@ -208,6 +209,7 @@ export const useAuthStore = create<AuthStore>()(
               try {
                 await supabase.from('modules').select('id, name, description');
                 console.log('✅ Modules metadata prefetched');
+              // eslint-disable-next-line no-empty
               } catch {}
             })(),
             
@@ -215,6 +217,7 @@ export const useAuthStore = create<AuthStore>()(
               try {
                 await supabase.from('user_progress').select('*').limit(10);
                 console.log('✅ User progress prefetched');
+              // eslint-disable-next-line no-empty
               } catch {}
             })(),
             
@@ -222,6 +225,7 @@ export const useAuthStore = create<AuthStore>()(
               try {
                 await supabase.from('achievements').select('*').limit(5);
                 console.log('✅ Achievements prefetched');
+              // eslint-disable-next-line no-empty
               } catch {}
             })(),
           ]);
@@ -255,8 +259,10 @@ export const useAuthStore = create<AuthStore>()(
           get()._setIsLoading(true);
           get()._setError(null);
           
-          // Auto-generate vocative for personalized greetings
-          const vocative_name = full_name ? getVocative(full_name) : undefined;
+          // Auto-generate vocative: voláme s KŘESTNÍM jménem, ne celým (getVocative hledá v mapě jen křestní jméno)
+          const vocative_name = full_name
+            ? (getVocative(full_name.trim().split(/\s+/)[0]) ?? undefined)
+            : undefined;
           
           const { error } = await supabase.auth.signUp({
             email,
@@ -388,11 +394,12 @@ export const useAuthStore = create<AuthStore>()(
             
             // Update user metadata if needed
             if (needsVocative || needsGdpr) {
-              const updateData: any = {};
+              const updateData: Record<string, string | undefined> = {};
               
-              // Add vocative_name
+              // Add vocative_name — křestní jméno (getVocative hledá v mapě jen křestní jméno)
               if (needsVocative && full_name) {
-                updateData.vocative_name = getVocative(full_name);
+                updateData.vocative_name =
+                  getVocative(full_name.trim().split(/\s+/)[0]) ?? undefined;
               }
               
               // Add GDPR consent (OAuth registration = implicit consent)

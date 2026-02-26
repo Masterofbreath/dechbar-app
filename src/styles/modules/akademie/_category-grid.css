@@ -7,6 +7,10 @@
 .akademie-root {
   max-width: var(--akademie-max-width);
   margin: 0 auto;
+
+  /* Povolí prohlížeči optimalizovat pro vertikální scroll,
+     horizontální gesta zpracováváme sami (swipe-back) */
+  touch-action: pan-y;
 }
 
 .akademie-category-grid {
@@ -28,9 +32,10 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-height: 92px;
   padding: 10px 12px;
+  padding-top: 42px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 16px;

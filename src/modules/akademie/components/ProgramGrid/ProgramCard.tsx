@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { LockedFeatureModal } from '@/modules/mvp0/components'
 import { useToggleFavorite } from '../../api/useAkademieCatalog'
 import type { AkademieProgramVM } from '../../types'
 
@@ -22,15 +20,10 @@ function StarIcon({ filled }: { filled: boolean }) {
 }
 
 export function ProgramCard({ program, userId, onOpen }: ProgramCardProps) {
-  const [showLocked, setShowLocked] = useState(false)
   const toggleFavorite = useToggleFavorite()
 
   function handleTap() {
-    if (program.isLocked) {
-      setShowLocked(true)
-    } else {
-      onOpen(program.id)
-    }
+    onOpen(program.id)
   }
 
   function handleFavorite(e: React.MouseEvent | React.KeyboardEvent) {
@@ -134,15 +127,6 @@ export function ProgramCard({ program, userId, onOpen }: ProgramCardProps) {
         )}
       </article>
 
-      {/* Paywall modal */}
-      <LockedFeatureModal
-        isOpen={showLocked}
-        onClose={() => setShowLocked(false)}
-        featureName={program.name}
-        productType="product"
-        productDescription={program.description_long ?? undefined}
-        websiteUrl="https://zdravedychej.cz"
-      />
     </>
   )
 }

@@ -1,8 +1,9 @@
 import { useAuth } from '@/platform/auth'
 import { LockedFeatureModal } from '@/modules/mvp0/components'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAkademieNav } from '../hooks/useAkademieNav'
 import { useAkademieCategories, useAkademieCatalog } from '../api/useAkademieCatalog'
+import { useAkademiePrefetch } from '../hooks/useAkademiePrefetch'
 import { CategoryGrid } from './CategoryGrid'
 import { ProgramGrid } from './ProgramGrid'
 import { ProgramDetail } from './ProgramDetail'
@@ -25,8 +26,38 @@ export function AkademieRoot() {
   const { user } = useAuth()
   const { activeCategorySlug, routeStack, selectCategory, openProgram, back, reset, pendingModuleId, setPendingModuleId } =
     useAkademieNav()
+  const { prefetchCategoryDeep, prefetchProgramDeep } = useAkademiePrefetch()
 
   const [lockedModalOpen, setLockedModalOpen] = useState(false)
+
+  // Swipe-back gesture: pravý tah nebo rychlý flick doleva = jít zpět
+  const swipeStartX = useRef(0)
+  const swipeStartY = useRef(0)
+  const swipeStartTime = useRef(0)
+
+  const handleSwipeTouchStart = useCallback((e: React.TouchEvent) => {
+    swipeStartX.current = e.touches[0].clientX
+    swipeStartY.current = e.touches[0].clientY
+    swipeStartTime.current = Date.now()
+  }, [])
+
+  const handleSwipeTouchEnd = useCallback((e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - swipeStartX.current
+    const dy = Math.abs(e.changedTouches[0].clientY - swipeStartY.current)
+    const elapsed = Date.now() - swipeStartTime.current
+    const velocity = dx / elapsed // px/ms (kladné = doprava)
+
+    // Aktivovat: pravý tah min. 55px s max. drift 50px NEBO rychlý flick > 0.4px/ms
+    const isBackGesture = (dx > 55 && dy < 50) || (dx > 20 && velocity > 0.4 && dy < 40)
+
+    if (isBackGesture) {
+      if (routeStack.length > 0) {
+        back()
+      } else if (activeCategorySlug) {
+        reset()
+      }
+    }
+  }, [routeStack.length, activeCategorySlug, back, reset])
 
   const { data: categories, isLoading: categoriesLoading } = useAkademieCategories(user?.id)
   const { data: programs, isLoading: programsLoading } = useAkademieCatalog(
@@ -79,7 +110,11 @@ export function AkademieRoot() {
   )
 
   return (
-    <div className="akademie-root">
+    <div
+      className="akademie-root"
+      onTouchStart={handleSwipeTouchStart}
+      onTouchEnd={handleSwipeTouchEnd}
+    >
       {/* HOME: CategoryGrid */}
       {isHomeView && (
         <>
@@ -88,14 +123,14 @@ export function AkademieRoot() {
             <CategoryGrid
               categories={categories}
               onSelect={(slug) => {
-                // Najdi kategorii
                 const cat = categories.find((c) => c.slug === slug)
                 if (!cat) return
                 if (!cat.isAccessible) {
-                  // Zamčená kategorie → LockedFeatureModal
                   setLockedModalOpen(true)
                   return
                 }
+                // Hluboký prefetch na pozadí: programs + series + lessons
+                prefetchCategoryDeep(slug, user?.id)
                 selectCategory(slug)
               }}
             />
@@ -138,7 +173,14 @@ export function AkademieRoot() {
             programs={programs ?? []}
             isLoading={programsLoading}
             userId={user?.id}
-            onOpenProgram={openProgram}
+            onOpenProgram={(programId) => {
+              // Spustit deep prefetch série + lekcí souběžně s navigací
+              const program = programs?.find((p) => p.id === programId)
+              if (program) {
+                prefetchProgramDeep(program.module_id, user?.id)
+              }
+              openProgram(programId)
+            }}
           />
         </>
       )}
@@ -150,6 +192,7 @@ export function AkademieRoot() {
           userId={user?.id}
           onBack={back}
           backLabel={categories?.find((c) => c.slug === activeCategorySlug)?.name ?? 'Zpět'}
+          categorySlug={activeCategorySlug ?? ''}
         />
       )}
 

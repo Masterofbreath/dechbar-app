@@ -12,7 +12,7 @@ import type {
 // Fetch: categories enriched with access state
 // --------------------------------------------------
 
-async function fetchCategories(userId: string | undefined): Promise<AkademieCategoryVM[]> {
+export async function fetchCategories(userId: string | undefined): Promise<AkademieCategoryVM[]> {
   const { data, error } = await supabase
     .from('akademie_categories')
     .select('*')
@@ -150,6 +150,8 @@ interface RawProgramRow {
   description_long: string | null
   cover_image_url: string | null
   sort_order: number
+  duration_days: number | null
+  daily_minutes: number | null
   modules: {
     id: string
     name: string
@@ -161,7 +163,7 @@ interface UserModuleRow {
   module_id: string
 }
 
-async function fetchProgramsForCategory(
+export async function fetchProgramsForCategory(
   categorySlug: string,
   userId: string | undefined,
 ): Promise<AkademieProgramVM[]> {
@@ -184,6 +186,8 @@ async function fetchProgramsForCategory(
       description_long,
       cover_image_url,
       sort_order,
+      duration_days,
+      daily_minutes,
       modules ( id, name, price_czk )
     `)
     .eq('category_id', cat.id)
@@ -222,6 +226,8 @@ async function fetchProgramsForCategory(
       description_long: row.description_long,
       cover_image_url: row.cover_image_url,
       sort_order: row.sort_order,
+      duration_days: row.duration_days,
+      daily_minutes: row.daily_minutes,
       name: row.modules?.name ?? row.module_id,
       price_czk: row.modules?.price_czk ?? 990,
       isOwned,

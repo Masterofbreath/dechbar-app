@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAkademieSeries, useAkademieLessons, useToggleLessonFavorite } from '../../api/useAkademieProgram'
 import { useAkademiePlayback } from '../../hooks/useAkademiePlayback'
+import { useActiveDailyProgram } from '@/modules/mvp0/hooks/useActiveDailyProgram'
 import { LockedFeatureModal } from '@/modules/mvp0/components'
 import type { AkademieProgramVM, AkademieSeries, LessonWithProgress } from '../../types'
 
@@ -9,6 +10,8 @@ interface ProgramDetailProps {
   userId: string | undefined
   onBack: () => void
   backLabel?: string
+  /** Slug kategorie — předává se do Track pro správnou navigaci z StickyPlayeru */
+  categorySlug: string
 }
 
 // --------------------------------------------------
@@ -20,6 +23,10 @@ interface LessonRowProps {
   seriesId: string
   isSeriesLocked: boolean
   userId: string | undefined
+  coverUrl: string | null
+  programId: string
+  categorySlug: string
+  programTitle: string
   onLockedPlay: () => void
 }
 
@@ -39,20 +46,20 @@ function CheckIcon() {
   )
 }
 
-function LessonStarIcon({ filled }: { filled: boolean }) {
+function LessonHeartIcon({ filled }: { filled: boolean }) {
   return filled ? (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ width: 14, height: 14 }}>
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
     </svg>
   ) : (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14 }}>
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   )
 }
 
-function LessonRow({ lesson, seriesId, isSeriesLocked, userId, onLockedPlay }: LessonRowProps) {
-  const { playLesson, isCurrentlyPlaying } = useAkademiePlayback()
+function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, programId, categorySlug, programTitle, onLockedPlay }: LessonRowProps) {
+  const { playLesson, isCurrentlyPlaying } = useAkademiePlayback({ coverUrl, programId, categorySlug, programTitle })
   const toggleFavorite = useToggleLessonFavorite()
   const playing = isCurrentlyPlaying(lesson.id)
 
@@ -116,7 +123,7 @@ function LessonRow({ lesson, seriesId, isSeriesLocked, userId, onLockedPlay }: L
           aria-label={lesson.isFavorite ? 'Odebrat z oblíbených' : 'Přidat do oblíbených'}
           aria-pressed={lesson.isFavorite}
         >
-          <LessonStarIcon filled={lesson.isFavorite} />
+          <LessonHeartIcon filled={lesson.isFavorite} />
         </button>
       )}
 
@@ -144,6 +151,10 @@ interface AccordionSeriesProps {
   seriesIndex: number
   isOwned: boolean
   userId: string | undefined
+  coverUrl: string | null
+  programId: string
+  categorySlug: string
+  programTitle: string
   isOpen: boolean
   onToggle: () => void
 }
@@ -165,7 +176,7 @@ function ChevronRightIcon() {
   )
 }
 
-function AccordionSeries({ series, seriesIndex, isOwned, userId, isOpen, onToggle }: AccordionSeriesProps) {
+function AccordionSeries({ series, seriesIndex, isOwned, userId, coverUrl, programId, categorySlug, programTitle, isOpen, onToggle }: AccordionSeriesProps) {
   const [lockedModalOpen, setLockedModalOpen] = useState(false)
 
   const { data: lessons, isLoading } = useAkademieLessons(
@@ -233,6 +244,10 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, isOpen, onToggl
                 seriesId={series.id}
                 isSeriesLocked={!isOwned}
                 userId={userId}
+                coverUrl={coverUrl}
+                programId={programId}
+                categorySlug={categorySlug}
+                programTitle={programTitle}
                 onLockedPlay={() => setLockedModalOpen(true)}
               />
             ))}
@@ -254,12 +269,16 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, isOpen, onToggl
 // ProgramDetail — hlavní komponenta
 // --------------------------------------------------
 
-export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět' }: ProgramDetailProps) {
+export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', categorySlug }: ProgramDetailProps) {
   const { data: series, isLoading: seriesLoading } = useAkademieSeries(program.module_id)
-  // Pouze jedna série může být otevřená naráz
   const [openSeriesId, setOpenSeriesId] = useState<string | null>(null)
 
-  const durationDays = (series?.length ?? 0) * 7
+  const { data: activeProgram, setActiveProgram, clearActiveProgram } = useActiveDailyProgram(userId)
+  const isActiveProgram = activeProgram?.program.module_id === program.module_id
+
+  // Prefer DB value; fall back to computed from series count
+  const durationDays = program.duration_days ?? (series?.length ?? 0) * 7
+  const dailyMinutes = program.daily_minutes ?? null
 
   return (
     <div>
@@ -293,12 +312,38 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět' }: 
 
         {/* Info vpravo */}
         <div className="akademie-program-detail__info">
-          <h1 className="akademie-program-detail__title">{program.name}</h1>
+          {/* Title row — název + pin button na stejné řádce */}
+          <div className="akademie-program-detail__title-row">
+            <h1 className="akademie-program-detail__title">{program.name}</h1>
+            {program.isOwned && (
+              <button
+                className={`akademie-program-detail__pin-btn${isActiveProgram ? ' akademie-program-detail__pin-btn--active' : ''}`}
+                onClick={isActiveProgram ? clearActiveProgram : () => setActiveProgram(program.module_id)}
+                type="button"
+                aria-label={isActiveProgram ? 'Odebrat z denního programu' : 'Nastavit jako denní program'}
+              >
+                {isActiveProgram ? (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Nastaveno
+                  </>
+                ) : (
+                  'Denní program'
+                )}
+              </button>
+            )}
+          </div>
           {durationDays > 0 && (
             <div className="akademie-program-detail__meta">
               <span>{durationDays} dní</span>
-              <span>·</span>
-              <span>15 min/den</span>
+              {dailyMinutes && (
+                <>
+                  <span>·</span>
+                  <span>{dailyMinutes} min/den</span>
+                </>
+              )}
             </div>
           )}
           {program.description_long && (
@@ -341,6 +386,10 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět' }: 
               seriesIndex={index}
               isOwned={program.isOwned}
               userId={userId}
+              coverUrl={program.cover_image_url}
+              programId={program.id}
+              categorySlug={categorySlug}
+              programTitle={program.name}
               isOpen={openSeriesId === s.id}
               onToggle={() => setOpenSeriesId((prev) => (prev === s.id ? null : s.id))}
             />

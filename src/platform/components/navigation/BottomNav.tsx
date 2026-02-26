@@ -17,6 +17,8 @@
 import { NavIcon } from '../NavIcon';
 import { useNavigation, type NavTab } from '@/platform/hooks';
 import { useAkademieNav } from '@/modules/akademie/hooks/useAkademieNav';
+import { useAkademiePrefetch } from '@/modules/akademie/hooks/useAkademiePrefetch';
+import { useAuth } from '@/platform/auth';
 
 /**
  * Navigation item configuration
@@ -48,12 +50,19 @@ const NAV_ITEMS: NavItem[] = [
 export function BottomNav() {
   const { currentTab, setCurrentTab } = useNavigation();
   const resetAkademie = useAkademieNav((s) => s.reset);
-  
+  const { prefetchAll } = useAkademiePrefetch();
+  const { user } = useAuth();
+
   function handleTabClick(tabId: NavTab) {
     if (tabId === currentTab) {
       // Re-tap aktivního tabu: reset vnitřní navigace
       if (tabId === 'akademie') resetAkademie();
       return;
+    }
+    // Přechod na Akademii: vždy reset + prefetch
+    if (tabId === 'akademie') {
+      resetAkademie();
+      prefetchAll(user?.id);
     }
     setCurrentTab(tabId);
   }
