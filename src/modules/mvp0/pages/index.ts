@@ -13,3 +13,6 @@ export { AkademiePage } from './AkademiePage';
 export { PokrokPage } from './PokrokPage';
 export { ProfilPage } from './ProfilPage';
 export { SettingsPage } from './SettingsPage';
+export { AboutPage } from './AboutPage';
+export { AppTermsPage } from './AppTermsPage';
+export { AppPrivacyPage } from './AppPrivacyPage';

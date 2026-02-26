@@ -1,0 +1,43 @@
+/* ============================================================
+   App Legal Pages — /app/terms and /app/privacy
+   In-app views of legal documents (no landing Header/Footer).
+   ============================================================ */
+
+.app-legal-page {
+  background: var(--color-background);
+  min-height: 100vh;
+  padding-bottom: 80px; /* clear bottom nav */
+}
+
+.app-legal-page__back {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-4);
+  padding-top: calc(var(--spacing-4) + env(safe-area-inset-top));
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  min-height: 44px;
+  text-align: left;
+  transition: color var(--duration-fast) ease;
+}
+
+.app-legal-page__back:hover {
+  color: var(--color-primary-light);
+}
+
+.app-legal-page__back:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-legal-page__back {
+    transition: none;
+  }
+}
