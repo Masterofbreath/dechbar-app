@@ -121,6 +121,23 @@
   /* Removed custom margin-top - using gap from .dnes-page for consistent spacing */
 }
 
+/* Diskrétní Apple-style section label — malý, uppercase, terciární barva.
+   Pojmenovává sekci bez vizuální dominance (nekonkuruje section-title). */
+.dnes-page__section-label {
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 8px;
+}
+
+/* Daily program sekce: nulový gap — label těsně nad tlačítkem */
+.dnes-page__section--daily {
+  display: flex;
+  flex-direction: column;
+}
+
 .dnes-page__section-title {
   font-size: 22px; /* Bigger */
   font-weight: 700; /* Bolder */

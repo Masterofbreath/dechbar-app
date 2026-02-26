@@ -99,8 +99,11 @@ export function DnesPage() {
           onClick={() => console.log('SMART exercise clicked')}
         />
         
-        {/* 2.5 Daily Program Button — self-contained, handles its own data + playback */}
-        <TodaysChallengeButton />
+        {/* 2.5 Daily Program — section s diskrétním labelem */}
+        <section className="dnes-page__section dnes-page__section--daily">
+          <h2 className="dnes-page__section-label">Denní program</h2>
+          <TodaysChallengeButton />
+        </section>
         
         {/* 3. Preset Protocols Section */}
         <section className="dnes-page__section">
