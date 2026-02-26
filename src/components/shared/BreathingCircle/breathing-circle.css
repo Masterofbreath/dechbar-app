@@ -199,13 +199,12 @@
    ============================================================ */
 @media (width <= 768px) {
   .breathing-circle-container {
-    position: fixed !important;
-
-    /* Střed vizuálního obsahu mezi safe area insets.
-       V Capacitor/PWA: safe-area-top (~47px) > safe-area-bottom (~34px),
-       proto čistý 50vh leží nad vizuálním středem. Formule kompenzuje asymetrii. */
-    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2) !important;
-    left: 50vw !important;
+    /* position: absolute → vždy přesný střed ContentZone (position: relative).
+       Robustnější než position: fixed — bez závislosti na env() výpočtech,
+       bez iOS WebKit quirků s containing block uvnitř fixed/overflow:hidden. */
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
     transform: translate(-50%, -50%) !important;
     z-index: 2 !important;
   }

@@ -33,22 +33,14 @@
   }
   
   .fullscreen-modal__top-bar {
-    /* CRITICAL: height musí ZAHRNOVAT safe-area-inset-top, ne jen mít padding uvnitř.
-       Pokud TopBar = 60px fixed + padding-top: 47px UVNITŘ, content area = jen 13px.
-       Správně: height = 60px (content) + 47px (safe area) = 107px celkem.
-       Formule pro breathing circle (top: 50vh + (safe_top - safe_bottom)/2) je správná
-       POUZE pokud výška TopBar = base + safe_top a BottomBar = base + safe_bottom. */
-    height: calc(var(--fullscreen-modal-top-bar-height-mobile) + env(safe-area-inset-top, 0px));
+    height: var(--fullscreen-modal-top-bar-height-mobile);
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-top: max(16px, env(safe-area-inset-top));
   }
   
   .fullscreen-modal__bottom-bar {
-    /* CRITICAL: Stejný princip jako TopBar — výška zahrnuje safe-area-inset-bottom.
-       V PWA: height = 60px + 34px = 94px. Content (progress bar) ve viditelné oblasti
-       mezi spodní hranou ContentZone a home indicator indikátorem. */
-    height: calc(var(--fullscreen-modal-bottom-bar-height-mobile) + env(safe-area-inset-bottom, 0px));
+    height: var(--fullscreen-modal-bottom-bar-height-mobile);
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-bottom: max(20px, env(safe-area-inset-bottom));

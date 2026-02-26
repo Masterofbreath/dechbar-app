@@ -146,13 +146,15 @@
     padding: 0 20px !important;
   }
   
-  /* Breathing circle - FIXED VIEWPORT CENTER (stejné jako KP modal) */
+  /* Breathing circle - ABSOLUTE CENTER v ContentZone (position: relative) */
   .breathing-circle-container {
-    position: fixed !important;
-
-    /* Stejná safe-area formule jako breathing-circle.css */
-    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2) !important;
-    left: 50vw !important;
+    /* position: absolute → vždy přesný střed ContentZone.
+       ContentZone (fullscreen-modal__content-zone) je position: relative — serving block.
+       top: 50% / left: 50% / translate(-50%,-50%) = matematicky přesný střed
+       bez env() výpočtů a bez iOS WebKit position:fixed quirků. */
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
     transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
@@ -176,13 +178,11 @@
     margin-top: 2px !important;
   }
   
-  /* Countdown circle container - FIXED VIEWPORT CENTER (stejné jako breathing) */
+  /* Countdown circle container - ABSOLUTE CENTER v ContentZone (stejné jako breathing) */
   .countdown-circle-container {
-    position: fixed !important;
-
-    /* Stejná safe-area formule pro konzistenci s breathing circle */
-    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2) !important;
-    left: 50vw !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
     transform: translate(-50%, -50%) !important;
     width: 220px !important;
     height: 220px !important;
@@ -199,13 +199,13 @@
     font-size: 56px !important;
   }
   
-  /* Countdown tip/description - BELOW circle (fixed position) */
+  /* Countdown tip/description - BELOW circle (absolute relative to ContentZone) */
   .session-countdown__tip,
   .session-countdown__description {
-    position: fixed !important;
-
-    /* Stejná základna jako circle, + offset pod spodní hranou kruhu */
-    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2 + 130px) !important;
+    /* Střed ContentZone + polomer kruhu (110px) + 20px gap = 130px pod středem */
+    position: absolute !important;
+    top: calc(50% + 130px) !important;
+    bottom: auto !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 85% !important;
@@ -214,12 +214,12 @@
     z-index: 1 !important;
   }
   
-  /* Timer - BELOW circle with proper margin */
+  /* Timer - BELOW circle (absolute relative to ContentZone) */
   .session-timer {
-    position: fixed !important;
-
-    /* Stejná základna jako circle, + offset */
-    top: calc(50vh + (env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2 + 140px) !important;
+    /* Střed ContentZone + polomer kruhu (110px) + 24px gap = 134px pod středem */
+    position: absolute !important;
+    top: calc(50% + 134px) !important;
+    bottom: auto !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 100% !important;
