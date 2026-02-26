@@ -574,10 +574,11 @@ body.immersive-mode .bottom-nav {
     transition: transform 0.3s ease;
   }
   
-  body.immersive-mode .bottom-nav {
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-  }
+  /* POZOR: transform: translateY(100%) zde záměrně CHYBÍ pro .bottom-nav.
+     display:none !important (výše) již element plně skryje — transform je redundantní.
+     Navíc způsoboval iOS WebKit compositing bug: při odebrání immersive-mode class
+     iOS přepočítal BottomNav pozici přes app-layout (overflow:hidden) místo viewportu,
+     výsledkem byl trvalý offset od spodního okraje displeje. */
 }
 
 /* Prevent scroll when in immersive mode */

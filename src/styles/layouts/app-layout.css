@@ -13,7 +13,14 @@
   min-height: 100vh; /* Fallback */
   min-height: 100dvh; /* Dynamic viewport height (mobile) */
   background: var(--color-background); /* #121212 */
-  overflow: hidden; /* Prevent viewport scrollbar */
+
+  /* overflow: hidden fallback pro iOS < 15.4 (Safari < 15.4, 2022).
+     overflow: clip — vizuálně identické s hidden, ale NEVYTVÁŘÍ scroll container.
+     Klíčový rozdíl: iOS WebKit nepoužívá overflow:clip kontejner jako positioning
+     context pro position:fixed potomky (na rozdíl od overflow:hidden), čímž se
+     předchází bugu kdy BottomNav po zavření session engine skáče od spodního okraje. */
+  overflow: hidden;
+  overflow: clip;
 }
 
 /* ============================================================
@@ -23,8 +30,7 @@
 .app-layout__content {
   flex: 1 1 0; /* flex-basis 0 forces correct calculation */
   min-height: 0; /* Allow flexbox to constrain overflow */
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
   
   /* FIXED: Space for TopNav at top, BottomNav is flex item */
@@ -41,22 +47,20 @@
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85); /* Dark overlay */
+  inset: 0;
+  background: rgb(0 0 0 / 85%); /* Dark overlay */
   display: flex;
   align-items: flex-end; /* Bottom sheet style */
   justify-content: center;
   z-index: 10000; /* Above everything */
-  animation: fadeIn 0.2s ease;
+  animation: fade-in 0.2s ease;
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -70,20 +74,21 @@
   max-width: 600px;
   overflow-y: auto;
   padding: var(--spacing-6); /* 24px */
-  animation: slideUp 0.3s ease;
+  animation: slide-up 0.3s ease;
 }
 
-@keyframes slideUp {
+@keyframes slide-up {
   from {
     transform: translateY(100%);
   }
+
   to {
     transform: translateY(0);
   }
 }
 
 /* Desktop modal centering */
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .modal-overlay {
     align-items: center;
   }
@@ -95,7 +100,7 @@
 }
 
 /* ✅ PWA FIX: Mobile-specific padding pro fixed bottom nav */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .app-layout__content {
     /* Space for fixed BottomNav on mobile/PWA */
     padding-bottom: calc(
@@ -107,6 +112,16 @@
     /* ✅ iOS native feel - hide scrollbar on mobile views (global) */
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
+  }
+
+  /* Při aktivním StickyPlayeru: přidat prostor pro 64px přehrávač */
+  .app-layout--has-player .app-layout__content {
+    padding-bottom: calc(
+      72px + /* BottomNav height */
+      64px +                              /* StickyPlayer height */
+      env(safe-area-inset-bottom) +      /* iOS home indicator */
+      var(--spacing-4)                    /* 16px breathing space */
+    ) !important;
   }
   
   .app-layout__content::-webkit-scrollbar {
