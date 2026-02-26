@@ -21,7 +21,9 @@ interface UseAudioPlayerReturn {
   pause: () => void;
   seek: (time: number) => void;
   setVolume: (vol: number) => void;
-  audioElement: HTMLAudioElement | null;
+  /** Nastaví audio.muted — iOS Safari neumí programaticky ovládat volume,
+   *  muted je jediný spolehlivý způsob ztlumení na mobilních zařízeních. */
+  setMuted: (muted: boolean) => void;
 }
 
 export const useAudioPlayer = (track: Track | null): UseAudioPlayerReturn => {
@@ -93,6 +95,8 @@ export const useAudioPlayer = (track: Track | null): UseAudioPlayerReturn => {
       audio.removeEventListener('waiting', handleWaiting);
       audioRef.current = null;
     };
+  // track?.id záměrně místo celého track objektu — nechceme reinit při každém render update
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [track?.id]);
   
   // Play (iOS Safari: must be synchronous user gesture!)
@@ -126,12 +130,17 @@ export const useAudioPlayer = (track: Track | null): UseAudioPlayerReturn => {
     setCurrentTime(clampedTime);
   }, [duration]);
   
-  // Set volume (0-1 range)
+  // Set volume (0-1 range) — nefunguje na iOS Safari (volume je read-only)
   const setVolume = useCallback((vol: number) => {
     if (!audioRef.current) return;
-    
     const clampedVol = Math.max(0, Math.min(vol, 1));
     audioRef.current.volume = clampedVol;
+  }, []);
+
+  // Set muted — spolehlivé ztlumení na iOS Safari i desktop
+  const setMuted = useCallback((muted: boolean) => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = muted;
   }, []);
   
   return {
@@ -144,6 +153,6 @@ export const useAudioPlayer = (track: Track | null): UseAudioPlayerReturn => {
     pause,
     seek,
     setVolume,
-    audioElement: audioRef.current,
+    setMuted,
   };
 };

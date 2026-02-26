@@ -188,6 +188,7 @@ export const StickyAudioPlayer: React.FC = () => {
     pause,
     seek: seekAudio,
     setVolume: setAudioVolume,
+    setMuted: setAudioMuted,
   } = useAudioPlayer(currentTrack);
 
   useAudioTracking({
@@ -199,10 +200,12 @@ export const StickyAudioPlayer: React.FC = () => {
     userId,
   });
 
-  // Sync hlasitosti do audio elementu (respektuje mute)
+  // Sync hlasitosti + mute do audio elementu
+  // KRITICKÉ: iOS Safari ignoruje audio.volume — audio.muted je jediný spolehlivý způsob
   useEffect(() => {
+    setAudioMuted(isMuted);
     setAudioVolume(isMuted ? 0 : volume);
-  }, [volume, isMuted, setAudioVolume]);
+  }, [volume, isMuted, setAudioVolume, setAudioMuted]);
 
   // Auto-play: spustí přehrávání jakmile je audio připraveno.
   // KRITICKÉ — play() je voláno z useEffect (mimo user gesture), ale iOS Safari

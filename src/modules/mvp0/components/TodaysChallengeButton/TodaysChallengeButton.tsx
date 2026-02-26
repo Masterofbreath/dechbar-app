@@ -216,7 +216,7 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
     }
 
     // State 1a: Has next lesson to play
-    const lessonSubtitle = buildLessonSubtitle(nextLesson);
+    const lessonSubtitle = buildLessonSubtitle(nextLesson, program.daily_minutes);
 
     function handleUserProgramClick() {
       if (!nextLesson) return;
@@ -281,13 +281,25 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
 
 /**
  * Sestaví subtitle pro aktivní denní program.
- * Zobrazuje název dnešní lekce + délku v minutách (pokud je k dispozici).
- * Progress a gamifikace zde záměrně NEJSOU — patří do view "Pokrok".
+ * Zobrazuje název dnešní lekce + délku v minutách.
+ *
+ * Priorita délky:
+ *   1. programDailyMinutes (z akademie_programs.daily_minutes) — "slíbená" délka programu
+ *   2. lesson.duration_seconds → minuty — skutečná délka konkrétního audia
+ *   3. nic — subtitle bez délky
+ *
+ * Proč priorita programDailyMinutes:
+ *   - Den 1 má sample audio (7 min), ale program slibuje 15 min/den
+ *   - Uživatel vidí konzistentní číslo odpovídající popisu programu
+ *   - Po nahrání plných audiích se délka automaticky upřesní přes duration_seconds
  */
-function buildLessonSubtitle(lesson: AkademieLesson): string {
-  const durationMin = lesson.duration_seconds > 0
-    ? Math.round(lesson.duration_seconds / 60)
-    : null;
+function buildLessonSubtitle(lesson: AkademieLesson, programDailyMinutes?: number | null): string {
+  const durationMin =
+    programDailyMinutes != null && programDailyMinutes > 0
+      ? programDailyMinutes
+      : lesson.duration_seconds > 0
+        ? Math.round(lesson.duration_seconds / 60)
+        : null;
 
   const parts: string[] = [`Dnes: ${lesson.title}`];
   if (durationMin) parts.push(`${durationMin} min`);
