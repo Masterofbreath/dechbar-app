@@ -65,3 +65,183 @@ export interface TrackFilters {
   is_published?: boolean;
   search?: string;
 }
+
+// ============================================================
+// AKADEMIE ADMIN TYPES
+// ============================================================
+
+export interface AkademieCategoryInput {
+  name: string;
+  slug: string;
+  icon?: string;
+  description: string;
+  description_long?: string;
+  cover_image_url?: string;
+  sort_order: number;
+  is_active: boolean;
+  required_module_id?: string;
+}
+
+export interface AkademieCategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  description: string | null;
+  description_long: string | null;
+  cover_image_url: string | null;
+  sort_order: number;
+  is_active: boolean;
+  required_module_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AkademieProgramInput {
+  /** Slouží jako module_id v modules tabulce */
+  slug: string;
+  name: string;
+  description?: string;
+  description_long?: string;
+  price_czk: number;
+  cover_image_url?: string;
+  duration_days?: number;
+  daily_minutes?: number;
+  launch_date?: string;
+  is_published: boolean;
+  category_id: string;
+}
+
+export interface AkademieProgram {
+  id: string;
+  module_id: string;
+  category_id: string;
+  description_long: string | null;
+  cover_image_url: string | null;
+  sort_order: number;
+  duration_days: number | null;
+  daily_minutes: number | null;
+  launch_date: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  /** JOIN: module name + price */
+  module_name?: string;
+  module_price_czk?: number;
+  module_stripe_price_id?: string | null;
+  module_ecomail_list_in?: string | null;
+  module_ecomail_list_before?: string | null;
+  category_name?: string;
+}
+
+export interface AkademieSeriesInput {
+  module_id: string;
+  name: string;
+  week_number: number;
+  description?: string;
+  sort_order: number;
+}
+
+export interface AkademieSeries {
+  id: string;
+  module_id: string;
+  series_module_id: string | null;
+  name: string;
+  description: string | null;
+  week_number: number;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AkademieLessonInput {
+  series_id: string;
+  module_id: string;
+  title: string;
+  audio_url: string;
+  duration_seconds: number;
+  day_number: number;
+  sort_order: number;
+  is_published?: boolean;
+}
+
+export interface AkademieLesson {
+  id: string;
+  series_id: string;
+  module_id: string;
+  title: string;
+  audio_url: string;
+  duration_seconds: number;
+  day_number: number;
+  sort_order: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AkademieProgramCreateResult {
+  moduleId: string;
+  programId: string;
+  stripeProductId?: string | null;
+  stripePriceId?: string | null;
+  ecmailListInId?: string | null;
+  ecmailListBeforeId?: string | null;
+  stripeError?: string | null;
+  ecmailError?: string | null;
+}
+
+export interface SeriesInput {
+  id?: string;
+  name: string;
+  week_number: number;
+  description?: string;
+  sort_order: number;
+}
+
+export interface LessonInput {
+  id?: string;
+  title: string;
+  day_number: number;
+  audio_file?: File;
+  audio_url?: string;
+  duration_seconds?: number;
+  sort_order: number;
+}
+
+export interface ProgramWizardState {
+  step: 1 | 2 | 3 | 4 | 'summary';
+  category: {
+    existingCategoryId?: string;
+    name?: string;
+    slug?: string;
+    description?: string;
+    description_long?: string;
+    icon?: string;
+    sort_order?: number;
+    is_active?: boolean;
+    required_module_id?: string;
+    cover_image_url?: string;
+  };
+  program: {
+    name: string;
+    slug: string;
+    description: string;
+    description_long?: string;
+    price_czk: number;
+    cover_image_file?: File;
+    cover_image_url?: string;
+    duration_days?: number;
+    daily_minutes?: number;
+    launch_date?: string;
+    is_published: boolean;
+    /** Set after successful creation */
+    created_module_id?: string;
+    stripe_product_id?: string;
+    stripe_price_id?: string;
+    ecomail_list_in_id?: string;
+    ecomail_list_before_id?: string;
+  };
+  series: SeriesInput[];
+  /** Key = series index in `series` array */
+  lessons: Record<number, LessonInput[]>;
+}

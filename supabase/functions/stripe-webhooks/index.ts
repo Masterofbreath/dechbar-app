@@ -37,10 +37,9 @@ const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 
 const ECOMAIL_BASE = 'https://api2.ecomailapp.cz';
 
-// Mapování module_id → Ecomail list IDs
-// IN  = zákazníci, kteří zaplatili → uvítací autoresponder
-// BEFORE = zadali email, nezaplatili → abandoned cart remarketing
-const ECOMAIL_LISTS: Record<string, { in: string; before: string }> = {
+// Ecomail list IDs jsou nyní uloženy v modules.ecomail_list_in / ecomail_list_before
+// Pro zpětnou kompatibilitu — env fallback pro existující produkty (pokud DB neobsahuje list IDs)
+const ECOMAIL_LIST_FALLBACK: Record<string, { in: string; before: string }> = {
   'digitalni-ticho': {
     in:     Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO') || '10',
     before: Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO_BEFORE') || '11',
@@ -448,55 +447,66 @@ function getProductConfig(moduleId: string): {
   };
 }
 
-function getModuleFromPriceId(priceId: string): {
+/**
+ * Načte modul z DB podle stripe_price_id.
+ * Pokud není v DB, zkusí fallback pro subscription produkty (membership).
+ * One-time produkty nově vytvořené přes admin panel budou automaticky v DB.
+ */
+async function getModuleFromPriceId(
+  supabase: any,
+  priceId: string,
+): Promise<{
   module_id: string;
   plan?: 'SMART' | 'AI_COACH';
   interval?: 'monthly' | 'annual';
   payment_type: 'one_time' | 'subscription';
-} | null {
-  const priceMap: Record<string, any> = {
-    // ── One-time products ──────────────────────────────────────
-    // LIVE price (990 CZK)
-    'price_1T2SBJK0OYr7u1q9HkiaSKYY': {
-      module_id: 'digitalni-ticho',
-      payment_type: 'one_time',
-    },
-    // TEST price (990 CZK) — používá se v .env.local / DEV prostředí
-    'price_1T2asNK0OYr7u1q9VEmHDEme': {
-      module_id: 'digitalni-ticho',
-      payment_type: 'one_time',
-    },
+  ecomail_list_in?: string | null;
+  ecomail_list_before?: string | null;
+} | null> {
+  // 1. Zkus DB lookup (platí pro all-time produkty vytvořené přes admin panel)
+  const { data: moduleRow, error } = await supabase
+    .from('modules')
+    .select('id, ecomail_list_in, ecomail_list_before, price_type')
+    .eq('stripe_price_id', priceId)
+    .maybeSingle();
 
+  if (!error && moduleRow) {
+    return {
+      module_id: moduleRow.id,
+      payment_type: moduleRow.price_type === 'lifetime' ? 'one_time' : 'subscription',
+      ecomail_list_in: moduleRow.ecomail_list_in,
+      ecomail_list_before: moduleRow.ecomail_list_before,
+    };
+  }
+
+  // 2. Fallback: hardcoded subscription price IDs (membership produkty nemají stripe_price_id v modules)
+  const subscriptionPriceMap: Record<string, {
+    module_id: string;
+    plan: 'SMART' | 'AI_COACH';
+    interval: 'monthly' | 'annual';
+    payment_type: 'subscription';
+  }> = {
     // ── Subscriptions (SMART Membership) ──────────────────────
     'price_1Sra65K7en1dcW6HC63iM7bf': {
-      module_id: 'membership-smart',
-      plan: 'SMART',
-      interval: 'monthly',
-      payment_type: 'subscription',
+      module_id: 'membership-smart', plan: 'SMART', interval: 'monthly', payment_type: 'subscription',
     },
     'price_1SraCSK7en1dcW6HFkmAbdIL': {
-      module_id: 'membership-smart',
-      plan: 'SMART',
-      interval: 'annual',
-      payment_type: 'subscription',
+      module_id: 'membership-smart', plan: 'SMART', interval: 'annual', payment_type: 'subscription',
     },
-
     // ── Subscriptions (AI COACH Membership) ───────────────────
     'price_1SraHbK7en1dcW6HjYNfiXau': {
-      module_id: 'membership-ai-coach',
-      plan: 'AI_COACH',
-      interval: 'monthly',
-      payment_type: 'subscription',
+      module_id: 'membership-ai-coach', plan: 'AI_COACH', interval: 'monthly', payment_type: 'subscription',
     },
     'price_1SraIaK7en1dcW6HsYyN0Aj9': {
-      module_id: 'membership-ai-coach',
-      plan: 'AI_COACH',
-      interval: 'annual',
-      payment_type: 'subscription',
+      module_id: 'membership-ai-coach', plan: 'AI_COACH', interval: 'annual', payment_type: 'subscription',
     },
   };
 
-  return priceMap[priceId] ?? null;
+  const subscriptionEntry = subscriptionPriceMap[priceId];
+  if (subscriptionEntry) return subscriptionEntry;
+
+  console.warn(`⚠️ getModuleFromPriceId: price ${priceId} not found in DB or fallback map`);
+  return null;
 }
 
 // ============================================================
@@ -682,7 +692,7 @@ serve(async (req) => {
         console.warn(`⚠️ Could not fetch line items (synthetic event?): ${lineItemsErr.message}`);
         await dbLog(supabase, 'line_items_warn', 'Could not fetch line items', {}, event.id, event.type, lineItemsErr.message);
       }
-      const moduleInfo = priceId ? getModuleFromPriceId(priceId) : null;
+      const moduleInfo = priceId ? await getModuleFromPriceId(supabase, priceId) : null;
       const isOneTime = session.mode === 'payment' || moduleInfo?.payment_type === 'one_time';
 
       console.log(`✅ Checkout completed — guest: ${isGuest}, module: ${moduleId}, one_time: ${isOneTime}, price: ${priceId}`);
@@ -745,9 +755,10 @@ serve(async (req) => {
           // 3. Odeber z UNREG (obecný cleanup)
           const moduleTag = `PRODUCT_${moduleId.toUpperCase().replace(/-/g, '_')}`;
           const purchaseDate = new Date().toISOString().split('T')[0];
-          const productLists = ECOMAIL_LISTS[moduleId];
-          const inListId = productLists?.in ?? ECOMAIL_LIST_UNREG;
-          const beforeListId = productLists?.before;
+          // Ecomail list IDs: prioritně z DB (moduleInfo), fallback na env/hardcoded
+          const productListsFallback = ECOMAIL_LIST_FALLBACK[moduleId];
+          const inListId = moduleInfo?.ecomail_list_in ?? productListsFallback?.in ?? ECOMAIL_LIST_UNREG;
+          const beforeListId = moduleInfo?.ecomail_list_before ?? productListsFallback?.before ?? null;
 
           try {
             await ecomailSubscribe(
@@ -821,9 +832,10 @@ serve(async (req) => {
           // Ecomail fast-path pro přihlášeného uživatele
           const moduleTag = `PRODUCT_${moduleId.toUpperCase().replace(/-/g, '_')}`;
           const purchaseDate = new Date().toISOString().split('T')[0];
-          const productLists = ECOMAIL_LISTS[moduleId];
-          const inListId = productLists?.in ?? ECOMAIL_LIST_UNREG;
-          const beforeListId = productLists?.before;
+          // Ecomail list IDs: prioritně z DB (moduleInfo), fallback na env/hardcoded
+          const productListsFallbackAuth = ECOMAIL_LIST_FALLBACK[moduleId];
+          const inListId = moduleInfo?.ecomail_list_in ?? productListsFallbackAuth?.in ?? ECOMAIL_LIST_UNREG;
+          const beforeListId = moduleInfo?.ecomail_list_before ?? productListsFallbackAuth?.before ?? null;
 
           try {
             await ecomailSubscribe(
@@ -893,7 +905,7 @@ serve(async (req) => {
     if (event.type === 'customer.subscription.created') {
       const subscription = event.data.object as Stripe.Subscription;
       const priceId = subscription.items.data[0].price.id;
-      const moduleInfo = getModuleFromPriceId(priceId);
+      const moduleInfo = await getModuleFromPriceId(supabase, priceId);
 
       if (!moduleInfo || moduleInfo.payment_type !== 'subscription') {
         console.log(`ℹ️ Skipping subscription.created for price ${priceId} (not a subscription or unknown)`);
@@ -932,7 +944,7 @@ serve(async (req) => {
     if (event.type === 'customer.subscription.updated') {
       const subscription = event.data.object as Stripe.Subscription;
       const priceId = subscription.items.data[0].price.id;
-      const moduleInfo = getModuleFromPriceId(priceId);
+      const moduleInfo = await getModuleFromPriceId(supabase, priceId);
 
       let status: 'active' | 'cancelled' | 'past_due' | 'expired' = 'active';
       if (subscription.status === 'canceled' || subscription.cancel_at_period_end) {

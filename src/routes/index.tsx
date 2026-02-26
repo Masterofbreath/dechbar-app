@@ -62,6 +62,9 @@ import {
   ProfilPage
 } from '@/modules/mvp0';
 import { SettingsPage } from '@/modules/mvp0/pages/SettingsPage';
+import { AboutPage } from '@/modules/mvp0/pages/AboutPage';
+import { AppTermsPage } from '@/modules/mvp0/pages/AppTermsPage';
+import { AppPrivacyPage } from '@/modules/mvp0/pages/AppPrivacyPage';
 
 // MVP0 Global Modals
 import { ExerciseCreatorModal } from '@/modules/mvp0/components';
@@ -70,6 +73,7 @@ import { NotificationCenter, KPCenter, SettingsDrawer } from '@/platform/compone
 // Admin pages (lazy loaded)
 const AudioPlayerAdmin = lazy(() => import('@/platform/pages/admin/AudioPlayerAdmin'));
 const AdminComingSoon = lazy(() => import('@/platform/pages/admin/AdminComingSoon'));
+const AkademieAdmin = lazy(() => import('@/platform/pages/admin/AkademieAdmin/AkademieAdmin'));
 
 /**
  * NavigationRouter - Renders current tab content
@@ -362,6 +366,22 @@ export const router = createBrowserRouter([
             path: 'settings',
             element: <SettingsPage />,
           },
+
+          // About page
+          {
+            path: 'about',
+            element: <AboutPage />,
+          },
+
+          // In-app legal pages (content shared with public web)
+          {
+            path: 'terms',
+            element: <AppTermsPage />,
+          },
+          {
+            path: 'privacy',
+            element: <AppPrivacyPage />,
+          },
           
           // ============================================================
           // ADMIN ROUTES (Admin role required)
@@ -378,6 +398,10 @@ export const router = createBrowserRouter([
               {
                 path: 'media',
                 element: <AudioPlayerAdmin />,
+              },
+              {
+                path: 'akademie',
+                element: <AkademieAdmin />,
               },
               {
                 path: 'analytics',
