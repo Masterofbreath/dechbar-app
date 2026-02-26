@@ -33,7 +33,12 @@ section[id] {
   left: 0;
   width: 100%;
   z-index: 1000;
-  padding: var(--spacing-4) var(--spacing-6);  /* 16px 24px */
+
+  /* padding-top: base + env(safe-area-inset-top).
+     V browser/desktop: 0px inset → žádná změna.
+     V PWA black-translucent: 47px inset → obsah (logo, tlačítka) se posouvá
+     pod status bar; pozadí headeru přirozeně kryt status bar vizuálně. */
+  padding: calc(var(--spacing-4) + env(safe-area-inset-top, 0px)) var(--spacing-6) var(--spacing-4) var(--spacing-6);
   box-sizing: border-box;
   transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); /* Apple timing */
 }
@@ -70,7 +75,8 @@ section[id] {
 /* Mobile responsive */
 @media (width <= 390px) {
   .landing-header {
-    padding: var(--spacing-3) var(--spacing-4);  /* 12px 16px */
+    /* Zachovej safe-area-inset-top i na malých mobilech */
+    padding: calc(var(--spacing-3) + env(safe-area-inset-top, 0px)) var(--spacing-4) var(--spacing-3) var(--spacing-4);
   }
   
   .landing-header__actions {

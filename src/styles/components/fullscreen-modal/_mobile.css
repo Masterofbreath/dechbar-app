@@ -33,14 +33,20 @@
   }
   
   .fullscreen-modal__top-bar {
-    height: var(--fullscreen-modal-top-bar-height-mobile);
+    /* height = 60px (obsah) + env(safe-area-inset-top) (status bar area).
+       V PWA black-translucent: 60 + 47 = 107px. V browser: 60 + 0 = 60px.
+       Díky border-box + align-items:center se obsah (title, close) centruje
+       ve spodních 60px (content box), tedy vždy pod status barem. */
+    height: calc(var(--fullscreen-modal-top-bar-height-mobile) + env(safe-area-inset-top, 0px));
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-top: max(16px, env(safe-area-inset-top));
   }
   
   .fullscreen-modal__bottom-bar {
-    height: var(--fullscreen-modal-bottom-bar-height-mobile);
+    /* height = 60px (obsah) + env(safe-area-inset-bottom) (home indicator area).
+       V PWA: 60 + 34 = 94px. Progress bar má 60px viditelné plochy nad home indicatorem. */
+    height: calc(var(--fullscreen-modal-bottom-bar-height-mobile) + env(safe-area-inset-bottom, 0px));
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-bottom: max(20px, env(safe-area-inset-bottom));
