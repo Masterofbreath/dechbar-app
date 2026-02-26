@@ -581,7 +581,9 @@ body.immersive-mode .bottom-nav {
      výsledkem byl trvalý offset od spodního okraje displeje. */
 }
 
-/* Prevent scroll when in immersive mode */
-body.immersive-mode {
-  overflow: hidden;
-}
+/* ZÁMĚRNĚ ODSTRANĚNO: body.immersive-mode { overflow: hidden }
+   Session modal je position:fixed; inset:0 — zakrývá celou obrazovku, uživatel
+   stejně nemůže scrollovat. overflow:hidden na body bylo tedy redundantní, ale
+   způsobovalo iOS WebKit bug: body se stal scroll containerem, iOS přepočítal
+   position:fixed BottomNav (Portal child of body) relativně k body scroll area
+   místo viewportu → při zavření modalu BottomNav visel s černým pruhem pod ním. */

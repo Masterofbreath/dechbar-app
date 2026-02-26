@@ -1,9 +1,17 @@
 /**
  * useScrollLock Hook
  * 
- * Global utility for preventing body scroll with scrollbar compensation.
- * Prevents layout shift when modals open by preserving scrollbar space.
- * Also compensates fixed/sticky elements (e.g., headers, navigation).
+ * Prevents the scrollable content area from scrolling while a modal is open.
+ * 
+ * ⚠️ iOS WebKit CRITICAL: We intentionally lock `.app-layout__content` (the actual
+ * scrollable element) instead of `document.body`. Setting `body.style.overflow = 'hidden'`
+ * causes an iOS WebKit bug: body becomes a scroll container, and `position: fixed`
+ * elements (including the Portal BottomNav — direct child of body) get repositioned
+ * relative to body's scroll area instead of the viewport. When overflow is restored,
+ * iOS has a stale paint → BottomNav shows with a gap until the user scrolls.
+ * 
+ * By locking the content element directly, body overflow is never touched and
+ * the Portal BottomNav always stays at the correct viewport-relative position.
  * 
  * Usage:
  * ```tsx
@@ -11,108 +19,42 @@
  * 
  * function MyModal({ isOpen }) {
  *   useScrollLock(isOpen);
- *   // ...
  * }
- * 
- * // Mark fixed elements for compensation:
- * <header data-fixed-element>...</header>
  * ```
  * 
  * @package DechBar_App
  * @subpackage Platform/Hooks
- * @version 1.1.0
+ * @version 2.0.0
  */
 
 import { useEffect } from 'react';
 
 /**
- * Lock body scroll with scrollbar width compensation
- * Prevents layout shift when modal opens
- * Also compensates fixed/sticky elements marked with data-fixed-element
+ * Lock the app content scroll area while a modal is open.
+ * Targets `.app-layout__content` — the actual scrollable container.
+ * Never touches document.body to avoid iOS WebKit fixed-positioning bugs.
  * 
  * @param isLocked - Whether scroll should be locked
- * 
- * @example
- * ```tsx
- * // In any modal component
- * function AuthModal({ isOpen }) {
- *   useScrollLock(isOpen);
- *   
- *   return (
- *     <div className="modal-overlay">
- *       {/* modal content *\/}
- *     </div>
- *   );
- * }
- * 
- * // Mark fixed elements for compensation
- * function Header() {
- *   return (
- *     <header data-fixed-element className="landing-header">
- *       {/* header content *\/}
- *     </header>
- *   );
- * }
- * ```
  */
 export function useScrollLock(isLocked: boolean): void {
   useEffect(() => {
     if (!isLocked) return;
 
-    // ✅ Calculate scrollbar width
-    // (difference between window width and document width)
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    // Target the actual scrollable element, not body
+    const contentEl = document.querySelector<HTMLElement>('.app-layout__content');
 
-    // ✅ Store original values for cleanup
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
+    if (!contentEl) {
+      // Fallback: no content element found — do nothing (better than touching body)
+      return;
+    }
 
-    // ✅ Lock scroll + compensate for scrollbar width on body
-    document.body.style.overflow = 'hidden';
-    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    const originalOverflow = contentEl.style.overflow;
 
-    // ✅ Find all fixed/sticky elements and compensate them too
-    const fixedElements = document.querySelectorAll('[data-fixed-element]');
-    const originalPaddings = new Map<Element, string>();
-    const originalRights = new Map<Element, string>();
-    
-    fixedElements.forEach(element => {
-      if (element instanceof HTMLElement) {
-        const computedStyle = window.getComputedStyle(element);
-        const isFixed = computedStyle.position === 'fixed';
-        const hasRightZero = computedStyle.right === '0px';
-        
-        // Store original values for cleanup
-        originalPaddings.set(element, element.style.paddingRight);
-        originalRights.set(element, element.style.right);
-        
-        // For fixed elements with right: 0, adjust right position instead of padding
-        // This prevents the element from expanding and shifting its content
-        if (isFixed && hasRightZero && scrollbarWidth > 0) {
-          element.style.right = `${scrollbarWidth}px`;
-        } else {
-          // For other fixed/sticky elements, use padding compensation
-          element.style.paddingRight = `${scrollbarWidth}px`;
-        }
-      }
-    });
+    // Lock the content scroll area
+    contentEl.style.overflow = 'hidden';
 
-    // ✅ Cleanup on unmount or when isLocked changes to false
     return () => {
-      // Restore body styles
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
-      
-      // Restore fixed elements styles
-      fixedElements.forEach(element => {
-        if (element instanceof HTMLElement) {
-          const originalPadding = originalPaddings.get(element);
-          const originalRight = originalRights.get(element);
-          
-          element.style.paddingRight = originalPadding || '';
-          element.style.right = originalRight || '';
-        }
-      });
+      contentEl.style.overflow = originalOverflow;
     };
   }, [isLocked]);
 }

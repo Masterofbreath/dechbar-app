@@ -16,7 +16,7 @@
  */
 
 import { createPortal } from 'react-dom';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { TopNav } from '../components/navigation/TopNav';
 import { BottomNav } from '../components/navigation/BottomNav';
 import { StickyAudioPlayer } from '../components/AudioPlayer';
@@ -56,6 +56,17 @@ export function AppLayout({
 }: AppLayoutProps) {
   const { currentTrack, mode } = useAudioPlayerStore();
   const hasPlayer = !!currentTrack && mode === 'sticky';
+
+  // iOS PWA fix: force layout recalculation after first render.
+  // In standalone PWA mode, iOS sometimes computes position:fixed coordinates
+  // before viewport-fit=cover is fully applied → BottomNav appears with a gap
+  // on initial load. Reading a layout property via rAF triggers iOS to
+  // recalculate and repaint fixed elements with correct viewport metrics.
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      void document.documentElement.getBoundingClientRect();
+    });
+  }, []);
 
   return (
     <div className={`app-layout${hasPlayer ? ' app-layout--has-player' : ''}`}>
