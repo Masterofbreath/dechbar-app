@@ -31,8 +31,16 @@
   flex: 1 1 0; /* flex-basis 0 forces correct calculation */
   min-height: 0; /* Allow flexbox to constrain overflow */
   overflow: hidden auto;
-  -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
-  
+
+  /* ZÁMĚRNĚ ODSTRANĚNO: -webkit-overflow-scrolling: touch
+     Tato deprecated vlastnost (deprecated 2018, iOS 13+) vytváří nativní UIScrollView
+     vrstvu pro tento element. iOS WebKit pak INICÁLNĚ pozicuje position:fixed potomky
+     (BottomNav, TopNav) relativně k UIScrollView origin místo viewportu.
+     Výsledek: BottomNav visí s černým pruhem pod ním při startu PWA nebo po zavření
+     session modalu. Po prvním scrollu iOS přepočítá a bug zmizí → klasický "scroll to fix".
+     Na iOS 13+ má overflow:auto momentum scrolling automaticky — tato vlastnost je no-op
+     a způsobuje pouze bug. */
+
   /* FIXED: Space for TopNav at top, BottomNav is flex item */
   padding-top: calc(
     64px +                              /* TopNav height */

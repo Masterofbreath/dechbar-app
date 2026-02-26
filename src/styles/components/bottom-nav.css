@@ -192,6 +192,12 @@
     width: 100% !important;
     height: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
     padding-bottom: env(safe-area-inset-bottom, 0) !important;
+
+    /* Force vlastní GPU compositing vrstva.
+       iOS vždy pozicuje self-composited prvky relativně k viewportu,
+       nikdy relativně k rodičovskému scroll kontextu.
+       Belt-and-suspenders fix vedle odstranění -webkit-overflow-scrolling:touch. */
+    transform: translateZ(0);
   }
 
   /* ::after odstraněn — nav sám pokrývá celou oblast až na okraj displeje */
