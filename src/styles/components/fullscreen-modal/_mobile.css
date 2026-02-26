@@ -44,10 +44,11 @@
   }
 
   /* Close button je position:absolute relativně k TopBaru.
-     Bez korekce sedí na top:16px = za status barem v PWA (0–47px zóna).
-     Posuneme ho dolů o env(safe-area-inset-top) do viditelné oblasti. */
+     Správný výpočet pro vertikální zarovnání s title/badge (flex-centered v 60px zóně):
+     top = env(safe-area-inset-top) + (60px content - 44px button) / 2 = env() + 8px
+     → button střed = env() + 30px = shoduje se s flex středem ostatních elementů. */
   .fullscreen-modal__top-bar .close-button {
-    top: calc(16px + env(safe-area-inset-top, 0px));
+    top: calc(8px + env(safe-area-inset-top, 0px));
   }
   
   .fullscreen-modal__bottom-bar {

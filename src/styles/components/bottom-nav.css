@@ -11,7 +11,7 @@
   /* Desktop: relative (flex child v AppLayout)
      Mobile/PWA: fixed (přes media query níže) */
   position: relative;
-  z-index: 100;
+  z-index: 1000;
 
   /* Layout — height je ČISTÁ výška obsahu, safe area se řeší
      přes bottom offset na mobilu (viz @media níže) */
@@ -176,33 +176,25 @@
    ============================================================ */
 
 @media (width <= 768px) {
-  /* ✅ PWA/BROWSER FIX: Nav sedí přesně NAD safe area zónou.
-     bottom: env(safe-area-inset-bottom) → nav se nezasune pod home indicator.
-     ::after pseudo-element vyplní mezeru pod navem stejnou barvou.
-     Výsledek: nav content je vždy přesně 72px, items se vždy centrují
-     do 72px — konzistentní v prohlížeči i PWA. */
+  /* ✅ PWA/BROWSER FIX: "Extend to edge" přístup.
+     bottom: 0 → nav vždy sedí na fyzickém okraji displeje (stabilní, bez jumpů).
+     height = 72px (obsah) + env(safe-area-inset-bottom) (home indicator zóna).
+     padding-bottom = env(safe-area-inset-bottom) → flex items se centrují
+     v 72px content boxu, spodní padding je pozadí táhnoucí se na okraj displeje.
+     Výhody oproti bottom:env() + ::after:
+     - Žádný viditelný separator (border-top na ::after)
+     - Žádný timing jump (bottom:0 je vždy konstantní, nemění se s env()) */
   .bottom-nav {
     position: fixed !important;
-    bottom: env(safe-area-inset-bottom) !important;
+    bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    height: 72px !important;
-    padding-bottom: 0 !important;
+    height: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
   }
 
-  /* Vyplnění mezery mezi nav a dolním okrajem obrazovky (home indicator zóna) */
-  .bottom-nav::after {
-    content: '';
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-bottom);
-    background: var(--color-surface);
-    border-top: 1px solid var(--color-border);
-    z-index: 99;
-  }
+  /* ::after odstraněn — nav sám pokrývá celou oblast až na okraj displeje */
 
   .bottom-nav__tab {
     flex: 0 0 80px;
