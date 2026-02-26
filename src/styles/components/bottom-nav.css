@@ -8,21 +8,26 @@
    ============================================================ */
 
 .bottom-nav {
-  /* Desktop: relative (flex child v AppLayout)
-     Mobile/PWA: fixed (přes media query níže) */
-  position: relative;
+  /* React Portal: renderuje se jako přímé dítě <body>, nikdy není flex item.
+     position:fixed je vždy viewport-relative — žádný scroll/overflow kontext
+     v app-layout ho nemůže ovlivnit. iOS WebKit UIScrollView bug eliminován. */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 1000;
 
-  /* Layout — height je ČISTÁ výška obsahu, safe area se řeší
-     přes bottom offset na mobilu (viz @media níže) */
-  height: 72px;
-  padding-bottom: 0;
+  /* height = 72px (obsah) + env(safe-area-inset-bottom) (home indicator).
+     padding-bottom = env(...) → flex items centrované v 72px content boxu,
+     spodní padding plynule vyplňuje home indicator zónu barvou navu. */
+  height: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0);
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  flex-shrink: 0;
 }
 
 /* ============================================================
@@ -175,33 +180,8 @@
    Mobile — Fixed Position + Safe Area Fix
    ============================================================ */
 
+/* Mobile — tab widths */
 @media (width <= 768px) {
-  /* ✅ PWA/BROWSER FIX: "Extend to edge" přístup.
-     bottom: 0 → nav vždy sedí na fyzickém okraji displeje (stabilní, bez jumpů).
-     height = 72px (obsah) + env(safe-area-inset-bottom) (home indicator zóna).
-     padding-bottom = env(safe-area-inset-bottom) → flex items se centrují
-     v 72px content boxu, spodní padding je pozadí táhnoucí se na okraj displeje.
-     Výhody oproti bottom:env() + ::after:
-     - Žádný viditelný separator (border-top na ::after)
-     - Žádný timing jump (bottom:0 je vždy konstantní, nemění se s env()) */
-  .bottom-nav {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    height: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0) !important;
-
-    /* Force vlastní GPU compositing vrstva.
-       iOS vždy pozicuje self-composited prvky relativně k viewportu,
-       nikdy relativně k rodičovskému scroll kontextu.
-       Belt-and-suspenders fix vedle odstranění -webkit-overflow-scrolling:touch. */
-    transform: translateZ(0);
-  }
-
-  /* ::after odstraněn — nav sám pokrývá celou oblast až na okraj displeje */
-
   .bottom-nav__tab {
     flex: 0 0 80px;
   }

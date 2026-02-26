@@ -15,10 +15,12 @@
  * @updated 2026-02-05 - Added StickyAudioPlayer integration
  */
 
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import { TopNav } from '../components/navigation/TopNav';
 import { BottomNav } from '../components/navigation/BottomNav';
 import { StickyAudioPlayer } from '../components/AudioPlayer';
+import { useAudioPlayerStore } from '../components/AudioPlayer/store';
 
 export interface AppLayoutProps {
   /**
@@ -52,15 +54,18 @@ export function AppLayout({
   transparentTopNav = false,
   hideBottomNav = false 
 }: AppLayoutProps) {
+  const { currentTrack, mode } = useAudioPlayerStore();
+  const hasPlayer = !!currentTrack && mode === 'sticky';
+
   return (
-    <div className="app-layout">
+    <div className={`app-layout${hasPlayer ? ' app-layout--has-player' : ''}`}>
       <TopNav transparent={transparentTopNav} />
       
       <main className="app-layout__content" role="main">
         {children}
       </main>
       
-      {!hideBottomNav && <BottomNav />}
+      {!hideBottomNav && createPortal(<BottomNav />, document.body)}
       
       {/* Sticky Audio Player (global, shows when track playing) */}
       <StickyAudioPlayer />

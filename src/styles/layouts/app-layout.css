@@ -41,12 +41,13 @@
      Na iOS 13+ má overflow:auto momentum scrolling automaticky — tato vlastnost je no-op
      a způsobuje pouze bug. */
 
-  /* FIXED: Space for TopNav at top, BottomNav is flex item */
+  /* FIXED: Space for TopNav at top; BottomNav je nyní React Portal (position:fixed),
+     proto musí desktop padding-bottom zahrnovat jeho výšku 72px. */
   padding-top: calc(
     64px +                              /* TopNav height */
     env(safe-area-inset-top)           /* iOS notch */
   );
-  padding-bottom: var(--spacing-4);    /* 16px breathing space only */
+  padding-bottom: calc(72px + var(--spacing-4));    /* 72px BottomNav + 16px breathing */
 }
 
 /* ============================================================

@@ -27,27 +27,42 @@
   padding-right: env(safe-area-inset-right);
 }
 
-/* Fixed position: above BottomNav */
+/* Fixed position: above BottomNav
+   BottomNav je vždy position:fixed (React Portal), výška 72px.
+   Desktop a mobile: bottom:72px posazuje player přímo nad BottomNav. */
 .sticky-player--positioned {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 60px;
+  bottom: 72px;
   z-index: 998;
-  transition: height 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-/* ── Collapsed state ── */
+@media (width <= 768px) {
+  .sticky-player--positioned {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Collapsed state (jediný stav — expand odstraněn) ── */
 
 .sticky-player__collapsed {
   position: relative;
   display: flex;
   align-items: center;
   height: 64px;
-  padding: 0 12px 0 14px;
-  gap: 12px;
-  cursor: pointer;
+  padding: 0 8px 0 12px;
+  gap: 8px;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Cover image uvnitř music-icon span */
+.sticky-player__cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
 }
 
 /* Gold music note icon */
@@ -62,6 +77,24 @@
   align-items: center;
   justify-content: center;
   color: var(--color-accent);
+  overflow: hidden;
+}
+
+/* Kliknutelná varianta — jemný hover efekt */
+.sticky-player__music-icon--link {
+  cursor: pointer;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+}
+
+@media (hover: hover) {
+  .sticky-player__music-icon--link:hover {
+    opacity: 0.82;
+    box-shadow: 0 0 0 2px rgb(214 162 58 / 40%);
+  }
+}
+
+.sticky-player__music-icon--link:active {
+  opacity: 0.65;
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
@@ -87,9 +120,245 @@
   line-height: 1.3;
 }
 
-/* Play/pause wrapper — stops propagation to prevent expand */
-.sticky-player__play-wrap {
+/* ── Play/Pause button — round gold ── */
+
+.sticky-player__play-btn {
   flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #121212;
+  box-shadow: 0 2px 10px rgb(214 162 58 / 40%);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
+}
+
+@media (hover: hover) {
+  .sticky-player__play-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 14px rgb(214 162 58 / 55%);
+  }
+}
+
+.sticky-player__play-btn:active {
+  transform: scale(0.92);
+}
+
+.sticky-player__play-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading spinner animation */
+.sticky-player__spinner {
+  animation: sticky-spin 0.8s linear infinite;
+}
+
+@keyframes sticky-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Generic icon button (mute, favourite, close) ── */
+
+.sticky-player__icon-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+
+  /* Transition pouze na zařízeních s kurzorem — na mobilu by způsobila
+     "hover ghost" efekt (button zůstane bílý po tapnutí). */
+  transition: none;
+}
+
+/* Hover pouze na zařízeních s reálným kurzorem (desktop) */
+@media (hover: hover) {
+  .sticky-player__icon-btn {
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+
+  .sticky-player__icon-btn--dim:hover {
+    color: var(--color-text-primary);
+  }
+}
+
+/* Ztlumená varianta (volume, favourite v neaktivním stavu) */
+.sticky-player__icon-btn--dim {
+  color: var(--color-text-tertiary);
+}
+
+/* Muted stav — teal accent */
+.sticky-player__icon-btn--muted {
+  color: var(--color-primary);
+}
+
+/* Oblíbené — gold */
+.sticky-player__icon-btn--fav-active {
+  color: var(--color-accent);
+}
+
+/* :active — okamžitý vizuální feedback bez zpoždění (touch i desktop) */
+.sticky-player__icon-btn:active {
+  transform: scale(0.88);
+  transition: none;
+}
+
+/* ── Volume — desktop slider + icon, mobile jen mute btn ── */
+
+.sticky-player__vol-desktop {
+  flex-shrink: 0;
+  display: none; /* hidden on mobile */
+  align-items: center;
+  gap: 4px;
+}
+
+.sticky-player__vol-mobile {
+  display: flex; /* shown on mobile */
+}
+
+@media (width >= 769px) {
+  .sticky-player__vol-desktop {
+    display: flex;
+  }
+
+  .sticky-player__vol-mobile {
+    display: none;
+  }
+}
+
+/* Volume range input */
+.sticky-player__vol-slider {
+  width: 60px;
+  height: 3px;
+  appearance: none;
+  border-radius: 2px;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  flex-shrink: 0;
+
+  /* background se nastavuje inline stylem (gradient) */
+}
+
+.sticky-player__vol-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.sticky-player__vol-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.sticky-player__vol-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
+/* ── Subtitle (název programu pod title) ── */
+
+.sticky-player__track-subtitle {
+  display: none; /* na mobile schován — šetříme prostor */
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  margin: 0;
+}
+
+@media (width >= 769px) {
+  .sticky-player__track-subtitle {
+    display: block;
+  }
+}
+
+/* ── Time block — přímý flex sibling collapsed containeru ──
+   align-items: center na rodičovi zaručuje dokonalou horizontální centráciu
+   s mute/fav/play buttony na obou breakpointech. */
+
+.sticky-player__time-block {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+/* Čas — společné */
+.sticky-player__track-time {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* Elapsed — jen desktop */
+.sticky-player__track-time--elapsed {
+  display: none;
+}
+
+/* Oddělovač elapsed/remaining — jen desktop */
+.sticky-player__track-time-sep {
+  font-size: 0.6rem;
+  color: var(--color-text-tertiary);
+  opacity: 0.4;
+  flex-shrink: 0;
+  display: none;
+}
+
+@media (width >= 769px) {
+  .sticky-player__track-time--elapsed {
+    display: inline;
+  }
+
+  .sticky-player__track-time-sep {
+    display: inline;
+  }
+}
+
+/* ── Mobile play button — jen ikona, bez zlatého kruhu ── */
+@media (width <= 768px) {
+  .sticky-player__play-btn {
+    background: transparent;
+    box-shadow: none;
+    color: var(--color-accent);
+    width: 32px;
+    height: 32px;
+  }
+
+  .sticky-player__play-btn:hover {
+    filter: none;
+    box-shadow: none;
+  }
+
+  .sticky-player__play-btn svg {
+    width: 22px;
+    height: 22px;
+  }
 }
 
 /* Close button */
@@ -122,7 +391,37 @@
   height: 18px;
 }
 
-/* Gold progress bar — absolute bottom edge */
+/* Close button na mobile schován — zavíráme swipem doleva */
+@media (width <= 768px) {
+  .sticky-player__close-btn--collapsed {
+    display: none;
+  }
+}
+
+/* Swipe-to-close — vizuální feedback při tahu doleva */
+.sticky-player--swiping {
+  transition: none !important;
+}
+
+.sticky-player--positioned {
+  transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.25s ease;
+}
+
+/* Progress wrap — drží progress bar + invisible scrubber overlay.
+   Výška 16px: dost velký touch target, dot se celý vejde nad BottomNav. */
+.sticky-player__progress-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 16px;
+  cursor: pointer;
+
+  /* Přesahuje nad player — dot je celý viditelný nad BottomNavem */
+  overflow: visible;
+}
+
+/* Gold progress bar — vizuální fill. Nalepený na spodní hranu playeru. */
 .sticky-player__progress-bar {
   position: absolute;
   bottom: 0;
@@ -134,77 +433,46 @@
   pointer-events: none;
 }
 
-/* ── Expanded state ── */
-
-.sticky-player--expanded {
-  height: 380px;
+/* Progress bar track (background) */
+.sticky-player__progress-wrap::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgb(255 255 255 / 8%);
 }
 
-.sticky-player__expanded-inner {
-  display: flex;
-  flex-direction: column;
+/* Invisible scrubber — přes celý wrap, ovládá seek */
+.sticky-player__progress-scrubber {
+  position: absolute;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  padding: 16px;
-  gap: 12px;
-}
-
-.sticky-player__expanded-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sticky-player__expanded-title {
-  flex: 1;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
+  opacity: 0;
+  cursor: pointer;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 0;
+  appearance: none;
+  border: none;
+  background: transparent;
+  z-index: 2;
 }
 
-.sticky-player__cover {
-  width: 120px;
-  height: 120px;
-  border-radius: 12px;
-  object-fit: cover;
-  box-shadow: 0 8px 20px rgb(0 0 0 / 40%);
-  align-self: center;
+/* Na hover: mírně zvýraznit čáru */
+.sticky-player__progress-wrap:hover .sticky-player__progress-bar {
+  height: 3px;
+  transition: height 0.1s ease;
 }
 
-.sticky-player__waveform {
-  flex: 1;
-}
+/* Dot odstraněn — samotný gold fill baru je dostatečným progress indikátorem.
+   Scrubbing funguje přes invisible input overlay (z-index: 2). */
 
-.sticky-player__expanded-controls {
-  display: flex;
-  align-items: center;
-  margin-top: auto;
-}
+/* Strip odstraněn — progress bar je nalepený přímo na spodní hranu playeru.
+   Dot byl odebrán → strip již není potřeba. */
 
-.sticky-player__expanded-controls-spacer {
-  flex: 1;
-}
-
-.sticky-player__expanded-controls-end {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-}
-
-@keyframes slide-up {
-  from {
-    height: 64px;
-    opacity: 0.9;
-  }
-
-  to {
-    height: 380px;
-    opacity: 1;
-  }
-}
+/* Expanded state byl odstraněn — StickyPlayer je vždy jen collapsed řádek */
 
 /* ============================================================
    WAVEFORM
