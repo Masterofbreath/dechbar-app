@@ -35,12 +35,19 @@
   .fullscreen-modal__top-bar {
     /* height = 60px (obsah) + env(safe-area-inset-top) (status bar area).
        V PWA black-translucent: 60 + 47 = 107px. V browser: 60 + 0 = 60px.
-       Díky border-box + align-items:center se obsah (title, close) centruje
-       ve spodních 60px (content box), tedy vždy pod status barem. */
+       align-items: center centruje v content boxu (po odečtení padding-top),
+       tedy title a close sedí vždy v 60px viditelném prostoru pod status barem. */
     height: calc(var(--fullscreen-modal-top-bar-height-mobile) + env(safe-area-inset-top, 0px));
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     padding-top: max(16px, env(safe-area-inset-top));
+  }
+
+  /* Close button je position:absolute relativně k TopBaru.
+     Bez korekce sedí na top:16px = za status barem v PWA (0–47px zóna).
+     Posuneme ho dolů o env(safe-area-inset-top) do viditelné oblasti. */
+  .fullscreen-modal__top-bar .close-button {
+    top: calc(16px + env(safe-area-inset-top, 0px));
   }
   
   .fullscreen-modal__bottom-bar {

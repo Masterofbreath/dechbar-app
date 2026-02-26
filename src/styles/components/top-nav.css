@@ -11,9 +11,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
-  padding: 0 var(--spacing-4); /* 16px horizontal */
-  padding-top: env(safe-area-inset-top); /* iOS notch */
+
+  /* height = 64px (obsah) + env(safe-area-inset-top) (status bar zóna).
+     V PWA black-translucent: 64 + 47 = 111px. V browser: 64 + 0 = 64px.
+     align-items: center centruje v content boxu (po odečtení padding-top),
+     tedy obsah (avatar, ikony) sedí vždy v 64px viditelném prostoru pod status barem. */
+  height: calc(64px + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0) var(--spacing-4) 0 var(--spacing-4);
   background: transparent; /* Transparent by default */
   position: fixed; /* Fixed to float above content */
   top: 0;
@@ -47,11 +51,11 @@
   gap: 0; /* Buttons touch inside pill */
   
   /* Liquid glass pill - matches KP Display */
-  background: rgba(30, 30, 30, 0.03);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgb(30 30 30 / 3%);
+  border: 1.5px solid rgb(255 255 255 / 10%);
   border-radius: var(--radius-full);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   padding: 4px; /* Inner padding for buttons */
   transition: all 0.2s ease;
 }
@@ -180,17 +184,19 @@
   justify-content: center;
   padding: 0 4px;
   box-shadow: 0 0 0 2px var(--color-background);
-  animation: badgePop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: badge-pop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes badgePop {
+@keyframes badge-pop {
   0% {
     transform: scale(0);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -214,7 +220,7 @@
    ============================================================ */
 
 /* Bell swing animation - realistic ring */
-@keyframes bellRing {
+@keyframes bell-ring {
   0%, 100% { transform: rotate(0deg); }
   10% { transform: rotate(15deg); }
   20% { transform: rotate(-12deg); }
@@ -230,9 +236,11 @@
    ============================================================ */
 
 /* Very narrow screens - tighter spacing */
-@media (max-width: 375px) {
+@media (width <= 375px) {
   .top-nav {
-    padding: 0 var(--spacing-3); /* Reduce from 4 */
+    /* Longhand místo shorthand — padding: shorthand by přepsal padding-top
+       a odstranil safe-area-inset-top na úzkých telefonech. */
+    padding: env(safe-area-inset-top, 0) var(--spacing-3) 0 var(--spacing-3);
   }
   
   .top-nav__left,
@@ -253,8 +261,8 @@
 /* Desktop/trackpad only - NO hover on touch devices */
 @media (hover: hover) and (pointer: fine) {
   .top-nav__right:hover {
-    background: rgba(44, 190, 198, 0.05);
-    border-color: rgba(44, 190, 198, 0.2);
+    background: rgb(44 190 198 / 5%);
+    border-color: rgb(44 190 198 / 20%);
   }
   
   .top-nav__avatar-button:hover::before {
@@ -279,7 +287,7 @@
   }
   
   .top-nav__bell-button:hover svg {
-    animation: bellRing 0.8s ease-in-out;
+    animation: bell-ring 0.8s ease-in-out;
     transform-origin: top center;
   }
 }
@@ -303,8 +311,8 @@
 /* When Settings drawer is open, disable ALL hover effects in TopNav */
 body.settings-open .top-nav__right,
 body.settings-open .top-nav__right:hover {
-  background: rgba(30, 30, 30, 0.03); /* Reset to default */
-  border-color: rgba(255, 255, 255, 0.1); /* Reset border */
+  background: rgb(30 30 30 / 3%); /* Reset to default */
+  border-color: rgb(255 255 255 / 10%); /* Reset border */
 }
 
 /* Disable Settings button hover (gear icon) */
