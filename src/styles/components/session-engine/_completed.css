@@ -38,15 +38,16 @@
 /* Celebration title in TopBar - gold gradient */
 .completion-celebration {
   background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
-  -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-size: 28px; /* ✅ Larger for celebration (was 24px) */
+  font-size: 28px;
   font-weight: var(--font-weight-bold);
-  text-align: center; /* ✅ Centered, Apple Watch style */
+  text-align: center;
   display: block;
   width: 100%;
-  margin-bottom: 16px; /* ✅ NEW v2.42.12: Spacing below title */
+
+  /* No margin — TopBar flex centering handles vertical alignment */
 }
 
 /* Session completed container */
@@ -85,14 +86,14 @@
 }
 
 /* Desktop adjustments - breathing space at top */
-@media (min-width: 769px) {
+@media (width >= 769px) {
   .completion-content {
     padding-top: 24px !important; /* ✅ v2.42.14: Top breathing space (matches border-radius) */
   }
 }
 
 /* Mobile adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .completion-content {
     padding: 0 20px !important;
   }
@@ -111,11 +112,30 @@
   }
 }
 
-/* ✅ Center TopBar title on completion screen */
-.session-engine-modal__content--completion .fullscreen-modal__title {
-  text-align: center;
+/* ✅ Center TopBar content on completion screen (no close button → center title) */
+.session-engine-modal__content--completion .fullscreen-modal__top-bar {
   justify-content: center;
-  width: 100%;
+}
+
+.session-engine-modal__content--completion .fullscreen-modal__title {
+  flex: 1;
+  text-align: center;
+  margin-right: 0;
+}
+
+/* ─── Completion BottomBar: CTA "Uložit & Zavřít" ──────── */
+
+/* Override fixed height — let the button determine the height */
+.session-engine-modal__content--completion .fullscreen-modal__bottom-bar {
+  height: auto;
+  padding: 12px 24px;
+}
+
+@media (width <= 768px) {
+  .session-engine-modal__content--completion .fullscreen-modal__bottom-bar {
+    height: auto;
+    padding: 12px max(20px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  }
 }
 
 /* ============================================================

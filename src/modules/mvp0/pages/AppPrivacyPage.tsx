@@ -13,9 +13,11 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LegalPageLayout } from '@/modules/public-web/components/legal/LegalPageLayout';
 import { PRIVACY_SECTIONS, PRIVACY_LAST_UPDATED } from '@/modules/public-web/components/legal/PrivacyContent';
+import { useSwipeBack } from '@/platform/hooks/useSwipeBack';
 
 export function AppPrivacyPage() {
   const navigate = useNavigate();
+  const swipeRef = useSwipeBack<HTMLDivElement>();
 
   useEffect(() => {
     document.title = 'Ochrana osobních údajů | DechBar';
@@ -23,7 +25,7 @@ export function AppPrivacyPage() {
   }, []);
 
   return (
-    <div className="app-legal-page">
+    <div className="app-legal-page" ref={swipeRef}>
       <button
         className="app-legal-page__back"
         onClick={() => navigate(-1)}

@@ -22,7 +22,8 @@ interface Step2ProgramProps {
   state: ProgramWizardState;
   category: AkademieCategory | null;
   onChange: (update: Partial<ProgramWizardState['program']>) => void;
-  onCreated: (result: ProgramWizardState['program']) => void;
+  onCreated: (result: Partial<ProgramWizardState['program']>) => void;
+  onNext: () => void;
   onBack: () => void;
 }
 
@@ -37,7 +38,7 @@ interface CreateProgress {
   ecmailError: string | null;
 }
 
-export function Step2Program({ state, category, onChange, onCreated, onBack }: Step2ProgramProps) {
+export function Step2Program({ state, category, onChange, onCreated, onNext, onBack }: Step2ProgramProps) {
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [progress, setProgress] = useState<CreateProgress | null>(null);
@@ -105,6 +106,18 @@ export function Step2Program({ state, category, onChange, onCreated, onBack }: S
         category_id: categoryId,
       });
 
+      // Store result in wizard state immediately
+      onCreated({
+        created_module_id: result.moduleId,
+        stripe_product_id: result.stripeProductId ?? undefined,
+        stripe_price_id: result.stripePriceId ?? undefined,
+        ecomail_list_in_id: result.ecmailListInId ?? undefined,
+        ecomail_list_before_id: result.ecmailListBeforeId ?? undefined,
+        stripeError: result.stripeError ?? null,
+        ecmailError: result.ecmailError ?? null,
+      });
+
+      // Show done state with status — user must click "Pokračovat" to advance
       setProgress({
         step: 'done',
         dbDone: true,
@@ -112,15 +125,6 @@ export function Step2Program({ state, category, onChange, onCreated, onBack }: S
         stripeError: result.stripeError ?? null,
         ecmailDone: !result.ecmailError,
         ecmailError: result.ecmailError ?? null,
-      });
-
-      onCreated({
-        ...state.program,
-        created_module_id: result.moduleId,
-        stripe_product_id: result.stripeProductId ?? undefined,
-        stripe_price_id: result.stripePriceId ?? undefined,
-        ecomail_list_in_id: result.ecmailListInId ?? undefined,
-        ecomail_list_before_id: result.ecmailListBeforeId ?? undefined,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Chyba při vytváření programu');
@@ -160,21 +164,27 @@ export function Step2Program({ state, category, onChange, onCreated, onBack }: S
   }
 
   if (progress?.step === 'done') {
+    const hasPartialError = !!(progress.stripeError || progress.ecmailError);
     return (
       <div className="aa-form" style={{ alignItems: 'center', padding: '1.5rem 0' }}>
         <div style={{ fontSize: '1.0625rem', fontWeight: 600, color: '#2cbe5a', marginBottom: 16 }}>
-          Program vytvořen!
+          ✓ Program vytvořen v databázi
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 400 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 440, marginBottom: 16 }}>
           <StatusRow done={true} label="Databáze" />
-          <StatusRow done={progress.stripeDone} error={progress.stripeError} label="Stripe" />
-          <StatusRow done={progress.ecmailDone} error={progress.ecmailError} label="Ecomail" />
+          <StatusRow done={progress.stripeDone} error={progress.stripeError} label="Stripe produkt" />
+          <StatusRow done={progress.ecmailDone} error={progress.ecmailError} label="Ecomail listy" />
         </div>
-        {(progress.stripeError || progress.ecmailError) && (
-          <div className="aa-error-banner" style={{ marginTop: 16, width: '100%' }}>
-            Stripe/Ecomail chyby lze doplnit ručně v tabulce programů. Program byl uložen do DB.
+        {hasPartialError && (
+          <div className="aa-error-banner" style={{ marginTop: 0, marginBottom: 16, width: '100%', fontSize: '0.8125rem' }}>
+            Stripe / Ecomail se nepodařilo nastavit automaticky.<br />
+            Zkontroluj konzoli prohlížeče (F12) pro detail chyby.<br />
+            Hodnoty lze doplnit ručně v tabulce programů.
           </div>
         )}
+        <button className="aa-btn aa-btn--primary" onClick={onNext} style={{ alignSelf: 'flex-end' }}>
+          Pokračovat na série →
+        </button>
       </div>
     );
   }

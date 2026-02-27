@@ -12,6 +12,7 @@ import './styles/components/top-nav.css'    // TOP NAV styles
 import './styles/components/bottom-nav.css' // BOTTOM NAV styles
 import './styles/components/kp-display.css' // KP Display widget
 import './styles/components/notification-center.css' // Notification Center
+import './styles/components/tab-carousel.css'        // Tab carousel (apple-style swipe)
 import './styles/components/kp-center.css' // KP Center
 // import './styles/components/kp-static-circle.css' // Removed - using shared BreathingCircle
 import './styles/components/kp-onboarding.css' // KP Onboarding
@@ -33,6 +34,8 @@ import './styles/components/settings-page.css' // Settings page (audio & haptics
 import './styles/layouts/app-layout.css'    // AppLayout wrapper
 import './styles/pages/dnes.css'            // DNES dashboard
 import './styles/pages/cvicit.css'          // CVICIT exercise library
+import './styles/pages/about-page.css'      // About page (/app/about)
+import './styles/pages/app-legal.css'       // In-app legal pages (/app/terms, /app/privacy)
 import './styles/modals.css'  // Base modal styles (shared)
 import './styles/auth.css'    // Auth-specific styles
 import App from './App.tsx'

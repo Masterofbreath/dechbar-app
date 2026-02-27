@@ -13,12 +13,16 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useScrollLock } from '@/platform/hooks';
+import { useAuth } from '@/platform/auth';
+import { Button } from '@/platform/components';
 import { ConfirmModal, FullscreenModal } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
 import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
 import { useAudioCues } from './hooks/useAudioCues';
+import { useIntensityControl } from './hooks/useIntensityControl';
 import { useWakeLock } from '../../hooks/useWakeLock';
 import { useHaptics } from '../../hooks/useHaptics';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
@@ -70,8 +74,10 @@ export function SessionEngineModal({
   const timerRef = useRef<number | null>(null);
   const currentPhaseRef = useRef(currentPhaseIndex);
   
+  const { user } = useAuth();
   const { data: safetyFlags } = useSafetyFlags();
   const completeSession = useCompleteSession();
+  const intensityControl = useIntensityControl({ userId: user?.id });
   
   // Custom hooks
   const { playBell } = useAudioCues(); // Legacy bell sound (fallback)
@@ -82,7 +88,7 @@ export function SessionEngineModal({
   const haptics = useHaptics();
   const breathingCues = useBreathingCues();
   const backgroundMusic = useBackgroundMusic();
-  const { walkingModeEnabled, backgroundMusicEnabled } = useSessionSettings();
+  const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn } = useSessionSettings();
   
   useScrollLock(isOpen);
   
@@ -115,14 +121,14 @@ export function SessionEngineModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skipFlow, sessionState]);
   
-  // ✅ Wake Lock - Keep screen on during active session
+  // ✅ Wake Lock - Keep screen on during active session (respects user preference)
   useEffect(() => {
-    if (sessionState === 'active') {
+    if (sessionState === 'active' && keepScreenOn) {
       wakeLock.request();
     } else {
       wakeLock.release();
     }
-  }, [sessionState]); // FIXED: Removed wakeLock from deps
+  }, [sessionState, keepScreenOn]); // FIXED: Removed wakeLock from deps
   
   // ✅ NEW: Preload audio during countdown
   useEffect(() => {
@@ -195,6 +201,7 @@ export function SessionEngineModal({
         setSessionState('active');
         setSessionStartTime(new Date());
         setCurrentPhaseIndex(0);
+        intensityControl.notifySessionStart();
         breathingCues.playBell('start').catch(() => playBell());
       }
     }, 1000);
@@ -248,6 +255,8 @@ export function SessionEngineModal({
     let breathingIntervalId: number | null = null;
     let currentCyclePosition = 0;
     let isWaitingForCycleEnd = false;
+    // Shared between breathing interval and phase timer (updated each 100ms tick)
+    let effectiveEndOfExhalePos = 0;
     
     // Set instruction based on phase type
     if (currentPhase.type === 'silence') {
@@ -257,59 +266,73 @@ export function SessionEngineModal({
     // Start breathing animation if breathing phase
     if (currentPhase.type === 'breathing' && currentPhase.pattern) {
       const { inhale_seconds, hold_after_inhale_seconds, exhale_seconds, hold_after_exhale_seconds } = currentPhase.pattern;
-      const cycleTime = inhale_seconds + hold_after_inhale_seconds + exhale_seconds + hold_after_exhale_seconds;
+
+      // Cycle tracking: apply multiplier at cycle boundaries (not mid-cycle)
+      // This avoids jarring rhythm changes while preserving smooth animation.
+      let cycleStartTime = Date.now();
+      let localMultiplier = intensityControl.pendingMultiplierRef.current;
       
-      const phaseStartTime = Date.now();
       let lastInstruction = '';
       
       const updateBreathingState = () => {
-        const elapsedTime = (Date.now() - phaseStartTime) / 1000;
-        const cyclePosition = elapsedTime % cycleTime;
-        currentCyclePosition = cyclePosition;
-        
-        
+        // Apply multiplier to this cycle's pattern
+        const effInhale = inhale_seconds * localMultiplier;
+        const effHoldIn = hold_after_inhale_seconds * localMultiplier;
+        const effExhale = exhale_seconds * localMultiplier;
+        const effHoldOut = hold_after_exhale_seconds * localMultiplier;
+        const effCycle = effInhale + effHoldIn + effExhale + effHoldOut;
+
+        const elapsed = (Date.now() - cycleStartTime) / 1000;
+        currentCyclePosition = elapsed;
+        effectiveEndOfExhalePos = effInhale + effHoldIn + effExhale;
+
+        // Cycle boundary: promote pending multiplier and reset cycle clock
+        if (elapsed >= effCycle) {
+          cycleStartTime = Date.now();
+          localMultiplier = intensityControl.pendingMultiplierRef.current;
+          intensityControl.multiplierRef.current = localMultiplier;
+          currentCyclePosition = 0;
+          return; // Skip rendering this tick — fresh cycle starts on next tick
+        }
+
         let newInstruction = '';
-        
-        if (cyclePosition < inhale_seconds) {
+
+        if (elapsed < effInhale) {
           newInstruction = 'NÁDECH';
           if (lastInstruction !== 'NÁDECH') {
-            
-            // ✅ NEW: Trigger haptics + audio cues
             try {
               haptics.trigger('inhale');
               breathingCues.playCue('inhale');
             } catch { /* ignore audio/haptics errors during breathing */ }
-            
-            animateBreathingCircle('inhale', inhale_seconds * 1000);
-            
+
+            animateBreathingCircle('inhale', effInhale * 1000);
+
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--exhale', 'breathing-circle--hold');
               circleRef.current.classList.add('breathing-circle--inhale');
             }
             lastInstruction = 'NÁDECH';
           }
-        } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds) {
-          newInstruction = hold_after_inhale_seconds > 0 ? 'ZADRŽ' : '';
-          if (lastInstruction !== 'ZADRŽ' && hold_after_inhale_seconds > 0) {
-            // ✅ NEW: Trigger haptics + audio cues
+        } else if (elapsed < effInhale + effHoldIn) {
+          newInstruction = effHoldIn > 0 ? 'ZADRŽ' : '';
+          if (lastInstruction !== 'ZADRŽ' && effHoldIn > 0) {
             haptics.trigger('hold');
             breathingCues.playCue('hold');
-            
+
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--exhale');
               circleRef.current.classList.add('breathing-circle--hold');
             }
             lastInstruction = 'ZADRŽ';
           }
-        } else if (cyclePosition < inhale_seconds + hold_after_inhale_seconds + exhale_seconds) {
+        } else if (elapsed < effectiveEndOfExhalePos) {
           newInstruction = 'VÝDECH';
           if (lastInstruction !== 'VÝDECH') {
-            // ✅ NEW: Trigger haptics + audio cues
             haptics.trigger('exhale');
             breathingCues.playCue('exhale');
-            
-            animateBreathingCircle('exhale', exhale_seconds * 1000);
-            
+
+            animateBreathingCircle('exhale', effExhale * 1000);
+
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--hold');
               circleRef.current.classList.add('breathing-circle--exhale');
@@ -317,12 +340,11 @@ export function SessionEngineModal({
             lastInstruction = 'VÝDECH';
           }
         } else {
-          newInstruction = hold_after_exhale_seconds > 0 ? 'ZADRŽ' : '';
-          if (lastInstruction !== 'ZADRŽ' && hold_after_exhale_seconds > 0) {
-            // ✅ NEW: Trigger haptics + audio cues (second hold)
+          newInstruction = effHoldOut > 0 ? 'ZADRŽ' : '';
+          if (lastInstruction !== 'ZADRŽ' && effHoldOut > 0) {
             haptics.trigger('hold');
             breathingCues.playCue('hold');
-            
+
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--exhale');
               circleRef.current.classList.add('breathing-circle--hold');
@@ -330,11 +352,9 @@ export function SessionEngineModal({
             lastInstruction = 'ZADRŽ';
           }
         }
-        
-        
+
         setCurrentInstruction(newInstruction);
       };
-      
       
       breathingIntervalId = window.setInterval(updateBreathingState, 100);
     }
@@ -347,9 +367,14 @@ export function SessionEngineModal({
         if (prev <= 1) {
           
           if (currentPhase.type === 'breathing' && currentPhase.pattern) {
-            const { inhale_seconds, hold_after_inhale_seconds, exhale_seconds } = currentPhase.pattern;
-            const endOfExhalePosition = inhale_seconds + hold_after_inhale_seconds + exhale_seconds;
-            
+            // effectiveEndOfExhalePos is updated every 100ms by updateBreathingState.
+            // Fallback to raw pattern if breathing loop hasn't started yet (edge case).
+            const endOfExhalePosition = effectiveEndOfExhalePos > 0
+              ? effectiveEndOfExhalePos
+              : currentPhase.pattern.inhale_seconds
+                + currentPhase.pattern.hold_after_inhale_seconds
+                + currentPhase.pattern.exhale_seconds;
+
             if (currentCyclePosition > 0.5 && currentCyclePosition < endOfExhalePosition && !isWaitingForCycleEnd) {
               isWaitingForCycleEnd = true;
               return 0;
@@ -410,11 +435,12 @@ export function SessionEngineModal({
     setCurrentPhaseIndex(0);
     setMoodBefore(null);
     setMoodAfter(null);
+    intensityControl.reset();
     
     onClose();
-  }, [sessionState, onClose, cleanupAnimation]);
+  }, [sessionState, onClose, cleanupAnimation, intensityControl]);
   
-  // Confirm close during active session
+  // Confirm close during active session (abandoned session — discard intensity events)
   const confirmClose = useCallback(() => {
     cleanupAnimation();
     if (timerRef.current) window.clearInterval(timerRef.current);
@@ -423,9 +449,10 @@ export function SessionEngineModal({
     setCurrentPhaseIndex(0);
     setMoodBefore(null);
     setMoodAfter(null);
+    intensityControl.reset(); // Discards pending events for abandoned session
     
     onClose();
-  }, [onClose, cleanupAnimation]);
+  }, [onClose, cleanupAnimation, intensityControl]);
   
   // Share completed exercise - ODSTRANĚNO (přidáme později s visual presets)
   // TODO: Implementovat share feature s custom vizuálním presetem
@@ -441,7 +468,7 @@ export function SessionEngineModal({
         ? (4 - difficultyRating) + 1  // 1→5, 2→3, 3→1
         : undefined;
       
-      await completeSession.mutateAsync({
+      const session = await completeSession.mutateAsync({
         exercise_id: exercise.id,
         started_at: sessionStartTime,
         completed_at: new Date(),
@@ -450,8 +477,15 @@ export function SessionEngineModal({
         mood_after: moodAfter || undefined,
         quality_rating: qualityRating, // DB field (mapped from difficulty)
         notes: notes.trim() || undefined,
+        final_intensity_multiplier: intensityControl.multiplierRef.current,
       });
-      
+
+      // Flush intensity events after session_id is available (fire-and-forget)
+      if (session?.id) {
+        void intensityControl.flushEvents(session.id);
+      }
+
+      intensityControl.reset();
       onClose();
     } catch (error) {
       console.error('Error saving session:', error);
@@ -464,14 +498,15 @@ export function SessionEngineModal({
   // =====================================================
   
   if (isOpen && safetyFlags && !safetyFlags.questionnaire_completed) {
-    return (
+    return createPortal(
       <SafetyQuestionnaire
         isOpen={isOpen}
         onClose={onClose}
         onComplete={() => {
           setSessionState('idle');
         }}
-      />
+      />,
+      document.body
     );
   }
   
@@ -481,7 +516,7 @@ export function SessionEngineModal({
   // RENDER: Session States
   // =====================================================
   
-  return (
+  return createPortal(
     <div className="session-engine-modal" role="dialog" aria-modal="true">
       <div className="session-engine-modal__overlay" onClick={handleClose} />
       
@@ -583,9 +618,15 @@ export function SessionEngineModal({
                 currentPhase={currentPhase}
                 currentPhaseIndex={currentPhaseIndex}
                 totalPhases={totalPhases}
-                phaseTimeRemaining={phaseTimeRemaining}
                 currentInstruction={currentInstruction}
                 circleRef={circleRef as React.RefObject<HTMLDivElement>}
+                {...(!isProtocol(exercise) && {
+                  intensityStep: intensityControl.intensityStep,
+                  canIncrease: intensityControl.canIncrease,
+                  canDecrease: intensityControl.canDecrease,
+                  onIncrease: intensityControl.handleIncrease,
+                  onDecrease: intensityControl.handleDecrease,
+                })}
               />
               
               {/* ✅ NEW: Floating "Další:" preview at bottom of ContentZone (Option A) */}
@@ -596,8 +637,12 @@ export function SessionEngineModal({
               )}
             </FullscreenModal.ContentZone>
             
-            <FullscreenModal.BottomBar>
-              {/* ✅ ONLY progress bar - clean, predictable, always visible */}
+            <FullscreenModal.BottomBar className="session-active-bottom-bar">
+              {/* Phase countdown — right-aligned above progress bar (desktop)
+                  or inline at end of progress bar (mobile — saves height) */}
+              <div className="session-bottom-timer">
+                <span className="session-bottom-timer__value">{phaseTimeRemaining} s</span>
+              </div>
               <div className="fullscreen-modal__progress">
                 <div 
                   className="fullscreen-modal__progress-fill" 
@@ -626,15 +671,20 @@ export function SessionEngineModal({
                 onMoodChange={setMoodAfter}
                 notes={notes}
                 onNotesChange={setNotes}
-                onSave={saveSession}
-                isSaving={completeSession.isPending}
               />
             </FullscreenModal.ContentZone>
             
             <FullscreenModal.BottomBar>
-              {/* ✅ "Opakovat cvičení" removed - Less is More principle */}
-              {/* User can restart via back + start again (3 taps vs 1 tap = acceptable trade-off) */}
-              <div />
+              {/* CTA button in BottomBar — frees ContentZone, consistent with active session pattern */}
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={saveSession}
+                loading={completeSession.isPending}
+              >
+                Uložit & Zavřít
+              </Button>
             </FullscreenModal.BottomBar>
           </>
         )}
@@ -651,6 +701,7 @@ export function SessionEngineModal({
           variant="warning"
         />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

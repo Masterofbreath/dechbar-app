@@ -20,7 +20,7 @@
  * @since 0.3.0
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 
 interface WakeLockAPI {
   /**
@@ -50,6 +50,7 @@ interface WakeLockAPI {
 export function useWakeLock(): WakeLockAPI {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const isActiveRef = useRef(false);
+  const [isActive, setIsActive] = useState(false);
   
   // Check if Wake Lock API is supported
   const isSupported = 'wakeLock' in navigator;
@@ -58,27 +59,20 @@ export function useWakeLock(): WakeLockAPI {
    * Request wake lock
    */
   const request = useCallback(async () => {
-    if (!isSupported) {
-      console.log('[WakeLock] API not supported - screen may turn off');
-      return;
-    }
+    if (!isSupported) return;
     
     try {
-      // Request screen wake lock
       wakeLockRef.current = await navigator.wakeLock.request('screen');
       isActiveRef.current = true;
-      
-      console.log('[WakeLock] Active - screen will stay on');
-      
-      // Handle wake lock release (e.g., user presses power button)
+      setIsActive(true);
+
       wakeLockRef.current.addEventListener('release', () => {
-        console.log('[WakeLock] Released - screen may turn off');
         isActiveRef.current = false;
+        setIsActive(false);
       });
-    } catch (err) {
-      // Wake lock request failed (e.g., battery saver mode, permissions)
-      console.warn('[WakeLock] Request failed:', err);
+    } catch {
       isActiveRef.current = false;
+      setIsActive(false);
     }
   }, [isSupported]);
   
@@ -90,8 +84,7 @@ export function useWakeLock(): WakeLockAPI {
       wakeLockRef.current.release();
       wakeLockRef.current = null;
       isActiveRef.current = false;
-      
-      console.log('[WakeLock] Manually released');
+      setIsActive(false);
     }
   }, []);
   
@@ -119,7 +112,7 @@ export function useWakeLock(): WakeLockAPI {
   return {
     request,
     release,
-    isActive: isActiveRef.current,
+    isActive,
     isSupported,
   };
 }

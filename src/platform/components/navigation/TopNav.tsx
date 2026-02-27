@@ -11,6 +11,7 @@
  * @since 0.2.0
  */
 
+import { useNavigate } from 'react-router-dom';
 import { NavIcon } from '../NavIcon';
 import { KPDisplay } from '../KPDisplay';
 import { useNavigation } from '@/platform/hooks';
@@ -44,7 +45,8 @@ export interface TopNavProps {
  */
 export function TopNav({ transparent = false, showKP = true, className = '' }: TopNavProps) {
   const { user } = useAuth();
-  const { openProfile, openSettings, openNotifications, unreadNotifications } = useNavigation();
+  const navigate = useNavigate();
+  const { openSettings, openNotifications, unreadNotifications } = useNavigation();
   
   const navClass = [
     'top-nav',
@@ -63,7 +65,7 @@ export function TopNav({ transparent = false, showKP = true, className = '' }: T
       <div className="top-nav__left">
         <button
           className="top-nav__avatar-button"
-          onClick={openProfile}
+          onClick={() => navigate('/app/profil')}
           aria-label="Otevřít profil"
           type="button"
         >

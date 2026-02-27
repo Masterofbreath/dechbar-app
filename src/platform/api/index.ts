@@ -18,6 +18,18 @@ export type { PublicStats } from './usePublicStats';
 export { useKPMeasurements } from './useKPMeasurements';
 export type { KPMeasurement, KPStats, SaveKPData } from './useKPMeasurements';
 
+// Profile API
+export { useProfile, checkNicknameAvailable } from './useProfile';
+export type { ProfileData, UpdateProfilePayload } from './useProfile';
+
+// Referral API
+export { useReferral, formatReferralCode, getReferralLink } from './useReferral';
+export type { ReferralData } from './useReferral';
+
+// Account Data API
+export { useAccountData } from './useAccountData';
+export type { OwnedModule } from './useAccountData';
+
 // Challenge API (Březnová Výzva 2026)
 export {
   sendChallengeMagicLink,

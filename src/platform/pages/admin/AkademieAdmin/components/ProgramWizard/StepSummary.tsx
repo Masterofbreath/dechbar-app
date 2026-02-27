@@ -92,19 +92,29 @@ export function StepSummary({ state, onComplete, onBack }: StepSummaryProps) {
           <SummaryRow label="Lekce celkem" value={`${totalLessons}`} />
           <SummaryRow
             label="Stripe"
-            value={state.program.stripe_price_id ? `✓ ${state.program.stripe_price_id.slice(0, 20)}…` : '⚠ Nastavit ručně'}
+            value={state.program.stripe_price_id
+              ? `✓ ${state.program.stripe_price_id.slice(0, 22)}…`
+              : state.program.stripeError
+                ? `✗ ${state.program.stripeError.slice(0, 40)}`
+                : '⚠ Nastavit ručně'}
             ok={!!state.program.stripe_price_id}
             warn={!state.program.stripe_price_id}
           />
           <SummaryRow
             label="Ecomail IN"
-            value={state.program.ecomail_list_in_id ?? '⚠ Nastavit ručně'}
+            value={state.program.ecomail_list_in_id
+              ? `✓ list #${state.program.ecomail_list_in_id}`
+              : state.program.ecmailError
+                ? `✗ ${state.program.ecmailError.slice(0, 40)}`
+                : '⚠ Nastavit ručně'}
             ok={!!state.program.ecomail_list_in_id}
             warn={!state.program.ecomail_list_in_id}
           />
           <SummaryRow
             label="Ecomail BEFORE"
-            value={state.program.ecomail_list_before_id ?? '⚠ Nastavit ručně'}
+            value={state.program.ecomail_list_before_id
+              ? `✓ list #${state.program.ecomail_list_before_id}`
+              : '⚠ Nastavit ručně'}
             ok={!!state.program.ecomail_list_before_id}
             warn={!state.program.ecomail_list_before_id}
           />

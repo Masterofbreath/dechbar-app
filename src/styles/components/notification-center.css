@@ -1,215 +1,506 @@
 /* ============================================================
    NotificationCenter Modal Styles
-   Platform notifications timeline
+   Platform notifications timeline — Apple Premium, dark theme
    ============================================================ */
 
 .notification-center {
   background: var(--color-surface);
+  border: 1px solid rgb(255 255 255 / 8%);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-8);
+  padding: var(--spacing-6) var(--spacing-6) var(--spacing-5);
   max-width: 480px;
   width: 90%;
-  max-height: 80vh;
-  overflow: visible; /* Allow hover effects to extend beyond */
+  max-height: 75vh;
   display: flex;
   flex-direction: column;
+
+  /* overflow: clip zachovává border-radius efekt ale nevytváří scroll container
+     → absolutně pozicované děti UVNITŘ bounds nejsou oříznuty */
+  overflow: clip;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 60%), 0 0 0 1px rgb(255 255 255 / 4%);
 }
+
+/* ── Header ───────────────────────────────────────────────── */
 
 .notification-center__header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-6);
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-5);
+  flex-shrink: 0;
 }
 
 .notification-center__header h2 {
-  font-size: var(--font-size-2xl);
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: 600;
   color: var(--color-text-primary);
+  letter-spacing: -0.01em;
 }
 
 .notification-center__badge {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: white;
-  font-size: 12px;
+  background: var(--color-primary);
+  color: #000;
+  font-size: 11px;
   font-weight: 700;
-  min-width: 24px;
-  height: 24px;
-  border-radius: 12px; /* Full pill */
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 var(--spacing-2);
-  box-shadow: 0 2px 8px rgba(44, 190, 198, 0.3); /* Teal glow */
-  animation: badgePulse 2s ease-in-out infinite;
+  padding: 0 6px;
 }
 
-@keyframes badgePulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 2px 8px rgba(44, 190, 198, 0.3);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(44, 190, 198, 0.5);
-  }
+@keyframes badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
 }
+
+/* ── List ─────────────────────────────────────────────────── */
 
 .notification-center__list {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: visible; /* Allow hover effects to extend beyond container */
-  margin-bottom: var(--spacing-6);
+  overflow: hidden auto;
+  margin-bottom: var(--spacing-4);
+
+  /* Thin scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 12%) transparent;
+}
+
+.notification-center__list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notification-center__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-center__list::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 12%);
+  border-radius: 999px;
 }
 
 .notification-center__empty {
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-10) var(--spacing-4);
+}
+
+/* Loading spinner */
+.notification-center__loading {
+  display: flex;
+  justify-content: center;
   padding: var(--spacing-8);
 }
 
-.notification-item {
-  padding: var(--spacing-4);
-  padding-right: var(--spacing-10); /* Space for delete button */
-  border-radius: var(--radius-md); /* 12px - brand standard */
-  background: var(--color-surface); /* Same as notification-center background */
-  display: flex;
-  gap: var(--spacing-3);
-  margin-bottom: var(--spacing-2); /* Gap instead of border */
-  transition: all 0.2s ease;
-  cursor: pointer;
-  position: relative; /* For absolute positioning of delete */
+.notification-center__spinner {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgb(255 255 255 / 10%);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: notif-spin 0.7s linear infinite;
 }
 
-.notification-item:last-child {
-  margin-bottom: 0; /* No gap after last item */
+@keyframes notif-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Notification Item ────────────────────────────────────── */
+
+/* ── Swipe-to-dismiss wrapper ─────────────────────────────────────────── */
+
+.swipe-dismiss-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.swipe-dismiss-wrapper + .swipe-dismiss-wrapper {
+  margin-top: 2px;
+}
+
+/* Red delete hint — visible behind the sliding item */
+.swipe-dismiss-wrapper__hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-right: var(--spacing-4);
+  background: var(--color-error, #ef4444);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Sliding content layer — sits on top of the hint */
+.swipe-dismiss-wrapper__content {
+  position: relative;
+  z-index: 1;
+  will-change: transform;
+
+  /* Zakrývá červený hint, dokud uživatel neswipuje */
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+/* ── Notification item ─────────────────────────────────────────────────── */
+
+.notification-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.notification-item + .notification-item {
+  margin-top: 2px;
 }
 
 .notification-item--unread {
-  background: rgba(44, 190, 198, 0.08); /* Slightly stronger */
-  border-left: 3px solid var(--color-primary); /* Teal marker */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle elevation */
+  background: rgb(20 184 166 / 6%);
+  border-color: rgb(20 184 166 / 15%);
+}
+
+.notification-item--unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 2px 2px 0;
+  background: var(--color-primary);
 }
 
 .notification-item:hover {
-  background: var(--color-surface-elevated);
-  z-index: 10; /* Lift above siblings */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* Deeper shadow */
+  background: rgb(255 255 255 / 4%);
+  border-color: rgb(255 255 255 / 6%);
 }
 
+.notification-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Icon ─────────────────────────────────────────────────── */
+
 .notification-item__icon {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: white;
+  margin-top: 2px;
 }
 
-/* Type-specific icon backgrounds */
+/* ── Thumbnail obrázek místo ikony ───────────────────────── */
 
-/* System - Teal */
+.notification-item__image {
+  /* Čtverec výšky shodné s tělem notifikace */
+  align-self: stretch;
+  aspect-ratio: 1;
+  width: auto;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radius-sm, 6px);
+
+  /* Stejný gap jako ikona vůči okolí */
+  min-width: 40px;
+  max-width: 72px;
+}
+
+/* system — neutrální tmavé, teal ikona (iOS style) */
 .notification-item--system .notification-item__icon {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: rgb(255 255 255 / 7%);
+  color: var(--color-primary);
 }
 
-/* Progress - Teal */
+/* progress — teal, subtilní */
 .notification-item--progress .notification-item__icon {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: rgb(20 184 166 / 12%);
+  color: var(--color-primary);
 }
 
-/* Achievement - Gold */
+/* reminder — teal s o něco silnějším tónem */
+.notification-item--reminder .notification-item__icon {
+  background: rgb(20 184 166 / 15%);
+  color: var(--color-primary);
+}
+
+/* promo — gold */
+.notification-item--promo .notification-item__icon {
+  background: rgb(248 202 0 / 12%);
+  color: var(--dechbar-gold, #F8CA00);
+}
+
+/* achievement — gold + emoji */
 .notification-item--achievement .notification-item__icon {
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
-  font-size: 20px; /* Emoji trophy */
+  background: rgb(248 202 0 / 12%);
+  color: var(--dechbar-gold, #F8CA00);
+  font-size: 18px;
 }
 
-/* Social - Gray */
-.notification-item--social .notification-item__icon {
-  background: linear-gradient(135deg, #757575 0%, #616161 100%);
-}
+/* ── Body (text content area) ─────────────────────────────── */
 
-.notification-item__content {
+.notification-item__body {
   flex: 1;
+  min-width: 0;
+
+  /* Prostor vpravo pro absolute delete button */
+  padding-right: 28px;
 }
 
-.notification-item__content h3 {
-  font-size: var(--font-size-base);
+.notification-item__title {
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: var(--spacing-1);
+  margin-bottom: 2px;
+  line-height: var(--line-height-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.notification-item__content p {
-  font-size: var(--font-size-sm);
+/* ── Delete button — samostatný, top-right ────────────────── */
+
+.notification-item__delete-btn {
+  /* Pozice — absolutní vůči notification-item (position: relative) */
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  /* Rozměry — touch-friendly, ale malé */
+  width: 28px;
+  height: 28px;
+
+  /* Vizuál identický s global close-button */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgb(255 255 255 / 60%);
+  cursor: pointer;
+  opacity: 0.5;
+  z-index: 10;
+
+  /* Přechody — jako global close-button */
+  transition: background 200ms ease, color 200ms ease, opacity 200ms ease;
+}
+
+/* Desktop hover — stejná teal barva jako global close-button */
+@media (hover: hover) and (pointer: fine) {
+  .notification-item__delete-btn:hover {
+    background: rgb(44 190 198 / 10%);
+    color: var(--color-primary);
+    opacity: 1;
+  }
+
+  .notification-item__delete-btn:hover svg {
+    transform: rotate(90deg);
+    transition: transform 200ms ease;
+  }
+
+  .notification-item__delete-btn:active {
+    background: rgb(44 190 198 / 15%);
+    transform: scale(0.95);
+  }
+}
+
+/* Touch tap feedback */
+@media (hover: none) and (pointer: coarse) {
+  .notification-item__delete-btn:active {
+    background: rgb(44 190 198 / 10%);
+    transform: scale(0.95);
+  }
+}
+
+.notification-item__delete-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .notification-item__delete-btn,
+  .notification-item__delete-btn svg {
+    transition: none;
+  }
+}
+
+/* ── Message ──────────────────────────────────────────────── */
+
+.notification-item__message {
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   line-height: 1.5;
   margin-bottom: var(--spacing-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.notification-item__content time {
+.notification-item__message--expanded {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+
+/* ── Expand / collapse toggle ─────────────────────────────── */
+
+.notification-item__expand-btn {
+  display: inline-block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: var(--spacing-2);
+  color: var(--color-primary);
   font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-}
-
-.notification-center__close {
-  width: 100%;
-  padding: var(--spacing-4);
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-base);
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  transition: opacity 0.15s ease;
+  min-height: 24px;
+}
+
+.notification-item__expand-btn:hover {
+  opacity: 0.75;
+}
+
+.notification-item__expand-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-item__expand-btn {
+    transition: none;
+  }
+}
+
+/* ── Footer (čas vlevo + CTA vpravo) ─────────────────────── */
+
+.notification-item__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+  min-height: 20px;
+}
+
+.notification-item__time {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+
+/* ── CTA pill button — bottom-right v footeru ────────────── */
+
+.notification-item__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border: 1px solid var(--dechbar-gold, #F8CA00);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dechbar-gold, #F8CA00);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  flex-shrink: 0;
+  cursor: pointer;
+  min-height: 28px;
+  transition: background 0.15s ease;
+}
+
+.notification-item__cta:hover {
+  background: rgb(248 202 0 / 10%);
+}
+
+.notification-item__cta:focus-visible {
+  outline: 2px solid var(--dechbar-gold, #F8CA00);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+/* ── Close button ─────────────────────────────────────────── */
+
+.notification-center__close {
+  flex-shrink: 0;
+  width: 100%;
+  padding: var(--spacing-3);
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  min-height: 44px;
 }
 
 .notification-center__close:hover {
-  background: var(--color-surface);
-  border-color: var(--color-primary);
+  background: rgb(255 255 255 / 8%);
+  color: var(--color-text-primary);
 }
 
-.notification-center__close:active {
-  transform: scale(0.98);
+.notification-center__close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
 }
 
-/* ============================================================
-   Notification Item Delete Button
-   ============================================================ */
+/* ── Reduced motion ───────────────────────────────────────── */
 
-/* Delete button - CloseButton component handles styling */
-.notification-item__delete {
-  position: absolute;
-  top: var(--spacing-3);
-  right: var(--spacing-3);
-  opacity: 0; /* Hidden by default */
-  transition: opacity 0.2s ease;
-  /* CloseButton component handles all other styling */
+@media (prefers-reduced-motion: reduce) {
+  .notification-center__badge,
+  .notification-item,
+  .notification-item__delete,
+  .notification-item__cta,
+  .notification-center__close {
+    transition: none;
+    animation: none;
+  }
+
+  .notification-center__spinner {
+    animation: none;
+    opacity: 0.5;
+  }
 }
 
-/* Show on parent hover */
-.notification-item:hover .notification-item__delete {
-  opacity: 1;
-}
+/* ── Mobile ───────────────────────────────────────────────── */
 
-/* ============================================================
-   Mobile Responsive
-   ============================================================ */
-
-@media (max-width: 375px) {
+@media (width <= 480px) {
   .notification-center {
-    width: 95%; /* Almost full width */
-    padding: var(--spacing-6); /* Tighter */
+    width: 95%;
+    padding: var(--spacing-5) var(--spacing-4) var(--spacing-4);
+    max-height: 80vh;
   }
-  
-  .notification-item__content h3 {
-    font-size: var(--font-size-sm);
-  }
-  
-  .notification-item__content p {
-    font-size: 12px;
-  }
+
 }

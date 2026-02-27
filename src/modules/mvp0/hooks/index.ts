@@ -8,6 +8,8 @@
  */
 
 export { useActiveChallenge } from './useActiveChallenge';
+export { useIntensityControl } from '../components/session-engine/hooks/useIntensityControl';
+export type { IntensityControlReturn } from '../components/session-engine/hooks/useIntensityControl';
 export { useActiveDailyProgram } from './useActiveDailyProgram';
 export type {
   ActiveDailyProgramData,

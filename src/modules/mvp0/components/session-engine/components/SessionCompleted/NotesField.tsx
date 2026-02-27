@@ -33,19 +33,22 @@ export function NotesField({ value, onChange }: NotesFieldProps) {
         />
       </button>
       
-      {isExpanded && (
-        <textarea
-          id="session-notes-input"
-          className="session-notes__input"
-          value={value}
-          onChange={(e) => onChange(e.target.value.slice(0, 150))}
-          placeholder="Jak ti to šlo? Nějaké postřehy..."
-          rows={3}
-          maxLength={150}
-        />
-      )}
-      
-      {value.length > 0 && (
+      {/* Always in DOM — visibility controlled via CSS (.session-notes--expanded).
+          Avoids iOS WebKit bug where elements starting at max-height:0 may not
+          register taps after gaining height via animation. */}
+      <textarea
+        id="session-notes-input"
+        className="session-notes__input"
+        value={value}
+        onChange={(e) => onChange(e.target.value.slice(0, 150))}
+        placeholder="Jak ti to šlo? Nějaké postřehy..."
+        rows={3}
+        maxLength={150}
+        tabIndex={isExpanded ? 0 : -1}
+        aria-hidden={!isExpanded}
+      />
+
+      {value.length > 0 && isExpanded && (
         <div className="session-notes__counter">
           {value.length}/150
         </div>

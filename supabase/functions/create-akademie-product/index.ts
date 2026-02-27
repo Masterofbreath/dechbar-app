@@ -44,39 +44,54 @@ const corsHeaders = {
 // HELPER: Create Ecomail list
 // ============================================================
 
-async function createEcomailList(name: string): Promise<string | null> {
-  if (!ecmailApiKey) {
-    console.warn('⚠️ ECOMAIL_API_KEY not set — skipping list creation');
-    return null;
+async function createEcomailList(name: string): Promise<{ id: string | null; error: string | null }> {
+  const key = (Deno.env.get('ECOMAIL_API_KEY') || '').trim();
+  if (!key) {
+    return { id: null, error: 'ECOMAIL_API_KEY není nastavený v Supabase secrets' };
   }
+
+  const body = {
+    name,
+    from_name: 'DechBar',
+    from_email: 'info@dechbar.cz',
+    reply_to: 'info@dechbar.cz',
+  };
+
+  console.log(`📧 Creating Ecomail list: "${name}", key prefix: ${key.substring(0, 8)}...`);
 
   try {
     const resp = await fetch(`${ecmailBaseUrl}/lists`, {
       method: 'POST',
       headers: {
-        'key': ecmailApiKey,
+        'key': key,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        replyto: 'info@dechbar.cz',
-        name,
-        from_name: 'DechBar',
-        from_email: 'info@dechbar.cz',
-      }),
+      body: JSON.stringify(body),
     });
 
+    const respText = await resp.text();
+    console.log(`📧 Ecomail response for "${name}": status=${resp.status}, body=${respText.substring(0, 500)}`);
+
     if (!resp.ok) {
-      const err = await resp.text();
-      console.error(`❌ Ecomail list creation failed for "${name}": ${err}`);
-      return null;
+      return { id: null, error: `Ecomail HTTP ${resp.status}: ${respText.substring(0, 200)}` };
     }
 
-    const data = await resp.json();
+    let data: Record<string, unknown>;
+    try {
+      data = JSON.parse(respText);
+    } catch {
+      return { id: null, error: `Ecomail invalid JSON: ${respText.substring(0, 200)}` };
+    }
+
     // Ecomail vrací { id: number, ... }
-    return data?.id ? String(data.id) : null;
-  } catch (err) {
-    console.error(`❌ Ecomail API error for "${name}":`, err);
-    return null;
+    const listId = data?.id ? String(data.id) : null;
+    if (!listId) {
+      return { id: null, error: `Ecomail: list created but no id in response: ${respText.substring(0, 200)}` };
+    }
+    console.log(`✅ Ecomail list created: "${name}" → id=${listId}`);
+    return { id: listId, error: null };
+  } catch (err: any) {
+    return { id: null, error: `Ecomail fetch exception: ${err?.message || String(err)}` };
   }
 }
 
@@ -90,31 +105,37 @@ serve(async (req) => {
   }
 
   try {
-    // ── Auth: ověřit admin roli ─────────────────────────────
+    // ── Auth: ověřit uživatele + admin roli ─────────────────
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('❌ No Authorization header');
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized: missing token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+    // ✅ Správný Supabase Deno pattern:
+    // 1) User client (anon key + Authorization header) → pro getUser()
+    // 2) Admin client (service role key) → pro DB operace
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
-      auth: { persistSession: false },
     });
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (!user || authError) {
+      console.error('❌ auth.getUser failed:', authError?.message, '| authHeader present:', !!authHeader);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized: invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
+
+    console.log(`✅ Auth OK: user ${user.id}`);
 
     // Ověřit admin roli přes user_roles tabulku
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: roleData } = await supabase
+    const { data: roleData } = await adminClient
       .from('user_roles')
       .select('role_id')
       .eq('user_id', user.id)
@@ -133,6 +154,9 @@ serve(async (req) => {
     const description: string | undefined = body.description;
     const priceCzk: number = body.priceCzk;
     const moduleId: string = body.moduleId;
+
+    console.log(`📥 create-akademie-product called: name=${name}, priceCzk=${priceCzk}, moduleId=${moduleId}`);
+    console.log(`🔑 STRIPE_SECRET_KEY present: ${!!Deno.env.get('STRIPE_SECRET_KEY')}, ECOMAIL_API_KEY present: ${!!ecmailApiKey}`);
 
     if (!name || !priceCzk || !moduleId) {
       return new Response(
@@ -177,7 +201,7 @@ serve(async (req) => {
       console.log(`✅ Stripe price created: ${price.id}`);
 
       // Uložit stripe_price_id do modules
-      const { error: stripeUpdateError } = await supabase
+      const { error: stripeUpdateError } = await adminClient
         .from('modules')
         .update({ stripe_price_id: price.id })
         .eq('id', moduleId);
@@ -193,18 +217,18 @@ serve(async (req) => {
 
     // ── Ecomail: Vytvoř 2 listy ─────────────────────────────
     try {
-      const listInId = await createEcomailList(`${name} — Zákazníci`);
-      const listBeforeId = await createEcomailList(`${name} — Předobjednávky`);
+      const listInResult = await createEcomailList(`${name} — Zákazníci`);
+      const listBeforeResult = await createEcomailList(`${name} — Předobjednávky`);
 
-      result.ecmailListInId = listInId;
-      result.ecmailListBeforeId = listBeforeId;
+      result.ecmailListInId = listInResult.id;
+      result.ecmailListBeforeId = listBeforeResult.id;
 
-      if (listInId || listBeforeId) {
-        const { error: ecmailUpdateError } = await supabase
+      if (listInResult.id || listBeforeResult.id) {
+        const { error: ecmailUpdateError } = await adminClient
           .from('modules')
           .update({
-            ...(listInId ? { ecomail_list_in: listInId } : {}),
-            ...(listBeforeId ? { ecomail_list_before: listBeforeId } : {}),
+            ...(listInResult.id ? { ecomail_list_in: listInResult.id } : {}),
+            ...(listBeforeResult.id ? { ecomail_list_before: listBeforeResult.id } : {}),
           })
           .eq('id', moduleId);
 
@@ -212,10 +236,15 @@ serve(async (req) => {
           console.error('❌ Failed to save ecomail list IDs to modules:', ecmailUpdateError);
           result.ecmailError = `Ecomail lists created but failed to save to DB: ${ecmailUpdateError.message}`;
         } else {
-          console.log(`✅ Ecomail lists created: IN=${listInId}, BEFORE=${listBeforeId}`);
+          console.log(`✅ Ecomail lists saved: IN=${listInResult.id}, BEFORE=${listBeforeResult.id}`);
         }
       } else {
-        result.ecmailError = 'Ecomail lists not created — check ECOMAIL_API_KEY and API availability';
+        // Vrátit přesnou chybu z API
+        const errIn = listInResult.error || 'unknown';
+        const errBefore = listBeforeResult.error || 'unknown';
+        result.ecmailError = errIn === errBefore
+          ? errIn
+          : `IN: ${errIn} | BEFORE: ${errBefore}`;
       }
     } catch (ecmailErr: any) {
       console.error('❌ Ecomail error:', ecmailErr);

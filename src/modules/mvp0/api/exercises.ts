@@ -27,7 +27,7 @@ import type {
 export const exerciseKeys = {
   all: ['exercises'] as const,
   lists: () => [...exerciseKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...exerciseKeys.lists(), filters] as const,
+  list: (filters: Record<string, unknown>) => [...exerciseKeys.lists(), filters] as const,
   details: () => [...exerciseKeys.all, 'detail'] as const,
   detail: (id: string) => [...exerciseKeys.details(), id] as const,
   sessions: (userId: string) => ['exercise-sessions', userId] as const,
@@ -177,7 +177,7 @@ export function useCreateExercise() {
           created_by: user.id,
           is_public: false,
           required_tier: null,
-          breathing_pattern: payload.breathing_pattern as any,
+          breathing_pattern: payload.breathing_pattern as Record<string, unknown>,
           total_duration_seconds: totalDuration,
           phase_count: payload.breathing_pattern.phases.length,
           difficulty: payload.breathing_pattern.metadata.difficulty,
@@ -327,7 +327,7 @@ export function useExerciseSessions() {
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as any[]; // SessionWithExercise[]
+      return data as unknown[]; // SessionWithExercise[]
     },
     enabled: !!user,
   });
@@ -356,6 +356,7 @@ export function useCompleteSession() {
           mood_after: payload.mood_after || null,
           quality_rating: payload.quality_rating || null,
           notes: payload.notes || null,
+          final_intensity_multiplier: payload.final_intensity_multiplier ?? 1.0,
         })
         .select()
         .single();
@@ -421,7 +422,7 @@ export function useUpdateSafetyFlags() {
       
       const { error } = await supabase
         .from('profiles')
-        .update({ safety_flags: safetyFlags as any })
+        .update({ safety_flags: safetyFlags as Record<string, unknown> })
         .eq('id', user.id);
       
       if (error) throw error;

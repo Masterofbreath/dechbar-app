@@ -9,3 +9,6 @@
 
 export { AppLayout } from './AppLayout';
 export type { AppLayoutProps } from './AppLayout';
+
+export { PageLayout } from './PageLayout';
+export type { PageLayoutProps, PageLayoutRightAction } from './PageLayout';

@@ -151,6 +151,19 @@
   font-size: var(--font-size-sm);
   line-height: var(--line-height-relaxed);
   color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-4);
+}
+
+.about-page__bio--closing {
+  color: var(--color-text-primary);
+  margin-top: var(--spacing-2);
+  margin-bottom: var(--spacing-1);
+}
+
+.about-page__bio--signature {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
   margin-bottom: var(--spacing-6);
 }
 

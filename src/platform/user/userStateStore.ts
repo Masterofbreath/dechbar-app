@@ -144,7 +144,7 @@ export const useUserState = create<UserState>()(
           
           // 1. Process roles
           if (rolesResult.status === 'fulfilled' && rolesResult.value.data) {
-            const roles = rolesResult.value.data.map((r: any) => r.role_id);
+            const roles = rolesResult.value.data.map((r: Record<string, unknown>) => r.role_id as string);
             get()._setRoles(roles);
           } else {
             console.warn('⚠️ Failed to fetch roles:', rolesResult);
@@ -162,8 +162,11 @@ export const useUserState = create<UserState>()(
               expiresAt: m.expires_at,
             });
           } else {
-            console.warn('⚠️ Failed to fetch membership:', membershipResult);
-            // Default to ZDARMA if no membership found
+            // 'fulfilled' with null data = no membership row → user is on ZDARMA plan (expected)
+            // 'rejected' = actual DB error → also default to ZDARMA safely
+            if (membershipResult.status === 'rejected') {
+              console.warn('⚠️ Failed to fetch membership (DB error):', membershipResult.reason);
+            }
             get()._setMembership({
               plan: 'ZDARMA',
               status: 'active',
@@ -175,7 +178,7 @@ export const useUserState = create<UserState>()(
           
           // 3. Process modules
           if (modulesResult.status === 'fulfilled' && modulesResult.value.data) {
-            const modules = modulesResult.value.data.map((m: any) => m.module_id);
+            const modules = modulesResult.value.data.map((m: Record<string, unknown>) => m.module_id as string);
             get()._setOwnedModules(modules);
           } else {
             console.warn('⚠️ Failed to fetch modules:', modulesResult);
@@ -210,7 +213,7 @@ export const useUserState = create<UserState>()(
           
           if (error) throw error;
           
-          const roles = data?.map((r: any) => r.role_id) || [];
+          const roles = data?.map((r: Record<string, unknown>) => r.role_id as string) || [];
           get()._setRoles(roles);
           console.log('✅ Roles refreshed successfully');
         } catch (err) {
@@ -287,7 +290,7 @@ export const useUserState = create<UserState>()(
           
           if (error) throw error;
           
-          const modules = data?.map((m: any) => m.module_id) || [];
+          const modules = data?.map((m: Record<string, unknown>) => m.module_id as string) || [];
           get()._setOwnedModules(modules);
           console.log('✅ Modules refreshed successfully');
         } catch (err) {

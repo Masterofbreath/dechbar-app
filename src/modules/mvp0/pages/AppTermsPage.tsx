@@ -13,9 +13,11 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LegalPageLayout } from '@/modules/public-web/components/legal/LegalPageLayout';
 import { TERMS_SECTIONS, TERMS_LAST_UPDATED } from '@/modules/public-web/components/legal/TermsContent';
+import { useSwipeBack } from '@/platform/hooks/useSwipeBack';
 
 export function AppTermsPage() {
   const navigate = useNavigate();
+  const swipeRef = useSwipeBack<HTMLDivElement>();
 
   useEffect(() => {
     document.title = 'Obchodní podmínky | DechBar';
@@ -23,7 +25,7 @@ export function AppTermsPage() {
   }, []);
 
   return (
-    <div className="app-legal-page">
+    <div className="app-legal-page" ref={swipeRef}>
       <button
         className="app-legal-page__back"
         onClick={() => navigate(-1)}

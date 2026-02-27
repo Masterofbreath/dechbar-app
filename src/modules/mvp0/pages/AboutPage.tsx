@@ -13,6 +13,7 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Logo } from '@/platform';
+import { useSwipeBack } from '@/platform/hooks/useSwipeBack';
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
 
@@ -39,6 +40,7 @@ function InstagramIcon() {
 
 export function AboutPage() {
   const navigate = useNavigate();
+  const swipeRef = useSwipeBack<HTMLDivElement>();
 
   useEffect(() => {
     document.title = 'O aplikaci | DechBar';
@@ -46,7 +48,7 @@ export function AboutPage() {
   }, []);
 
   return (
-    <div className="about-page">
+    <div className="about-page" ref={swipeRef}>
       {/* Back button */}
       <div className="about-page__header">
         <button
@@ -72,13 +74,20 @@ export function AboutPage() {
         <p className="about-page__section-label">Naše mise</p>
         <div className="about-page__mission-text">
           <p>
-            Věříme, že každý z nás nese v sobě silné stránky a dary, které čekají na svůj čas.
-            Dech je nástroj, který nám pomáhá tyto dary objevovat a využívat — ku prospěchu
-            svému i ostatních.
+            Věříme, že každý z nás má své dary i silné stránky. Věříme, že každý z nás
+            může žít radostný a úspěšný život v pevném zdraví. A věříme, že dech nám
+            k tomu umí pomoci.
+          </p>
+          <p>
+            Dech fyziologicky ovlivňuje nervový systém, kognitivní funkce, funkčnost orgánů
+            i množství produkované energie v každé buňce našeho těla. Dech je nástroj, který
+            nám naše dary i silné stránky pomáhá objevovat a využívat — ku prospěchu svému
+            i ostatních.
           </p>
           <p>
             Naším cílem je rozdýchat Česko. Umožnit každému, kdo chce, aby prostřednictvím
-            dechu našel cestu k sobě.
+            dechu našel cestu k sobě, ke svým darům a k energii, která je pro kvalitní,
+            radostný a úspěšný život důležitá.
           </p>
         </div>
       </div>
@@ -104,10 +113,30 @@ export function AboutPage() {
         </div>
 
         <p className="about-page__bio">
-          Pocházím z malé vesničky, miluju přírodu a zdravý životní styl. Dechu se aktivně
-          věnuji přes 8 let, posledních 3,5 roku naplno. Za tu dobu prošly mýma rukama
-          stovky lidí, odvedl jsem desítky workshopů a natočil přes 150 audio programů.
-          V komunitě DechBar jsme za jediný rok překročili 1 000 členů.
+          Pocházím z malé vesničky ve Východních Čechách. Vyrůstal jsem v přírodě
+          a odmalička jsem šel cestou zdravého životního stylu. S dechem mě seznámil můj
+          otec už kolem sedmého roku života. Aktivně se jeho studiu věnuji 8 let a posledních
+          3,5 roku naplno. Vedu firemní školení, přednáším na školách i festivalech, dělám
+          osobní mentoringy a s radostí sdílím s lidmi, co dech umí a dokáže.
+        </p>
+        <p className="about-page__bio">
+          DechBar vznikl z jednoduché myšlenky: chtěl jsem dát lidem možnost zažít, co dech
+          dokáže za pouhých pár minut — zregulovat nervový systém, vrátit do přítomnosti,
+          do stavu klidu, kde rozhodnutí vycházejí přirozeně. Tak vzniklo první dechpresso,
+          7minutové audio, které změnilo dechovou hru.
+        </p>
+        <p className="about-page__bio">
+          Na to navázala 21denní ranní dechová výzva, do které se za 20 dní přidalo přes
+          500 lidí bez jediné utracené koruny za reklamu. V roce 2025 jsme výzvu zopakovali
+          celkem 7× a komunita přerostla hranici 1 000 lidí. Zpětná vazba a příběhy lidí mě
+          inspirovaly udělat další krok. Doručit víc než jen audio soubory — a tak 1. února
+          2026, na první narozeniny DechBaru, vznikla tahle aplikace.
+        </p>
+        <p className="about-page__bio about-page__bio--closing">
+          Díky, že jsi tu s námi. Přeju, ať ti dech přináší maximum a ať to funkčně dýchá.
+        </p>
+        <p className="about-page__bio about-page__bio--signature">
+          Kuba | Dechový barista
         </p>
 
         <div className="about-page__stats" aria-label="Statistiky">

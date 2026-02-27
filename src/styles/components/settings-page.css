@@ -1,271 +1,350 @@
 /**
  * Settings Page Styles
- * 
- * Glassmorphism design for settings UI.
- * Flat grouped cards layout.
- * 
+ *
+ * BEM naming: .settings-page__*, .settings-card__*, .settings-toggle__*
+ * No hardcoded hex values — always var(--token-name)
+ * No emoji — custom inline SVG only
+ * Mobile-first, dark-first
+ *
+ * Header/back navigation is handled by PageLayout (page-layout.css).
+ *
  * @package DechBar_App
  * @subpackage Styles/Components
  */
 
-/* ==================== SETTINGS PAGE ==================== */
+/* ============================================================
+   Page wrapper
+   ============================================================ */
 
 .settings-page {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 24px 16px;
+  background: var(--color-background);
+  min-height: 100%;
+  padding-bottom: 80px; /* clear bottom nav */
 }
 
-.settings-page__header {
-  margin-bottom: 32px;
-}
-
-.settings-page__title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-text-primary, #121212);
-  margin-bottom: 8px;
-}
-
-.settings-page__subtitle {
-  font-size: 16px;
-  color: var(--color-text-secondary, #666);
-}
+/* ============================================================
+   Content — card list
+   ============================================================ */
 
 .settings-page__content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
 }
 
+/* ============================================================
+   Footer — reset button
+   ============================================================ */
+
 .settings-page__footer {
-  margin-top: 32px;
+  padding: 0 var(--spacing-4) var(--spacing-4);
   text-align: center;
 }
 
-/* ==================== SETTINGS CARD ==================== */
+/* ============================================================
+   Settings Card
+   ============================================================ */
 
 .settings-card {
-  background: rgb(255 255 255 / 80%);
-  backdrop-filter: blur(20px);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.settings-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .settings-card__title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary, #121212);
-  margin-bottom: 16px;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  margin: 0;
 }
 
 .settings-card__content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-4);
 }
 
 .settings-card__section {
-  padding-top: 12px;
+  padding-top: var(--spacing-3);
 }
 
 .settings-card__info {
-  font-size: 14px;
-  color: var(--color-text-secondary, #666);
-  line-height: 1.5;
-  margin-top: 8px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+}
+
+/* Indented info text under a toggle (in merged cards) */
+.settings-card__info--indent {
+  padding-left: calc(var(--spacing-3) + 2px);
+  margin-top: calc(var(--spacing-1) * -1); /* pull up under toggle */
 }
 
 .settings-card__info--premium {
-  color: var(--color-gold, #F8CA00);
-  font-weight: 500;
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
 }
 
-/* ==================== TOGGLE SWITCH ==================== */
+/* Thin separator between toggles inside a merged card */
+.settings-card__divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--spacing-1) 0;
+}
+
+/* ============================================================
+   Toggle Switch
+   ============================================================ */
 
 .settings-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
+  padding: var(--spacing-2) 0;
   cursor: pointer;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .settings-toggle__label {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--color-text-primary, #121212);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
 }
 
 .settings-toggle__input {
   width: 48px;
   height: 28px;
   cursor: pointer;
-  accent-color: var(--color-gold, #F8CA00);
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
 }
 
-/* ==================== VOLUME SLIDER ==================== */
+/* ============================================================
+   Volume Slider
+   ============================================================ */
 
 .volume-slider {
-  padding: 12px 0;
+  padding: var(--spacing-2) 0;
 }
 
 .volume-slider__label {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-secondary, #666);
-  margin-bottom: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-3);
 }
 
 .volume-slider__value {
-  font-weight: 600;
-  color: var(--color-text-primary, #121212);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
 }
 
 .volume-slider__input {
   width: 100%;
   height: 6px;
   cursor: pointer;
-  accent-color: var(--color-gold, #F8CA00);
-  border-radius: 3px;
+  accent-color: var(--color-primary);
+  border-radius: var(--radius-full);
 }
 
-/* ==================== INTENSITY SELECTOR ==================== */
+/* ============================================================
+   Intensity Selector
+   ============================================================ */
 
 .intensity-selector {
-  padding: 12px 0;
+  padding: var(--spacing-2) 0;
 }
 
 .intensity-selector__label {
   display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-secondary, #666);
-  margin-bottom: 12px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-3);
 }
 
 .intensity-selector__options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: var(--spacing-2);
 }
 
 .intensity-selector__option {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px;
-  border: 1px solid var(--color-border, #e0e0e0);
-  border-radius: 8px;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color var(--duration-fast) ease,
+              background var(--duration-fast) ease;
+  min-height: 44px;
 }
 
 .intensity-selector__option:hover {
-  border-color: var(--color-gold, #F8CA00);
-  background: rgb(248 202 0 / 5%);
+  border-color: var(--color-primary);
+  background: rgb(44 190 198 / 5%);
 }
 
 .intensity-selector__option input[type="radio"] {
-  accent-color: var(--color-gold, #F8CA00);
+  accent-color: var(--color-primary);
 }
 
 .intensity-selector__option span {
-  font-size: 14px;
-  color: var(--color-text-primary, #121212);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
 }
 
-/* ==================== TRACK SELECTOR ==================== */
+/* ============================================================
+   Track Selector
+   ============================================================ */
 
 .track-selector {
-  padding: 12px 0;
+  padding: var(--spacing-2) 0;
 }
 
 .track-selector__label {
   display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-secondary, #666);
-  margin-bottom: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-3);
 }
 
 .track-selector__select {
   width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid var(--color-border, #e0e0e0);
-  border-radius: 8px;
-  background: white;
+  height: 48px;
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
   cursor: pointer;
-  color: var(--color-text-primary, #121212);
+  appearance: none;
+  appearance: none;
+  outline: none;
+  transition: border-color var(--duration-fast) ease;
 }
 
 .track-selector__select:focus {
-  outline: none;
-  border-color: var(--color-gold, #F8CA00);
+  border-color: var(--color-primary);
 }
 
-/* ==================== CHECKBOX ==================== */
+/* ============================================================
+   Checkbox
+   ============================================================ */
 
 .settings-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 0;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) 0;
   cursor: pointer;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .settings-checkbox input[type="checkbox"] {
   width: 20px;
   height: 20px;
+  min-width: 20px;
   cursor: pointer;
-  accent-color: var(--color-gold, #F8CA00);
+  accent-color: var(--color-primary);
 }
 
 .settings-checkbox span {
-  font-size: 14px;
-  color: var(--color-text-primary, #121212);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-relaxed);
 }
 
-/* ==================== RESET BUTTON ==================== */
+/* ============================================================
+   Reset Button
+   ============================================================ */
 
 .settings-reset-button {
-  padding: 12px 24px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-secondary, #666);
+  height: 44px;
+  padding: 0 var(--spacing-6);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  font-family: inherit;
+  color: var(--color-text-tertiary);
   background: transparent;
-  border: 1px solid var(--color-border, #e0e0e0);
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color var(--duration-fast) ease,
+              color var(--duration-fast) ease;
 }
 
 .settings-reset-button:hover {
-  border-color: var(--color-gold, #F8CA00);
-  color: var(--color-gold, #F8CA00);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
-/* ==================== RESPONSIVE ==================== */
+.settings-reset-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 
-@media (width <= 480px) {
-  .settings-page {
-    padding: 16px 12px;
+/* ============================================================
+   Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-reset-button,
+  .intensity-selector__option,
+  .track-selector__select {
+    transition: none;
   }
-  
-  .settings-page__title {
-    font-size: 24px;
+}
+
+/* ============================================================
+   Tablet+
+   ============================================================ */
+
+@media (width >= 768px) {
+  .settings-page__content {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: var(--spacing-4) var(--spacing-8);
+    gap: var(--spacing-4);
   }
-  
-  .settings-card {
-    padding: 20px 16px;
-  }
-  
-  .intensity-selector__options {
-    grid-template-columns: 1fr;
+
+  .settings-page__footer {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-8) var(--spacing-8);
   }
 }

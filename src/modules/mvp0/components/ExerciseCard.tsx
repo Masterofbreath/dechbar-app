@@ -5,7 +5,6 @@
  * Dark-first design with teal/gold accents per Brand Book 2.0.
  * 
  * Features:
- * - Swipe gestures on mobile (swipe left = delete, swipe right = edit)
  * - Click to start exercise
  * - Edit/Delete buttons for custom exercises
  * 
@@ -13,7 +12,6 @@
  * @subpackage MVP0/Components
  */
 
-import { useState, useRef, useEffect } from 'react';
 import { NavIcon } from '@/platform/components';
 import { useNavigation } from '@/platform/hooks';
 import type { Exercise } from '../types/exercises';
@@ -68,32 +66,8 @@ export function ExerciseCard({
     ? (EXERCISE_SPECIFIC_BENEFITS[exercise.name] || CATEGORY_BENEFITS[exercise.subcategory])
     : null;
   
-  // Swipe gesture state
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [swipeAction, setSwipeAction] = useState<'edit' | 'delete' | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
-  const isSwiping = useRef(false);
-  
-  // Swipe thresholds
-  const SWIPE_THRESHOLD = 80; // pixels to trigger action
-  const MAX_SWIPE = 120; // max swipe distance
-  
-  // Detect if mobile device
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  
   function handleClick() {
-    if (isLocked || swipeOffset !== 0) return;
+    if (isLocked) return;
     onStart(exercise);
   }
   
@@ -120,102 +94,17 @@ export function ExerciseCard({
     if (onDuplicate) onDuplicate(exercise);
   }
   
-  // Touch handlers for swipe gestures (mobile only, custom exercises only)
-  function handleTouchStart(e: React.TouchEvent) {
-    if (!isMobile || !isCustom || isLocked) return;
-    
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isSwiping.current = false;
-  }
-  
-  function handleTouchMove(e: React.TouchEvent) {
-    if (!isMobile || !isCustom || isLocked) return;
-    
-    const touchX = e.touches[0].clientX;
-    const touchY = e.touches[0].clientY;
-    const deltaX = touchX - touchStartX.current;
-    const deltaY = touchY - touchStartY.current;
-    
-    // Determine if horizontal swipe (prevent vertical scroll interference)
-    if (!isSwiping.current && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
-      isSwiping.current = true;
-      e.preventDefault(); // Prevent scroll
-    }
-    
-    if (isSwiping.current) {
-      // Clamp swipe offset
-      const clampedOffset = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, deltaX));
-      setSwipeOffset(clampedOffset);
-      
-      // Determine action based on direction
-      if (clampedOffset < -SWIPE_THRESHOLD && onDelete) {
-        setSwipeAction('delete');
-      } else if (clampedOffset > SWIPE_THRESHOLD && onEdit) {
-        setSwipeAction('edit');
-      } else {
-        setSwipeAction(null);
-      }
-    }
-  }
-  
-  function handleTouchEnd() {
-    if (!isMobile || !isCustom || isLocked) return;
-    
-    if (isSwiping.current) {
-      // Trigger action if threshold reached
-      if (swipeAction === 'delete' && onDelete) {
-        openDeleteConfirm({
-          exerciseId: exercise.id,
-          exerciseName: exercise.name,
-          onConfirm: () => onDelete(exercise),
-        });
-      } else if (swipeAction === 'edit' && onEdit) {
-        onEdit(exercise);
-      }
-      
-      // Reset swipe state
-      setSwipeOffset(0);
-      setSwipeAction(null);
-      isSwiping.current = false;
-    }
-  }
-  
   return (
     <div className="exercise-card-wrapper">
-      {/* Swipe action indicators (FIXED background - revealed during swipe) */}
-      {isMobile && isCustom && (
-        <>
-          {/* Edit indicator (left side, revealed when swiping RIGHT) */}
-          <div className={`exercise-card__swipe-bg exercise-card__swipe-bg--edit ${swipeAction === 'edit' ? 'exercise-card__swipe-bg--active' : ''}`}>
-            <NavIcon name="edit" size={24} />
-          </div>
-          
-          {/* Delete indicator (right side, revealed when swiping LEFT) */}
-          <div className={`exercise-card__swipe-bg exercise-card__swipe-bg--delete ${swipeAction === 'delete' ? 'exercise-card__swipe-bg--active' : ''}`}>
-            <NavIcon name="trash" size={24} />
-          </div>
-        </>
-      )}
-      
-      {/* Main card (moves on top of background) */}
       <div
-        ref={cardRef}
         className={`exercise-card ${isLocked ? 'exercise-card--locked' : ''} ${isCustom ? 'exercise-card--custom' : ''}`}
         onClick={handleClick}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         role="button"
         tabIndex={isLocked ? -1 : 0}
         aria-label={`${exercise.name} - ${durationMinutes} minut`}
-        style={{
-          ...(isCustom && exercise.card_color ? {
-            '--custom-color': exercise.card_color,
-          } : {}),
-          transform: isMobile && isCustom ? `translateX(${swipeOffset}px)` : undefined,
-          transition: 'transform 0.3s ease',
-        } as React.CSSProperties}
+        style={isCustom && exercise.card_color ? {
+          '--custom-color': exercise.card_color,
+        } as React.CSSProperties : undefined}
       >
         {/* Content - full width (no icon) */}
       <div className="exercise-card__content">

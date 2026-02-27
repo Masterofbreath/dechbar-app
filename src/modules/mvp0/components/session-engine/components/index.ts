@@ -6,6 +6,7 @@
  */
 
 export { SessionStartScreen } from './SessionStartScreen';
+export { IntensityDots } from './IntensityDots';
 export { SessionCountdown } from './SessionCountdown';
 export { SessionActive } from './SessionActive';
 export { SessionCompleted } from './SessionCompleted/SessionCompleted';

@@ -16,7 +16,7 @@ import { CloseButton } from '@/components/shared';
 import { NavIcon } from './NavIcon';
 
 export function SettingsDrawer() {
-  const { isSettingsOpen, closeSettings, openProfile } = useNavigation();
+  const { isSettingsOpen, closeSettings } = useNavigation();
   const { signOut } = useAuth();
   const isAdmin = useIsAdmin();
   const navigate = useNavigate();
@@ -134,7 +134,12 @@ export function SettingsDrawer() {
   
   const handleProfileClick = () => {
     handleClose();
-    openProfile();
+    navigate('/app/profil');
+  };
+
+  const handleAccountClick = () => {
+    handleClose();
+    navigate('/app/ucet');
   };
   
   const handleAdminClick = () => {
@@ -145,6 +150,11 @@ export function SettingsDrawer() {
   const handleSettingsClick = () => {
     handleClose();
     navigate('/app/settings');
+  };
+
+  const handleAboutClick = () => {
+    handleClose();
+    navigate('/app/about');
   };
   
   return (
@@ -188,7 +198,7 @@ export function SettingsDrawer() {
             <span>Profil</span>
           </button>
           
-          <button className="settings-menu-item">
+          <button className="settings-menu-item" onClick={handleAccountClick}>
             <NavIcon name="credit-card" size={20} />
             <span>Účet</span>
           </button>
@@ -205,7 +215,7 @@ export function SettingsDrawer() {
             </button>
           )}
           
-          <button className="settings-menu-item">
+          <button className="settings-menu-item" onClick={handleAboutClick}>
             <NavIcon name="info" size={20} />
             <span>O aplikaci</span>
           </button>

@@ -9,6 +9,7 @@ export interface User {
   vocative_name?: string; // Auto-generated vocative (5th case) for greetings
   avatar_url?: string;
   roles?: string[]; // User roles from user_roles table (admin, ceo, member, etc.)
+  created_at?: string; // Account creation date (ISO string) — used for "Člen od" display
 }
 
 export interface SignInCredentials {

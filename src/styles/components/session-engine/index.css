@@ -8,24 +8,25 @@
  */
 
 /* Base styles (must be first) */
-@import './_base.css';
+@import url('./_base.css');
 
 /* Session screens (chronological order) */
-@import './_session-start.css';
-@import './_countdown.css';
-@import './_active.css';
-@import './_completed.css';
+@import url('./_session-start.css');
+@import url('./_countdown.css');
+@import url('./_active.css');
+@import url('./_intensity.css');
+@import url('./_completed.css');
 
 /* Session components */
-@import './_instructions.css';
-@import './_mood-before-pick.css';
+@import url('./_instructions.css');
+@import url('./_mood-before-pick.css');
 
 /* Completion sub-components */
-@import './_difficulty-check.css';
-@import './_mood-check.css';
-@import './_mood-before.css';
-@import './_notes.css';
+@import url('./_difficulty-check.css');
+@import url('./_mood-check.css');
+@import url('./_mood-before.css');
+@import url('./_notes.css');
 
 /* Responsive & Accessibility (must be last) */
-@import './_mobile.css';
-@import './_accessibility.css';
+@import url('./_mobile.css');
+@import url('./_accessibility.css');

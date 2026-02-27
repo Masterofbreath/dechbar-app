@@ -178,6 +178,7 @@ export interface CompleteSessionPayload {
   difficulty_rating?: number; // 1-3 (1=easy, 2=just right, 3=hard)
   quality_rating?: number; // 1-5
   notes?: string;
+  final_intensity_multiplier?: number; // 0.50–1.50, default 1.0 (intensity control)
 }
 
 /**

@@ -1,0 +1,128 @@
+/* ============================================================
+   Tab Carousel — Apple-style live-drag tab switcher
+   
+   Architecture:
+     .app-layout__content (overflow: hidden — carousel manages scroll)
+       .tab-carousel        (clipping container, full height)
+         .tab-carousel__track  (flex row, driven by --carousel-index + --carousel-offset)
+           .tab-carousel__page × 4  (each 100vw, independently scrollable)
+
+   CSS custom properties (set inline by TabCarousel component):
+     --carousel-index  : integer (0–3) — current tab index
+     --carousel-offset : px (e.g. "-80px") — live drag offset
+   ============================================================ */
+
+/* ── Viewport container ───────────────────────────────────────── */
+
+.tab-carousel {
+  /* Fill the full available height of .app-layout__content */
+  height: 100%;
+
+  /* Clip the horizontal track without creating a scroll container
+     (overflow: clip = visual clip only, no scroll, no positioning context — ideal for iOS PWA) */
+  overflow: hidden;
+  overflow: clip; /* Progressive: preferred on iOS 15.4+ */
+  position: relative;
+}
+
+/* ── Track — the moving strip ─────────────────────────────────── */
+
+.tab-carousel__track {
+  display: flex;
+  height: 100%;
+
+  /*
+    Transform formula:
+      --carousel-index * -100vw  — base offset to show correct page
+      + --carousel-offset        — live drag delta in px
+
+    CSS calc supports <number> × <length>:
+      e.g. calc(2 * -100vw + -80px) = -200vw - 80px  ✓
+  */
+  transform: translateX(
+    calc(var(--carousel-index, 0) * -100vw + var(--carousel-offset, 0px))
+  );
+
+  /* Transition applied only when NOT dragging (set inline by component) */
+  will-change: transform;
+}
+
+/* ── Individual page slots ────────────────────────────────────── */
+
+.tab-carousel__page {
+  /* Each page fills exactly one viewport width */
+  width: 100vw;
+  flex-shrink: 0;
+
+  /* CRITICAL: must have a defined height for overflow-y: auto to trigger scroll.
+     Height resolves correctly because the full chain is now anchored:
+     .app-layout (100dvh) → content (flex: 1) → carousel (100%) → track (100%) → page (100%) */
+  height: 100%;
+
+  /* Independent vertical scroll per page */
+  overflow: hidden auto;
+
+  /* Compensate for TopNav + safe-area (normally on .app-layout__content) */
+  padding-top: calc(
+    64px +
+    env(safe-area-inset-top, 0px)
+  );
+
+  /* Compensate for BottomNav + safe-area + breathing space */
+  padding-bottom: calc(
+    72px +
+    env(safe-area-inset-bottom, 0px) +
+    16px
+  );
+
+  /* iOS native-feel: hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tab-carousel__page::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── With sticky audio player: extra bottom padding ──────────── */
+
+.app-layout--has-player .tab-carousel__page {
+  padding-bottom: calc(
+    72px +
+    64px +                          /* StickyPlayer height */
+    env(safe-area-inset-bottom, 0px) +
+    16px
+  );
+}
+
+/* ── Override layout when carousel is mounted ─────────────────── */
+
+/*
+  Without carousel: .app-layout has min-height (can grow), content scrolls.
+  With carousel:    .app-layout needs a FIXED height so the flex chain
+                    (.app-layout → content → carousel → track → page)
+                    resolves correctly and overflow-y: auto kicks in on pages.
+
+  Using :has() — supported iOS 15.4+, Chrome 105+, Firefox 121+.
+  Fallback (older browsers): layout still works, just uses outer scroll.
+*/
+
+/* 1. Lock the app shell to exactly one viewport height */
+.app-layout:has(.tab-carousel) {
+  height: 100vh;   /* fallback */
+  height: 100dvh;  /* preferred: dynamic viewport (collapses browser chrome on scroll) */
+}
+
+/* 2. Content area: no own scroll, no padding (pages handle it) */
+.app-layout__content:has(.tab-carousel) {
+  overflow: hidden;
+  padding: 0;
+}
+
+/* ── Reduced motion: skip transition ──────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-carousel__track {
+    transition: none !important;
+  }
+}

@@ -14,6 +14,7 @@ export { CvicitPage } from './pages/CvicitPage';
 export { AkademiePage } from './pages/AkademiePage';
 export { PokrokPage } from './pages/PokrokPage';
 export { ProfilPage } from './pages/ProfilPage';
+export { UcetPage } from './pages/UcetPage';
 export { SettingsPage } from './pages/SettingsPage';
 
 // Components (if needed by other modules)

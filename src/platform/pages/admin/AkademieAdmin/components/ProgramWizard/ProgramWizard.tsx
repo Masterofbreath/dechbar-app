@@ -129,9 +129,10 @@ export function ProgramWizard({ onClose }: ProgramWizardProps) {
               category={selectedCategory}
               onChange={updateProgram}
               onCreated={(result) => {
+                // Only store result — don't advance yet (user clicks "Pokračovat" on done screen)
                 updateProgram(result);
-                setWizardState((prev) => ({ ...prev, step: 3 }));
               }}
+              onNext={() => setWizardState((prev) => ({ ...prev, step: 3 }))}
               onBack={() => setWizardState((prev) => ({ ...prev, step: 1 }))}
             />
           )}

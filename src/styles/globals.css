@@ -94,12 +94,15 @@
 
 @import url('./modals.css');
 @import url('./auth.css');
+@import url('./layouts/page-layout.css');
 
 /* ===================================
    IMPORT PAGE STYLES
    =================================== */
 
 @import url('./pages/dashboard.css');
+@import url('./pages/profil.css');
+@import url('./pages/ucet.css');
 
 /* ===================================
    IMPORT MODULE STYLES

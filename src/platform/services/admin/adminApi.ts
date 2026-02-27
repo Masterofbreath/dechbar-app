@@ -13,6 +13,51 @@
 
 import { supabase } from '@/platform/api/supabase';
 import type { Track, Album } from '@/platform/components/AudioPlayer/types';
+
+// ── Helper: přímé volání Edge Function s explicitním JWT ─────────────────────
+// Používáme fetch() místo supabase.functions.invoke() pro 100% kontrolu nad
+// Authorization hlavičkou.
+async function callEdgeFunction(functionName: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+  // Zkusíme refreshnout session → získat čerstvý JWT (eliminuje "Invalid JWT" z expirovaného tokenu)
+  let token: string | undefined;
+  try {
+    const { data: refreshed } = await supabase.auth.refreshSession();
+    token = refreshed.session?.access_token;
+  } catch {
+    // refresh selhal → použijeme cached session
+  }
+
+  if (!token) {
+    const { data: { session } } = await supabase.auth.getSession();
+    token = session?.access_token;
+  }
+
+  if (!token) {
+    throw new Error('Nejsi přihlášen nebo vypršela session — odhlás se a přihlas znovu.');
+  }
+
+  console.log(`[callEdgeFunction] Calling ${functionName}, token prefix: ${token.substring(0, 20)}...`);
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'apikey': supabaseAnonKey,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => response.statusText);
+    throw new Error(`Edge Function ${functionName} selhala (${response.status}): ${errText}`);
+  }
+
+  return response.json() as Promise<Record<string, unknown>>;
+}
 import type {
   TrackInput, TrackFilters, AlbumInput, AlbumFilters,
   AkademieCategoryInput, AkademieCategory,
@@ -540,32 +585,31 @@ export const adminApi = {
         };
 
         try {
-          const { data: { session } } = await supabase.auth.getSession();
-          const edgeResp = await supabase.functions.invoke('create-akademie-product', {
-            body: {
-              name: input.name,
-              description: input.description,
-              priceCzk: input.price_czk,
-              moduleId,
-            },
-            headers: session?.access_token
-              ? { Authorization: `Bearer ${session.access_token}` }
-              : undefined,
+          const fnData = await callEdgeFunction('create-akademie-product', {
+            name: input.name,
+            description: input.description,
+            priceCzk: input.price_czk,
+            moduleId,
           });
 
-          if (edgeResp.error) {
-            result.stripeError = `Edge Function error: ${edgeResp.error.message}`;
-          } else {
-            const fnData = edgeResp.data as Record<string, unknown>;
-            result.stripeProductId = fnData?.stripeProductId as string | null;
-            result.stripePriceId = fnData?.stripePriceId as string | null;
-            result.ecmailListInId = fnData?.ecmailListInId as string | null;
-            result.ecmailListBeforeId = fnData?.ecmailListBeforeId as string | null;
-            result.stripeError = fnData?.stripeError as string | null;
-            result.ecmailError = fnData?.ecmailError as string | null;
+          console.log('[adminApi] create-akademie-product response:', fnData);
+          result.stripeProductId = fnData?.stripeProductId as string | null;
+          result.stripePriceId = fnData?.stripePriceId as string | null;
+          result.ecmailListInId = fnData?.ecmailListInId as string | null;
+          result.ecmailListBeforeId = fnData?.ecmailListBeforeId as string | null;
+          result.stripeError = (fnData?.stripeError as string | null) ?? null;
+          result.ecmailError = (fnData?.ecmailError as string | null) ?? null;
+
+          if (result.stripeError || result.ecmailError) {
+            console.warn('[adminApi] Stripe/Ecomail partial failure:', {
+              stripeError: result.stripeError,
+              ecmailError: result.ecmailError,
+            });
           }
         } catch (fnErr: unknown) {
+          console.error('[adminApi] callEdgeFunction threw:', fnErr);
           result.stripeError = fnErr instanceof Error ? fnErr.message : 'Edge Function call failed';
+          result.ecmailError = result.stripeError;
         }
 
         return result;
@@ -598,6 +642,46 @@ export const adminApi = {
         }
 
         return data as AkademieProgram;
+      },
+
+      /**
+       * Manually set Stripe/Ecomail IDs on modules table for an existing program.
+       * Use when auto-setup via Edge Function fails.
+       */
+      async setStripeEcomail(moduleId: string, values: {
+        stripe_price_id?: string | null;
+        ecomail_list_in?: string | null;
+        ecomail_list_before?: string | null;
+      }): Promise<void> {
+        const payload: Record<string, unknown> = {};
+        if (values.stripe_price_id !== undefined) payload.stripe_price_id = values.stripe_price_id;
+        if (values.ecomail_list_in !== undefined) payload.ecomail_list_in = values.ecomail_list_in;
+        if (values.ecomail_list_before !== undefined) payload.ecomail_list_before = values.ecomail_list_before;
+        if (Object.keys(payload).length === 0) return;
+        const { error } = await supabase.from('modules').update(payload).eq('id', moduleId);
+        if (error) throw new Error(`Failed to update module Stripe/Ecomail: ${error.message}`);
+      },
+
+      /**
+       * Re-run Edge Function for an existing program (retry Stripe + Ecomail setup).
+       * Warning: may create duplicate Stripe products if first attempt partially succeeded.
+       */
+      async retryStripeEcomail(moduleId: string, name: string, priceCzk: number, description?: string): Promise<{
+        stripePriceId?: string | null;
+        ecmailListInId?: string | null;
+        ecmailListBeforeId?: string | null;
+        stripeError?: string | null;
+        ecmailError?: string | null;
+      }> {
+        const d = await callEdgeFunction('create-akademie-product', { name, description, priceCzk, moduleId });
+        console.log('[adminApi] retryStripeEcomail response:', d);
+        return {
+          stripePriceId: d?.stripePriceId as string | null,
+          ecmailListInId: d?.ecmailListInId as string | null,
+          ecmailListBeforeId: d?.ecmailListBeforeId as string | null,
+          stripeError: d?.stripeError as string | null,
+          ecmailError: d?.ecmailError as string | null,
+        };
       },
 
       async delete(id: string): Promise<void> {

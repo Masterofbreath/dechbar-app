@@ -23,6 +23,7 @@ import { getVocative } from '@/utils/inflection';
 import { isWebApp } from '@/platform/utils/environment';
 import { roleService } from './roleService';
 import { useUserState } from '@/platform/user/userStateStore';
+import { getReferralCode, clearReferralCode } from '@/utils/referral';
 
 /**
  * Auth Store Interface
@@ -49,7 +50,8 @@ interface AuthStore {
   signInWithOAuth: (provider: 'google' | 'apple' | 'facebook', options?: { redirectTo?: string }) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
-  
+  deleteAccount: () => Promise<void>;
+
   // Session management
   checkSession: () => Promise<void>;
   initializeAuthListener: () => () => void;
@@ -136,6 +138,7 @@ export const useAuthStore = create<AuthStore>()(
               full_name: session.user.user_metadata.full_name,
               vocative_name: session.user.user_metadata.vocative_name,
               avatar_url: session.user.user_metadata.avatar_url,
+              created_at: session.user.created_at,
             });
             
             // ✅ NEW: Fetch unified user state (roles + membership + modules)
@@ -167,6 +170,7 @@ export const useAuthStore = create<AuthStore>()(
               vocative_name: session.user.user_metadata.vocative_name,
               avatar_url: session.user.user_metadata.avatar_url,
               roles: session.user.user_metadata.roles || [], // ← Synchronous read from metadata
+              created_at: session.user.created_at,
             });
           } else {
             get()._setUser(null);
@@ -343,7 +347,10 @@ export const useAuthStore = create<AuthStore>()(
       signUpWithMagicLink: async (email, options) => {
         try {
           get()._setError(null);
-          
+
+          // Include referral code in metadata → DB trigger records it on new user creation
+          const referralCode = getReferralCode();
+
           const { error } = await supabase.auth.signInWithOtp({
             email,
             options: {
@@ -351,6 +358,8 @@ export const useAuthStore = create<AuthStore>()(
               data: {
                 gdpr_consent: options?.gdprConsent || false,
                 signed_up_at: new Date().toISOString(),
+                // Passed to DB trigger handle_new_user_referral_event() on INSERT
+                ...(referralCode ? { referral_code: referralCode } : {}),
               },
             },
           });
@@ -358,6 +367,8 @@ export const useAuthStore = create<AuthStore>()(
           if (error) throw error;
           
           console.log('✅ Magic link sent successfully to:', email);
+          // Clear after successful send — don't re-use on next login
+          if (referralCode) clearReferralCode();
         } catch (err) {
           console.error('Error sending magic link:', err);
           get()._setError(err as Error);
@@ -385,7 +396,7 @@ export const useAuthStore = create<AuthStore>()(
           
           if (error) throw error;
           
-          // ✅ Post-OAuth: Generate vocative_name + Store GDPR consent
+          // ✅ Post-OAuth: Generate vocative_name + Store GDPR consent + Referral tracking
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
             const full_name = session.user.user_metadata.full_name;
@@ -418,9 +429,30 @@ export const useAuthStore = create<AuthStore>()(
                 full_name,
                 vocative_name: updateData.vocative_name || session.user.user_metadata.vocative_name,
                 avatar_url: session.user.user_metadata.avatar_url,
+                created_at: session.user.created_at,
               });
               
               console.log(`✅ Updated OAuth user metadata:`, updateData);
+            }
+
+            // Referral tracking for OAuth new users
+            // (Magic link path is handled by DB trigger via metadata)
+            // For OAuth we call the RPC after auth since we can't inject metadata before redirect
+            const referralCode = getReferralCode();
+            if (referralCode) {
+              try {
+                const { data: referralResult } = await supabase.rpc(
+                  'record_referral_registration',
+                  { p_referral_code: referralCode }
+                );
+                if (referralResult?.success) {
+                  clearReferralCode();
+                  console.log(`✅ Referral event recorded for OAuth user, code: ${referralCode}`);
+                }
+              } catch (referralErr) {
+                // Non-blocking — referral errors must never break auth flow
+                console.warn('[Referral] Failed to record OAuth referral event:', referralErr);
+              }
             }
           }
           
@@ -438,14 +470,44 @@ export const useAuthStore = create<AuthStore>()(
       resetPassword: async (email) => {
         try {
           get()._setError(null);
-          
+
           const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/reset-password`,
           });
-          
+
           if (error) throw error;
         } catch (err) {
           console.error('Error resetting password:', err);
+          get()._setError(err as Error);
+          throw err;
+        }
+      },
+
+      deleteAccount: async () => {
+        try {
+          get()._setError(null);
+
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) throw new Error('No active session');
+
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+          const response = await fetch(`${supabaseUrl}/functions/v1/delete-account`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            const body = await response.json().catch(() => ({ error: 'Unknown error' }));
+            throw new Error(body.error ?? `HTTP ${response.status}`);
+          }
+
+          // Sign out locally after successful deletion
+          await supabase.auth.signOut();
+        } catch (err) {
+          console.error('[deleteAccount] Error:', err);
           get()._setError(err as Error);
           throw err;
         }

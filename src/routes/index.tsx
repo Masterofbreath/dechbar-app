@@ -14,7 +14,7 @@
  * @since 2.45.0
  */
 
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { createBrowserRouter, Navigate, Outlet, useSearchParams } from 'react-router-dom';
 import { RootLayout } from './layouts/RootLayout';
 import { ErrorPage } from './layouts/ErrorPage';
@@ -23,7 +23,7 @@ import { adminLoader } from './loaders/adminLoader';
 import { AppLayout } from '@/platform/layouts/AppLayout';
 import { AdminLayout } from '@/platform/layouts/AdminLayout';
 import { Loader } from '@/platform/components';
-import { useNavigation } from '@/platform/hooks';
+import { useNavigation, useSwipeNavigation, NAV_ORDER } from '@/platform/hooks';
 import { useKeyboardShortcuts } from '@/platform/hooks';
 import { useAkademieNav } from '@/modules/akademie/hooks/useAkademieNav';
 
@@ -80,19 +80,29 @@ const AkademieAdmin = lazy(() => import('@/platform/pages/admin/AkademieAdmin/Ak
 const NotificationsAdmin = lazy(() => import('@/platform/pages/admin/NotificationsAdmin/NotificationsAdmin'));
 
 /**
- * NavigationRouter - Renders current tab content
- * (Used inside AppLayout)
+ * TabCarousel - Apple-style carousel tab switcher
+ *
+ * All 4 tabs are mounted in a flex row.
+ * The CSS track is driven by --carousel-index and --carousel-offset (live drag px).
+ * Swipe gestures are handled by useSwipeNavigation which returns dragOffset + isDragging.
  *
  * Deep link support:
  *   ?module=digitalni-ticho  → otevře Akademie tab + přímo ProgramDetail pro daný modul
  *   ?tab=akademie             → otevře Akademie tab (na CategoryGrid)
- *
- * Příklad magic link z emailu po platbě:
- *   https://app.zdravedychej.cz/app?module=digitalni-ticho
  */
-function NavigationRouter() {
+function TabCarousel() {
   const { currentTab, setCurrentTab } = useNavigation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { ref, dragOffset, isDragging } = useSwipeNavigation<HTMLDivElement>();
+  const pageRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+
+  const currentIndex = NAV_ORDER.indexOf(currentTab);
+
+  // Reset scroll to top when switching tabs — "always start fresh"
+  useEffect(() => {
+    const pageEl = pageRefs.current[NAV_ORDER.indexOf(currentTab)];
+    if (pageEl) pageEl.scrollTop = 0;
+  }, [currentTab]);
 
   // Deep link: přečti ?module= / ?tab= a nastav správný tab + program
   useEffect(() => {
@@ -124,18 +134,26 @@ function NavigationRouter() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Záměrně pouze při mount — čteme URL jednou
 
-  switch (currentTab) {
-    case 'dnes':
-      return <DnesPage />;
-    case 'cvicit':
-      return <CvicitPage />;
-    case 'akademie':
-      return <AkademiePage />;
-    case 'pokrok':
-      return <PokrokPage />;
-    default:
-      return <DnesPage />;
-  }
+  return (
+    <div ref={ref} className="tab-carousel">
+      <div
+        className="tab-carousel__track"
+        style={{
+          '--carousel-index':  currentIndex,
+          '--carousel-offset': `${dragOffset}px`,
+          transition: isDragging
+            ? 'none'
+            : 'transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        } as React.CSSProperties}
+      >
+        {/* Pages must match NAV_ORDER: dnes[0] cvicit[1] akademie[2] pokrok[3] */}
+        <div className="tab-carousel__page" ref={el => { pageRefs.current[0] = el; }}><DnesPage /></div>
+        <div className="tab-carousel__page" ref={el => { pageRefs.current[1] = el; }}><CvicitPage /></div>
+        <div className="tab-carousel__page" ref={el => { pageRefs.current[2] = el; }}><AkademiePage /></div>
+        <div className="tab-carousel__page" ref={el => { pageRefs.current[3] = el; }}><PokrokPage /></div>
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -245,7 +263,7 @@ function AppLayoutWrapper() {
   return (
     <>
       <AppLayout>
-        <NavigationRouter />
+        <TabCarousel />
       </AppLayout>
       <GlobalModals />
     </>

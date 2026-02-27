@@ -33,7 +33,10 @@ interface SessionSettingsStore extends SessionSettings {
   
   // Actions - Walking Mode
   setWalkingMode: (enabled: boolean) => void;
-  
+
+  // Actions - Wake Lock
+  setKeepScreenOn: (enabled: boolean) => void;
+
   // Reset to defaults
   reset: () => void;
 }
@@ -62,7 +65,10 @@ export const useSessionSettings = create<SessionSettingsStore>()(
       
       // Walking Mode
       setWalkingMode: (enabled) => set({ walkingModeEnabled: enabled }),
-      
+
+      // Wake Lock
+      setKeepScreenOn: (enabled) => set({ keepScreenOn: enabled }),
+
       // Reset
       reset: () => set(DEFAULT_SESSION_SETTINGS),
     }),

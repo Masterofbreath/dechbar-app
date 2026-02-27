@@ -24,8 +24,10 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
 import { useInitializeAuth } from '@/platform/auth';
 import { useRealtimeUserState } from '@/platform/user/useRealtimeUserState';
+import { useReferralCapture } from '@/platform/hooks';
 import { isNativeApp } from '@/platform/utils/environment';
 import { Toast } from '@/components/shared';
+import { NotificationCenter, KPCenter } from '@/platform/components';
 
 export function RootLayout() {
   const navigate = useNavigate();
@@ -34,9 +36,12 @@ export function RootLayout() {
   // Initialize auth (runs once on app mount)
   useInitializeAuth();
   
-  // ✅ NEW: Real-time sync for user state (roles + membership + modules)
-  // Replaces useLoadUserRoles - now handles ALL user data with real-time updates
+  // Real-time sync for user state (roles + membership + modules)
   useRealtimeUserState();
+
+  // Global referral tracking — captures ?ref=XXXXXX from ANY page URL on first load.
+  // Works for all current and future pages automatically. No per-page setup needed.
+  useReferralCapture();
 
   // Google Analytics — SPA page tracking
   // Fires on every route change (index.html config has send_page_view: false to avoid duplicate)
@@ -95,6 +100,8 @@ export function RootLayout() {
   
   return (
     <>
+      <NotificationCenter />
+      <KPCenter />
       <Outlet />
       <Toast />
     </>

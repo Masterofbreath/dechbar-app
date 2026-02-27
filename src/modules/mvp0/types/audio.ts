@@ -97,6 +97,9 @@ export interface SessionSettings {
   
   // Walking Mode
   walkingModeEnabled: boolean;
+
+  // Wake Lock
+  keepScreenOn: boolean;
 }
 
 /**
@@ -118,6 +121,8 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   bellsEnabled: true,
   
   walkingModeEnabled: false,
+
+  keepScreenOn: true,
 };
 
 // ==================== CACHE ====================

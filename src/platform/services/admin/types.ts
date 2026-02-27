@@ -240,6 +240,9 @@ export interface ProgramWizardState {
     stripe_price_id?: string;
     ecomail_list_in_id?: string;
     ecomail_list_before_id?: string;
+    /** Set if Stripe/Ecomail failed during creation */
+    stripeError?: string | null;
+    ecmailError?: string | null;
   };
   series: SeriesInput[];
   /** Key = series index in `series` array */

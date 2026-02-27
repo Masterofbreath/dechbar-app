@@ -7,7 +7,6 @@
  * @subpackage MVP0/Components/SessionEngine
  */
 
-import { Button } from '@/platform/components';
 import { DifficultyCheck } from './DifficultyCheck';
 import { MoodSlider } from './MoodSlider';
 import { NotesField } from './NotesField';
@@ -20,8 +19,6 @@ interface SessionCompletedProps {
   onMoodChange: (mood: MoodType) => void;
   notes: string;
   onNotesChange: (notes: string) => void;
-  onSave: () => void;
-  isSaving: boolean;
 }
 
 export function SessionCompleted({
@@ -31,8 +28,6 @@ export function SessionCompleted({
   onMoodChange,
   notes,
   onNotesChange,
-  onSave,
-  isSaving,
 }: SessionCompletedProps) {
   return (
     <div className="session-completed">
@@ -53,17 +48,6 @@ export function SessionCompleted({
         value={notes} 
         onChange={onNotesChange} 
       />
-      
-      {/* Save button */}
-      <Button
-        variant="primary"
-        size="lg"
-        fullWidth
-        onClick={onSave}
-        loading={isSaving}
-      >
-        Uložit & Zavřít
-      </Button>
     </div>
   );
 }

@@ -9,6 +9,7 @@
  */
 
 import { supabase } from './supabase';
+import { getReferralCode, clearReferralCode } from '@/utils/referral';
 
 // =====================================================
 // TYPES
@@ -79,20 +80,27 @@ export async function sendChallengeMagicLink(
     const finalKpValue = kpValue > 0 ? kpValue : 0; // Allow 0
     
     // 4. Send magic link (creates or gets existing user)
-    const { data: authData, error: authError } = await supabase.auth.signInWithOtp({
+    // Include referral code → DB trigger records it on new user creation
+    const referralCode = getReferralCode();
+
+    const { error: authError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // 🚀 SOFT LAUNCH: Redirect na děkovnou stránku (ne onboarding)
+        // Redirect na děkovnou stránku po kliknutí na magic link
         emailRedirectTo: `${window.location.origin}/vyzva/dekujeme`,
-        // Metadata (použijeme později při full launch)
         data: {
           kp_value: finalKpValue,
           challenge_id: CHALLENGE_ID,
           magic_link_sent_at: now.toISOString(),
-          source: 'landing-vyzva' // Tracking odkud přišel
+          source: source || 'landing-vyzva',
+          // Passed to DB trigger handle_new_user_referral_event() on INSERT
+          ...(referralCode ? { referral_code: referralCode } : {}),
         }
       }
     });
+
+    // Clear referral code after magic link sent (don't re-use on subsequent logins)
+    if (referralCode && !authError) clearReferralCode();
     
     if (authError) {
       console.error('Magic link error:', authError);

@@ -61,12 +61,32 @@
   line-height: 1.5;
   resize: none;
   transition: border-color 0.2s ease;
-  /* margin-top: 12px; ✅ v2.42.12: REMOVED - now animated in keyframes */
-  animation: slideDown 0.3s ease forwards; /* ✅ v2.42.12: Added 'forwards' to retain final state */
-  
-  /* ✅ iOS style - limit to 2 lines (60px), scroll inside textarea */
-  max-height: 60px;
+  touch-action: manipulation;
+
+  /* ─── Collapsed (hidden) state — always in DOM, shown/hidden via class ── */
+
+  /* Keeping textarea in DOM avoids iOS WebKit zero-height interactability bug
+     where conditionally-rendered elements starting at max-height:0 can fail
+     to register taps after they gain height. */
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+/* ─── Expanded state ─────────────────────────────────────── */
+
+/* Applied when .session-notes--expanded is on the parent.   */
+
+/* Animation fires once on expand; forwards fill retains state. */
+.session-notes--expanded .session-notes__input {
+  animation: slide-down 0.3s ease forwards;
+  pointer-events: auto;
   overflow-y: auto;
+  margin-top: 12px; /* static fallback — matches animation `to` value */
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
@@ -84,7 +104,7 @@
   border-radius: 2px;
 }
 
-@keyframes slideDown {
+@keyframes slide-down {
   from {
     opacity: 0;
     max-height: 0;
@@ -94,6 +114,7 @@
     padding-bottom: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     max-height: 60px; /* ✅ Match final CSS max-height (no jump) */

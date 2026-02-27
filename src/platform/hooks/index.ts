@@ -15,3 +15,6 @@ export { useFocusTrap } from './useFocusTrap';
 export { useSwipeToDismiss } from './useSwipeToDismiss';
 export type { UseSwipeToDismissOptions } from './useSwipeToDismiss';
 export { useChallenge } from './useChallenge';
+export { useReferralCapture } from './useReferralCapture';
+export { useSwipeNavigation, NAV_ORDER } from './useSwipeNavigation';
+export type { UseSwipeNavigationReturn } from './useSwipeNavigation';

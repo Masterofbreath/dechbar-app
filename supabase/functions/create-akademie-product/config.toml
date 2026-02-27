@@ -1,0 +1,6 @@
+[functions.create-akademie-product]
+# Projekt používá asymetrické JWT (ES256) — platform-level verify_jwt
+# nedokáže ověřit ES256 tokeny (očekává HS256).
+# Ověření probíhá uvnitř funkce přes userClient.auth.getUser()
+# který volá Supabase Auth API a umí ES256 správně ověřit.
+verify_jwt = false
