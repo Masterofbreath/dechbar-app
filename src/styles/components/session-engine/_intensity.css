@@ -1,0 +1,191 @@
+/* ============================================================
+   Session Engine Modal - Intensity Controls
+   In-session ± buttons and 5-dot intensity indicator.
+
+   Architecture (both desktop and mobile):
+   ─ All intensity elements are position:absolute relative to ContentZone.
+   ─ This mirrors the existing breathing circle approach (also absolute)
+     and ensures NOTHING in the intensity UI can displace the circle.
+
+   Desktop (≥769px):
+    .intensity-circle-zone = position:absolute, centered at ContentZone 50%/50%
+                              display:flex row for [ − ] [circle] [ + ]
+    .intensity-indicator  = position:absolute, top: calc(50% + 154px)
+                              (circle radius 140px + 14px gap)
+    Session timer lives in BottomBar (.session-bottom-timer), not ContentZone.
+
+   Mobile (≤768px):
+    .intensity-circle-zone = display:contents (wrapper vanishes, children escape
+                              to ContentZone positioning context)
+    .intensity-control__button = position:absolute left/right at top:50%
+    .intensity-indicator  = position:absolute, top: calc(50% + 118px)
+                              (circle radius 110px + 8px gap)
+    Session timer lives in BottomBar (.session-bottom-timer), not ContentZone.
+   ============================================================ */
+
+/* ─── Circle Zone Wrapper ──────────────────────────────────── */
+
+/* Base: flex row [ − ] [ circle ] [ + ] (used on desktop) */
+.intensity-circle-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+/* Desktop: absolutely centered in ContentZone — same approach as breathing circle on mobile.
+   Zero impact on session-active flex layout. Circle is mathematically centered. */
+@media (width >= 769px) {
+  .intensity-circle-zone {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Mobile: wrapper dissolves — children participate in ContentZone positioning context */
+@media (width <= 768px) {
+  .intensity-circle-zone {
+    display: contents;
+  }
+}
+
+/* ─── ± Ghost Buttons ──────────────────────────────────────── */
+
+.intensity-control__button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary);
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 100ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+
+.intensity-control__button:active {
+  opacity: 1;
+  transform: scale(0.92);
+}
+
+.intensity-control__button:disabled {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* Mobile: escape the zone wrapper and position absolute in ContentZone */
+@media (width <= 768px) {
+  .intensity-control__button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3; /* Above ContentZone bg, below circle (z:10) */
+  }
+
+  .intensity-control__button--decrease { left: 16px; }
+  .intensity-control__button--increase { right: 16px; }
+}
+
+/* 320px narrow: buttons tighter to edge */
+@media (width <= 320px) {
+  .intensity-control__button--decrease { left: 8px; }
+  .intensity-control__button--increase { right: 8px; }
+}
+
+/* ─── Dots Indicator ───────────────────────────────────────── */
+
+.intensity-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.intensity-dots__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--color-text-secondary);
+  opacity: 0.25;
+  transition: background 200ms ease, border-color 200ms ease, opacity 200ms ease;
+  flex-shrink: 0;
+}
+
+/* Center dot (step=2, 1.0×): teal — baseline */
+.intensity-dots__dot--center {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  opacity: 1;
+}
+
+/* Right of center (intensity increased): gold — effort/energy */
+.intensity-dots__dot--active-high {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  opacity: 1;
+}
+
+/* Left of center (intensity decreased): dimmed teal */
+.intensity-dots__dot--active-low {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  opacity: 0.4;
+}
+
+/* ─── Intensity Indicator (dots + label) ───────────────────── */
+
+.intensity-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.intensity-indicator__label {
+  font-size: 10px;
+  font-weight: var(--font-weight-medium, 500);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  opacity: 0.3;
+  user-select: none;
+}
+
+/* Desktop: indicator absolute, below circle zone.
+   Circle radius = 140px (280px / 2). 14px gap between circle edge and indicator. */
+@media (width >= 769px) {
+  .intensity-indicator {
+    position: absolute;
+    top: calc(50% + 154px); /* 140px radius + 14px gap */
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    z-index: 2;
+    white-space: nowrap;
+  }
+
+}
+
+/* Mobile: indicator absolute below circle.
+   Circle container = 220px → radius = 110px. 8px gap. */
+@media (width <= 768px) {
+  .intensity-indicator {
+    position: absolute;
+    top: calc(50% + 118px); /* 110px radius + 8px gap */
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    z-index: 2;
+    white-space: nowrap;
+  }
+
+}

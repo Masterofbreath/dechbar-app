@@ -1,0 +1,186 @@
+/**
+ * PageLayout Styles
+ *
+ * iOS-style sub-page layout with sticky header, back button,
+ * safe area insets, and scrollable content.
+ *
+ * Used by: ProfilPage, UcetPage
+ *
+ * @package DechBar_App
+ */
+
+/* ============================================================
+   Container
+   ============================================================ */
+
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-background);
+
+  /* Bottom padding for iOS home indicator */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* ============================================================
+   Sticky Header
+   ============================================================ */
+
+.page-layout__header {
+  display: flex;
+  align-items: center;
+
+  /* Base height + safe area top */
+  height: calc(56px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0);
+  padding-left: var(--spacing-2);
+  padding-right: var(--spacing-2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   Back button
+   ============================================================ */
+
+.page-layout__back-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: opacity var(--duration-fast);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.page-layout__back-btn:active {
+  opacity: 0.5;
+}
+
+/* ============================================================
+   Title
+   ============================================================ */
+
+.page-layout__title {
+  flex: 1;
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  margin: 0;
+
+  /* Prevent overflow when title is long */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 var(--spacing-1);
+}
+
+/* ============================================================
+   Right action / spacer
+   ============================================================ */
+
+.page-layout__right-action {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 var(--spacing-2);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: opacity var(--duration-fast);
+  background: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.page-layout__right-action--ghost {
+  color: var(--color-primary);
+}
+
+.page-layout__right-action--primary {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+.page-layout__right-action:active {
+  opacity: 0.5;
+}
+
+.page-layout__right-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Saving spinner inside right action */
+.page-layout__right-action-loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgb(44 190 198 / 30%);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: page-layout-spin 0.6s linear infinite;
+}
+
+@keyframes page-layout-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Spacer mirrors back button width to keep title centered */
+.page-layout__right-spacer {
+  width: 44px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Scrollable content area
+   ============================================================ */
+
+.page-layout__content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================================
+   Responsive: center on wider screens (tablet/desktop)
+   ============================================================ */
+
+@media (width >= 768px) {
+  .page-layout__content {
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .page-layout__header {
+    justify-content: center;
+  }
+
+  /* Keep header content centered at same max-width */
+  .page-layout__header > * {
+    max-width: 600px;
+  }
+}
+
+@media (width >= 1024px) {
+  .page-layout__content {
+    max-width: 480px;
+  }
+}

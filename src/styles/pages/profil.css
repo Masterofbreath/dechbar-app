@@ -1,0 +1,570 @@
+/**
+ * ProfilPage Styles
+ *
+ * BEM naming: .profil-*
+ * No hardcoded hex values — always var(--token-name)
+ * No emoji — custom inline SVG only
+ *
+ * @package DechBar_App
+ */
+
+/* ============================================================
+   Page loading state
+   ============================================================ */
+
+.profil-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-16) var(--spacing-6);
+}
+
+.profil-loading__spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgb(44 190 198 / 20%);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: profil-spin 0.7s linear infinite;
+}
+
+@keyframes profil-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Hero Section
+   ============================================================ */
+
+.profil-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-8) var(--spacing-6) var(--spacing-6);
+}
+
+/* ── Avatar ──────────────────────────────────────────────── */
+
+.profil-avatar-wrapper {
+  position: relative;
+  margin-bottom: var(--spacing-5);
+}
+
+.profil-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-primary);
+  background: var(--color-surface-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: default;
+  padding: 0;
+
+  /* Disable tap highlight */
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--duration-fast);
+}
+
+.profil-avatar--editable {
+  cursor: pointer;
+}
+
+.profil-avatar--editable:active {
+  opacity: 0.7;
+}
+
+.profil-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-full);
+}
+
+.profil-avatar__initials {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  user-select: none;
+  line-height: 1;
+}
+
+/* Upload overlay (edit mode only) */
+.profil-avatar__upload-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: rgb(0 0 0 / 50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary);
+  pointer-events: none;
+}
+
+/* VIP badge — gold gradient circle in bottom-right */
+.profil-avatar__vip-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-accent), #B8860B);
+  border: 2px solid var(--color-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-background);
+}
+
+.profil-avatar__file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ── Hero info (view mode) ───────────────────────────────── */
+
+.profil-hero__info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  text-align: center;
+}
+
+.profil-hero__name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.profil-hero__nickname {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.profil-hero__email {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.profil-hero__role-badge {
+  display: inline-block;
+  margin-top: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.profil-hero__joined {
+  margin-top: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Edit mode fields ────────────────────────────────────── */
+
+.profil-edit-fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+  margin-top: var(--spacing-2);
+}
+
+.profil-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.profil-edit-field__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profil-edit-field__optional {
+  font-weight: var(--font-weight-regular, 400);
+  color: var(--color-text-tertiary);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.profil-edit-field__input-wrapper {
+  position: relative;
+}
+
+.profil-edit-field__input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--spacing-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--duration-fast);
+  box-sizing: border-box;
+  appearance: none;
+}
+
+.profil-edit-field__input:focus {
+  border-color: var(--color-primary);
+}
+
+.profil-edit-field__input--error {
+  border-color: var(--color-error, #E53E3E);
+}
+
+/* Checking spinner inside input wrapper */
+.profil-edit-field__checking {
+  position: absolute;
+  right: var(--spacing-3);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgb(44 190 198 / 20%);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: profil-spin 0.6s linear infinite;
+}
+
+.profil-edit-field__helper {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.profil-edit-field__error {
+  font-size: var(--font-size-xs);
+  color: var(--color-error, #E53E3E);
+  margin: 0;
+}
+
+.profil-edit-field__error--global {
+  text-align: center;
+  padding: var(--spacing-2) 0;
+}
+
+/* Cancel button (edit mode) */
+.profil-edit__cancel-btn {
+  height: 48px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity var(--duration-fast);
+  margin-top: var(--spacing-2);
+}
+
+.profil-edit__cancel-btn:active {
+  opacity: 0.6;
+}
+
+/* ============================================================
+   Section shared styles
+   ============================================================ */
+
+.profil-section {
+  padding: var(--spacing-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.profil-section__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 var(--spacing-4) 0;
+}
+
+/* Gold label — used for achievement/reward sections */
+.profil-referral-section .profil-section__label {
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+/* ============================================================
+   KP Section
+   ============================================================ */
+
+.profil-kp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-5);
+}
+
+.profil-kp-tile {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.profil-kp-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+/* Personal best — gold for achievement */
+.profil-kp-tile--best .profil-kp-value {
+  color: var(--color-accent);
+}
+
+.profil-kp-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.profil-kp-measure-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  width: 100%;
+  height: 48px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity var(--duration-fast);
+}
+
+.profil-kp-measure-btn:active {
+  opacity: 0.6;
+}
+
+/* ── Health questionnaire placeholder ───────────────────── */
+
+.profil-kp-questionnaire {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  opacity: 0.6;
+}
+
+.profil-kp-questionnaire__icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+}
+
+.profil-kp-questionnaire__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profil-kp-questionnaire__title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.profil-kp-questionnaire__status {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.profil-kp-questionnaire__badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 3px var(--spacing-2);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Referral Section
+   ============================================================ */
+
+/* Referral link box — gold left accent bar for premium feel */
+.profil-referral__link-box {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4) var(--spacing-5);
+  margin-bottom: var(--spacing-4);
+}
+
+.profil-referral__link-url {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-family: var(--font-family-mono, 'Courier New', monospace);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  word-break: break-all;
+  margin: 0;
+  user-select: all;
+}
+
+/* LEGACY — no longer rendered, kept for safety during CSS purge */
+.profil-referral__link-preview {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: 0 0 var(--spacing-4) 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-family-mono, 'Courier New', monospace);
+  letter-spacing: 0.01em;
+  padding: 0 var(--spacing-2);
+}
+
+.profil-referral__actions {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.profil-referral__action-btn {
+  flex: 1;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+
+  /* Gold CTA — referral is about rewards, gold communicates value */
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: var(--color-background);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity var(--duration-fast);
+}
+
+.profil-referral__action-btn--ghost {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.profil-referral__action-btn:active {
+  opacity: 0.6;
+}
+
+.profil-referral__stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.profil-referral__stat {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.profil-referral__stats-empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  font-style: italic;
+}
+
+.profil-referral__loading {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (width >= 768px) {
+  .profil-hero {
+    padding: var(--spacing-10) var(--spacing-8) var(--spacing-8);
+  }
+
+  .profil-section {
+    padding: var(--spacing-8);
+  }
+
+  .profil-edit-fields {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ─── Small mobile: referral URL fits on one line ──────── */
+
+/*
+   URL "https://www.dechbar.cz/?ref=XXXXXX" = 39 chars.
+   At 14px Courier New + letter-spacing 0.02em: ~338px wide.
+   iPhone 13 mini available width: ~295px → wraps last 2 digits.
+   Fix: 12px + letter-spacing 0 → ~281px → fits.
+*/
+@media (width <= 430px) {
+  .profil-referral__link-url {
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+}
