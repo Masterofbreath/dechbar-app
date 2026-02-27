@@ -66,7 +66,19 @@ export function Header() {
                   variant="ghost" 
                   size="md"
                   onClick={() => navigate('/app/profile')}
+                  className="landing-header__profile-btn"
                 >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                   {user.vocative_name || MESSAGES.header.authenticatedProfileFallback}
                 </Button>
                 <Button 

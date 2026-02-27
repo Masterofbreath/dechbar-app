@@ -39,7 +39,7 @@ const PRICING_DATA = {
     features: [
       'Měř svou kontrolní pauzu',
       '3 základní cvičení',
-      'Ranní + večerní rituály',
+      'Ranní + večerní protokoly',
       '3 vlastní cvičení',
       'Audio průvodce',
     ] as string[],

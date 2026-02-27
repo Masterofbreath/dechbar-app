@@ -10,7 +10,7 @@
  * @subpackage Modules/PublicWeb
  */
 
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 export type BillingInterval = 'monthly' | 'annual';
 
@@ -26,21 +26,22 @@ export function BillingToggle({ value, onChange, className = '' }: BillingToggle
   const monthlyBtnRef = useRef<HTMLButtonElement>(null);
   const annualBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Update slider position when value changes
-  useEffect(() => {
+  // useLayoutEffect runs synchronously before paint → eliminates flash of dark text on dark bg
+  useLayoutEffect(() => {
     const slider = sliderRef.current;
     const track = trackRef.current;
     const activeButton = value === 'monthly' ? monthlyBtnRef.current : annualBtnRef.current;
 
     if (!slider || !track || !activeButton) return;
 
-    // Calculate position and width
     const buttonWidth = activeButton.offsetWidth;
     const buttonLeft = activeButton.offsetLeft - track.offsetLeft;
 
-    // Animate slider
     slider.style.width = `${buttonWidth}px`;
     slider.style.transform = `translateX(${buttonLeft}px)`;
+
+    // Mark track as ready → CSS switches active text to dark (readable on gold)
+    track.closest('.billing-toggle')?.classList.add('billing-toggle--ready');
   }, [value]);
 
   return (

@@ -72,6 +72,13 @@ section[id] {
   min-width: auto;
 }
 
+/* Profile button: icon + vocative name inline */
+.landing-header__profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Mobile responsive */
 @media (width <= 390px) {
   .landing-header {

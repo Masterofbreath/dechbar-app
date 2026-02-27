@@ -29,10 +29,17 @@
   padding-bottom: 64px; /* Space for bottom nav */
 }
 
-/* Override .dnes-page padding for demo context (prevent overflow) */
+/* Override .dnes-page for demo context.
+   Real DnesPage uses .dnes-page__content wrapper (gap:24px).
+   DemoDnesView renders directly into .dnes-page, so we replicate that spacing here. */
 .demo-app__content .dnes-page {
-  padding-left: var(--spacing-3); /* 12px instead of 24px - ultra tight */
-  padding-right: var(--spacing-3); /* 12px instead of 24px */
+  padding: var(--spacing-3);         /* 12px all sides (ultra tight for 375px canvas) */
+  gap: var(--spacing-4);             /* 16px between Greeting / SmartBtn / Section / Tip */
+}
+
+/* Reduce section-title bottom margin (24px is too spacious at demo scale) */
+.demo-app__content .dnes-page__section-title {
+  margin-bottom: var(--spacing-3);   /* 12px instead of 24px */
 }
 
 /* Override protocols grid for demo (ensure it fits in 375px - 24px padding = 351px) */
@@ -132,7 +139,6 @@
   /* Container Query Setup - enables responsive styles based on container size */
   container-type: inline-size;
   container-name: app-viewport;
-  
   width: 375px;
   height: 812px;
   transform: scale(0.693); /* 260/375 = perfect fit in SVG (single source of truth) */
@@ -154,7 +160,7 @@
 .demo-app-container .modal-overlay {
   position: absolute !important;
   inset: 0 !important;
-  background: rgba(0, 0, 0, 0.8) !important;
+  background: rgb(0 0 0 / 80%) !important;
   z-index: 99998 !important;
   width: 100% !important;
   height: 100% !important;
