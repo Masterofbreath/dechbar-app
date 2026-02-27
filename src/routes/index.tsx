@@ -30,8 +30,10 @@ import { useAkademieNav } from '@/modules/akademie/hooks/useAkademieNav';
 /** Mapování module_id → kategorie slug v Akademii */
 const MODULE_CATEGORY_MAP: Record<string, string> = {
   'digitalni-ticho': 'rezim',
+  'kdyz-je-toho-moc': 'rezim',
   'membership-smart': 'rezim',
   'membership-ai-coach': 'rezim',
+  // Add new Akademie modules here as they are created
 };
 
 // Public pages (eager load for landing)
@@ -59,8 +61,9 @@ import {
   CvicitPage, 
   AkademiePage, 
   PokrokPage,
-  ProfilPage
 } from '@/modules/mvp0';
+import { ProfilPage } from '@/modules/mvp0/pages/ProfilPage';
+import { UcetPage } from '@/modules/mvp0/pages/UcetPage';
 import { SettingsPage } from '@/modules/mvp0/pages/SettingsPage';
 import { AboutPage } from '@/modules/mvp0/pages/AboutPage';
 import { AppTermsPage } from '@/modules/mvp0/pages/AppTermsPage';
@@ -68,12 +71,13 @@ import { AppPrivacyPage } from '@/modules/mvp0/pages/AppPrivacyPage';
 
 // MVP0 Global Modals
 import { ExerciseCreatorModal } from '@/modules/mvp0/components';
-import { NotificationCenter, KPCenter, SettingsDrawer } from '@/platform/components';
+import { SettingsDrawer } from '@/platform/components';
 
 // Admin pages (lazy loaded)
 const AudioPlayerAdmin = lazy(() => import('@/platform/pages/admin/AudioPlayerAdmin'));
 const AdminComingSoon = lazy(() => import('@/platform/pages/admin/AdminComingSoon'));
 const AkademieAdmin = lazy(() => import('@/platform/pages/admin/AkademieAdmin/AkademieAdmin'));
+const NotificationsAdmin = lazy(() => import('@/platform/pages/admin/NotificationsAdmin/NotificationsAdmin'));
 
 /**
  * NavigationRouter - Renders current tab content
@@ -90,28 +94,27 @@ function NavigationRouter() {
   const { currentTab, setCurrentTab } = useNavigation();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Deep link: přečti ?module= a nastav pendingModuleId v akademie nav
+  // Deep link: přečti ?module= / ?tab= a nastav správný tab + program
   useEffect(() => {
     const moduleId = searchParams.get('module');
-    const tab = searchParams.get('tab');
+    const tab = searchParams.get('tab') as 'dnes' | 'cvicit' | 'akademie' | 'pokrok' | null;
+    const validTabs = ['dnes', 'cvicit', 'akademie', 'pokrok'] as const;
 
     if (moduleId) {
-      // Lazy import — nechceme circular dependency
       import('@/modules/akademie/hooks/useAkademieNav').then(({ useAkademieNav }) => {
         const { setPendingModuleId, selectCategory } = useAkademieNav.getState();
-        selectCategory('rezim'); // zajisti, že jsme v správné kategorii
+        selectCategory('rezim');
         setPendingModuleId(moduleId);
       });
       setCurrentTab('akademie');
-      // Smaž query param z URL (čistá URL)
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         next.delete('module');
         next.delete('tab');
         return next;
       }, { replace: true });
-    } else if (tab === 'akademie') {
-      setCurrentTab('akademie');
+    } else if (tab && validTabs.includes(tab)) {
+      setCurrentTab(tab);
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         next.delete('tab');
@@ -141,8 +144,6 @@ function NavigationRouter() {
  */
 function GlobalModals() {
   const { 
-    isProfileOpen, 
-    closeProfile,
     isExerciseCreatorOpen,
     exerciseCreatorOptions,
     closeExerciseCreator,
@@ -154,8 +155,6 @@ function GlobalModals() {
   
   return (
     <>
-      <NotificationCenter />
-      <KPCenter />
       <SettingsDrawer />
       
       {/* Exercise Creator Modal */}
@@ -172,15 +171,6 @@ function GlobalModals() {
           exerciseId={exerciseCreatorOptions?.exerciseId}
           sourceExercise={exerciseCreatorOptions?.sourceExercise}
         />
-      )}
-      
-      {/* Profile Modal */}
-      {isProfileOpen && (
-        <div className="modal-overlay" onClick={closeProfile}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <ProfilPage />
-          </div>
-        </div>
       )}
       
       {/* Delete Confirmation Dialog */}
@@ -288,12 +278,8 @@ export const router = createBrowserRouter([
       // PUBLIC ROUTES (No auth required)
       // ============================================================
       {
-        // Na dechbar.cz (PROD doména): dočasný redirect → /vyzva (kampaň)
-        // Na test.dechbar.cz, localhost a všechny ostatní: zobrazí LandingPage
         index: true,
-        element: (window.location.hostname === 'dechbar.cz' || window.location.hostname === 'www.dechbar.cz')
-          ? <Navigate to="/vyzva" replace />
-          : <LandingPage />,
+        element: <LandingPage />,
       },
       {
         path: 'veda',
@@ -367,6 +353,18 @@ export const router = createBrowserRouter([
             element: <SettingsPage />,
           },
 
+          // Profile page — personal identity, KP stats, referral code
+          {
+            path: 'profil',
+            element: <ProfilPage />,
+          },
+
+          // Account page — membership plan, purchased modules, security
+          {
+            path: 'ucet',
+            element: <UcetPage />,
+          },
+
           // About page
           {
             path: 'about',
@@ -402,6 +400,10 @@ export const router = createBrowserRouter([
               {
                 path: 'akademie',
                 element: <AkademieAdmin />,
+              },
+              {
+                path: 'notifications',
+                element: <NotificationsAdmin />,
               },
               {
                 path: 'analytics',
