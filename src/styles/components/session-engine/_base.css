@@ -73,26 +73,8 @@
 }
 
 @media (width <= 768px) {
-  /* On mobile: fullscreen immersive modal — no card / centered layout.
-     Remove outer padding so the content fills the entire viewport edge-to-edge.
-     Safe-area handling is delegated to TopBar + BottomBar (via _mobile.css). */
-  .session-engine-modal {
-    padding: 0;
-    align-items: stretch;
-  }
-
-  .session-engine-modal__content {
-    max-width: none;
-    max-height: none;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    overflow-y: hidden;
-
-    /* Disable slide-up animation on mobile — no card to "slide up" */
-    animation: none;
-  }
-
+  /* Mobile fullscreen is handled in _mobile.css (loads last, uses !important).
+     Only close-button offset is defined here (not in _mobile.css). */
   .session-engine-modal__close {
     top: max(16px, env(safe-area-inset-top));
     right: max(16px, env(safe-area-inset-right));

@@ -37,7 +37,7 @@
 /* Demo content wrapper: tighter spacing for 375px canvas */
 .demo-app__content .dnes-page__content {
   padding: var(--spacing-3);
-  gap: var(--spacing-4);             /* 16px instead of 24px — compact but breathable */
+  gap: var(--spacing-5);             /* 20px — breathable but fits within 560px height */
 }
 
 /* Reduce section-title bottom margin (24px is too spacious at demo scale) */

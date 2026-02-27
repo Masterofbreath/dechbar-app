@@ -15,7 +15,11 @@
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
-    height: 100vh !important;
+
+    /* CRITICAL: NO explicit height — let inset: 0 (top:0 + bottom:0) determine height.
+       height: 100vh caused iOS Safari/Android Chrome viewport bug:
+       100vh = LARGE viewport (browser chrome hidden), but when address bar is VISIBLE
+       the visual viewport is smaller → BottomBar with progress bar goes BELOW screen. */
     max-width: none !important;
     max-height: none !important;
     border-radius: 0 !important;
@@ -94,8 +98,8 @@
   /* States wrapper - full height flexbox container (NO PADDING - like KP modal) */
   .session-states-wrapper {
     position: relative !important;
-    min-height: 100vh !important;
-    height: 100vh !important;
+    min-height: 0 !important; /* Let parent (inset: 0) define height — no 100vh bug */
+    height: 100% !important;
     width: 100% !important;
     display: flex !important;
     flex-direction: column !important;

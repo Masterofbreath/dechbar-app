@@ -9,6 +9,79 @@
  */
 
 /* ===================================
+   CHALLENGE ANNOUNCEMENT BANNER
+   Slim top bar linking to /vyzva
+   =================================== */
+
+.challenge-banner {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(90deg, rgb(248 202 0 / 12%) 0%, rgb(214 162 58 / 18%) 50%, rgb(248 202 0 / 12%) 100%);
+  border-bottom: 1px solid rgb(248 202 0 / 25%);
+  z-index: 1001; /* Above header */
+}
+
+.challenge-banner__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: 10px var(--spacing-6);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease;
+}
+
+.challenge-banner__link:hover {
+  background: rgb(248 202 0 / 8%);
+}
+
+.challenge-banner__badge {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-background);
+  background: var(--dechbar-gold, #F8CA00);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.challenge-banner__text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.challenge-banner__text strong {
+  color: #F8CA00;
+  font-weight: 700;
+}
+
+.challenge-banner__arrow {
+  flex-shrink: 0;
+  color: #F8CA00;
+  opacity: 0.8;
+  transition: transform 0.2s ease;
+}
+
+.challenge-banner__link:hover .challenge-banner__arrow {
+  transform: translateX(3px);
+}
+
+/* Mobile: shorten text */
+@media (width <= 480px) {
+  .challenge-banner__text {
+    font-size: 0.8125rem;
+  }
+
+  .challenge-banner__badge {
+    display: none;
+  }
+}
+
+/* ===================================
    LANDING PAGE BASE
    =================================== */
 

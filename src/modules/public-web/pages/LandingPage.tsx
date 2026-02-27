@@ -25,6 +25,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/landing/Header';
+import { ChallengeBanner } from '../components/landing/ChallengeBanner';
 import { HeroSection } from '../components/landing/HeroSection';
 import { SciencePillars } from '../components/landing/SciencePillars';
 import { HowItWorks } from '../components/landing/HowItWorks';
@@ -36,23 +37,20 @@ import { Footer } from '../components/landing/Footer';
 export function LandingPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [showCancelToast, setShowCancelToast] = useState(false);
+  // Derive initial toast state directly from URL params (avoids setState-in-effect lint error)
+  const [showCancelToast, setShowCancelToast] = useState(() => searchParams.get('cancelled') === 'true');
 
-  // Detect ?cancelled=true from Stripe redirect
+  // Auto-dismiss cancel toast after 3 seconds and clean URL
   useEffect(() => {
-    if (searchParams.get('cancelled') === 'true') {
-      setShowCancelToast(true);
-      
-      // Auto-dismiss after 3 seconds
-      const timer = setTimeout(() => {
-        setShowCancelToast(false);
-        // Clean URL (remove query param)
-        navigate('/', { replace: true });
-      }, 3000);
+    if (!showCancelToast) return;
 
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams, navigate]);
+    const timer = setTimeout(() => {
+      setShowCancelToast(false);
+      navigate('/', { replace: true });
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [showCancelToast, navigate]);
 
   return (
     <div className="landing-page">
@@ -78,6 +76,9 @@ export function LandingPage() {
           </button>
         </div>
       )}
+
+      {/* Challenge announcement banner — above sticky header */}
+      <ChallengeBanner />
 
       {/* Header - sticky navigation with glassmorphism */}
       <Header />

@@ -19,9 +19,8 @@
   width: 100%;
   height: 4px;
 
-  /* Track: subtle white (10% opacity) — viditelné na tmavém pozadí.
-     Původní var(--glow-accent-bg-strong) = rgba(214,162,58,0.1) na #121212 = téměř neviditelné tmavohnědé. */
-  background: rgb(255 255 255 / 12%);
+  /* Track: 18% white — subtle but clearly visible on dark background */
+  background: rgb(255 255 255 / 18%);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -53,7 +52,7 @@
   font-size: 12px;
   font-weight: var(--font-weight-medium, 500);
   color: var(--color-text-secondary);
-  opacity: 0.55;
+  opacity: 0.7;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums; /* prevents width jumping as number changes */
 }
@@ -77,7 +76,9 @@
   .session-active-bottom-bar {
     flex-direction: column;
     justify-content: flex-end;
-    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+
+    /* Use !important to beat fullscreen-modal/_mobile.css which also sets padding-bottom */
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
 
     /* position: relative already set on .fullscreen-modal__bottom-bar */
   }
@@ -87,15 +88,21 @@
     position: absolute;
     right: 20px;
 
-    /* bottom = safe-area + progress bar height (4px) + gap (6px) */
-    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 10px);
+    /* bottom = safe-area + progress bar height (6px) + gap (6px) */
+    bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 12px);
     margin-bottom: 0;
     order: unset;
+  }
+
+  .session-active-bottom-bar .session-bottom-timer__value {
+    font-size: 13px;
+    opacity: 0.8;
   }
 
   .session-active-bottom-bar .fullscreen-modal__progress {
     flex: none;
     width: 100%;
+    height: 6px; /* Slightly taller on mobile for better visibility */
     order: unset;
   }
 }
