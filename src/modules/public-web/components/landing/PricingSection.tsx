@@ -53,9 +53,9 @@ const PRICING_DATA = {
     subtitle: 'Inteligentní doporučení',
     badge: 'OBLÍBENÉ',
     features: [
-      'Personalizovaná doporučení',
-      'Sledování KP v čase',
-      '150+ audio programů',
+      'Trénink na míru',
+      'Sledování výsledků v čase',
+      'Tvůj účet',
       'Neomezené vlastní cvičení',
     ] as string[],
     ctaText: 'Začít →',

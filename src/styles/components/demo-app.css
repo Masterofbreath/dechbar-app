@@ -29,17 +29,25 @@
   padding-bottom: 64px; /* Space for bottom nav */
 }
 
-/* Override .dnes-page for demo context.
-   Real DnesPage uses .dnes-page__content wrapper (gap:24px).
-   DemoDnesView renders directly into .dnes-page, so we replicate that spacing here. */
-.demo-app__content .dnes-page {
-  padding: var(--spacing-3);         /* 12px all sides (ultra tight for 375px canvas) */
-  gap: var(--spacing-4);             /* 16px between Greeting / SmartBtn / Section / Tip */
+/* Demo header: remove extra top padding (demo-app__content already provides 64px offset) */
+.demo-app__content .dnes-page__header {
+  padding: 0 var(--spacing-3) var(--spacing-2);
+}
+
+/* Demo content wrapper: tighter spacing for 375px canvas */
+.demo-app__content .dnes-page__content {
+  padding: var(--spacing-3);
+  gap: var(--spacing-4);             /* 16px instead of 24px — compact but breathable */
 }
 
 /* Reduce section-title bottom margin (24px is too spacious at demo scale) */
 .demo-app__content .dnes-page__section-title {
   margin-bottom: var(--spacing-3);   /* 12px instead of 24px */
+}
+
+/* DemoDailyProgramCard: slightly smaller padding at 375px canvas */
+.demo-app__content .todays-challenge-button {
+  padding: 0.875rem 1rem;
 }
 
 /* Override protocols grid for demo (ensure it fits in 375px - 24px padding = 351px) */
