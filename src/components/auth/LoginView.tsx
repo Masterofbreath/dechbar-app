@@ -4,8 +4,10 @@
  * Login form view for AuthModal.
  * Supports:
  *   - Email + password login
- *   - OAuth (Google)
- *   - "Přihlásit bez hesla" — magic link for users who forgot/never set a password
+ *   - Google OAuth
+ *   - "Přihlásit bez hesla" — magic link recovery for users without/with forgotten password
+ *
+ * Session is always persisted in localStorage (no "Remember Me" toggle needed).
  *
  * @package DechBar_App
  * @subpackage Components/Auth
@@ -16,7 +18,7 @@ import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/platform/auth';
 import { supabase } from '@/platform/api/supabase';
-import { Button, Input, TextLink, Checkbox } from '@/platform/components';
+import { Button, Input, TextLink } from '@/platform/components';
 import { ErrorMessage } from '@/components/shared';
 import { MESSAGES } from '@/config/messages';
 
@@ -24,7 +26,7 @@ interface LoginViewProps {
   onSwitchToRegister: () => void;
   onSwitchToReset: () => void;
   onSuccess?: () => void;
-  /** After successful login, navigate here. Defaults to /app. */
+  /** After successful login navigate here. Defaults to /app. */
   returnTo?: string;
 }
 
@@ -34,7 +36,6 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
   const [formError, setFormError] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -59,7 +60,7 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isLoading]);
 
-  async function handleOAuthSignIn(provider: 'google' | 'apple' | 'facebook') {
+  async function handleOAuthSignIn(provider: 'google') {
     try {
       setFormError('');
       await signInWithOAuth(provider, {
@@ -89,7 +90,7 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
     }
 
     try {
-      await signIn({ email, password, remember });
+      await signIn({ email, password });
 
       if (onSuccess) {
         onSuccess();
@@ -124,8 +125,7 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
 
   // ============================================================
   // MAGIC LINK MODE — "Přihlásit bez hesla"
-  // Pro uživatele, kteří nemají heslo nebo ho zapomněli
-  // Posílá magic link (shouldCreateUser: false → jen existující účty)
+  // Pro uživatele bez hesla nebo s ProtonMail scannerem
   // ============================================================
   async function handleMagicLinkSend(e: FormEvent) {
     e.preventDefault();
@@ -233,17 +233,15 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
   }
 
   // ============================================================
-  // STANDARD LOGIN FORM
+  // STANDARD LOGIN FORM — simplified
   // ============================================================
   return (
     <div className="auth-view">
-      {/* Header */}
       <div className="modal-header">
         <h2 className="modal-title">{MESSAGES.auth.loginTitle}</h2>
         <p className="modal-subtitle">{MESSAGES.auth.loginSubtitle}</p>
       </div>
 
-      {/* Login Form */}
       <form ref={formRef} onSubmit={handleSubmit} className="auth-form" noValidate>
         <Input
           type="email"
@@ -266,12 +264,8 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
           disabled={isLoading}
         />
 
-        <div className="flex items-center justify-between">
-          <Checkbox
-            label={MESSAGES.form.rememberMe}
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-          />
+        {/* Forgot password — right aligned, no "remember me" checkbox */}
+        <div style={{ textAlign: 'right', marginTop: '-4px' }}>
           <TextLink onClick={onSwitchToReset}>
             Zapomenuté heslo?
           </TextLink>
@@ -292,7 +286,7 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
           {isLoading ? MESSAGES.buttons.loading.login : MESSAGES.buttons.login}
         </Button>
 
-        {/* Magic link option — recovery for users without/with forgotten password */}
+        {/* Passwordless login — recovery for users without / with forgotten password */}
         <div style={{ textAlign: 'center', marginTop: '4px' }}>
           <TextLink onClick={() => setMagicLinkMode(true)}>
             Přihlásit bez hesla →
@@ -300,7 +294,7 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
         </div>
       </form>
 
-      {/* OAuth */}
+      {/* OAuth — only active providers */}
       <div className="mt-6">
         <div className="auth-divider">
           <span>{MESSAGES.auth.oauthDivider}</span>
@@ -315,26 +309,10 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
           >
             <img src="/assets/images/icons/oauth/google.svg" alt="" aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            className="oauth-icon-button"
-            disabled
-            aria-label="Pokračovat s Facebook (brzy dostupné)"
-          >
-            <img src="/assets/images/icons/oauth/facebook.svg" alt="" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="oauth-icon-button"
-            disabled
-            aria-label="Pokračovat s Apple (brzy dostupné)"
-          >
-            <img src="/assets/images/icons/oauth/apple.svg" alt="" aria-hidden="true" />
-          </button>
         </div>
       </div>
 
-      {/* Register Link */}
+      {/* Register link */}
       <div className="modal-footer">
         <p className="modal-footer-text">
           {MESSAGES.auth.noAccount}{' '}

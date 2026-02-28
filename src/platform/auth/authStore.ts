@@ -188,64 +188,16 @@ export const useAuthStore = create<AuthStore>()(
       /**
        * Sign in with email/password
        */
-      signIn: async ({ email, password, remember = true }) => {
+      signIn: async ({ email, password }) => {
         try {
           get()._setIsLoading(true);
           get()._setError(null);
-          
-          // Parallel execution: Login + Preload
-          const loginPromise = supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          
-          // Preload critical data during login
-          const preloadPromise = Promise.allSettled([
-            (async () => {
-              try {
-                await supabase.from('profiles').select('*').limit(1);
-                console.log('✅ Profiles table prefetched');
-              // eslint-disable-next-line no-empty
-              } catch {}
-            })(),
-            
-            (async () => {
-              try {
-                await supabase.from('modules').select('id, name, description');
-                console.log('✅ Modules metadata prefetched');
-              // eslint-disable-next-line no-empty
-              } catch {}
-            })(),
-            
-            (async () => {
-              try {
-                await supabase.from('user_progress').select('*').limit(10);
-                console.log('✅ User progress prefetched');
-              // eslint-disable-next-line no-empty
-              } catch {}
-            })(),
-            
-            (async () => {
-              try {
-                await supabase.from('achievements').select('*').limit(5);
-                console.log('✅ Achievements prefetched');
-              // eslint-disable-next-line no-empty
-              } catch {}
-            })(),
-          ]);
-          
-          const [loginResult] = await Promise.all([loginPromise, preloadPromise]);
-          
-          if (loginResult.error) throw loginResult.error;
-          
-          // Handle "Remember Me" functionality
-          if (!remember) {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              localStorage.removeItem('dechbar-auth');
-              sessionStorage.setItem('dechbar-auth', JSON.stringify(session));
-            }
-          }
+
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+          if (error) throw error;
+          // Session is persisted to localStorage automatically by the Supabase client
+          // (persistSession: true, storage: window.localStorage in supabase.ts)
         } catch (err) {
           console.error('Error signing in:', err);
           get()._setError(err as Error);
