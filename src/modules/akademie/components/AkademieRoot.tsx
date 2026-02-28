@@ -1,5 +1,5 @@
 import { useAuth } from '@/platform/auth'
-import { useUserStateStore } from '@/platform/user/userStateStore'
+import { useUserState } from '@/platform/user/userStateStore'
 import { LockedFeatureModal } from '@/modules/mvp0/components'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAkademieNav } from '../hooks/useAkademieNav'
@@ -25,7 +25,7 @@ import { ProgramDetail } from './ProgramDetail'
  */
 export function AkademieRoot() {
   const { user } = useAuth()
-  const isAdmin = useUserStateStore((s) => s.isAdmin)
+  const isAdmin = useUserState((s) => s.isAdmin)
   const { activeCategorySlug, routeStack, selectCategory, openProgram, back, reset, pendingModuleId, setPendingModuleId } =
     useAkademieNav()
   const { prefetchCategoryDeep, prefetchProgramDeep } = useAkademiePrefetch()
