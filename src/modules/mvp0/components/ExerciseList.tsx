@@ -319,7 +319,7 @@ export function ExerciseList({
                   ? `Zobrazuji posledních ${historyDaysLimit} dní.`
                   : 'Zobrazuji celou historii.'}
                 {hasHiddenHistory && (
-                  <> Tvoje data sahají dál, odemkni celou historii.</>
+                  <> Celá historie se ti zobrazí s tarifem SMART.</>
                 )}
               </p>
             </div>
