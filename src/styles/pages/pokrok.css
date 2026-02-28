@@ -463,3 +463,185 @@
   text-align: center;
   padding: 40px 0;
 }
+
+/* ═══════════════════════════════════════════════
+   COMMUNITY MILESTONE
+   Sdílený progres komunity — prvočíselné milníky
+═══════════════════════════════════════════════ */
+
+.pokrok-page__community {
+  margin: 8px 0 12px;
+  padding: 20px 20px 16px;
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 16px;
+}
+
+.pokrok-page__community-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.pokrok-page__community-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 45%);
+}
+
+.pokrok-page__community-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #D6A23A;
+  background: rgb(214 162 58 / 12%);
+  border: 1px solid rgb(214 162 58 / 25%);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.pokrok-page__community-total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 20px;
+}
+
+.pokrok-page__community-value {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #F8CA00;
+  line-height: 1;
+}
+
+.pokrok-page__community-sublabel {
+  font-size: 12px;
+  color: rgb(255 255 255 / 35%);
+  margin-top: 4px;
+}
+
+/* ── Timeline ── */
+
+.pokrok-page__milestone-timeline {
+  margin-bottom: 14px;
+}
+
+.pokrok-page__milestone-track {
+  position: relative;
+  height: 4px;
+  background: rgb(255 255 255 / 10%);
+  border-radius: 4px;
+  margin: 28px 0 24px;
+}
+
+.pokrok-page__milestone-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #8a6520 0%, #F8CA00 100%);
+  border-radius: 4px;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgb(248 202 0 / 40%);
+}
+
+.pokrok-page__milestone-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 15%);
+  border: 1.5px solid rgb(255 255 255 / 20%);
+  cursor: default;
+  transition: all 200ms ease;
+}
+
+.pokrok-page__milestone-dot--reached {
+  background: #D6A23A;
+  border-color: #F8CA00;
+  box-shadow: 0 0 6px rgb(248 202 0 / 50%);
+}
+
+.pokrok-page__milestone-dot--next {
+  background: rgb(248 202 0 / 20%);
+  border-color: rgb(248 202 0 / 60%);
+  box-shadow: 0 0 10px rgb(248 202 0 / 35%);
+  animation: milestone-pulse 2s ease-in-out infinite;
+}
+
+@keyframes milestone-pulse {
+  0%, 100% {
+    box-shadow: 0 0 6px rgb(248 202 0 / 35%);
+  }
+
+  50% {
+    box-shadow: 0 0 14px rgb(248 202 0 / 65%);
+  }
+}
+
+.pokrok-page__milestone-label {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 40%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.pokrok-page__milestone-dot--reached .pokrok-page__milestone-label {
+  color: #D6A23A;
+}
+
+.pokrok-page__milestone-dot--next .pokrok-page__milestone-label {
+  color: #F8CA00;
+}
+
+/* ── Next milestone info ── */
+
+.pokrok-page__milestone-next {
+  font-size: 12px;
+  color: rgb(255 255 255 / 40%);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.pokrok-page__milestone-next strong {
+  color: rgb(255 255 255 / 75%);
+}
+
+.pokrok-page__milestone-next-target {
+  color: #F8CA00 !important;
+}
+
+.pokrok-page__milestone-next--reached {
+  color: #D6A23A;
+}
+
+/* ── Skeleton lg ── */
+
+.pokrok-page__skeleton--lg {
+  width: 80px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+/* ── Math easter egg footnote ── */
+
+.pokrok-page__community-footnote {
+  font-size: 10px;
+  color: rgb(255 255 255 / 18%);
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}

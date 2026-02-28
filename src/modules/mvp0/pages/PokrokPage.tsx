@@ -18,12 +18,121 @@
  */
 
 import { useState } from 'react';
-import { useUserPokrokStats, getDaysSinceRegistration, usePersonalRecords } from '@/platform/analytics';
+import { useUserPokrokStats, getDaysSinceRegistration, usePersonalRecords, useAllTimeMinutes } from '@/platform/analytics';
 import { formatMinutes, getActivityLevel } from '@/platform/analytics';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useAuthStore } from '@/platform/auth';
 import type { ActivityPeriod, ActivityDayData } from '@/platform/analytics';
 import '@/styles/pages/pokrok.css';
+
+// ── Prime number milestones (in hours) ──
+const PRIME_MILESTONES_H = [
+  2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
+  53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
+];
+
+function getPrimeMilestoneMinutes(h: number) { return h * 60; }
+
+function formatHours(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m} min`;
+}
+
+// ── Community Milestone Component ──
+function CommunityMilestone() {
+  const { minutes, isLoading } = useAllTimeMinutes();
+  const currentHours = minutes / 60;
+
+  // Find which prime milestones are reached and what's next
+  const reachedIdx = PRIME_MILESTONES_H.filter((h) => h <= currentHours).length - 1;
+  const prevMilestoneH = reachedIdx >= 0 ? PRIME_MILESTONES_H[reachedIdx] : 0;
+  const nextMilestoneH = PRIME_MILESTONES_H[reachedIdx + 1] ?? PRIME_MILESTONES_H[reachedIdx + 2] ?? 113;
+
+  // Progress within current segment (prev → next milestone)
+  const segmentStart = prevMilestoneH * 60;
+  const segmentEnd = nextMilestoneH * 60;
+  const progressPct = segmentEnd > segmentStart
+    ? Math.min(100, ((minutes - segmentStart) / (segmentEnd - segmentStart)) * 100)
+    : 100;
+
+  const minutesToNext = Math.max(0, Math.round(segmentEnd - minutes));
+
+  // Milestones to display: last 2 reached + next 4
+  const displayStart = Math.max(0, reachedIdx - 1);
+  const displayEnd = Math.min(PRIME_MILESTONES_H.length - 1, reachedIdx + 4);
+  const visibleMilestones = PRIME_MILESTONES_H.slice(displayStart, displayEnd + 1);
+
+  return (
+    <div className="pokrok-page__community">
+      <div className="pokrok-page__community-header">
+        <span className="pokrok-page__community-title">Dýcháme společně</span>
+        <span className="pokrok-page__community-badge">komunita</span>
+      </div>
+
+      {/* Big number */}
+      <div className="pokrok-page__community-total">
+        {isLoading
+          ? <div className="pokrok-page__skeleton pokrok-page__skeleton--lg" />
+          : <span className="pokrok-page__community-value">{formatHours(minutes)}</span>
+        }
+        <span className="pokrok-page__community-sublabel">oddýcháno celkem v DechBaru</span>
+      </div>
+
+      {/* Timeline */}
+      <div className="pokrok-page__milestone-timeline">
+        {/* Progress track */}
+        <div className="pokrok-page__milestone-track">
+          <div
+            className="pokrok-page__milestone-fill"
+            style={{ width: isLoading ? '0%' : `${progressPct}%` }}
+          />
+          {/* Milestone dots positioned along the track */}
+          {visibleMilestones.map((h, i) => {
+            const totalVisible = visibleMilestones.length;
+            const leftPct = (i / (totalVisible - 1)) * 100;
+            const isReached = h <= currentHours;
+            const isNext = h === nextMilestoneH;
+            return (
+              <div
+                key={h}
+                className={[
+                  'pokrok-page__milestone-dot',
+                  isReached ? 'pokrok-page__milestone-dot--reached' : '',
+                  isNext ? 'pokrok-page__milestone-dot--next' : '',
+                ].filter(Boolean).join(' ')}
+                style={{ left: `${leftPct}%` }}
+                title={`${h}h = ${getPrimeMilestoneMinutes(h)} min`}
+              >
+                <span className="pokrok-page__milestone-label">{h}h</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Next milestone info */}
+      {!isLoading && minutesToNext > 0 && (
+        <div className="pokrok-page__milestone-next">
+          Dalších <strong>{formatHours(minutesToNext)}</strong> do milníku{' '}
+          <strong className="pokrok-page__milestone-next-target">{nextMilestoneH}h</strong>
+        </div>
+      )}
+      {!isLoading && minutesToNext === 0 && (
+        <div className="pokrok-page__milestone-next pokrok-page__milestone-next--reached">
+          Milník {nextMilestoneH}h dosažen! 🎯
+        </div>
+      )}
+
+      {/* Math easter egg */}
+      <div className="pokrok-page__community-footnote">
+        Milníky jsou prvočísla — přirozeně unikátní, jako každý dech.
+      </div>
+    </div>
+  );
+}
 
 // ── Helpers ──
 
@@ -395,6 +504,9 @@ export function PokrokPage() {
 
       {/* Activity Heatmap (always last 84 days, regardless of period selector) */}
       <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
+
+      {/* Community Milestone — always visible, all-time community stats */}
+      <CommunityMilestone />
     </div>
     </>
   );
