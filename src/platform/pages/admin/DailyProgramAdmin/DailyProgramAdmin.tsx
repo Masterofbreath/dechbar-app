@@ -13,7 +13,7 @@
  * @subpackage Platform/Pages/Admin
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/platform/api/supabase';
 import { akademieKeys } from '@/modules/akademie/api/keys';
@@ -360,6 +360,22 @@ export default function DailyProgramAdmin() {
     queryFn: fetchAllOverrides,
     staleTime: 0,
   });
+
+  // Real-time: invalidate cache whenever any row in platform_daily_override changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('daily-override-admin-rt')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'platform_daily_override' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: akademieKeys.dailyOverride() });
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const saveMutation = useMutation({
     mutationFn: upsertOverride,
