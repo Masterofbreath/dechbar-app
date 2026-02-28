@@ -247,8 +247,7 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
   function handleOverridePlay() {
     if (!dailyOverride.data) return;
     const o = dailyOverride.data;
-    // Fire-and-forget: increment play count without blocking audio start
-    supabase.rpc('increment_override_play_count', { override_id: o.id });
+    // Start audio synchronously (iOS Safari requires onClick to be synchronous)
     playSticky({
       id: `override-${o.id}`,
       album_id: null,
@@ -274,6 +273,15 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
+    // Increment play count after audio starts — log result for debugging
+    supabase.rpc('increment_override_play_count', { override_id: o.id })
+      .then(({ error }) => {
+        if (error) {
+          console.error('[PlayCount] RPC failed:', error.message, '| override_id:', o.id);
+        } else {
+          console.log('[PlayCount] ✅ Incremented | override_id:', o.id);
+        }
+      });
   }
 
   // Loading: wait for user program + override before showing skeleton
