@@ -216,43 +216,43 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, coverUrl, progr
         )}
       </button>
 
-      {/* Content panel */}
-      {isOpen && (
-        <div
-          className="akademie-accordion-panel"
-          id={`accordion-panel-${series.id}`}
-          role="region"
-          aria-label={`Série ${seriesIndex + 1}: ${series.name}`}
-        >
-          {isLoading && (
-            <div style={{ padding: '12px 16px', color: 'var(--color-text-tertiary)', fontSize: '0.8125rem' }}>
-              Načítám lekce…
-            </div>
-          )}
+      {/* Content panel — vždy v DOM, CSS show/hide zabraňuje scroll jumpu při collapse */}
+      <div
+        className="akademie-accordion-panel"
+        id={`accordion-panel-${series.id}`}
+        role="region"
+        aria-label={`Série ${seriesIndex + 1}: ${series.name}`}
+        hidden={!isOpen}
+        style={!isOpen ? { display: 'none' } : undefined}
+      >
+        {isLoading && (
+          <div style={{ padding: '12px 16px', color: 'var(--color-text-tertiary)', fontSize: '0.8125rem' }}>
+            Načítám lekce…
+          </div>
+        )}
 
-          {!isLoading && lessons?.length === 0 && (
-            <div style={{ padding: '12px 16px', color: 'var(--color-text-tertiary)', fontSize: '0.8125rem' }}>
-              Lekce budou brzy k dispozici.
-            </div>
-          )}
+        {!isLoading && lessons?.length === 0 && (
+          <div style={{ padding: '12px 16px', color: 'var(--color-text-tertiary)', fontSize: '0.8125rem' }}>
+            Lekce budou brzy k dispozici.
+          </div>
+        )}
 
-          {!isLoading &&
-            lessons?.map((lesson) => (
-              <LessonRow
-                key={lesson.id}
-                lesson={lesson}
-                seriesId={series.id}
-                isSeriesLocked={!isOwned}
-                userId={userId}
-                coverUrl={coverUrl}
-                programId={programId}
-                categorySlug={categorySlug}
-                programTitle={programTitle}
-                onLockedPlay={() => setLockedModalOpen(true)}
-              />
-            ))}
-        </div>
-      )}
+        {!isLoading &&
+          lessons?.map((lesson) => (
+            <LessonRow
+              key={lesson.id}
+              lesson={lesson}
+              seriesId={series.id}
+              isSeriesLocked={!isOwned}
+              userId={userId}
+              coverUrl={coverUrl}
+              programId={programId}
+              categorySlug={categorySlug}
+              programTitle={programTitle}
+              onLockedPlay={() => setLockedModalOpen(true)}
+            />
+          ))}
+      </div>
 
       <LockedFeatureModal
         isOpen={lockedModalOpen}

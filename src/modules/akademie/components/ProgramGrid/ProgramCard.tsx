@@ -95,11 +95,13 @@ export function ProgramCard({ program, userId, onOpen }: ProgramCardProps) {
         {/* Content */}
         <div className="akademie-program-card__body">
           <p className="akademie-program-card__name">{program.name}</p>
-          <div className="akademie-program-card__meta">
-            <span>21 dní</span>
-            <span>·</span>
-            <span>15 min/den</span>
-          </div>
+          {(program.duration_days || program.daily_minutes) && (
+            <div className="akademie-program-card__meta">
+              {program.duration_days && <span>{program.duration_days} dní</span>}
+              {program.duration_days && program.daily_minutes && <span>·</span>}
+              {program.daily_minutes && <span>{program.daily_minutes} min/den</span>}
+            </div>
+          )}
         </div>
 
         {/* Favorites tlačítko — jen pro vlastněné programy */}

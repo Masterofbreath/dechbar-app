@@ -24,11 +24,7 @@ const CATEGORY_BENEFITS: Record<string, string> = {
   evening: 'Odpočinek',     // NOC
   energy: 'Aktivace',
   sleep: 'Spánek',
-};
-
-// Exercise-specific benefit overrides (priority over category)
-const EXERCISE_SPECIFIC_BENEFITS: Record<string, string> = {
-  'Srdeční koherence': 'Kreativita',  // HRV exercise - creativity/flow
+  hrv: 'Kreativita',        // Srdeční koherence - HRV / flow state
 };
 
 export interface ExerciseCardProps {
@@ -63,7 +59,7 @@ export function ExerciseCard({
   const durationMinutes = Math.round(exercise.total_duration_seconds / 60);
   const isCustom = exercise.category === 'custom';
   const benefitLabel = !isCustom && exercise.subcategory
-    ? (EXERCISE_SPECIFIC_BENEFITS[exercise.name] || CATEGORY_BENEFITS[exercise.subcategory])
+    ? CATEGORY_BENEFITS[exercise.subcategory] ?? null
     : null;
   
   function handleClick() {

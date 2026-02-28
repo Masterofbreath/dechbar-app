@@ -273,7 +273,13 @@ export function ExerciseList({
             ) : (
               /* Empty state when no custom exercises */
               <div className="empty-custom-state">
-                <div className="empty-custom-state__icon">✨</div>
+                <div className="empty-custom-state__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" width="40" height="40">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                </div>
                 <h3 className="empty-custom-state__title">
                   Vytvoř si vlastní cvičení
                 </h3>
@@ -407,9 +413,13 @@ export function ExerciseList({
               </div>
             ) : (
               <EmptyState
-                icon="📊"
+                icon={
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" width="40" height="40">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                }
                 title="Žádná historie"
-                message="Začni cvičit a tvoje progress se zde zobrazí."
+                message="Začni cvičit a tvoje výsledky se zde zobrazí."
               />
             )}
           </div>

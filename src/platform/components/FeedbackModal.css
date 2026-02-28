@@ -127,25 +127,27 @@
 /* Category pills */
 .feedback-modal__pills {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;   /* jeden řádek vždy */
 }
 
 .feedback-modal__pill {
-  padding: 0 16px;
-  height: 36px;
+  flex: 1;             /* rovnoměrné rozdělení šířky */
+  padding: 0 10px;
+  height: 40px;
   border-radius: var(--radius-full, 9999px);
   border: 1px solid var(--color-border, #2A2A2A);
   background: var(--color-surface, #1E1E1E);
   color: var(--color-text-secondary, #A0A0A0);
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: 0.8125rem;   /* 13px — o 1px méně než dřív */
   font-weight: var(--font-weight-medium, 500);
   cursor: pointer;
   transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
   white-space: nowrap;
-  min-height: 44px;
+  min-height: 40px;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .feedback-modal__pill:hover {

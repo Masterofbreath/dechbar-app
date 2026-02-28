@@ -170,6 +170,7 @@ interface UserModuleRow {
 export async function fetchProgramsForCategory(
   categorySlug: string,
   userId: string | undefined,
+  isAdmin = false,
 ): Promise<AkademieProgramVM[]> {
   // 1. Resolve category id ze slugu
   const { data: cat, error: catError } = await supabase
@@ -220,9 +221,9 @@ export async function fetchProgramsForCategory(
     ;(favs ?? []).forEach((row: { program_id: string }) => favoriteIds.add(row.program_id))
   }
 
-  // 5. Enrichment
+  // 5. Enrichment — admin/CEO vidí vše jako vlastněné
   const enriched: AkademieProgramVM[] = programRows.map((row) => {
-    const isOwned = ownedModuleIds.has(row.module_id)
+    const isOwned = isAdmin || ownedModuleIds.has(row.module_id)
     return {
       id: row.id,
       module_id: row.module_id,
@@ -253,10 +254,11 @@ export async function fetchProgramsForCategory(
 export function useAkademieCatalog(
   categorySlug: string | null,
   userId: string | undefined,
+  isAdmin = false,
 ) {
   return useQuery({
-    queryKey: [...akademieKeys.programsByCategory(categorySlug), userId ?? 'anon'],
-    queryFn: () => fetchProgramsForCategory(categorySlug, userId),
+    queryKey: [...akademieKeys.programsByCategory(categorySlug), userId ?? 'anon', isAdmin ? 'admin' : 'user'],
+    queryFn: () => fetchProgramsForCategory(categorySlug ?? '', userId, isAdmin),
     staleTime: 1000 * 60 * 2,
     enabled: !!categorySlug,
   })

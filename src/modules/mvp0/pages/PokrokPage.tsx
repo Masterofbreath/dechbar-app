@@ -153,6 +153,12 @@ export function PokrokPage() {
   const [period, setPeriod] = useState<ActivityPeriod>('all');
   const userId = useAuthStore((s) => s.user?.id);
 
+  // Prefetch všech period dopředu — eliminuje skeleton při přepínání tabů
+  useUserPokrokStats(userId, 'day');
+  useUserPokrokStats(userId, 'week');
+  useUserPokrokStats(userId, 'month');
+  useUserPokrokStats(userId, 'year');
+
   const { totalMinutes, totalActivities, activeDays, averageMinutesPerDay, registeredAt,
           prevTotalMinutes, prevTotalActivities, prevActiveDays, prevAverageMinutesPerDay,
           streak, activityGraph, isLoading, error } =
@@ -201,12 +207,13 @@ export function PokrokPage() {
   };
 
   return (
-    <div className="pokrok-page">
-      {/* Page header — stejný styl jako .akademie-page-header */}
+    <>
+      {/* Page header — mimo scrollable pokrok-page, stejně jako .akademie-page-header */}
       <div className="pokrok-page__page-header">
         <h1 className="pokrok-page__page-title">Pokrok</h1>
       </div>
 
+    <div className="pokrok-page">
       {/* Period Selector — samostatný blok pod titulkem */}
       <div className="pokrok-page__header">
         <div className="pokrok-page__period-tabs" role="tablist" aria-label="Časové období">
@@ -389,5 +396,6 @@ export function PokrokPage() {
       {/* Activity Heatmap (always last 84 days, regardless of period selector) */}
       <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
     </div>
+    </>
   );
 }

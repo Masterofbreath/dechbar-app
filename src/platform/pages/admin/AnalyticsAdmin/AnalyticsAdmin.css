@@ -27,30 +27,48 @@
   margin: 0;
 }
 
-/* ── Period selector ── */
+/* ── Period selector — underline styl shodný s feedback-admin__tabs ── */
 .analytics-admin__period-tabs {
   display: flex;
   gap: 4px;
-  background: rgb(255 255 255 / 6%);
-  border-radius: 10px;
-  padding: 4px;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+
+  /* Mobile scroll */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.analytics-admin__period-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .analytics-admin__period-tab {
-  padding: 6px 16px;
-  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
   border: none;
+  border-bottom: 2px solid transparent;
   background: transparent;
-  color: rgb(255 255 255 / 50%);
-  font-size: 13px;
+  color: rgb(255 255 255 / 45%);
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 44px;
+}
+
+.analytics-admin__period-tab:hover {
+  color: rgb(255 255 255 / 80%);
 }
 
 .analytics-admin__period-tab--active {
-  background: rgb(255 255 255 / 12%);
   color: #fff;
+  border-bottom-color: var(--dechbar-gold, #F8CA00);
+  font-weight: 600;
 }
 
 /* ── Header left (title + live badge) ── */
@@ -746,18 +764,6 @@
     align-items: flex-start;
     gap: 12px;
     margin-bottom: 20px;
-  }
-
-  .analytics-admin__period-tabs {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .analytics-admin__period-tab {
-    flex: 1;
-    text-align: center;
-    padding: 6px 8px;
-    font-size: 12px;
   }
 
   /* Top content table — edge-to-edge scroll */

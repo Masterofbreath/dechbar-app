@@ -1,4 +1,5 @@
 import { useAuth } from '@/platform/auth'
+import { useUserStateStore } from '@/platform/user/userStateStore'
 import { LockedFeatureModal } from '@/modules/mvp0/components'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAkademieNav } from '../hooks/useAkademieNav'
@@ -24,6 +25,7 @@ import { ProgramDetail } from './ProgramDetail'
  */
 export function AkademieRoot() {
   const { user } = useAuth()
+  const isAdmin = useUserStateStore((s) => s.isAdmin)
   const { activeCategorySlug, routeStack, selectCategory, openProgram, back, reset, pendingModuleId, setPendingModuleId } =
     useAkademieNav()
   const { prefetchCategoryDeep, prefetchProgramDeep } = useAkademiePrefetch()
@@ -63,6 +65,7 @@ export function AkademieRoot() {
   const { data: programs, isLoading: programsLoading } = useAkademieCatalog(
     activeCategorySlug,
     user?.id,
+    isAdmin,
   )
 
   // Deep link: po načtení programs auto-otevři program dle module_id

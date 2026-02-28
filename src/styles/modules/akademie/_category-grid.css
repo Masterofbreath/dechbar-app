@@ -17,7 +17,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  padding: 8px var(--akademie-page-px) 24px;
+  padding: 8px var(--akademie-page-px) 90px;
 }
 
 @media (width >= 640px) {

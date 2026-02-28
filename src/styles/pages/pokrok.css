@@ -4,15 +4,18 @@
    ============================================================ */
 
 .pokrok-page {
-  padding: 20px 20px 120px;
+  padding: 0 20px 90px;   /* bez top paddingu — nadpis sedí stejně jako Akademie */
   color: #f0f0f0;
   max-width: 600px;
   margin: 0 auto;
 }
 
-/* ── Page header — sjednoceno se stylem .akademie-page-header ── */
+/* ── Page header — mimo scrollable pokrok-page, sjednoceno s .akademie-page-header ── */
 .pokrok-page__page-header {
   padding: 16px 0 12px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .pokrok-page__page-title {
@@ -183,9 +186,9 @@
 }
 
 .pokrok-page__stat-card {
-  background: rgb(255 255 255 / 4%);
+  background: var(--color-surface);
   border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 16px;
 }
 
@@ -196,12 +199,27 @@
 }
 
 .pokrok-page__records-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 1.2px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgb(255 255 255 / 35%);
-  margin-bottom: 10px;
+  color: rgb(255 255 255 / 40%);
+  margin-bottom: 12px;
+  position: relative;
+  padding-left: 14px;
+}
+
+.pokrok-page__records-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 14px;
+  background: var(--dechbar-gold, #F8CA00);
+  border-radius: 2px;
+  opacity: 0.7;
 }
 
 .pokrok-page__records-grid {
@@ -211,9 +229,9 @@
 }
 
 .pokrok-page__record-card {
-  background: rgb(255 255 255 / 4%);
+  background: var(--color-surface);
   border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 12px 10px;
   display: flex;
   flex-direction: column;

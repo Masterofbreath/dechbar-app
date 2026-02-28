@@ -709,7 +709,11 @@ export default function FeedbackAdmin() {
           <button
             key={tab.id}
             type="button"
-            className={`feedback-admin__tab ${activeTab === tab.id ? 'feedback-admin__tab--active' : ''}`}
+            className={[
+              'feedback-admin__tab',
+              activeTab === tab.id ? 'feedback-admin__tab--active' : '',
+              tab.id === 'kanban' ? 'feedback-admin__tab--kanban' : '',
+            ].filter(Boolean).join(' ')}
             onClick={() => setActiveTab(tab.id)}
             aria-current={activeTab === tab.id ? 'page' : undefined}
           >

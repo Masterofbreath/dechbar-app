@@ -1,17 +1,8 @@
-/**
- * EmptyState - Universal Empty State Component
- * 
- * For placeholder pages, no data states, coming soon screens.
- * Brand Book 2.0 compliant with icon, title, message, optional CTA.
- * 
- * @package DechBar_App
- * @subpackage Platform/Components
- * @since 0.2.0
- */
+import type { ReactNode } from 'react';
 
 export interface EmptyStateProps {
-  /** Emoji or icon (e.g., "🏋️", "📊", "🎓") */
-  icon: string;
+  /** SVG icon element or legacy string */
+  icon: ReactNode;
   /** Main heading */
   title: string;
   /** Description text */
@@ -25,17 +16,6 @@ export interface EmptyStateProps {
   };
 }
 
-/**
- * EmptyState - Premium empty state component
- * 
- * @example
- * <EmptyState
- *   icon="🏋️"
- *   title="Cvičit"
- *   message="Knihovna cvičení bude dostupná brzy."
- *   subtext="Zde najdeš všechna dechová cvičení."
- * />
- */
 export function EmptyState({ 
   icon, 
   title, 

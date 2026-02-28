@@ -14,91 +14,82 @@
 }
 
 /* ============================================================
-   Tabs Navigation
+   Tabs Navigation — shodný styl s pokrok-page__period-tabs
+   Segmented control: tmavé pozadí, zaoblené rohy, bílý highlight
    ============================================================ */
 .exercise-list__tabs {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   padding: 4px;
-  background: var(--color-surface);
+  background: rgb(255 255 255 / 6%);
   border-radius: 12px;
-  border: 1px solid var(--color-border);
 }
 
 .tab {
   flex: 1;
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: transparent;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: 9px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: rgb(255 255 255 / 45%);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 44px;
+  min-height: 40px;
+  text-align: center;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
-  touch-action: manipulation; /* Remove 300ms delay on mobile */
+  touch-action: manipulation;
 }
 
 /* Desktop only - hover effect */
 @media (hover: hover) and (pointer: fine) {
   .tab:hover {
-    color: var(--color-text-primary);
-    background: rgb(255 255 255 / 5%);
-  }
-  
-  .tab:active {
-    transform: scale(0.98);
-    opacity: 0.9;
-    transition: transform 0.1s ease, opacity 0.1s ease;
+    color: rgb(255 255 255 / 75%);
   }
 }
 
-/* Mobile - NO :hover or :active effects (instant tab switch) */
+/* Mobile - disable sticky hover */
 @media (hover: none) and (pointer: coarse) {
-  .tab:hover {
-    /* Disable hover on touch devices - prevents sticky hover */
-  }
-  
+  .tab:hover,
   .tab:active {
-    /* Disable active on touch devices - prevents sticky state */
+    /* Disable na touch — instant switch bez visual stutter */
   }
 }
 
-/* Base active tab styles */
+/* Aktivní tab */
 .tab--active {
-  color: var(--color-text-primary);
-  background: var(--color-primary);
+  color: #fff;
+  background: rgb(255 255 255 / 12%);
   font-weight: 600;
 }
 
-/* Override :active state for active tab (prevent sticky mobile behavior) */
+/* Override :active state pro aktivní tab (zabrání sticky stavu na iOS) */
 .tab--active:active {
   transform: none !important;
   opacity: 1 !important;
-  background: var(--color-primary) !important; /* Force teal instantly */
-  transition: none !important; /* Kill all transitions - instant feedback */
+  background: rgb(255 255 255 / 12%) !important;
+  transition: none !important;
 }
 
 .tab__badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  background: var(--color-accent);
-  color: var(--color-background);
-  border-radius: 10px;
-  font-size: 11px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--color-accent, #D6A23A);
+  color: var(--color-background, #0A0A0A);
+  border-radius: 9px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -232,19 +223,16 @@
 }
 
 .empty-custom-state__icon {
-  font-size: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-tertiary);
   margin-bottom: 16px;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
 }
 
 .empty-custom-state__title {
@@ -269,7 +257,8 @@
   }
   
   .empty-custom-state__icon {
-    font-size: 40px;
+    width: 52px;
+    height: 52px;
   }
   
   .empty-custom-state__title {
@@ -295,7 +284,7 @@
   padding: 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 16px;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
@@ -388,18 +377,13 @@
 @media (width <= 768px) {
   .exercise-list__tabs {
     padding: 3px;
-    gap: 4px;
+    gap: 3px;
   }
-  
+
   .tab {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-  
-  .tab__badge {
-    min-width: 18px;
-    height: 18px;
-    font-size: 10px;
+    padding: 7px 8px;
+    font-size: 13px;
+    min-height: 38px;
   }
 }
 

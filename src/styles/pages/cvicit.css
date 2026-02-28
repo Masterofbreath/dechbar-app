@@ -7,9 +7,9 @@
    Page Container
    ============================================================ */
 
-/* Container — bez top padding, header má svůj vlastní (stejně jako Akademie) */
+/* Container — shodná šíře s Akademií (680px) */
 .cvicit-page {
-  max-width: 1200px;
+  max-width: var(--akademie-max-width, 680px);
   margin: 0 auto;
 }
 
@@ -28,6 +28,7 @@
   margin: 0;
   letter-spacing: -0.02em;
   line-height: 1.15;
+  text-align: center;
 }
 
 .cvicit-page__subtitle {
@@ -38,7 +39,7 @@
 
 /* Content area pod headerem */
 .cvicit-page__content {
-  padding: 0 16px 24px;
+  padding: 0 16px 90px;
 }
 
 /* ============================================================
