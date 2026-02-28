@@ -174,6 +174,8 @@ export const useAudioTracking = ({
         query.queryKey.includes('nextLesson') ||
         query.queryKey.includes('activeProgram'),
     });
+    // Invalidate Pokrok stats → audio session se zobrazí ihned
+    queryClientRef.current.invalidateQueries({ queryKey: ['analytics', 'pokrok'] });
   }, [userId]);
 
   // Check 80% completion threshold

@@ -366,6 +366,8 @@ export function useCompleteSession() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: exerciseKeys.sessions(user?.id || '') });
+      // Invalidate Pokrok stats across all periods → real-time update bez refreshe
+      queryClient.invalidateQueries({ queryKey: ['analytics', 'pokrok'] });
     },
   });
 }

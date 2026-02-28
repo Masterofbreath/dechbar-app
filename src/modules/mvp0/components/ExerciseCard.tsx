@@ -104,38 +104,40 @@ export function ExerciseCard({
       >
         {/* Content - full width (no icon) */}
       <div className="exercise-card__content">
-        <h3 className="exercise-card__title">
-          {exercise.name}
-          {isLocked && (
-            <span className="exercise-card__lock-icon">
-              <NavIcon name="lock" size={16} />
+        {/* Header: title + duration + benefit v pravém rohu */}
+        <div className="exercise-card__header">
+          <h3 className="exercise-card__title">
+            {exercise.name}
+            {isLocked && (
+              <span className="exercise-card__lock-icon">
+                <NavIcon name="lock" size={16} />
+              </span>
+            )}
+          </h3>
+          <div className="exercise-card__header-badges">
+            <span 
+              className={`badge badge--duration badge--sm ${!isCustom && onDuplicate ? 'badge--duration-customizable' : ''}`}
+              onClick={!isCustom && onDuplicate ? handleDuplicate : undefined}
+              role={!isCustom && onDuplicate ? 'button' : undefined}
+              title={!isCustom && onDuplicate ? 'Upravit délku cvičení' : undefined}
+            >
+              {durationMinutes} min
             </span>
-          )}
-        </h3>
-        
+            {benefitLabel && (
+              <span className="badge badge--benefit badge--sm">
+                {benefitLabel}
+              </span>
+            )}
+          </div>
+        </div>
+
         {exercise.description && (
           <p className="exercise-card__description">{exercise.description}</p>
         )}
         
-        {/* Metadata badges - duration + pattern/phases + benefit (preset only) */}
+        {/* Breathing pattern / phase count */}
         <div className="exercise-card__meta">
-          {/* 1. Duration (always first) - with customize icon for presets */}
-          <span 
-            className={`badge badge--duration ${!isCustom && onDuplicate ? 'badge--duration-customizable' : ''}`}
-            onClick={!isCustom && onDuplicate ? handleDuplicate : undefined}
-            role={!isCustom && onDuplicate ? 'button' : undefined}
-            title={!isCustom && onDuplicate ? 'Upravit délku cvičení' : undefined}
-          >
-            <NavIcon name="clock" size={16} />
-            {durationMinutes} min
-            {!isCustom && onDuplicate && (
-              <NavIcon name="settings" size={14} className="badge__customize-icon" />
-            )}
-          </span>
-          
-          {/* 2. Pattern/Phase count (always for all exercises) */}
           {exercise.phase_count === 1 ? (
-            // Show breathing pattern for simple exercises
             exercise.breathing_pattern.phases[0].pattern && (
               <span className="badge badge--pattern">
                 {exercise.breathing_pattern.phases[0].pattern.inhale_seconds}|
@@ -145,17 +147,8 @@ export function ExerciseCard({
               </span>
             )
           ) : (
-            // Show phase count for multi-phase exercises
             <span className="badge badge--phases">
               {exercise.phase_count === 2 || exercise.phase_count === 3 || exercise.phase_count === 4 ? `${exercise.phase_count} fáze` : `${exercise.phase_count} fází`}
-            </span>
-          )}
-          
-          {/* 3. Benefit badge (only for preset exercises, last) */}
-          {benefitLabel && (
-            <span className="badge badge--benefit">
-              <NavIcon name="heart" size={16} />
-              {benefitLabel}
             </span>
           )}
         </div>

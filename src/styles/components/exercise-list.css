@@ -132,11 +132,7 @@
   }
 }
 
-@media (width >= 1024px) {
-  .exercise-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
+/* Cvičit page je max 680px — 2 sloupce jsou maximum pro přehlednost */
 
 /* ============================================================
    Tier Info Banner

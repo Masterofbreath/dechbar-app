@@ -774,11 +774,9 @@ export function useOnboardingFunnel(): { funnel: OnboardingFunnel | null; isLoad
   const { data, isLoading } = useQuery({
     queryKey: ['analytics', 'onboardingFunnel'] as const,
     queryFn: async () => {
-      // Look at users registered in last 30 days
+      // Use RPC — bypasses RLS for reliable admin count of recent registrations
       const { data: users, error: usersErr } = await supabase
-        .from('profiles')
-        .select('user_id, created_at')
-        .gte('created_at', daysBack(30));
+        .rpc('get_profiles_in_range', { from_ts: daysBack(30), to_ts: new Date().toISOString() });
       if (usersErr) throw new Error(usersErr.message);
       if (!users || users.length === 0) {
         return { registered: 0, steps: [], neverStarted: 0, neverStartedPct: 0 };
