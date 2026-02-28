@@ -16,6 +16,7 @@ import { LockedFeatureModal } from './LockedFeatureModal';
 import { Button, LoadingSkeleton, EmptyState, NavIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
 import { useMembership } from '@/platform/membership';
 import { useNavigation } from '@/platform/hooks';
+import { useAuthStore } from '@/platform/auth';
 import { isProtocol } from '@/utils/exerciseHelpers';
 import type { MoodType } from '../types/exercises';
 import {
@@ -54,6 +55,7 @@ export function ExerciseList({
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { plan } = useMembership();
   const { openExerciseCreator } = useNavigation();
+  const userCreatedAt = useAuthStore((s) => s.user?.created_at);
   
   // Mood labels Czech mapping
   const moodLabels: Record<MoodType, string> = {
@@ -98,6 +100,12 @@ export function ExerciseList({
   
   // History tier limits
   const historyDaysLimit = plan === 'ZDARMA' ? 7 : plan === 'SMART' ? 90 : null;
+
+  // Zobraz upsell pouze uživatelům registrovaným déle než 7 dní (mají potenciálně skrytá data)
+  const hasHiddenHistory =
+    plan === 'ZDARMA' &&
+    !!userCreatedAt &&
+    new Date().getTime() - new Date(userCreatedAt).getTime() > 7 * 24 * 60 * 60 * 1000;
   
   async function handleDelete(exercise: Exercise) {
     // Confirmation už proběhla v custom modal (openDeleteConfirm)
@@ -310,8 +318,8 @@ export function ExerciseList({
                 {historyDaysLimit
                   ? `Zobrazuji posledních ${historyDaysLimit} dní.`
                   : 'Zobrazuji celou historii.'}
-                {plan === 'ZDARMA' && (
-                  <> Upgraduj na SMART pro 90 dní historie.</>
+                {hasHiddenHistory && (
+                  <> Tvoje data sahají dál, odemkni celou historii.</>
                 )}
               </p>
             </div>

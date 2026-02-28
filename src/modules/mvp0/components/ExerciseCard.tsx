@@ -104,7 +104,7 @@ export function ExerciseCard({
       >
         {/* Content - full width (no icon) */}
       <div className="exercise-card__content">
-        {/* Header: title + duration + benefit v pravém rohu */}
+        {/* Header: title vlevo, benefit badge vpravo */}
         <div className="exercise-card__header">
           <h3 className="exercise-card__title">
             {exercise.name}
@@ -114,29 +114,30 @@ export function ExerciseCard({
               </span>
             )}
           </h3>
-          <div className="exercise-card__header-badges">
-            <span 
-              className={`badge badge--duration badge--sm ${!isCustom && onDuplicate ? 'badge--duration-customizable' : ''}`}
-              onClick={!isCustom && onDuplicate ? handleDuplicate : undefined}
-              role={!isCustom && onDuplicate ? 'button' : undefined}
-              title={!isCustom && onDuplicate ? 'Upravit délku cvičení' : undefined}
-            >
-              {durationMinutes} min
-            </span>
-            {benefitLabel && (
+          {benefitLabel && (
+            <div className="exercise-card__header-badges">
               <span className="badge badge--benefit badge--sm">
                 {benefitLabel}
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {exercise.description && (
           <p className="exercise-card__description">{exercise.description}</p>
         )}
         
-        {/* Breathing pattern / phase count */}
+        {/* Meta: duration + pattern/phase count */}
         <div className="exercise-card__meta">
+          <span 
+            className={`badge badge--duration ${!isCustom && onDuplicate ? 'badge--duration-customizable' : ''}`}
+            onClick={!isCustom && onDuplicate ? handleDuplicate : undefined}
+            role={!isCustom && onDuplicate ? 'button' : undefined}
+            title={!isCustom && onDuplicate ? 'Upravit délku cvičení' : undefined}
+          >
+            <NavIcon name="clock" size={16} />
+            {durationMinutes} min
+          </span>
           {exercise.phase_count === 1 ? (
             exercise.breathing_pattern.phases[0].pattern && (
               <span className="badge badge--pattern">
