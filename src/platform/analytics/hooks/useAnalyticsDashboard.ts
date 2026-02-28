@@ -912,7 +912,7 @@ export function useTopContent(limit = 5): { data: TopContentItem[]; isLoading: b
 
 import type { UserPokrokStats, ActivityPeriod, ActivityDayData } from '../types';
 
-const GRAPH_DAYS = 84; // 12 weeks
+const GRAPH_DAYS = 168; // 24 weeks
 
 /**
  * Returns the START timestamp for each period.

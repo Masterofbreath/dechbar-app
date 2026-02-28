@@ -402,10 +402,36 @@
   margin-bottom: 12px;
 }
 
+.pokrok-page__graph-body {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.pokrok-page__graph-dow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 1px;
+  flex-shrink: 0;
+}
+
+.pokrok-page__graph-dow-label {
+  display: block;
+  height: 11px;
+  line-height: 11px;
+  font-size: 9px;
+  color: rgb(255 255 255 / 28%);
+  text-align: right;
+  min-width: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
 .pokrok-page__graph-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
+  flex: 1;
 }
 
 .pokrok-page__graph-grid {
@@ -431,6 +457,32 @@
 
 .pokrok-page__graph-cell:hover {
   opacity: 0.75;
+}
+
+@media (width >= 768px) {
+  .pokrok-page__graph-cell {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+  }
+
+  .pokrok-page__graph-col {
+    gap: 4px;
+  }
+
+  .pokrok-page__graph-grid {
+    gap: 4px;
+  }
+
+  .pokrok-page__graph-dow {
+    gap: 4px;
+  }
+
+  .pokrok-page__graph-dow-label {
+    height: 13px;
+    line-height: 13px;
+    font-size: 10px;
+  }
 }
 
 /* Activity levels (0–4) */
@@ -475,6 +527,16 @@
   background: rgb(255 255 255 / 4%);
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 16px;
+}
+
+/* Transparent variant — placed at top above hero cards */
+.pokrok-page__community--top {
+  background: transparent;
+  border-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  margin-top: 0;
+  margin-bottom: 4px;
 }
 
 .pokrok-page__community-header {
