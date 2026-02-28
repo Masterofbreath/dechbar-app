@@ -155,7 +155,7 @@ function buildEmailHtml(magicLink: string): string {
           </tr>
 
         </table>
-        <p style="margin:20px 0 0;color:#383838;font-size:12px;text-align:center;letter-spacing:0.04em;">dechbar.cz&nbsp;&bull;&nbsp;um&#283;n&#237; dechu v kapse</p>
+        <p style="margin:20px 0 0;color:#383838;font-size:12px;text-align:center;letter-spacing:0.04em;"><a href="https://www.dechbar.cz" style="color:#383838;text-decoration:none;">dechbar.cz</a>&nbsp;&bull;&nbsp;um&#283;n&#237; dechu v kapse</p>
       </td>
     </tr>
   </table>
@@ -212,7 +212,7 @@ async function sendWelcomeEmail(
           from_name: FROM_NAME,
           to: [{ email }],
           html: buildEmailHtml(magicLink),
-          text: `Ahoj, vítej v DechBaru!\n\nDechBar aplikace je spuštěná — a ty jsi u toho jako první.\n\nUvnitř appky tě čeká první ochutnávka z naší 21 denní ranní dechové výzvy, brazilské dechpresso. Nový způsob, jak se nadechnout k lepšímu dni.\n\nOchutnávku najdeš na stránce Dnes v sekci DENNÍ PROGRAM.\n\nVstup do aplikace (platí 24 hodin, jen jedno použití):\n${magicLink}\n\n---\nPřidej si DechBar na plochu telefonu:\n1. Otevři aplikaci v prohlížeči telefonu\n2. Klikni na ikonu sdílení (na iPhonu: čtverec se šipkou / na Androidu: tři tečky)\n3. Vyber „Přidat na plochu" a potvrď\n\nKuba | Dechový barista\ntým DechBar · dechbar.cz`,
+          text: `Ahoj, vítej v DechBaru!\n\nDechBar aplikace je spuštěná — a ty jsi u toho jako první.\n\nUvnitř appky tě čeká první ochutnávka z naší 21 denní ranní dechové výzvy, brazilské dechpresso. Nový způsob, jak se nadechnout k lepšímu dni.\n\nOchutnávku najdeš na stránce Dnes v sekci DENNÍ PROGRAM.\n\nVstup do aplikace jedním kliknutím na tlačítko výše. Odkaz platí 24 hodin.\n\n---\nPřidej si DechBar na plochu telefonu:\n1. Otevři aplikaci v prohlížeči telefonu\n2. Klikni na ikonu sdílení (na iPhonu: čtverec se šipkou / na Androidu: tři tečky)\n3. Vyber „Přidat na plochu" a potvrď\n\nKuba | Dechový barista\ntým DechBar · www.dechbar.cz`,
         },
       }),
     });
