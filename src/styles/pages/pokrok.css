@@ -517,10 +517,6 @@
   letter-spacing: 0.5px;
 }
 
-.pokrok-page__week-section-sub {
-  font-size: 11px;
-  color: rgb(255 255 255 / 30%);
-}
 
 .pokrok-page__community-header {
   display: flex;

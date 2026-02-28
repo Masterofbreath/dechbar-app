@@ -190,7 +190,7 @@
   gap: var(--spacing-2);
   cursor: pointer;
   transition: all 0.25s ease;
-  aspect-ratio: 1 / 1.2;
+  aspect-ratio: 1 / 1;
   text-align: center;
   position: relative;
   overflow: hidden; /* For gradient overlay */
@@ -433,22 +433,21 @@
    ============================================================ */
 
 @media (width <= 768px) {
-  /* Keep 3 columns but reduce button height */
   .preset-protocol-button {
-    min-height: 140px; /* Reduced from aspect-ratio 1:1.2 */
+    aspect-ratio: 1 / 1;
+    min-height: unset;
     padding: 12px;
-    aspect-ratio: auto; /* Override */
   }
-  
+
   .preset-protocol-button__icon {
     width: 32px;
     height: 32px;
   }
-  
+
   .preset-protocol-button__label {
     font-size: 16px;
   }
-  
+
   .preset-protocol-button__duration {
     font-size: 11px;
   }
@@ -457,30 +456,30 @@
 /* Small mobile (iPhone 13 mini, iPhone X/XS) - 3 sloupce vedle sebe */
 @media (width <= 480px) {
   .dnes-page__protocols {
-    gap: var(--spacing-2); /* 8px - kompaktnější */
+    gap: var(--spacing-2);
   }
-  
-  /* Fix title wrapping on iPhone 13 mini (375px width) */
+
   .dnes-page__section-title {
-    font-size: 18px; /* Zmenšeno z 22px */
-    letter-spacing: 0.06em; /* Zmenšeno z 0.08em */
+    font-size: 18px;
+    letter-spacing: 0.06em;
   }
-  
+
   .preset-protocol-button {
-    min-height: 120px; /* Menší výška */
-    padding: 10px 8px; /* Menší padding */
+    aspect-ratio: 1 / 1;
+    min-height: unset;
+    padding: 10px 8px;
   }
-  
+
   .preset-protocol-button__icon {
-    width: 28px; /* Menší ikona */
+    width: 28px;
     height: 28px;
   }
-  
+
   .preset-protocol-button__label {
-    font-size: 14px; /* Menší font */
+    font-size: 14px;
     letter-spacing: 0.03em;
   }
-  
+
   .preset-protocol-button__duration {
     font-size: 10px;
   }

@@ -78,7 +78,7 @@ function CommunityMilestone() {
           ? <div className="pokrok-page__skeleton pokrok-page__skeleton--lg" />
           : <span className="pokrok-page__community-value">{formatHours(minutes)}</span>
         }
-        <span className="pokrok-page__community-sublabel">oddýcháno celkem v DechBaru</span>
+        <span className="pokrok-page__community-sublabel">oddýcháno celkem členy DechBaru</span>
       </div>
 
       {/* Timeline */}
@@ -344,6 +344,14 @@ export function PokrokPage() {
         </div>
       </div>
 
+      {/* Weekly Dots — tento týden, hned pod period tabs */}
+      <div className="pokrok-page__week-section">
+        <div className="pokrok-page__week-section-header">
+          <span className="pokrok-page__week-section-title">Tento týden</span>
+        </div>
+        <WeeklyDots days={activityGraph} />
+      </div>
+
       {/* Tier gate for locked periods */}
       {isPeriodLocked && (
         <div className="pokrok-page__tier-gate">
@@ -361,7 +369,7 @@ export function PokrokPage() {
         <div className="pokrok-page__error">Nepodařilo se načíst statistiky.</div>
       )}
 
-      {/* Hero Row: KP + Streak — viditelné bez scrollování */}
+      {/* Hero Row: KP + Streak */}
       <div className="pokrok-page__hero-row">
         {/* KP Card */}
         <div className="pokrok-page__hero-card">
@@ -459,25 +467,13 @@ export function PokrokPage() {
         </div>
       </div>
 
-      {/* Weekly Dots — tento týden, s popisem */}
-      <div className="pokrok-page__week-section">
-        <div className="pokrok-page__week-section-header">
-          <span className="pokrok-page__week-section-title">Tento týden</span>
-          <span className="pokrok-page__week-section-sub">tvoje denní aktivita</span>
-        </div>
-        <WeeklyDots days={activityGraph} />
-      </div>
-
-      {/* Activity Heatmap (last 24 weeks) — centered */}
-      <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
-
       {/* Community Milestone — nad osobní rekordy */}
       <CommunityMilestone />
 
       {/* Osobní rekordy — always all-time, not dependent on period */}
       {(records || recordsLoading) && (
         <div className="pokrok-page__records">
-          <div className="pokrok-page__records-title">Osobní rekordy</div>
+          <div className="pokrok-page__records-title">Tvoje osobní rekordy</div>
           <div className="pokrok-page__records-grid">
             <div className="pokrok-page__record-card">
               <div className="pokrok-page__record-label">Nejdelší streak</div>
@@ -510,6 +506,9 @@ export function PokrokPage() {
           </div>
         </div>
       )}
+
+      {/* Activity Heatmap (last 24 weeks) — úplně dole */}
+      <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
     </div>
     </>
   );

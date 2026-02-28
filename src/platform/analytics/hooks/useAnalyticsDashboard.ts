@@ -808,11 +808,11 @@ export function useOnboardingFunnel(): { funnel: OnboardingFunnel | null; isLoad
 
       const total = users.length;
       const windows = [
-        { days: 1/24 * 24, label: '1. cvičení do 24h',   threshold: 24 },
-        { days: 7,          label: '1. cvičení do 7 dní',  threshold: 24 * 7 },
-        { days: 14,         label: '1. cvičení do 14 dní', threshold: 24 * 14 },
-        { days: 21,         label: '1. cvičení do 21 dní', threshold: 24 * 21 },
-        { days: 28,         label: '1. cvičení do 28 dní', threshold: 24 * 28 },
+        { days: 1/24 * 24, label: '1. aktivita do 24h',   threshold: 24 },
+        { days: 7,          label: '1. aktivita do 7 dní',  threshold: 24 * 7 },
+        { days: 14,         label: '1. aktivita do 14 dní', threshold: 24 * 14 },
+        { days: 21,         label: '1. aktivita do 21 dní', threshold: 24 * 21 },
+        { days: 28,         label: '1. aktivita do 28 dní', threshold: 24 * 28 },
       ];
 
       const steps = windows.map(({ days, label, threshold }) => {
