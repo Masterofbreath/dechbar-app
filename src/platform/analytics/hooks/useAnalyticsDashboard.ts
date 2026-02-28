@@ -75,7 +75,7 @@ function useAdminDashboardToday() {
           .gte('started_at', start),
         supabase
           .from('profiles')
-          .select('id')
+          .select('user_id')
           .gte('created_at', start),
       ]);
 
