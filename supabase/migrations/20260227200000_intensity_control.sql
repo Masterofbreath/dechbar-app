@@ -136,7 +136,9 @@ COMMENT ON COLUMN public.smart_exercise_recommendations.context_snapshot
 COMMENT ON COLUMN public.smart_exercise_recommendations.is_ready
   IS 'FALSE until minimum 3 sessions with intensity data available. UI shows "not enough data yet" when FALSE.';
 
-RAISE NOTICE 'Migration 20260227200000_intensity_control: OK';
-RAISE NOTICE '  + exercise_sessions.final_intensity_multiplier column';
-RAISE NOTICE '  + session_intensity_events table';
-RAISE NOTICE '  + smart_exercise_recommendations table';
+DO $$ BEGIN
+  RAISE NOTICE 'Migration 20260227200000_intensity_control: OK';
+  RAISE NOTICE '  + exercise_sessions.final_intensity_multiplier column';
+  RAISE NOTICE '  + session_intensity_events table';
+  RAISE NOTICE '  + smart_exercise_recommendations table';
+END $$;

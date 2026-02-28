@@ -32,6 +32,8 @@ export interface DailyOverrideData {
   active_until: string | null;
   is_active: boolean;
   sort_order: number;
+  play_count: number;
+  force_priority: boolean;
 }
 
 export interface UsePlatformDailyOverrideReturn {

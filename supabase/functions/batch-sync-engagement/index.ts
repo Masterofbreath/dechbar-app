@@ -62,7 +62,7 @@ function categorizeEngagement(hoursBreathed: number): string {
 /**
  * Calculate user metrics from database
  */
-async function calculateUserMetrics(supabase: any, userId: string): Promise<UserMetrics | null> {
+async function calculateUserMetrics(supabase: ReturnType<typeof createClient>, userId: string): Promise<UserMetrics | null> {
   // Get user profile
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
@@ -93,7 +93,7 @@ async function calculateUserMetrics(supabase: any, userId: string): Promise<User
     .eq('user_id', userId);
   
   const hoursBreathed = exercises
-    ? exercises.reduce((sum: number, ex: any) => sum + (ex.duration_minutes || 0), 0) / 60
+    ? exercises.reduce((sum: number, ex: { duration_minutes?: number }) => sum + (ex.duration_minutes || 0), 0) / 60
     : 0;
   
   const exercisesCompleted = exercises ? exercises.length : 0;
@@ -250,20 +250,20 @@ serve(async (req: Request) => {
   }
 });
 
-/* =====================================================
- * DEPLOYMENT
- * =====================================================
- * 
- * supabase functions deploy batch-sync-engagement
- * 
- * CRON SETUP:
- * SELECT cron.schedule(
- *   'ecomail-batch-sync',
- *   '0 */6 * * *', -- Every 6 hours
- *   $$SELECT net.http_post(
- *     url:='https://YOUR_PROJECT.supabase.co/functions/v1/batch-sync-engagement',
- *     headers:='{"Authorization": "Bearer YOUR_ANON_KEY"}'::jsonb
- *   )$$
- * );
- * 
- * ===================================================== */
+// =====================================================
+// DEPLOYMENT
+// =====================================================
+//
+// supabase functions deploy batch-sync-engagement
+//
+// CRON SETUP:
+// SELECT cron.schedule(
+//   'ecomail-batch-sync',
+//   '0 */6 * * *',   -- Every 6 hours
+//   $$SELECT net.http_post(
+//     url:='https://YOUR_PROJECT.supabase.co/functions/v1/batch-sync-engagement',
+//     headers:='{"Authorization": "Bearer YOUR_ANON_KEY"}'::jsonb
+//   )$$
+// );
+//
+// =====================================================

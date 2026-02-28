@@ -1,0 +1,4 @@
+[functions.send-welcome-blast]
+# Server-to-server funkce volána přes pg_cron bez JWT tokenu.
+# Funkce je chráněna idempotencí (welcome_email_sent_at) a service role klíčem v DB.
+verify_jwt = false

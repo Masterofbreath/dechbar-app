@@ -96,33 +96,53 @@ END;
 $$;
 
 -- ============================================================
--- SEED: Dechpresso ochutnávka (do 1. března 2026 4:00 CET)
+-- SEED: Brazilské dechpresso ochutnávka (launch 28.2.2026)
 -- ============================================================
 INSERT INTO public.platform_daily_override
   (title, subtitle, audio_url, duration_seconds, cover_image_url, active_from, active_until, is_active, sort_order)
 VALUES (
-  'Dechpresso',
+  'Brazilské dechpresso',
   'Ochutnávka · 7 min',
   'https://dechbar-cdn.b-cdn.net/audio/tracks/Ochutn%C3%A1vka%20p%C5%99ed%20v%C3%BDzvou%202.mp3',
-  420,
-  NULL,
-  '2026-02-01T00:00:00Z',
+  480,
+  'https://dechbar-cdn.b-cdn.net/images/covers/892bb58e-3c3b-48ed-87e5-6c56fc12f02c.jpg',
+  '2026-02-28T00:00:00Z',
   '2026-03-01T03:00:00Z',  -- 4:00 CET = 3:00 UTC
   true,
-  10
+  1
 )
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
--- FIX: cover_image_url kde stará URL bez souboru na CDN
+-- FIX: cover_image_url — sjednocení na nový CDN formát /images/covers/{uuid}.jpg
 -- ============================================================
--- Migrace 20260221100000_akademie_module.sql nastavila
--- 'covers/digitalni-ticho-cover.jpg' (neexistující cesta).
--- DB byla opravena ručně, ale pro jistotu:
+-- Původní migrace 20260221100000_akademie_module.sql nastavila
+-- staré URL bez UUID (/covers/digitalni-ticho-cover.jpg) nebo NULL.
+-- Toto opravuje všechny programy na správné UUID-based CDN cesty.
+
+-- Digitální ticho
 UPDATE public.akademie_programs
 SET cover_image_url = 'https://dechbar-cdn.b-cdn.net/images/covers/892bb58e-3c3b-48ed-87e5-6c56fc12f02c.jpg'
 WHERE module_id = 'digitalni-ticho'
   AND (
-    cover_image_url LIKE '%digitalni-ticho-cover%'
-    OR cover_image_url LIKE '%/covers/digitalni%'
+    cover_image_url IS NULL
+    OR cover_image_url NOT LIKE '%images/covers/892bb5%'
+  );
+
+-- Když je toho moc
+UPDATE public.akademie_programs
+SET cover_image_url = 'https://dechbar-cdn.b-cdn.net/images/covers/8d805fdb-1113-4b4e-8894-9c14b6bbd1a5.jpg'
+WHERE module_id = 'kdyz-je-toho-moc'
+  AND (
+    cover_image_url IS NULL
+    OR cover_image_url NOT LIKE '%images/covers/8d805f%'
+  );
+
+-- Jasný směr
+UPDATE public.akademie_programs
+SET cover_image_url = 'https://dechbar-cdn.b-cdn.net/images/covers/a2f6dcd9-d3a4-45f5-8dc1-3c35cf179fff.jpg'
+WHERE module_id = 'jasny-smer'
+  AND (
+    cover_image_url IS NULL
+    OR cover_image_url NOT LIKE '%images/covers/a2f6dc%'
   );

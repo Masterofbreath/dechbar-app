@@ -107,6 +107,7 @@ interface FormState {
   active_until: string;   // datetime-local value (empty = no limit)
   is_active: boolean;
   sort_order: number;
+  force_priority: boolean;
 }
 
 const EMPTY_FORM: FormState = {
@@ -119,6 +120,7 @@ const EMPTY_FORM: FormState = {
   active_until: '',
   is_active: true,
   sort_order: 10,
+  force_priority: false,
 };
 
 function overrideToForm(o: DailyOverrideData): FormState {
@@ -133,6 +135,7 @@ function overrideToForm(o: DailyOverrideData): FormState {
     active_until: utcToLocal(o.active_until),
     is_active: o.is_active,
     sort_order: o.sort_order,
+    force_priority: o.force_priority,
   };
 }
 
@@ -167,6 +170,7 @@ function OverrideForm({ initial, onSave, onCancel, isSaving }: OverrideFormProps
       active_until: form.active_until ? localToUTC(form.active_until) : null,
       is_active: form.is_active,
       sort_order: Number(form.sort_order),
+      force_priority: form.force_priority,
     };
     onSave(payload);
   }
@@ -304,6 +308,22 @@ function OverrideForm({ initial, onSave, onCancel, isSaving }: OverrideFormProps
           </label>
           <span className="daily-admin__hint">Odškrtni pro rychlé dočasné vypnutí bez mazání</span>
         </div>
+
+        {/* Force priority */}
+        <div className="daily-admin__field daily-admin__field--checkbox">
+          <label className="daily-admin__label daily-admin__label--inline">
+            <input
+              type="checkbox"
+              checked={form.force_priority}
+              onChange={e => set('force_priority', e.target.checked)}
+              className="daily-admin__checkbox"
+            />
+            Absolutní priorita (force_priority)
+          </label>
+          <span className="daily-admin__hint daily-admin__hint--warning">
+            Zobrazí se VŠEM uživatelům — i těm s pinnutým vlastním programem. Používej výjimečně.
+          </span>
+        </div>
       </div>
 
       {/* Preview */}
@@ -423,6 +443,7 @@ export default function DailyProgramAdmin() {
                 <th>Aktivní od</th>
                 <th>Aktivní do</th>
                 <th>Priorita</th>
+                <th>Přehrání</th>
                 <th>Akce</th>
               </tr>
             </thead>
@@ -441,7 +462,15 @@ export default function DailyProgramAdmin() {
                     <td>{o.duration_seconds > 0 ? `${Math.round(o.duration_seconds / 60)} min` : '—'}</td>
                     <td>{formatDateTime(o.active_from)}</td>
                     <td>{formatDateTime(o.active_until)}</td>
-                    <td>{o.sort_order}</td>
+                    <td>
+                      {o.sort_order}
+                      {o.force_priority && (
+                        <span className="daily-admin__badge daily-admin__badge--force" title="Absolutní priorita — zobrazí se i uživatelům s pinnutým programem">
+                          {' '}⚡
+                        </span>
+                      )}
+                    </td>
+                    <td className="daily-admin__cell-play-count">{o.play_count}</td>
                     <td>
                       <div className="daily-admin__row-actions">
                         <button

@@ -1,0 +1,2 @@
+[functions.ecomail-webhook-handler]
+verify_jwt = false

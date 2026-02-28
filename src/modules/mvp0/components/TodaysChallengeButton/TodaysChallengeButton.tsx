@@ -17,6 +17,7 @@
  */
 
 import { useAuth } from '@/platform/auth';
+import { supabase } from '@/platform/api/supabase';
 import { useActiveDailyProgram } from '../../hooks/useActiveDailyProgram';
 import { usePlatformFeaturedProgram } from '../../hooks/usePlatformFeaturedProgram';
 import { usePlatformDailyOverride } from '../../hooks/usePlatformDailyOverride';
@@ -246,6 +247,8 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
   function handleOverridePlay() {
     if (!dailyOverride.data) return;
     const o = dailyOverride.data;
+    // Fire-and-forget: increment play count without blocking audio start
+    supabase.rpc('increment_override_play_count', { override_id: o.id });
     playSticky({
       id: `override-${o.id}`,
       album_id: null,
@@ -276,6 +279,17 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
   // Loading: wait for user program + override before showing skeleton
   if (userProgram.isLoading || (!userProgram.data && dailyOverride.isLoading)) {
     return <SkeletonState className={className} />;
+  }
+
+  // --- State 0: Force-priority override (beats even pinned program) ---
+  if (dailyOverride.data?.force_priority) {
+    return (
+      <OverrideState
+        override={dailyOverride.data}
+        onPlay={handleOverridePlay}
+        className={className}
+      />
+    );
   }
 
   // --- State 1: User has a pinned program ---
