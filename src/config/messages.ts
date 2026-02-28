@@ -259,7 +259,7 @@ export const MESSAGES = {
     // Subtitles
     loginSubtitle: "Přihlaš se a dýchej s námi",
     registerSubtitle: "Registrační odkaz ti pošleme na e-mail",
-    forgotPasswordSubtitle: "Zadej svůj email a pošleme ti další instrukce",
+    forgotPasswordSubtitle: "Na jaký e-mail ti pošleme odkaz?",
     resetPasswordSubtitle: "Vyber si silné heslo pro svůj účet",
     
     // Footer links

@@ -269,33 +269,6 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
             />
           </button>
 
-          {/* Facebook - DISABLED (připraveno) */}
-          <button
-            type="button"
-            className="oauth-icon-button"
-            disabled
-            aria-label="Pokračovat s Facebook (brzy dostupné)"
-          >
-            <img 
-              src="/assets/images/icons/oauth/facebook.svg" 
-              alt=""
-              aria-hidden="true"
-            />
-          </button>
-
-          {/* Apple - DISABLED (připraveno) */}
-          <button
-            type="button"
-            className="oauth-icon-button"
-            disabled
-            aria-label="Pokračovat s Apple (brzy dostupné)"
-          >
-            <img 
-              src="/assets/images/icons/oauth/apple.svg" 
-              alt=""
-              aria-hidden="true"
-            />
-          </button>
         </div>
 
         {/* GDPR Notice - Informational text (VARIANTA A: below OAuth) */}

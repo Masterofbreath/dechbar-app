@@ -99,11 +99,11 @@ export function ForgotPasswordView({ onSwitchToLogin, onSuccessStateChange }: Fo
       // Success
       setIsSuccess(true);
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Password reset error:', err);
       
       // Map Supabase errors to Czech
-      const errorMessage = err.message || MESSAGES.error.passwordResetFailed;
+      const errorMessage = err instanceof Error ? err.message : MESSAGES.error.passwordResetFailed;
       
       // ✅ PARSOVAT DYNAMICKÝ ČAS ZE SUPABASE + COUNTDOWN
       if (errorMessage.includes('For security purposes') || errorMessage.includes('Email rate limit')) {
@@ -183,7 +183,6 @@ export function ForgotPasswordView({ onSwitchToLogin, onSuccessStateChange }: Fo
           autoFocus
           required
           disabled={isLoading}
-          helperText={MESSAGES.hints.emailHelper}
         />
 
         {/* Error Message - dynamický countdown pro rate limit */}

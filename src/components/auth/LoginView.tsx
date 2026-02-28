@@ -194,7 +194,7 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
       <div className="auth-view">
         <div className="modal-header">
           <h2 className="modal-title">Přihlásit bez hesla</h2>
-          <p className="modal-subtitle">Pošleme ti odkaz přímo na e-mail — bez hesla.</p>
+          <p className="modal-subtitle">Pošleme ti odkaz přímo na e-mail. Bez hesla.</p>
         </div>
 
         <form onSubmit={handleMagicLinkSend} className="auth-form" noValidate>
@@ -264,8 +264,11 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
           disabled={isLoading}
         />
 
-        {/* Forgot password — right aligned, no "remember me" checkbox */}
-        <div style={{ textAlign: 'right', marginTop: '-4px' }}>
+        {/* Two secondary actions on one row — saves vertical space */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '-4px' }}>
+          <TextLink onClick={() => setMagicLinkMode(true)}>
+            Přihlásit bez hesla →
+          </TextLink>
           <TextLink onClick={onSwitchToReset}>
             Zapomenuté heslo?
           </TextLink>
@@ -286,16 +289,10 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, retu
           {isLoading ? MESSAGES.buttons.loading.login : MESSAGES.buttons.login}
         </Button>
 
-        {/* Passwordless login — recovery for users without / with forgotten password */}
-        <div style={{ textAlign: 'center', marginTop: '4px' }}>
-          <TextLink onClick={() => setMagicLinkMode(true)}>
-            Přihlásit bez hesla →
-          </TextLink>
-        </div>
       </form>
 
       {/* OAuth — only active providers */}
-      <div className="mt-6">
+      <div className="mt-4">
         <div className="auth-divider">
           <span>{MESSAGES.auth.oauthDivider}</span>
         </div>
