@@ -26,6 +26,12 @@ interface LessonForm {
   error: string | null;
 }
 
+interface EditingDuration {
+  lessonId: string;
+  value: string;
+  saving: boolean;
+}
+
 const emptyForm = (): LessonForm => ({
   title: '', audioFile: null, uploadProgress: null, isUploading: false, error: null,
 });
@@ -38,6 +44,7 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
   const [activeSeriesId, setActiveSeriesId] = useState<string | null>(null);
   const [addForms, setAddForms] = useState<Record<string, LessonForm>>({});
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [editingDuration, setEditingDuration] = useState<EditingDuration | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -140,6 +147,22 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
     }
   };
 
+  const handleSaveDuration = async (lessonId: string) => {
+    if (!editingDuration) return;
+    const minutes = parseFloat(editingDuration.value.replace(',', '.'));
+    if (isNaN(minutes) || minutes <= 0) return;
+    setEditingDuration((prev) => prev ? { ...prev, saving: true } : null);
+    try {
+      await adminApi.akademie.lessons.update(lessonId, {
+        duration_seconds: Math.round(minutes * 60),
+      });
+      setEditingDuration(null);
+      await load();
+    } catch {
+      setEditingDuration((prev) => prev ? { ...prev, saving: false } : null);
+    }
+  };
+
   return (
     <div className="aa-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="aa-modal aa-modal--wide">
@@ -210,9 +233,51 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
                                 </td>
                                 <td style={{ fontWeight: 500 }}>{lesson.title}</td>
                                 <td>
-                                  {lesson.duration_seconds
-                                    ? `${Math.round(lesson.duration_seconds / 60)} min`
-                                    : '—'}
+                                  {editingDuration?.lessonId === lesson.id ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                      <input
+                                        type="number"
+                                        step="0.5"
+                                        min="0.5"
+                                        className="aa-input"
+                                        style={{ width: 60, padding: '2px 6px', fontSize: '0.8125rem' }}
+                                        value={editingDuration.value}
+                                        onChange={(e) => setEditingDuration((prev) => prev ? { ...prev, value: e.target.value } : null)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') void handleSaveDuration(lesson.id);
+                                          if (e.key === 'Escape') setEditingDuration(null);
+                                        }}
+                                        autoFocus
+                                      />
+                                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>min</span>
+                                      <button
+                                        className="aa-btn aa-btn--ghost aa-btn--sm"
+                                        style={{ padding: '2px 6px' }}
+                                        onClick={() => void handleSaveDuration(lesson.id)}
+                                        disabled={editingDuration.saving}
+                                      >✓</button>
+                                      <button
+                                        className="aa-btn aa-btn--ghost aa-btn--sm"
+                                        style={{ padding: '2px 6px' }}
+                                        onClick={() => setEditingDuration(null)}
+                                      >✕</button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      className="aa-btn--icon"
+                                      style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
+                                      title="Klikni pro úpravu délky"
+                                      onClick={() => setEditingDuration({
+                                        lessonId: lesson.id,
+                                        value: lesson.duration_seconds ? String(Math.round(lesson.duration_seconds / 60)) : '',
+                                        saving: false,
+                                      })}
+                                    >
+                                      {lesson.duration_seconds
+                                        ? `${Math.round(lesson.duration_seconds / 60)} min ✎`
+                                        : '— ✎'}
+                                    </button>
+                                  )}
                                 </td>
                                 <td>
                                   {lesson.audio_url ? (

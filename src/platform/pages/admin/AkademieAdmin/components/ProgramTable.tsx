@@ -216,6 +216,13 @@ export function ProgramTable() {
                           )}
                           <button
                             className="aa-btn aa-btn--ghost aa-btn--sm"
+                            onClick={() => setPanel({ type: 'edit', program: prog })}
+                            title="Upravit délku, datum spuštění"
+                          >
+                            Upravit
+                          </button>
+                          <button
+                            className="aa-btn aa-btn--ghost aa-btn--sm"
                             onClick={() => setPanel({ type: 'series', program: prog })}
                             title="Série"
                           >
@@ -255,6 +262,10 @@ export function ProgramTable() {
 
       {panel.type === 'lessons' && (
         <LessonManager program={panel.program} onClose={handlePanelClose} />
+      )}
+
+      {panel.type === 'edit' && (
+        <EditProgramModal program={panel.program} onClose={handlePanelClose} />
       )}
 
       {panel.type === 'stripe-ecomail' && (
@@ -392,6 +403,119 @@ function StripeEcomailSetup({
               <button className="aa-btn aa-btn--ghost" onClick={onClose} disabled={isSaving}>Zrušit</button>
               <button className="aa-btn aa-btn--primary" onClick={() => void handleManualSave()} disabled={isSaving || isRetrying}>
                 {isSaving ? 'Ukládám…' : 'Uložit ručně'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// EditProgramModal — úprava délky, min/den, datum spuštění
+// ============================================================
+
+function EditProgramModal({
+  program,
+  onClose,
+}: {
+  program: AkademieProgram;
+  onClose: () => void;
+}) {
+  const [durationDays, setDurationDays] = useState(program.duration_days?.toString() ?? '');
+  const [dailyMinutes, setDailyMinutes] = useState(program.daily_minutes?.toString() ?? '');
+  const [launchDate, setLaunchDate] = useState(program.launch_date ?? '');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await adminApi.akademie.programs.update(program.id, {
+        duration_days: durationDays ? Number(durationDays) : undefined,
+        daily_minutes: dailyMinutes ? Number(dailyMinutes) : undefined,
+        launch_date: launchDate || undefined,
+      });
+      setSuccess('Uloženo.');
+      setTimeout(onClose, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Chyba při ukládání');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="aa-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="aa-modal">
+        <div className="aa-modal__header">
+          <h2 className="aa-modal__title">
+            Upravit — {program.module_name ?? program.module_id}
+          </h2>
+          <button className="aa-btn--icon" onClick={onClose} aria-label="Zavřít">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div className="aa-modal__body">
+          {error && <div className="aa-error-banner">{error}</div>}
+          {success && (
+            <div style={{ background: 'rgba(44,190,90,0.1)', border: '1px solid #2cbe5a', borderRadius: 6, padding: '0.625rem 0.875rem', marginBottom: 12, fontSize: '0.875rem', color: '#2cbe5a' }}>
+              {success}
+            </div>
+          )}
+          <div className="aa-form">
+            <div className="aa-form-row">
+              <div className="aa-field">
+                <label className="aa-field__label">Délka programu (dní)</label>
+                <input
+                  type="number"
+                  className="aa-input"
+                  value={durationDays}
+                  min={1}
+                  onChange={(e) => setDurationDays(e.target.value)}
+                  placeholder="21"
+                />
+              </div>
+              <div className="aa-field">
+                <label className="aa-field__label">Min/den</label>
+                <input
+                  type="number"
+                  className="aa-input"
+                  value={dailyMinutes}
+                  min={1}
+                  onChange={(e) => setDailyMinutes(e.target.value)}
+                  placeholder="15"
+                />
+              </div>
+            </div>
+            <div className="aa-field">
+              <label className="aa-field__label">Datum spuštění</label>
+              <input
+                type="date"
+                className="aa-input"
+                value={launchDate}
+                onChange={(e) => setLaunchDate(e.target.value)}
+              />
+              <span className="aa-field__hint">
+                Odkdy se program postupně odemyká (D1 = 1. den, D2 = 2. den…). Volitelné.
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+              <button className="aa-btn aa-btn--ghost" onClick={onClose} disabled={isSaving}>
+                Zrušit
+              </button>
+              <button
+                className="aa-btn aa-btn--primary"
+                onClick={() => void handleSave()}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Ukládám…' : 'Uložit'}
               </button>
             </div>
           </div>
