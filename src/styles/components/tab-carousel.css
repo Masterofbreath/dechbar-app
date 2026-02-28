@@ -59,6 +59,10 @@
      .app-layout (100dvh) → content (flex: 1) → carousel (100%) → track (100%) → page (100%) */
   height: 100%;
 
+  /* Solid background prevents body color (black #121212) from showing through
+     the transparent padding-bottom area above the BottomNav as a thin dark strip. */
+  background: var(--color-background);
+
   /* Independent vertical scroll per page */
   overflow: hidden auto;
 

@@ -46,24 +46,28 @@ function CommunityMilestone() {
   const { minutes, isLoading } = useAllTimeMinutes();
   const currentHours = minutes / 60;
 
-  // Find which prime milestones are reached and what's next
+  // Last reached milestone index (-1 = none yet)
   const reachedIdx = PRIME_MILESTONES_H.filter((h) => h <= currentHours).length - 1;
-  const prevMilestoneH = reachedIdx >= 0 ? PRIME_MILESTONES_H[reachedIdx] : 0;
-  const nextMilestoneH = PRIME_MILESTONES_H[reachedIdx + 1] ?? PRIME_MILESTONES_H[reachedIdx + 2] ?? 113;
-
-  // Progress within current segment (prev → next milestone)
-  const segmentStart = prevMilestoneH * 60;
-  const segmentEnd = nextMilestoneH * 60;
-  const progressPct = segmentEnd > segmentStart
-    ? Math.min(100, ((minutes - segmentStart) / (segmentEnd - segmentStart)) * 100)
-    : 100;
-
-  const minutesToNext = Math.max(0, Math.round(segmentEnd - minutes));
+  const nextMilestoneH = PRIME_MILESTONES_H[reachedIdx + 1] ?? PRIME_MILESTONES_H[reachedIdx] ?? 2;
+  const minutesToNext = Math.max(0, Math.round(nextMilestoneH * 60 - minutes));
 
   // Milestones to display: last 2 reached + next 4
   const displayStart = Math.max(0, reachedIdx - 1);
   const displayEnd = Math.min(PRIME_MILESTONES_H.length - 1, reachedIdx + 4);
   const visibleMilestones = PRIME_MILESTONES_H.slice(displayStart, displayEnd + 1);
+
+  // Position everything proportionally by ACTUAL hour value within the visible range.
+  // This ensures the fill line and the dots share the same coordinate system.
+  const minH = visibleMilestones[0] ?? 0;
+  const maxH = visibleMilestones[visibleMilestones.length - 1] ?? 1;
+  const rangeH = maxH - minH;
+
+  const dotLeftPct = (h: number) =>
+    rangeH > 0 ? Math.min(100, Math.max(0, ((h - minH) / rangeH) * 100)) : 0;
+
+  const fillPct = isLoading || rangeH <= 0
+    ? 0
+    : Math.min(100, Math.max(0, ((currentHours - minH) / rangeH) * 100));
 
   return (
     <div className="pokrok-page__community">
@@ -81,18 +85,14 @@ function CommunityMilestone() {
         <span className="pokrok-page__community-sublabel">oddýcháno celkem členy DechBaru</span>
       </div>
 
-      {/* Timeline */}
+      {/* Timeline — dots and fill share proportional coordinates */}
       <div className="pokrok-page__milestone-timeline">
-        {/* Progress track */}
         <div className="pokrok-page__milestone-track">
           <div
             className="pokrok-page__milestone-fill"
-            style={{ width: isLoading ? '0%' : `${progressPct}%` }}
+            style={{ width: `${fillPct}%` }}
           />
-          {/* Milestone dots positioned along the track */}
-          {visibleMilestones.map((h, i) => {
-            const totalVisible = visibleMilestones.length;
-            const leftPct = (i / (totalVisible - 1)) * 100;
+          {visibleMilestones.map((h) => {
             const isReached = h <= currentHours;
             const isNext = h === nextMilestoneH;
             return (
@@ -103,7 +103,7 @@ function CommunityMilestone() {
                   isReached ? 'pokrok-page__milestone-dot--reached' : '',
                   isNext ? 'pokrok-page__milestone-dot--next' : '',
                 ].filter(Boolean).join(' ')}
-                style={{ left: `${leftPct}%` }}
+                style={{ left: `${dotLeftPct(h)}%` }}
                 title={`${h}h = ${getPrimeMilestoneMinutes(h)} min`}
               >
                 <span className="pokrok-page__milestone-label">{h}h</span>
@@ -122,7 +122,7 @@ function CommunityMilestone() {
       )}
       {!isLoading && minutesToNext === 0 && (
         <div className="pokrok-page__milestone-next pokrok-page__milestone-next--reached">
-          Milník {nextMilestoneH}h dosažen! 🎯
+          Milník {nextMilestoneH}h dosažen! 🎉
         </div>
       )}
 
