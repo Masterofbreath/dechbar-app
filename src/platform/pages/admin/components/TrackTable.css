@@ -285,70 +285,90 @@
   color: var(--color-text-secondary);
 }
 
-/* Mobile: Card layout */
-@media (width <= 767px) {
-  .track-table__table,
-  .track-table__table thead,
-  .track-table__table tbody,
-  .track-table__table tr,
-  .track-table__table td,
-  .track-table__table th {
-    display: block;
-  }
+/* ── Desktop: tabulka viditelná, karty schované ─────────── */
 
-  .track-table__table thead {
+.track-table__cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Mobile: karty viditelné, tabulka schovaná ──────────── */
+
+@media (width <= 767px) {
+  .track-table__table {
     display: none;
   }
 
-  .track-table__row {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background: var(--color-surface-elevated);
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-border);
-  }
-
-  .track-table__row:last-child {
-    margin-bottom: 0;
-  }
-
-  .track-table__table td {
-    padding: 0.5rem 0;
+  .track-table__cards {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--color-border);
+  }
+
+  .track-table__card {
+    display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--color-border);
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--color-surface);
+    min-height: 72px;
   }
 
-  .track-table__table td:last-child {
-    border-bottom: none;
-    padding-top: 1rem;
+  .track-table__card-cover-wrap {
+    flex-shrink: 0;
   }
 
-  .track-table__table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .track-table__cover-cell {
-    width: auto;
-  }
-
-  .track-table__cover-cell::before {
-    content: 'Cover';
-  }
-
-  .track-table__actions {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .track-table__action-btn {
+  .track-table__card-body {
     flex: 1;
-    min-height: 44px; /* Touch target */
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .track-table__card-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .track-table__card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .track-table__card-meta {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+
+  .track-table__card-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* Action buttons na mobile — jen ikony, čtvercové */
+  .track-table__card-actions .track-table__action-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+  }
+
+  .track-table__card-actions .track-table__icon {
+    width: 18px;
+    height: 18px;
+    margin: 0;
   }
 }

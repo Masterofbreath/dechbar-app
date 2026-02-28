@@ -16,7 +16,7 @@ import { CloseButton } from '@/components/shared';
 import { NavIcon } from './NavIcon';
 
 export function SettingsDrawer() {
-  const { isSettingsOpen, closeSettings } = useNavigation();
+  const { isSettingsOpen, closeSettings, openFeedback } = useNavigation();
   const { signOut } = useAuth();
   const isAdmin = useIsAdmin();
   const navigate = useNavigate();
@@ -156,6 +156,12 @@ export function SettingsDrawer() {
     handleClose();
     navigate('/app/about');
   };
+
+  const handleFeedbackClick = () => {
+    handleClose();
+    // Počkej na dokončení drawer animace (300ms) před otevřením modalu
+    setTimeout(() => openFeedback(), 320);
+  };
   
   return (
     <>
@@ -218,6 +224,11 @@ export function SettingsDrawer() {
           <button className="settings-menu-item" onClick={handleAboutClick}>
             <NavIcon name="info" size={20} />
             <span>O aplikaci</span>
+          </button>
+
+          <button className="settings-menu-item" onClick={handleFeedbackClick}>
+            <NavIcon name="message-square" size={20} />
+            <span>Sdílej podnět</span>
           </button>
           
           <div className="settings-menu-divider" />

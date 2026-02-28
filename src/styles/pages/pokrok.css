@@ -1,0 +1,447 @@
+/* ============================================================
+   PokrokPage — User Progress & Stats
+   Apple Premium Style — dark theme, BEM, no Tailwind
+   ============================================================ */
+
+.pokrok-page {
+  padding: 20px 20px 120px;
+  color: #f0f0f0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Page header — sjednoceno se stylem .akademie-page-header ── */
+.pokrok-page__page-header {
+  padding: 16px 0 12px;
+}
+
+.pokrok-page__page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #fff);
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* ── Period tabs row ── */
+.pokrok-page__header {
+  margin-bottom: 20px;
+}
+
+/* ── Period Selector ── */
+.pokrok-page__period-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgb(255 255 255 / 6%);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.pokrok-page__period-tab {
+  flex: 1;
+  padding: 7px 4px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: rgb(255 255 255 / 45%);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: center;
+}
+
+.pokrok-page__period-tab--active {
+  background: rgb(255 255 255 / 12%);
+  color: #fff;
+}
+
+/* ── Tier gate ── */
+.pokrok-page__tier-gate {
+  background: rgb(248 202 0 / 6%);
+  border: 1px solid rgb(248 202 0 / 20%);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.pokrok-page__tier-gate-text {
+  font-size: 13px;
+  color: rgb(255 255 255 / 50%);
+  margin-bottom: 10px;
+}
+
+.pokrok-page__tier-gate-cta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dechbar-gold, #F8CA00);
+  background: none;
+  border: 1px solid rgb(248 202 0 / 40%);
+  border-radius: 8px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pokrok-page__tier-gate-cta:hover {
+  background: rgb(248 202 0 / 8%);
+}
+
+/* ── Member banner (Celkem period only) ── */
+.pokrok-page__member-banner {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: rgb(248 202 0 / 7%);
+  border: 1px solid rgb(248 202 0 / 18%);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.pokrok-page__member-days {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--dechbar-gold, #F8CA00);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.pokrok-page__member-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 80%);
+}
+
+.pokrok-page__member-since {
+  margin-left: auto;
+  font-size: 11px;
+  color: rgb(255 255 255 / 35%);
+  align-self: center;
+}
+
+/* ── Stat note (formula below avg value) ── */
+.pokrok-page__stat-note {
+  font-size: 10px;
+  color: rgb(255 255 255 / 25%);
+  margin-top: 4px;
+  letter-spacing: 0.2px;
+}
+
+/* ── Hero Row (KP + Streak side by side) ── */
+.pokrok-page__hero-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pokrok-page__hero-card {
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 16px;
+  padding: 18px 16px;
+}
+
+.pokrok-page__hero-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgb(255 255 255 / 40%);
+  margin-bottom: 6px;
+}
+
+.pokrok-page__hero-value {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.pokrok-page__hero-value--gold {
+  color: var(--dechbar-gold, #F8CA00);
+}
+
+.pokrok-page__hero-sub {
+  font-size: 11px;
+  color: rgb(255 255 255 / 35%);
+}
+
+/* ── Stats Grid (2×2) ── */
+.pokrok-page__stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.pokrok-page__stat-card {
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+/* ── Osobní rekordy ── */
+.pokrok-page__records {
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.pokrok-page__records-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 35%);
+  margin-bottom: 10px;
+}
+
+.pokrok-page__records-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.pokrok-page__record-card {
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pokrok-page__record-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 35%);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.pokrok-page__record-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dechbar-gold, #F8CA00);
+  letter-spacing: -0.3px;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.pokrok-page__record-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 45%);
+}
+
+.pokrok-page__skeleton--sm {
+  height: 22px;
+  width: 60%;
+  border-radius: 4px;
+}
+
+/* ── Weekly Dots ── */
+.pokrok-page__week-dots {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px 4px;
+  margin-bottom: 4px;
+}
+
+.pokrok-page__week-dot-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+
+.pokrok-page__week-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 10%);
+  border: 1.5px solid rgb(255 255 255 / 15%);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.pokrok-page__week-dot--active {
+  background: var(--dechbar-gold, #F8CA00);
+  border-color: var(--dechbar-gold, #F8CA00);
+}
+
+.pokrok-page__week-dot--today {
+  border-color: rgb(255 255 255 / 50%);
+}
+
+.pokrok-page__week-dot--today.pokrok-page__week-dot--active {
+  box-shadow: 0 0 6px rgb(248 202 0 / 50%);
+}
+
+.pokrok-page__week-dot--future {
+  opacity: 0.3;
+}
+
+.pokrok-page__week-dot-label {
+  font-size: 10px;
+  color: rgb(255 255 255 / 30%);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.pokrok-page__week-dot-label--today {
+  color: rgb(255 255 255 / 70%);
+  font-weight: 600;
+}
+
+/* ── Delta ── */
+.pokrok-page__delta {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
+}
+
+.pokrok-page__delta--up {
+  color: #30D158; /* iOS system green — dark mode */
+}
+
+.pokrok-page__delta--down {
+  color: #FF453A; /* iOS system red — dark mode */
+}
+
+.pokrok-page__delta--neutral {
+  color: rgb(255 255 255 / 25%);
+}
+
+.pokrok-page__delta-suffix {
+  opacity: 0.55;
+  font-weight: 400;
+}
+
+.pokrok-page__stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgb(255 255 255 / 35%);
+  margin-bottom: 6px;
+}
+
+.pokrok-page__stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #fff;
+  line-height: 1;
+}
+
+/* ── Skeleton shimmer ── */
+.pokrok-page__skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 4%) 0%,
+    rgb(255 255 255 / 9%) 50%,
+    rgb(255 255 255 / 4%) 100%
+  );
+  background-size: 200% 100%;
+  animation: pokrok-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+  height: 32px;
+  width: 60%;
+}
+
+@keyframes pokrok-shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+/* ── Activity Graph (GitHub-style heatmap) ── */
+.pokrok-page__graph-section {
+  margin-bottom: 24px;
+}
+
+.pokrok-page__graph-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 40%);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.pokrok-page__graph-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.pokrok-page__graph-grid {
+  display: flex;
+  gap: 3px;
+  width: max-content;
+}
+
+.pokrok-page__graph-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pokrok-page__graph-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  cursor: default;
+  transition: opacity 0.1s;
+}
+
+.pokrok-page__graph-cell:hover {
+  opacity: 0.75;
+}
+
+/* Activity levels (0–4) */
+.pokrok-page__graph-cell--0 { background: rgb(255 255 255 / 6%); }
+.pokrok-page__graph-cell--1 { background: #3d2e0a; }
+.pokrok-page__graph-cell--2 { background: #8a6520; }
+.pokrok-page__graph-cell--3 { background: #b88a2a; }
+.pokrok-page__graph-cell--4 { background: #D6A23A; }
+
+.pokrok-page__graph-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: rgb(255 255 255 / 30%);
+}
+
+.pokrok-page__graph-legend-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Error state ── */
+.pokrok-page__error {
+  font-size: 13px;
+  color: rgb(255 255 255 / 30%);
+  text-align: center;
+  padding: 40px 0;
+}

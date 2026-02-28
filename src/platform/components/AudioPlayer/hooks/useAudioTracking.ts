@@ -29,6 +29,7 @@ interface UseAudioTrackingReturn {
   isCompleted: boolean;
   calculateTotalListened: () => number;
   saveProgress: () => Promise<void>;
+  pauseCount: number;
 }
 
 /**
@@ -67,9 +68,11 @@ export const useAudioTracking = ({
 }: UseAudioTrackingProps): UseAudioTrackingReturn => {
   const [listenedSegments, setListenedSegments] = useState<Array<[number, number]>>([]);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [pauseCount, setPauseCount] = useState(0);
 
   const lastTimeRef = useRef<number>(0);
   const segmentStartRef = useRef<number>(0);
+  const prevIsPlayingRef = useRef<boolean>(false);
 
   // Stable ref to queryClient — safe to call in async callbacks
   const queryClient = useQueryClient();
@@ -83,9 +86,11 @@ export const useAudioTracking = ({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setListenedSegments([]);
      
+    setPauseCount(0);
     setIsCompleted(false);
     lastTimeRef.current = 0;
     segmentStartRef.current = 0;
+    prevIsPlayingRef.current = false;
   }, [trackId]);
 
   // Track listened segments during playback
@@ -106,17 +111,28 @@ export const useAudioTracking = ({
     lastTimeRef.current = currentTime;
   }, [currentTime, isPlaying]);
 
-  // Save segment when paused
+  // Save segment when paused + count pauses
   useEffect(() => {
     if (!isPlaying && lastTimeRef.current > segmentStartRef.current) {
       setListenedSegments(prev => [...prev, [segmentStartRef.current, lastTimeRef.current]]);
       segmentStartRef.current = lastTimeRef.current;
     }
+    // Count pause events: transition from playing → paused
+    if (prevIsPlayingRef.current && !isPlaying) {
+      setPauseCount(prev => prev + 1);
+    }
+    prevIsPlayingRef.current = isPlaying;
   }, [isPlaying]);
 
-  // Calculate total unique listened time
+  // Calculate total unique listened time.
+  // CRITICAL: include the currently-open segment (not yet closed by pause/seek).
+  // Without this, continuous playback shows 0 seconds until the first pause.
   const calculateTotalListened = useCallback((): number => {
-    const merged = mergeIntervals(listenedSegments);
+    const openSegment: Array<[number, number]> =
+      lastTimeRef.current > segmentStartRef.current
+        ? [[segmentStartRef.current, lastTimeRef.current]]
+        : [];
+    const merged = mergeIntervals([...listenedSegments, ...openSegment]);
     return merged.reduce((sum, [start, end]) => sum + (end - start), 0);
   }, [listenedSegments]);
 
@@ -183,5 +199,6 @@ export const useAudioTracking = ({
     isCompleted,
     calculateTotalListened,
     saveProgress,
+    pauseCount,
   };
 };

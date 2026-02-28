@@ -272,6 +272,9 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
       play_count: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      // Analytics context
+      source_category_slug: 'denni-program',
+      source_program_title: 'Denní program',
     });
     // Increment play count after audio starts — log result for debugging
     supabase.rpc('increment_override_play_count', { override_id: o.id })

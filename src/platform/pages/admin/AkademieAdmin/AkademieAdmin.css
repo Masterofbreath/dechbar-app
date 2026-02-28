@@ -492,3 +492,84 @@
   border-radius: 2px;
   transition: width 0.2s;
 }
+
+/* ── Mobile ───────────────────────────────────────────────── */
+
+@media (width <= 767px) {
+  /* Tabs — horizontální scroll */
+  .akademie-admin__tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .akademie-admin__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .akademie-admin__tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Header sekce — wrap tlačítek */
+  .aa-table-section__header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Form grid — 1 sloupec na mobile */
+  .aa-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Modal → bottom-sheet na mobile ──────────────────────
+     Overlay zůstane přes celou obrazovku,
+     modal se přesune na spod, plná šířka, zaoblené rohy nahoře.
+   ─────────────────────────────────────────────────────── */
+
+  .aa-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .aa-modal {
+    max-width: 100%;
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+
+    /* Safe area pro iPhone home indicator */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Drag handle vizuální hint */
+  .aa-modal__header::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 15%);
+  }
+
+  .aa-modal__header {
+    position: relative;
+    padding-top: 22px;
+  }
+
+  /* Modal footer — stack tlačítka */
+  .aa-modal__footer {
+    flex-direction: column;
+  }
+
+  .aa-modal__footer .aa-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+  }
+}

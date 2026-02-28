@@ -1,18 +1,21 @@
 /**
  * AdminSidebar Styles
- * 
- * Left sidebar navigation (240px) with mobile hamburger overlay
- * Apple Premium Clean Design - No AdminHeader needed
- * 
+ *
+ * Desktop: Fixed 240px sidebar
+ * Tablet:  Fixed 200px sidebar
+ * Mobile:  Slide-in overlay (transform-based)
+ *
  * @package DechBar_App
  * @subpackage Platform/Components/Admin
  * @since 2.44.0
- * @updated 2.46.2 - Removed AdminHeader, added Logo to Sidebar
+ * @updated 2.47.0 - Mobile close button, safe areas, overlay
  */
+
+/* ── Base ─────────────────────────────────────────────────── */
 
 .admin-sidebar {
   position: fixed;
-  top: 0; /* Full height - no header above */
+  top: 0;
   left: 0;
   bottom: 0;
   width: 240px;
@@ -21,16 +24,22 @@
   display: flex;
   flex-direction: column;
   z-index: 100;
-  overflow-y: auto;
+  overflow: hidden auto;
+
+  /* Safe areas pro iOS notch */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-/* Logo section */
+/* ── Logo ─────────────────────────────────────────────────── */
+
 .admin-sidebar__logo {
   padding: 1.5rem 1rem 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .admin-sidebar__logo img {
@@ -38,13 +47,15 @@
   height: auto;
 }
 
-/* User info section */
+/* ── User info ────────────────────────────────────────────── */
+
 .admin-sidebar__user {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1.5rem 1rem;
+  padding: 1.25rem 1rem;
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .admin-sidebar__avatar {
@@ -68,9 +79,9 @@
 .admin-sidebar__user-info {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   flex: 1;
-  min-width: 0; /* Allow text truncation */
+  min-width: 0;
 }
 
 .admin-sidebar__user-name {
@@ -90,10 +101,11 @@
   letter-spacing: 0.05em;
 }
 
-/* Navigation menu */
+/* ── Navigation ───────────────────────────────────────────── */
+
 .admin-sidebar__nav {
   flex: 1;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   overflow-y: auto;
 }
 
@@ -104,10 +116,13 @@
   padding: 0.75rem 1rem;
   color: var(--color-text-secondary);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: background 150ms ease, color 150ms ease;
   border-left: 3px solid transparent;
   font-size: 0.875rem;
   font-weight: 500;
+
+  /* Min touch target 44px */
+  min-height: 44px;
 }
 
 .admin-sidebar__item:hover {
@@ -125,8 +140,12 @@
   flex-shrink: 0;
 }
 
-/* Back button (sticky at bottom) */
+/* ── Back button ──────────────────────────────────────────── */
+
 .admin-sidebar__back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 1rem;
   background: transparent;
   border: none;
@@ -135,8 +154,11 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 150ms ease, color 150ms ease;
   text-align: left;
+  width: 100%;
+  min-height: 44px;
+  flex-shrink: 0;
 }
 
 .admin-sidebar__back:hover {
@@ -144,24 +166,64 @@
   color: var(--color-text-primary);
 }
 
-/* Mobile responsiveness */
-@media (max-width: 1023px) {
+/* ── Close button — pouze mobile ─────────────────────────── */
+
+.admin-sidebar__close {
+  display: none;
+}
+
+/* ── Tablet ───────────────────────────────────────────────── */
+
+@media (width <= 1023px) {
   .admin-sidebar {
-    width: 200px; /* Narrower on tablets */
+    width: 200px;
   }
 }
 
-@media (max-width: 767px) {
-  /* Transform to hamburger overlay on mobile */
+/* ── Mobile overlay ───────────────────────────────────────── */
+
+@media (width <= 767px) {
   .admin-sidebar {
+    width: 280px;
     transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1001; /* Above content */
+    transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 280ms ease;
+    z-index: 1001;
     box-shadow: none;
   }
-  
+
   .admin-sidebar--open {
     transform: translateX(0);
-    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 4px 0 24px rgb(0 0 0 / 40%);
+  }
+
+  /* Close × button viditelný jen na mobile */
+  .admin-sidebar__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .admin-sidebar__close:hover {
+    background: var(--color-border);
+    color: var(--color-text-primary);
+  }
+
+  /* Na mobile trochu víc prostoru pro close button */
+  .admin-sidebar__logo {
+    padding-right: 3rem;
   }
 }

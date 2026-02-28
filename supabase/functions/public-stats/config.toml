@@ -1,0 +1,5 @@
+[functions.public-stats]
+# Public endpoint — no auth required
+# Returns cached real-time community stats for landing page
+# Cache-Control: s-maxage=3600 (1 hour CDN cache)
+verify_jwt = false

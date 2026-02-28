@@ -1,48 +1,127 @@
 /**
  * AdminLayout Styles
- * 
- * Main layout for admin panel - Apple Premium Clean Design
- * NO AdminHeader - Sidebar from top to bottom for maximum content space
- * 
+ *
+ * Apple Premium Clean Design — dark theme, full viewport
+ *
+ * Breakpointy:
+ *   < 768px  → mobile  (hamburger, overlay sidebar)
+ *   768–1023px → tablet (200px sidebar)
+ *   1024px+  → desktop (240px sidebar)
+ *
  * @package DechBar_App
  * @subpackage Platform/Layouts
  * @since 2.44.0
- * @updated 2.46.2 - Removed AdminHeader padding (+44px more content space)
+ * @updated 2.47.0 - Mobile hamburger, backdrop, safe areas
  */
 
 .admin-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--color-background);
+  position: relative;
 }
 
 .admin-layout__container {
   display: flex;
   flex: 1;
-  /* Removed: padding-top: 44px; - No AdminHeader anymore! */
 }
+
+/* ── Content area ─────────────────────────────────────────── */
 
 .admin-layout__content {
   flex: 1;
-  margin-left: 240px; /* AdminSidebar width */
+  margin-left: 240px;
   padding: 2rem;
   overflow-y: auto;
-  min-height: 100vh; /* Full viewport height */
+  min-height: 100dvh;
+
+  /* Bezpečný prostor pro iOS home indicator */
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
 }
 
-/* Tablet */
-@media (max-width: 1023px) {
+@media (width <= 1023px) {
   .admin-layout__content {
-    margin-left: 200px; /* Narrower sidebar */
+    margin-left: 200px;
     padding: 1.5rem;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
-/* Mobile */
-@media (max-width: 767px) {
+@media (width <= 767px) {
   .admin-layout__content {
-    margin-left: 0; /* Sidebar becomes overlay */
+    margin-left: 0;
     padding: 1rem;
+
+    /* Prostor nahoře pro hamburger tlačítko */
+    padding-top: calc(56px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   }
+}
+
+/* ── Hamburger button — pouze mobile ─────────────────────── */
+
+.admin-layout__hamburger {
+  display: none;
+}
+
+@media (width <= 767px) {
+  .admin-layout__hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    position: fixed;
+    top: env(safe-area-inset-top, 0);
+    left: 0;
+    width: 56px;
+    height: calc(52px + env(safe-area-inset-top, 0px));
+    padding: 0 16px;
+    background: var(--color-surface);
+    border: none;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    z-index: 999;
+    transition: background 150ms ease;
+  }
+
+  .admin-layout__hamburger:hover,
+  .admin-layout__hamburger:focus-visible {
+    background: var(--color-surface-elevated);
+    outline: none;
+  }
+}
+
+.admin-layout__hamburger-line {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--color-text-primary);
+  border-radius: 2px;
+  transition: opacity 150ms ease;
+}
+
+/* ── Backdrop — klik zavírá sidebar ──────────────────────── */
+
+.admin-layout__backdrop {
+  display: none;
+}
+
+@media (width <= 767px) {
+  .admin-layout__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 55%);
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    animation: backdrop-fade-in 200ms ease;
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

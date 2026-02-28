@@ -68,6 +68,11 @@ interface NavigationState {
   // Notification state
   unreadNotifications: number;
   setUnreadNotifications: (count: number) => void;
+
+  // Feedback Modal
+  isFeedbackOpen: boolean;
+  openFeedback: () => void;
+  closeFeedback: () => void;
   
   // Global modal actions (NEW - close all modals)
   closeAllModals: () => void;
@@ -155,6 +160,16 @@ export const useNavigation = create<NavigationState>((set) => ({
   // Notification state
   unreadNotifications: 0,
   setUnreadNotifications: (count) => set({ unreadNotifications: count }),
+
+  // Feedback Modal
+  isFeedbackOpen: false,
+  openFeedback: () => set({
+    isFeedbackOpen: true,
+    isExerciseCreatorOpen: false,
+    isProfileOpen: false,
+    isKPDetailOpen: false,
+  }),
+  closeFeedback: () => set({ isFeedbackOpen: false }),
   
   // Close all modals (NEW - for emergency situations)
   closeAllModals: () => set({
@@ -166,5 +181,6 @@ export const useNavigation = create<NavigationState>((set) => ({
     exerciseCreatorOptions: null,
     isDeleteConfirmOpen: false,
     deleteConfirmData: null,
+    isFeedbackOpen: false,
   }),
 }));

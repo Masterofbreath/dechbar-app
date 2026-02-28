@@ -15,7 +15,9 @@
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
     "prepare": "husky install",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "db:push:dev": "supabase link --project-ref nrlqzighwaeuxcicuhse && supabase db push",
+    "db:push:prod": "supabase link --project-ref iqyahebbteiwzwyrtmns && supabase db push"
   },
   "dependencies": {
     "@capacitor/app": "^8.0.0",

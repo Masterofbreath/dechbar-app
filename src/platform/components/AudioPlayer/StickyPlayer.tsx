@@ -16,7 +16,7 @@
  * @version 2.46.0
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
 import { useAudioTracking } from './hooks/useAudioTracking';
@@ -26,6 +26,8 @@ import { useNavigation } from '@/platform/hooks';
 import { useAkademieNav } from '@/modules/akademie/hooks/useAkademieNav';
 import { useToggleLessonFavorite } from '@/modules/akademie/api/useAkademieProgram';
 import { supabase } from '@/platform/api/supabase';
+import { useAudioSessionTracking } from '@/platform/analytics';
+import type { AudioSessionContext } from '@/platform/analytics';
 
 /* ─── Inline SVG icons (explicitní width/height — bez Tailwindu) ─── */
 
@@ -191,12 +193,39 @@ export const StickyAudioPlayer: React.FC = () => {
     setMuted: setAudioMuted,
   } = useAudioPlayer(currentTrack);
 
-  useAudioTracking({
+  const { isCompleted, calculateTotalListened, pauseCount } = useAudioTracking({
     trackId: currentTrack?.id || '',
     albumId: currentTrack?.album_id || null,
     duration,
     currentTime,
     isPlaying,
+    userId,
+  });
+
+  // Build AudioSessionContext from the current Track metadata
+  const sessionContext = useMemo<AudioSessionContext | null>(() => {
+    if (!currentTrack) return null;
+    return {
+      lessonId: currentTrack.id,
+      lessonTitle: currentTrack.title,
+      seriesId: currentTrack.source_series_id,
+      programId: currentTrack.source_program_id,
+      programTitle: currentTrack.source_program_title,
+      categorySlug: currentTrack.source_category_slug ?? 'unknown',
+      categoryTitle: currentTrack.source_program_title ?? '',
+      audioDurationSeconds: duration,
+    };
+  }, [currentTrack, duration]);
+
+  const { logSeek, logClose } = useAudioSessionTracking({
+    trackId: currentTrack?.id || '',
+    sessionContext,
+    isPlaying,
+    currentTime,
+    duration,
+    isCompleted,
+    calculateTotalListened,
+    pauseCount,
     userId,
   });
 
@@ -231,6 +260,11 @@ export const StickyAudioPlayer: React.FC = () => {
   const handleClose = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     pause();
+    // Log close event before closing (fire-and-forget)
+    const listenPercent = duration > 0
+      ? Math.min(100, Math.round((calculateTotalListened() / duration) * 10000) / 100)
+      : 0;
+    logClose(currentTime, listenPercent);
     // Reset přímého DOM stylu + refů — žádný ghost při příštím otevření
     if (playerRef.current) {
       playerRef.current.style.transform = '';
@@ -240,7 +274,7 @@ export const StickyAudioPlayer: React.FC = () => {
     swipeOffsetRef.current = 0;
     isSwipingRef.current = false;
     close();
-  }, [pause, close]);
+  }, [pause, close, logClose, currentTime, duration, calculateTotalListened]);
 
   if (!currentTrack || mode !== 'sticky') return null;
 
@@ -300,8 +334,15 @@ export const StickyAudioPlayer: React.FC = () => {
     setSeekPosition(parseFloat(e.target.value));
   };
   const handleSeekEnd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const toSeconds = parseFloat(e.target.value);
+    const fromSeconds = currentTime;
     setIsSeeking(false);
-    seekAudio(parseFloat(e.target.value));
+    seekAudio(toSeconds);
+    // Log seek event (fire-and-forget)
+    const listenPercent = duration > 0
+      ? Math.min(100, Math.round((calculateTotalListened() / duration) * 10000) / 100)
+      : 0;
+    logSeek(fromSeconds, toSeconds, toSeconds, listenPercent);
   };
 
   // ── Swipe-to-close handlers (přímá DOM manipulace = 60fps, bez React re-renderů) ──

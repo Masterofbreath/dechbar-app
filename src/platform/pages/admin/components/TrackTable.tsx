@@ -76,8 +76,22 @@ export function TrackTable({ tracks, onEdit, onDelete }: TrackTableProps) {
     return new Date(dateString).toLocaleDateString('cs-CZ');
   };
 
+  const PlayIcon = () => (
+    <svg className="track-table__icon" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+  const PauseIcon = () => (
+    <svg className="track-table__icon" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="4" width="4" height="16" rx="1" />
+      <rect x="14" y="4" width="4" height="16" rx="1" />
+    </svg>
+  );
+
   return (
     <div className="track-table">
+
+      {/* ── Desktop tabulka ──────────────────────────────── */}
       <table className="track-table__table">
         <thead>
           <tr>
@@ -97,57 +111,46 @@ export function TrackTable({ tracks, onEdit, onDelete }: TrackTableProps) {
           {tracks.map((track) => (
             <tr key={track.id} className="track-table__row">
               <td className="track-table__cover-cell">
-                {track.cover_url ? (
-                  <img
-                    src={track.cover_url}
-                    alt={track.title}
-                    className="track-table__cover"
-                  />
-                ) : (
-                  <div className="track-table__cover-placeholder">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M9 18V5l12-2v13" strokeLinecap="round" strokeLinejoin="round" />
-                      <circle cx="6" cy="18" r="3" />
-                      <circle cx="18" cy="16" r="3" />
-                    </svg>
-                  </div>
-                )}
+                {track.cover_url
+                  ? <img src={track.cover_url} alt={track.title} className="track-table__cover" />
+                  : <div className="track-table__cover-placeholder">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 18V5l12-2v13" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+                      </svg>
+                    </div>
+                }
               </td>
               <td className="track-table__title">{track.title}</td>
               <td>
                 {track.exercise_format && (
                   <span className={`track-table__badge track-table__badge--format-${track.exercise_format}`}>
-                    {track.exercise_format === 'dechpresso' && 'Dechpresso'}
-                    {track.exercise_format === 'meditace' && 'Meditace'}
-                    {track.exercise_format === 'breathwork' && 'Breathwork'}
+                    {track.exercise_format === 'dechpresso' ? 'Dechpresso' :
+                     track.exercise_format === 'meditace'   ? 'Meditace'   : 'Breathwork'}
                   </span>
                 )}
               </td>
               <td>
                 {track.intensity_level && (
                   <span className={`track-table__badge track-table__badge--intensity-${track.intensity_level}`}>
-                    {track.intensity_level === 'jemna' && 'Jemná'}
-                    {track.intensity_level === 'stredni' && 'Střední'}
-                    {track.intensity_level === 'vysoka' && 'Vysoká'}
-                    {track.intensity_level === 'extremni' && 'Extrémní'}
+                    {track.intensity_level === 'jemna'   ? 'Jemná'   :
+                     track.intensity_level === 'stredni' ? 'Střední' :
+                     track.intensity_level === 'vysoka'  ? 'Vysoká'  : 'Extrémní'}
                   </span>
                 )}
               </td>
               <td>
                 {track.difficulty_level && (
                   <span className={`track-table__badge track-table__badge--difficulty-${track.difficulty_level}`}>
-                    {track.difficulty_level === 'easy' && 'Snadné'}
-                    {track.difficulty_level === 'medium' && 'Střední'}
-                    {track.difficulty_level === 'hard' && 'Náročné'}
-                    {track.difficulty_level === 'extreme' && 'Extrémní'}
+                    {track.difficulty_level === 'easy'    ? 'Snadné'  :
+                     track.difficulty_level === 'medium'  ? 'Střední' :
+                     track.difficulty_level === 'hard'    ? 'Náročné' : 'Extrémní'}
                   </span>
                 )}
               </td>
               <td>
                 {track.kp_suitability && (
-                  <span className="track-table__badge track-table__badge--kp">
-                    {track.kp_suitability}
-                  </span>
+                  <span className="track-table__badge track-table__badge--kp">{track.kp_suitability}</span>
                 )}
               </td>
               <td>
@@ -157,49 +160,28 @@ export function TrackTable({ tracks, onEdit, onDelete }: TrackTableProps) {
                 )}
               </td>
               <td>
-                {track.is_published ? (
-                  <span className="track-table__status track-table__status--published">
-                    Publikováno
-                  </span>
-                ) : (
-                  <span className="track-table__status track-table__status--draft">
-                    Koncept
-                  </span>
-                )}
+                <span className={`track-table__status track-table__status--${track.is_published ? 'published' : 'draft'}`}>
+                  {track.is_published ? 'Publikováno' : 'Koncept'}
+                </span>
               </td>
               <td>{formatDate(track.created_at)}</td>
               <td>
                 <div className="track-table__actions">
-                  <button
-                    className="track-table__action-btn track-table__action-btn--play"
+                  <button className="track-table__action-btn track-table__action-btn--play"
                     onClick={() => handlePlay(track)}
-                    title={playingTrackId === track.id ? 'Pauza' : 'Přehrát'}
-                  >
-                    {playingTrackId === track.id ? (
-                      <svg className="track-table__icon" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="6" y="4" width="4" height="16" rx="1" />
-                        <rect x="14" y="4" width="4" height="16" rx="1" />
-                      </svg>
-                    ) : (
-                      <svg className="track-table__icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    )}
+                    title={playingTrackId === track.id ? 'Pauza' : 'Přehrát'}>
+                    {playingTrackId === track.id ? <PauseIcon /> : <PlayIcon />}
                   </button>
-                  <button
-                    className="track-table__action-btn track-table__action-btn--edit"
-                    onClick={() => onEdit(track)}
-                  >
+                  <button className="track-table__action-btn track-table__action-btn--edit"
+                    onClick={() => onEdit(track)}>
                     <svg className="track-table__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     Upravit
                   </button>
-                  <button
-                    className="track-table__action-btn track-table__action-btn--delete"
-                    onClick={() => onDelete(track.id)}
-                  >
+                  <button className="track-table__action-btn track-table__action-btn--delete"
+                    onClick={() => onDelete(track.id)}>
                     <svg className="track-table__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M3 6h18" strokeLinecap="round" strokeLinejoin="round" />
                       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeLinecap="round" strokeLinejoin="round" />
@@ -212,6 +194,77 @@ export function TrackTable({ tracks, onEdit, onDelete }: TrackTableProps) {
           ))}
         </tbody>
       </table>
+
+      {/* ── Mobile karty ──────────────────────────────────── */}
+      <ul className="track-table__cards">
+        {tracks.map((track) => (
+          <li key={track.id} className="track-table__card">
+            {/* Cover */}
+            <div className="track-table__card-cover-wrap">
+              {track.cover_url
+                ? <img src={track.cover_url} alt={track.title} className="track-table__cover" />
+                : <div className="track-table__cover-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 18V5l12-2v13" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+                    </svg>
+                  </div>
+              }
+            </div>
+            {/* Meta */}
+            <div className="track-table__card-body">
+              <span className="track-table__card-title">{track.title}</span>
+              <div className="track-table__card-badges">
+                {track.exercise_format && (
+                  <span className={`track-table__badge track-table__badge--format-${track.exercise_format}`}>
+                    {track.exercise_format === 'dechpresso' ? 'Dechpresso' :
+                     track.exercise_format === 'meditace'   ? 'Meditace'   : 'Breathwork'}
+                  </span>
+                )}
+                {track.intensity_level && (
+                  <span className={`track-table__badge track-table__badge--intensity-${track.intensity_level}`}>
+                    {track.intensity_level === 'jemna' ? 'Jemná' :
+                     track.intensity_level === 'stredni' ? 'Střední' :
+                     track.intensity_level === 'vysoka' ? 'Vysoká' : 'Extrémní'}
+                  </span>
+                )}
+                <span className={`track-table__status track-table__status--${track.is_published ? 'published' : 'draft'}`}>
+                  {track.is_published ? 'Pub.' : 'Draft'}
+                </span>
+              </div>
+              <span className="track-table__card-meta">
+                {formatDuration(track.duration)}
+                {track.duration_category ? ` · ${track.duration_category}` : ''}
+              </span>
+            </div>
+            {/* Akce */}
+            <div className="track-table__card-actions">
+              <button className="track-table__action-btn track-table__action-btn--play"
+                onClick={() => handlePlay(track)}
+                aria-label={playingTrackId === track.id ? 'Pauza' : 'Přehrát'}>
+                {playingTrackId === track.id ? <PauseIcon /> : <PlayIcon />}
+              </button>
+              <button className="track-table__action-btn track-table__action-btn--edit"
+                onClick={() => onEdit(track)}
+                aria-label={`Upravit ${track.title}`}>
+                <svg className="track-table__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <button className="track-table__action-btn track-table__action-btn--delete"
+                onClick={() => onDelete(track.id)}
+                aria-label={`Smazat ${track.title}`}>
+                <svg className="track-table__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
     </div>
   );
 }

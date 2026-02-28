@@ -750,6 +750,47 @@
   background: rgb(20 184 166 / 10%);
 }
 
+/* ── Mobile ───────────────────────────────────────────────── */
+
+@media (width <= 767px) {
+  .notif-admin {
+    padding: 16px;
+    max-width: 100%;
+  }
+
+  /* Tabs horizontální scroll */
+  .notif-admin__tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .notif-admin__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .notif-admin__tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Form — přes celou šířku na mobile */
+  .notif-admin__form {
+    max-width: 100%;
+  }
+
+  /* Submit tlačítko — přes celou šířku */
+  .notif-admin__submit {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  /* Auto list — full width */
+  .notif-admin__auto-list {
+    max-width: 100%;
+  }
+}
+
 /* ── Reduced motion ───────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

@@ -21,6 +21,8 @@ import { TopNav } from '../components/navigation/TopNav';
 import { BottomNav } from '../components/navigation/BottomNav';
 import { StickyAudioPlayer } from '../components/AudioPlayer';
 import { useAudioPlayerStore } from '../components/AudioPlayer/store';
+import { useAuthStore } from '@/platform/auth';
+import { useAppSession } from '@/platform/analytics';
 
 export interface AppLayoutProps {
   /**
@@ -56,6 +58,10 @@ export function AppLayout({
 }: AppLayoutProps) {
   const { currentTrack, mode } = useAudioPlayerStore();
   const hasPlayer = !!currentTrack && mode === 'sticky';
+  const userId = useAuthStore((s) => s.user?.id);
+
+  // Log app_open event once per mount (DAU Level 1 tracking)
+  useAppSession({ userId });
 
   // iOS PWA fix: force layout recalculation after first render.
   // In standalone PWA mode, iOS sometimes computes position:fixed coordinates

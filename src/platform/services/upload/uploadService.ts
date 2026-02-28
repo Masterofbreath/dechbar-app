@@ -241,6 +241,57 @@ export const uploadService = {
   },
 
   /**
+   * Upload feedback screenshot to Bunny.net CDN
+   * Path: images/feedback/{uuid}.{ext}
+   *
+   * @param file - Image file (JPG, PNG, WebP)
+   * @param onProgress - Optional progress callback
+   * @returns Full CDN URL
+   */
+  async uploadFeedbackImage(
+    file: File,
+    onProgress?: UploadProgressCallback,
+  ): Promise<string> {
+    const allowedTypes = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!validateFileType(file, allowedTypes)) {
+      throw new Error(`Invalid file type. Allowed: ${allowedTypes.join(', ')}`);
+    }
+
+    const ext = getExtension(file.name) || 'jpg';
+    const uuid = crypto.randomUUID();
+    const storagePath = `images/feedback/${uuid}.${ext}`;
+    const uploadUrl = `https://${BUNNY_CONFIG.hostname}/${BUNNY_CONFIG.storageZone}/${storagePath}`;
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress({
+            loaded: e.loaded,
+            total: e.total,
+            percent: Math.round((e.loaded / e.total) * 100),
+          });
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error(`Upload failed with status ${xhr.status}`));
+      });
+
+      xhr.addEventListener('error', () => reject(new Error('Upload failed')));
+
+      xhr.open('PUT', uploadUrl);
+      xhr.setRequestHeader('AccessKey', BUNNY_CONFIG.accessKey);
+      xhr.setRequestHeader('Content-Type', file.type || 'image/jpeg');
+      xhr.send(file);
+    });
+
+    return `${BUNNY_CONFIG.cdnUrl}/${storagePath}`;
+  },
+
+  /**
    * Delete file from Bunny.net CDN
    * 
    * @param url - Full CDN URL (e.g., https://dechbar-cdn.b-cdn.net/audio/tracks/uuid.mp3)

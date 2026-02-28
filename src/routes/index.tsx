@@ -72,6 +72,7 @@ import { AppPrivacyPage } from '@/modules/mvp0/pages/AppPrivacyPage';
 // MVP0 Global Modals
 import { ExerciseCreatorModal } from '@/modules/mvp0/components';
 import { SettingsDrawer } from '@/platform/components';
+import { FeedbackModal } from '@/platform/components/FeedbackModal';
 
 // Admin pages (lazy loaded)
 const AudioPlayerAdmin = lazy(() => import('@/platform/pages/admin/AudioPlayerAdmin'));
@@ -79,6 +80,8 @@ const AdminComingSoon = lazy(() => import('@/platform/pages/admin/AdminComingSoo
 const AkademieAdmin = lazy(() => import('@/platform/pages/admin/AkademieAdmin/AkademieAdmin'));
 const NotificationsAdmin = lazy(() => import('@/platform/pages/admin/NotificationsAdmin/NotificationsAdmin'));
 const DailyProgramAdmin = lazy(() => import('@/platform/pages/admin/DailyProgramAdmin/DailyProgramAdmin'));
+const AnalyticsAdmin = lazy(() => import('@/platform/pages/admin/AnalyticsAdmin/AnalyticsAdmin'));
+const FeedbackAdmin  = lazy(() => import('@/platform/pages/admin/FeedbackAdmin/FeedbackAdmin'));
 
 /**
  * TabCarousel - Apple-style carousel tab switcher
@@ -170,6 +173,8 @@ function GlobalModals() {
     deleteConfirmData,
     closeDeleteConfirm,
     setCurrentTab,
+    isFeedbackOpen,
+    closeFeedback,
   } = useNavigation();
   
   return (
@@ -192,6 +197,11 @@ function GlobalModals() {
         />
       )}
       
+      {/* Feedback Modal */}
+      {isFeedbackOpen && (
+        <FeedbackModal isOpen={true} onClose={closeFeedback} />
+      )}
+
       {/* Delete Confirmation Dialog */}
       {isDeleteConfirmOpen && deleteConfirmData && (
         <div className="modal-overlay" onClick={closeDeleteConfirm}>
@@ -425,12 +435,16 @@ export const router = createBrowserRouter([
                 element: <NotificationsAdmin />,
               },
               {
+                path: 'feedback',
+                element: <FeedbackAdmin />,
+              },
+              {
                 path: 'daily-program',
                 element: <DailyProgramAdmin />,
               },
               {
                 path: 'analytics',
-                element: <AdminComingSoon title="Analytika" />,
+                element: <AnalyticsAdmin />,
               },
               {
                 path: 'gamification',

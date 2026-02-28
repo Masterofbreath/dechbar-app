@@ -1,0 +1,6 @@
+[functions.aggregate-daily-stats]
+# Cron job — runs at 02:00 UTC every day
+# Schedule: "0 2 * * *"
+# Uses service_role key (via Supabase Scheduled Functions)
+# No JWT verification needed — invoked by Supabase scheduler
+verify_jwt = false

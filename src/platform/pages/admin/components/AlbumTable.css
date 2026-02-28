@@ -177,9 +177,101 @@
   color: var(--color-text-secondary);
 }
 
-/* Mobile */
+/* ── Desktop: tabulka viditelná, karty schované ────────────── */
+
+.album-table__cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Mobile: karty viditelné, tabulka schovaná ─────────────── */
+
 @media (width <= 767px) {
   .album-table__table {
     display: none;
+  }
+
+  .album-table__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--color-border, #2A2A2A);
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+
+  .album-table__card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #1E1E1E;
+    min-height: 72px;
+  }
+
+  .album-table__card-left {
+    flex-shrink: 0;
+  }
+
+  .album-table__card-cover {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.375rem;
+    object-fit: cover;
+  }
+
+  /* Re-use placeholder styles — viz základní .album-table__cover-placeholder */
+
+  .album-table__card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .album-table__card-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text-primary, #E0E0E0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .album-table__card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .album-table__card-date {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary, #707070);
+  }
+
+  .album-table__card-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* Na mobile: action buttons jsou pouze ikony (bez textu) */
+  .album-table__card-actions .album-table__action-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+  }
+
+  .album-table__card-actions .album-table__icon {
+    width: 18px;
+    height: 18px;
+    margin: 0;
   }
 }

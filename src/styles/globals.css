@@ -590,3 +590,49 @@ body.immersive-mode .bottom-nav {
    způsobovalo iOS WebKit bug: body se stal scroll containerem, iOS přepočítal
    position:fixed BottomNav (Portal child of body) relativně k body scroll area
    místo viewportu → při zavření modalu BottomNav visel s černým pruhem pod ním. */
+
+/* ===================================
+   PWA + iOS SAFE AREAS
+   Platí pro admin i uživatelský UI.
+   Zajišťuje, že fixní elementy (hamburger, sidebar, modaly)
+   respektují notch a home indicator.
+   =================================== */
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  /* Admin hamburger a sidebar jsou definovány přímo v AdminLayout.css
+     a AdminSidebar.css s env(safe-area-inset-*). */
+
+  /* Globalní: plná výška viewport s dynamic viewport unit */
+  .admin-layout,
+  .admin-sidebar {
+    min-height: 100dvh;
+  }
+
+  /* Modaly — horní safe area pro notch na iOS */
+  .aa-modal-overlay,
+  .daily-admin__modal-overlay,
+  .feedback-modal-overlay {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+}
+
+/* ===================================
+   ADMIN TOUCH TARGETS (min 44px)
+   Všechna tlačítka, links, tab items v admin
+   =================================== */
+
+.admin-layout button,
+.admin-layout a,
+.admin-layout select,
+.admin-layout [role="button"] {
+  min-height: 44px;
+}
+
+/* Výjimky — badge a inline elementy, kde 44px nedává smysl */
+.admin-layout .aa-badge,
+.admin-layout .track-table__badge,
+.admin-layout .album-table__type,
+.admin-layout .feedback-admin__tab-count,
+.admin-layout .feedback-admin__category-badge {
+  min-height: unset;
+}
