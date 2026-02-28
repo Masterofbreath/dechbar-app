@@ -73,10 +73,11 @@ function useAdminDashboardToday() {
           .from('exercise_sessions')
           .select('user_id, started_at, completed_at, was_completed')
           .gte('started_at', start),
-        supabase
-          .from('profiles')
-          .select('user_id')
-          .gte('created_at', start),
+        // Use RPC for reliable admin count bypassing RLS
+        supabase.rpc('get_new_registrations_in_range', {
+          from_ts: start,
+          to_ts: new Date().toISOString(),
+        }),
       ]);
 
       const dauL1 = new Set((activityLog.data ?? []).map((r) => r.user_id)).size;
@@ -109,7 +110,7 @@ function useAdminDashboardToday() {
         dauL1,
         dauL2,
         dauL3,
-        newRegistrations: (newProfiles.data ?? []).length,
+        newRegistrations: (newProfiles.data as number) ?? 0,
         totalMinutesBeathed: Math.round((audioMinutes + exerciseMinutes) * 10) / 10,
         totalAudioSessions: (audioSessions.data ?? []).length,
         completedAudioSessions: (audioSessions.data ?? []).filter((r) => r.is_completed).length,
@@ -286,12 +287,10 @@ export function useTotalUsers(): { count: number; isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: analyticsKeys.totalUsers,
     queryFn: async () => {
-      // profiles uses user_id as primary key (not id)
-      const { count, error } = await supabase
-        .from('profiles')
-        .select('user_id', { count: 'exact', head: true });
+      // Use SECURITY DEFINER RPC — bypasses RLS entirely for reliable count
+      const { data, error } = await supabase.rpc('get_total_profiles_count');
       if (error) throw new Error(error.message);
-      return count ?? 0;
+      return (data as number) ?? 0;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -302,36 +301,14 @@ export function useTotalUsers(): { count: number; isLoading: boolean } {
 // useAllTimeMinutes — Total minutes breathed since launch
 // ============================================================
 
-const MAX_EXERCISE_SESSION_SECONDS = 7200; // 2h cap — prevents outlier sessions from skewing total
-
 export function useAllTimeMinutes(): { minutes: number; isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ['analytics', 'allTimeMinutes'] as const,
     queryFn: async () => {
-      const [audioRes, exerciseRes] = await Promise.all([
-        supabase
-          .from('audio_sessions')
-          .select('unique_listen_seconds'),
-        // Only sessions with valid completed_at (not NULL, not before started_at)
-        supabase
-          .from('exercise_sessions')
-          .select('started_at, completed_at')
-          .not('completed_at', 'is', null),
-      ]);
-
-      const audioSec = (audioRes.data ?? []).reduce(
-        (sum, r) => sum + (r.unique_listen_seconds ?? 0),
-        0
-      );
-      const exerciseSec = (exerciseRes.data ?? []).reduce((sum, r) => {
-        if (!r.started_at || !r.completed_at) return sum;
-        const dur = (new Date(r.completed_at).getTime() - new Date(r.started_at).getTime()) / 1000;
-        if (dur <= 0) return sum;
-        // Cap at 2h to avoid test/buggy sessions inflating total
-        return sum + Math.min(dur, MAX_EXERCISE_SESSION_SECONDS);
-      }, 0);
-
-      return Math.round((audioSec + exerciseSec) / 60 * 10) / 10;
+      // Use SECURITY DEFINER RPC — bypasses RLS for reliable all-users aggregate
+      const { data, error } = await supabase.rpc('get_all_time_minutes');
+      if (error) throw new Error(error.message);
+      return Math.round(((data as number) ?? 0) * 10) / 10;
     },
     staleTime: 5 * 60 * 1000,
   });
