@@ -356,7 +356,7 @@ export default function DailyProgramAdmin() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: overrides = [], isLoading } = useQuery({
-    queryKey: akademieKeys.dailyOverride(),
+    queryKey: akademieKeys.dailyOverrideAdmin(),
     queryFn: fetchAllOverrides,
     staleTime: 0,
   });
@@ -369,7 +369,7 @@ export default function DailyProgramAdmin() {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'platform_daily_override' },
         () => {
-          queryClient.invalidateQueries({ queryKey: akademieKeys.dailyOverride() });
+          queryClient.invalidateQueries({ queryKey: akademieKeys.dailyOverrideAdmin() });
         }
       )
       .subscribe();
@@ -380,7 +380,7 @@ export default function DailyProgramAdmin() {
   const saveMutation = useMutation({
     mutationFn: upsertOverride,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: akademieKeys.dailyOverride() });
+      queryClient.invalidateQueries({ queryKey: akademieKeys.dailyOverrideAdmin() });
       setFormState(null);
     },
   });
@@ -388,7 +388,7 @@ export default function DailyProgramAdmin() {
   const deleteMutation = useMutation({
     mutationFn: deleteOverride,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: akademieKeys.dailyOverride() });
+      queryClient.invalidateQueries({ queryKey: akademieKeys.dailyOverrideAdmin() });
       setDeleteId(null);
     },
   });

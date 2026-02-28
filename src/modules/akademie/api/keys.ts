@@ -37,6 +37,10 @@ export const akademieKeys = {
   dailyOverride: () =>
     [...akademieKeys.all, 'dailyOverride'] as const,
 
+  // Admin: all overrides (array) — separate key to avoid cache collision with dailyOverride (single)
+  dailyOverrideAdmin: () =>
+    [...akademieKeys.all, 'dailyOverride', 'admin'] as const,
+
   nextLesson: (userId: string) =>
     [...akademieKeys.all, 'nextLesson', userId] as const,
 }
