@@ -42,7 +42,7 @@ function formatHours(minutes: number): string {
 }
 
 // ── Community Milestone Component ──
-function CommunityMilestone({ variant = 'bottom' }: { variant?: 'top' | 'bottom' }) {
+function CommunityMilestone() {
   const { minutes, isLoading } = useAllTimeMinutes();
   const currentHours = minutes / 60;
 
@@ -66,7 +66,7 @@ function CommunityMilestone({ variant = 'bottom' }: { variant?: 'top' | 'bottom'
   const visibleMilestones = PRIME_MILESTONES_H.slice(displayStart, displayEnd + 1);
 
   return (
-    <div className={`pokrok-page__community${variant === 'top' ? ' pokrok-page__community--top' : ''}`}>
+    <div className="pokrok-page__community">
       <div className="pokrok-page__community-header">
         <span className="pokrok-page__community-title">Dýcháme společně</span>
         <span className="pokrok-page__community-badge">komunita</span>
@@ -153,8 +153,6 @@ interface HeatmapProps {
   isLoading: boolean;
 }
 
-const DOW_LABELS = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
-
 function ActivityHeatmap({ days, isLoading }: HeatmapProps) {
   const weeks = buildWeeks(days);
   const totalWeeks = weeks.length;
@@ -162,40 +160,31 @@ function ActivityHeatmap({ days, isLoading }: HeatmapProps) {
   return (
     <div className="pokrok-page__graph-section">
       <div className="pokrok-page__graph-title">Aktivita — posledních 24 týdnů</div>
-      <div className="pokrok-page__graph-body">
-        {/* Day labels column */}
-        <div className="pokrok-page__graph-dow">
-          {DOW_LABELS.map((d) => (
-            <span key={d} className="pokrok-page__graph-dow-label">{d}</span>
-          ))}
-        </div>
-        {/* Grid */}
-        <div className="pokrok-page__graph-wrap">
-          <div className="pokrok-page__graph-grid">
-            {isLoading
-              ? Array.from({ length: totalWeeks || 24 }).map((_, wi) => (
-                  <div key={wi} className="pokrok-page__graph-col">
-                    {Array.from({ length: 7 }).map((_, di) => (
-                      <div key={di} className="pokrok-page__graph-cell pokrok-page__graph-cell--0" />
-                    ))}
-                  </div>
-                ))
-              : weeks.map((week, wi) => (
-                  <div key={wi} className="pokrok-page__graph-col">
-                    {week.map((day) => {
-                      const level = getActivityLevel(day.minutes);
-                      return (
-                        <div
-                          key={day.date}
-                          className={`pokrok-page__graph-cell pokrok-page__graph-cell--${level}`}
-                          title={`${day.date}: ${day.minutes > 0 ? formatMinutes(day.minutes) : 'žádná aktivita'}`}
-                          aria-label={`${day.date}: ${day.minutes > 0 ? formatMinutes(day.minutes) : 'žádná aktivita'}`}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-          </div>
+      <div className="pokrok-page__graph-wrap">
+        <div className="pokrok-page__graph-grid">
+          {isLoading
+            ? Array.from({ length: totalWeeks || 24 }).map((_, wi) => (
+                <div key={wi} className="pokrok-page__graph-col">
+                  {Array.from({ length: 7 }).map((_, di) => (
+                    <div key={di} className="pokrok-page__graph-cell pokrok-page__graph-cell--0" />
+                  ))}
+                </div>
+              ))
+            : weeks.map((week, wi) => (
+                <div key={wi} className="pokrok-page__graph-col">
+                  {week.map((day) => {
+                    const level = getActivityLevel(day.minutes);
+                    return (
+                      <div
+                        key={day.date}
+                        className={`pokrok-page__graph-cell pokrok-page__graph-cell--${level}`}
+                        title={`${day.date}: ${day.minutes > 0 ? formatMinutes(day.minutes) : 'žádná aktivita'}`}
+                        aria-label={`${day.date}: ${day.minutes > 0 ? formatMinutes(day.minutes) : 'žádná aktivita'}`}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
         </div>
       </div>
       <div className="pokrok-page__graph-legend">
@@ -355,12 +344,6 @@ export function PokrokPage() {
         </div>
       </div>
 
-      {/* Community Milestone — above hero cards, transparent */}
-      <CommunityMilestone variant="top" />
-
-      {/* Weekly Dots — current week habit tracker, always visible */}
-      <WeeklyDots days={activityGraph} />
-
       {/* Tier gate for locked periods */}
       {isPeriodLocked && (
         <div className="pokrok-page__tier-gate">
@@ -378,7 +361,7 @@ export function PokrokPage() {
         <div className="pokrok-page__error">Nepodařilo se načíst statistiky.</div>
       )}
 
-      {/* Hero Row: KP + Streak */}
+      {/* Hero Row: KP + Streak — viditelné bez scrollování */}
       <div className="pokrok-page__hero-row">
         {/* KP Card */}
         <div className="pokrok-page__hero-card">
@@ -476,6 +459,21 @@ export function PokrokPage() {
         </div>
       </div>
 
+      {/* Weekly Dots — tento týden, s popisem */}
+      <div className="pokrok-page__week-section">
+        <div className="pokrok-page__week-section-header">
+          <span className="pokrok-page__week-section-title">Tento týden</span>
+          <span className="pokrok-page__week-section-sub">tvoje denní aktivita</span>
+        </div>
+        <WeeklyDots days={activityGraph} />
+      </div>
+
+      {/* Activity Heatmap (last 24 weeks) — centered */}
+      <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
+
+      {/* Community Milestone — nad osobní rekordy */}
+      <CommunityMilestone />
+
       {/* Osobní rekordy — always all-time, not dependent on period */}
       {(records || recordsLoading) && (
         <div className="pokrok-page__records">
@@ -512,9 +510,6 @@ export function PokrokPage() {
           </div>
         </div>
       )}
-
-      {/* Activity Heatmap (last 24 weeks) */}
-      <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
     </div>
     </>
   );

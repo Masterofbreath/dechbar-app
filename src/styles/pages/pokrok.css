@@ -4,7 +4,7 @@
    ============================================================ */
 
 .pokrok-page {
-  padding: 0 20px 90px;   /* bez top paddingu — nadpis sedí stejně jako Akademie */
+  padding: 0 20px 120px;
   color: #f0f0f0;
   max-width: 600px;
   margin: 0 auto;
@@ -400,38 +400,15 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 12px;
-}
-
-.pokrok-page__graph-body {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.pokrok-page__graph-dow {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding-top: 1px;
-  flex-shrink: 0;
-}
-
-.pokrok-page__graph-dow-label {
-  display: block;
-  height: 11px;
-  line-height: 11px;
-  font-size: 9px;
-  color: rgb(255 255 255 / 28%);
-  text-align: right;
-  min-width: 16px;
-  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .pokrok-page__graph-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
-  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .pokrok-page__graph-grid {
@@ -473,16 +450,6 @@
   .pokrok-page__graph-grid {
     gap: 4px;
   }
-
-  .pokrok-page__graph-dow {
-    gap: 4px;
-  }
-
-  .pokrok-page__graph-dow-label {
-    height: 13px;
-    line-height: 13px;
-    font-size: 10px;
-  }
 }
 
 /* Activity levels (0–4) */
@@ -495,6 +462,7 @@
 .pokrok-page__graph-legend {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   margin-top: 8px;
   font-size: 10px;
@@ -529,14 +497,29 @@
   border-radius: 16px;
 }
 
-/* Transparent variant — placed at top above hero cards */
-.pokrok-page__community--top {
-  background: transparent;
-  border-color: transparent;
-  padding-left: 0;
-  padding-right: 0;
-  margin-top: 0;
-  margin-bottom: 4px;
+/* ── Week Section ────────────────────────────────── */
+.pokrok-page__week-section {
+  margin-bottom: 8px;
+}
+
+.pokrok-page__week-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.pokrok-page__week-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 70%);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pokrok-page__week-section-sub {
+  font-size: 11px;
+  color: rgb(255 255 255 / 30%);
 }
 
 .pokrok-page__community-header {
