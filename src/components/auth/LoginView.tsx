@@ -1,9 +1,12 @@
 /**
  * LoginView Component
- * 
- * Login form view for AuthModal
- * Design inspired by WordPress zdravedychej-public modal views
- * 
+ *
+ * Login form view for AuthModal.
+ * Supports:
+ *   - Email + password login
+ *   - OAuth (Google)
+ *   - "Přihlásit bez hesla" — magic link for users who forgot/never set a password
+ *
  * @package DechBar_App
  * @subpackage Components/Auth
  */
@@ -12,6 +15,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/platform/auth';
+import { supabase } from '@/platform/api/supabase';
 import { Button, Input, TextLink, Checkbox } from '@/platform/components';
 import { ErrorMessage } from '@/components/shared';
 import { MESSAGES } from '@/config/messages';
@@ -20,32 +24,37 @@ interface LoginViewProps {
   onSwitchToRegister: () => void;
   onSwitchToReset: () => void;
   onSuccess?: () => void;
+  /** After successful login, navigate here. Defaults to /app. */
+  returnTo?: string;
 }
 
-export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: LoginViewProps) {
+export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess, returnTo }: LoginViewProps) {
   const navigate = useNavigate();
   const { signIn, isLoading, error: authError, signInWithOAuth } = useAuth();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [formError, setFormError] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
 
-  // ✅ Keyboard shortcut: Cmd/Ctrl+Enter to submit
+  // Magic link mode (passwordless login)
+  const [magicLinkMode, setMagicLinkMode] = useState(false);
+  const [magicEmail, setMagicEmail] = useState('');
+  const [magicLinkSending, setMagicLinkSending] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [magicLinkError, setMagicLinkError] = useState('');
+
+  // Keyboard shortcut: Cmd/Ctrl+Enter to submit
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault(); // Prevent default browser behavior
-        
-        // Only submit if form is not already loading
+        e.preventDefault();
         if (!isLoading) {
-          formRef.current?.requestSubmit(); // Triggers validation + onSubmit handler
+          formRef.current?.requestSubmit();
         }
       }
     }
-    
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isLoading]);
@@ -54,9 +63,9 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
     try {
       setFormError('');
       await signInWithOAuth(provider, {
-        redirectTo: `${window.location.origin}/app`
+        redirectTo: `${window.location.origin}${returnTo || '/app'}`
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`OAuth ${provider} error:`, err);
       setFormError(MESSAGES.error.oauthFailed);
     }
@@ -66,17 +75,14 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
     e.preventDefault();
     setFormError('');
 
-    // Validation
     if (!email || !password) {
       setFormError(MESSAGES.error.requiredFields);
       return;
     }
-
     if (!email.includes('@')) {
       setFormError(MESSAGES.error.invalidEmailLogin);
       return;
     }
-
     if (password.length < 6) {
       setFormError(MESSAGES.error.passwordTooShort);
       return;
@@ -84,71 +90,161 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
 
     try {
       await signIn({ email, password, remember });
-      
-      // Success
+
       if (onSuccess) {
         onSuccess();
       }
-      navigate('/dashboard');
-      
-    } catch (err: any) {
+      navigate(returnTo || '/app');
+    } catch (err: unknown) {
       console.error('Login error:', err);
-      
-      const errorMessage = err.message || '';
-      
-      // ✅ COMPREHENSIVE ERROR TRANSLATION (100% Czech coverage)
+      const errorMessage = err instanceof Error ? err.message : '';
+
       if (errorMessage.includes('Invalid login credentials')) {
-        // Wrong email/password combination
         setFormError(MESSAGES.error.invalidCredentials);
-        
       } else if (errorMessage.includes('Email not confirmed')) {
-        // Email verification pending
         setFormError(MESSAGES.error.emailNotConfirmed);
-        
-      } else if (errorMessage.includes('Email and password') || 
-                 errorMessage.includes('Password authentication') ||
-                 errorMessage.includes('signup provider')) {
-        // OAuth account trying to login with password
+      } else if (
+        errorMessage.includes('Email and password') ||
+        errorMessage.includes('Password authentication') ||
+        errorMessage.includes('signup provider')
+      ) {
         setFormError(MESSAGES.error.oauthAccountExists);
-        
       } else if (errorMessage.includes('User not found')) {
-        // Security: Don't reveal if email exists (email enumeration attack prevention)
         setFormError(MESSAGES.error.invalidCredentials);
-        
-      } else if (errorMessage.includes('too many requests') || 
-                 errorMessage.includes('rate limit')) {
-        // Rate limiting (brute force protection)
+      } else if (errorMessage.includes('too many requests') || errorMessage.includes('rate limit')) {
         setFormError(MESSAGES.error.tooManyRequests);
-        
-      } else if (errorMessage.includes('network') || 
-                 errorMessage.includes('Failed to fetch')) {
-        // Network connectivity issues
+      } else if (errorMessage.includes('network') || errorMessage.includes('Failed to fetch')) {
         setFormError(MESSAGES.error.networkError);
-        
       } else {
-        // ✅ FALLBACK: Generic Czech error (no more English!)
         console.warn('Unknown auth error:', errorMessage);
         setFormError(MESSAGES.error.unknownAuthError);
       }
     }
   }
 
+  // ============================================================
+  // MAGIC LINK MODE — "Přihlásit bez hesla"
+  // Pro uživatele, kteří nemají heslo nebo ho zapomněli
+  // Posílá magic link (shouldCreateUser: false → jen existující účty)
+  // ============================================================
+  async function handleMagicLinkSend(e: FormEvent) {
+    e.preventDefault();
+    setMagicLinkError('');
+
+    if (!magicEmail || !magicEmail.includes('@')) {
+      setMagicLinkError(MESSAGES.error.invalidEmail);
+      return;
+    }
+
+    try {
+      setMagicLinkSending(true);
+      const { error } = await supabase.auth.signInWithOtp({
+        email: magicEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}${returnTo || '/app'}`,
+          shouldCreateUser: false,
+        },
+      });
+
+      if (error) {
+        if (error.message?.includes('rate limit') || error.status === 429) {
+          setMagicLinkError(MESSAGES.error.rateLimitEmail);
+        } else {
+          setMagicLinkError(MESSAGES.error.unknownAuthError);
+        }
+        return;
+      }
+
+      setMagicLinkSent(true);
+    } catch {
+      setMagicLinkError(MESSAGES.error.networkError);
+    } finally {
+      setMagicLinkSending(false);
+    }
+  }
+
+  // ============================================================
+  // MAGIC LINK SENT STATE
+  // ============================================================
+  if (magicLinkMode && magicLinkSent) {
+    return (
+      <div className="auth-view">
+        <div className="modal-header">
+          <h2 className="modal-title">{MESSAGES.auth.emailSentTitle}</h2>
+          <p className="modal-subtitle">{MESSAGES.auth.emailSentInstruction}</p>
+        </div>
+        <p style={{ color: '#888', fontSize: '14px', textAlign: 'center', marginTop: '8px' }}>
+          Pokud účet s tímto e-mailem existuje, odeslali jsme odkaz pro přihlášení.
+          Zkontroluj schránku (i spam).
+        </p>
+        <div className="modal-footer" style={{ marginTop: '24px' }}>
+          <TextLink onClick={() => { setMagicLinkMode(false); setMagicLinkSent(false); setMagicEmail(''); }}>
+            ← Zpět na přihlášení
+          </TextLink>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // MAGIC LINK FORM
+  // ============================================================
+  if (magicLinkMode) {
+    return (
+      <div className="auth-view">
+        <div className="modal-header">
+          <h2 className="modal-title">Přihlásit bez hesla</h2>
+          <p className="modal-subtitle">Pošleme ti odkaz přímo na e-mail — bez hesla.</p>
+        </div>
+
+        <form onSubmit={handleMagicLinkSend} className="auth-form" noValidate>
+          <Input
+            type="email"
+            label={MESSAGES.form.email}
+            value={magicEmail}
+            onChange={(e) => setMagicEmail(e.target.value)}
+            placeholder={MESSAGES.form.placeholders.email}
+            autoFocus
+            required
+            disabled={magicLinkSending}
+          />
+
+          {magicLinkError && <ErrorMessage message={magicLinkError} />}
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={magicLinkSending}
+            disabled={magicLinkSending}
+          >
+            {magicLinkSending ? MESSAGES.buttons.loading.sendingEmail : 'Poslat odkaz →'}
+          </Button>
+        </form>
+
+        <div className="modal-footer">
+          <TextLink onClick={() => setMagicLinkMode(false)}>
+            ← Zpět na přihlášení heslem
+          </TextLink>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // STANDARD LOGIN FORM
+  // ============================================================
   return (
     <div className="auth-view">
       {/* Header */}
       <div className="modal-header">
-        <h2 className="modal-title">
-          {MESSAGES.auth.loginTitle}
-        </h2>
-        <p className="modal-subtitle">
-          {MESSAGES.auth.loginSubtitle}
-        </p>
+        <h2 className="modal-title">{MESSAGES.auth.loginTitle}</h2>
+        <p className="modal-subtitle">{MESSAGES.auth.loginSubtitle}</p>
       </div>
 
       {/* Login Form */}
       <form ref={formRef} onSubmit={handleSubmit} className="auth-form" noValidate>
-        
-        {/* Email */}
         <Input
           type="email"
           label={MESSAGES.form.email}
@@ -160,7 +256,6 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
           disabled={isLoading}
         />
 
-        {/* Password */}
         <Input
           type="password"
           label={MESSAGES.form.password}
@@ -171,25 +266,21 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
           disabled={isLoading}
         />
 
-        {/* Remember Me & Forgot Password */}
         <div className="flex items-center justify-between">
           <Checkbox
             label={MESSAGES.form.rememberMe}
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
           />
-          
           <TextLink onClick={onSwitchToReset}>
             Zapomenuté heslo?
           </TextLink>
         </div>
 
-        {/* Error Message */}
         {(formError || authError) && (
           <ErrorMessage message={formError || authError?.message || ''} />
         )}
 
-        {/* Submit Button */}
         <Button
           type="submit"
           variant="primary"
@@ -200,18 +291,21 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
         >
           {isLoading ? MESSAGES.buttons.loading.login : MESSAGES.buttons.login}
         </Button>
+
+        {/* Magic link option — recovery for users without/with forgotten password */}
+        <div style={{ textAlign: 'center', marginTop: '4px' }}>
+          <TextLink onClick={() => setMagicLinkMode(true)}>
+            Přihlásit bez hesla →
+          </TextLink>
+        </div>
       </form>
 
-      {/* OAuth Icons - Premium Minimal (Stripe/Notion style) */}
+      {/* OAuth */}
       <div className="mt-6">
-        {/* Divider with imperativ "nebo pokračuj s" */}
         <div className="auth-divider">
           <span>{MESSAGES.auth.oauthDivider}</span>
         </div>
-
-        {/* OAuth icons - small, side by side */}
         <div className="oauth-icons">
-          {/* Google - ENABLED */}
           <button
             type="button"
             className="oauth-icon-button"
@@ -219,39 +313,23 @@ export function LoginView({ onSwitchToRegister, onSwitchToReset, onSuccess }: Lo
             disabled={isLoading}
             aria-label="Pokračovat s Google"
           >
-            <img 
-              src="/assets/images/icons/oauth/google.svg" 
-              alt=""
-              aria-hidden="true"
-            />
+            <img src="/assets/images/icons/oauth/google.svg" alt="" aria-hidden="true" />
           </button>
-
-          {/* Facebook - DISABLED (připraveno) */}
           <button
             type="button"
             className="oauth-icon-button"
             disabled
             aria-label="Pokračovat s Facebook (brzy dostupné)"
           >
-            <img 
-              src="/assets/images/icons/oauth/facebook.svg" 
-              alt=""
-              aria-hidden="true"
-            />
+            <img src="/assets/images/icons/oauth/facebook.svg" alt="" aria-hidden="true" />
           </button>
-
-          {/* Apple - DISABLED (připraveno) */}
           <button
             type="button"
             className="oauth-icon-button"
             disabled
             aria-label="Pokračovat s Apple (brzy dostupné)"
           >
-            <img 
-              src="/assets/images/icons/oauth/apple.svg" 
-              alt=""
-              aria-hidden="true"
-            />
+            <img src="/assets/images/icons/oauth/apple.svg" alt="" aria-hidden="true" />
           </button>
         </div>
       </div>

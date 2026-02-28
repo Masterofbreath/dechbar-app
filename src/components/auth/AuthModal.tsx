@@ -20,11 +20,13 @@ export interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultView?: 'login' | 'register' | 'reset';
+  /** After successful login navigate here instead of default /app */
+  returnTo?: string;
 }
 
 type AuthView = 'login' | 'register' | 'reset';
 
-export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, defaultView = 'login', returnTo }: AuthModalProps) {
   const [currentView, setCurrentView] = useState<AuthView>(defaultView);
   const [isClosing, setIsClosing] = useState(false);
   const [isSuccessState, setIsSuccessState] = useState(false);
@@ -41,11 +43,14 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
     enabled: isOpen
   });
 
-  // Reset view when modal opens
+  // Reset view when modal opens.
+  // queueMicrotask avoids calling setState synchronously within an effect body.
   useEffect(() => {
     if (isOpen) {
-      setCurrentView(defaultView);
-      setIsSuccessState(false);
+      queueMicrotask(() => {
+        setCurrentView(defaultView);
+        setIsSuccessState(false);
+      });
     }
   }, [isOpen, defaultView]);
 
@@ -113,6 +118,7 @@ export function AuthModal({ isOpen, onClose, defaultView = 'login' }: AuthModalP
                 onSwitchToRegister={() => switchView('register')}
                 onSwitchToReset={() => switchView('reset')}
                 onSuccess={handleSuccess}
+                returnTo={returnTo}
               />
             )}
 

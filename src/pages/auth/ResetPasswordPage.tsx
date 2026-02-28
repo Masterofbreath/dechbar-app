@@ -1,9 +1,11 @@
 /**
  * ResetPasswordPage
- * 
- * Page for setting new password after reset link click
- * User is redirected here from email link
- * 
+ *
+ * Správné zpracování Supabase password reset flow:
+ * 1. Čeká na PASSWORD_RECOVERY event z onAuthStateChange
+ * 2. Teprve po navázání session zobrazí formulář
+ * 3. Pokud session nepřijde do 6s → error state s možností zaslat nový odkaz
+ *
  * @package DechBar_App
  * @subpackage Pages/Auth
  */
@@ -17,37 +19,65 @@ import { ErrorMessage } from '@/components/shared';
 import { MESSAGES } from '@/config/messages';
 
 type PasswordStrength = 'weak' | 'medium' | 'strong';
+type SessionState = 'waiting' | 'ready' | 'error';
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
-  
+
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>('weak');
+  const [sessionState, setSessionState] = useState<SessionState>('waiting');
 
-  // Password strength calculation
+  // ============================================================
+  // SESSION: Čekáme na PASSWORD_RECOVERY event od Supabase
+  // Supabase.js zpracuje token z URL a vyšle tento event
+  // ============================================================
+  useEffect(() => {
+    // Nejdřív zkontrolujeme, zda session již existuje (např. při F5)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSessionState('ready');
+      }
+    });
+
+    // Posloucháme na auth events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        setSessionState('ready');
+      } else if (event === 'SIGNED_IN' && session) {
+        // Fallback: přijmeme i SIGNED_IN pokud přijde session
+        setSessionState('ready');
+      }
+    });
+
+    // Timeout: pokud session nepřijde do 6 sekund → odkaz expiroval nebo byl použit
+    const timeout = setTimeout(() => {
+      setSessionState(prev => (prev === 'waiting' ? 'error' : prev));
+    }, 6000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  // Password strength
   useEffect(() => {
     if (newPassword.length === 0) {
       setPasswordStrength('weak');
       return;
     }
-
     let strength: PasswordStrength = 'weak';
-    
     if (newPassword.length >= 8) {
       strength = 'medium';
-      
-      const hasNumber = /\d/.test(newPassword);
-      const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
-      
-      if (hasNumber && hasSpecial) {
+      if (/\d/.test(newPassword) && /[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
         strength = 'strong';
       }
     }
-    
     setPasswordStrength(strength);
   }, [newPassword]);
 
@@ -55,17 +85,14 @@ export function ResetPasswordPage() {
     e.preventDefault();
     setFormError('');
 
-    // Validation
     if (!newPassword || !confirmPassword) {
       setFormError(MESSAGES.error.requiredFields);
       return;
     }
-
     if (newPassword.length < 6) {
       setFormError(MESSAGES.error.passwordTooShort);
       return;
     }
-
     if (newPassword !== confirmPassword) {
       setFormError(MESSAGES.error.passwordMismatch);
       return;
@@ -73,56 +100,112 @@ export function ResetPasswordPage() {
 
     try {
       setIsLoading(true);
-      
-      // Update password (Supabase automatically validates token from URL)
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
 
-      // Success
       setIsSuccess(true);
-      
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
-      
-    } catch (err: any) {
-      console.error('Password update error:', err);
-      
-      const errorMessage = err.message || MESSAGES.error.passwordUpdateFailed;
-      
-      if (errorMessage.includes('New password should be different')) {
-        setFormError('Nové heslo musí být jiné než staré');
-      } else if (errorMessage.includes('Password should be at least')) {
+      setTimeout(() => navigate('/app'), 2000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+
+      if (msg.includes('Auth session missing') || msg.includes('session missing')) {
+        setFormError('Odkaz vypršel nebo byl již použit. Požádej o nový odkaz pro obnovení hesla.');
+      } else if (msg.includes('New password should be different')) {
+        setFormError('Nové heslo musí být jiné než staré.');
+      } else if (msg.includes('Password should be at least')) {
         setFormError(MESSAGES.error.passwordTooShort);
-      } else if (errorMessage.includes('Invalid or expired')) {
+      } else if (msg.includes('Invalid or expired') || msg.includes('expired')) {
         setFormError('Odkaz vypršel. Požádej o nový odkaz pro obnovení hesla.');
+      } else if (msg.includes('network') || msg.includes('Failed to fetch')) {
+        setFormError(MESSAGES.error.networkError);
+      } else if (msg) {
+        setFormError(MESSAGES.error.passwordUpdateFailed);
       } else {
-        setFormError(errorMessage);
+        setFormError(MESSAGES.error.passwordUpdateFailed);
       }
     } finally {
       setIsLoading(false);
     }
   }
 
-  // Success state
+  // ============================================================
+  // LOADING STATE — čekáme na session z recovery linku
+  // ============================================================
+  if (sessionState === 'waiting') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] p-4">
+        <div className="modal-card max-w-md w-full">
+          <div className="auth-view" style={{ textAlign: 'center', padding: '40px 24px' }}>
+            <div style={{ marginBottom: '20px' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto', display: 'block', opacity: 0.6 }}>
+                <circle cx="12" cy="12" r="10" stroke="#2CBEC6" strokeWidth="2" strokeDasharray="30 10" style={{ animation: 'spin 1.5s linear infinite', transformOrigin: 'center' }}>
+                  <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1.5s" repeatCount="indefinite" />
+                </circle>
+              </svg>
+            </div>
+            <h2 style={{ color: '#F0F0F0', fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>
+              Ověřujeme odkaz...
+            </h2>
+            <p style={{ color: '#888', fontSize: '14px' }}>
+              Chvilku strpení, připravujeme tvůj formulář.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // ERROR STATE — odkaz expiroval nebo byl použit
+  // ============================================================
+  if (sessionState === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] p-4">
+        <div className="modal-card max-w-md w-full">
+          <div className="auth-view">
+            <div className="modal-header">
+              <h2 className="modal-title">Odkaz už nefunguje</h2>
+              <p className="modal-subtitle">
+                Odkaz pro obnovení hesla vypršel nebo byl již použit. Nic se nestalo — pošleme ti nový.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={() => navigate('/?openAuth=reset')}
+              >
+                Zaslat nový odkaz →
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                fullWidth
+                onClick={() => navigate('/app')}
+              >
+                Zpět do aplikace
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // SUCCESS STATE
+  // ============================================================
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] p-4">
         <div className="modal-card modal-card--success max-w-md w-full">
           <div className="auth-view">
-            {/* Header */}
             <div className="modal-header">
               <h2 className="modal-title">Heslo změněno</h2>
             </div>
-
-            {/* Instruction */}
             <p className="success-instruction">Dýchej s námi.</p>
-
-            {/* Auto-redirect hint */}
             <p className="text-sm text-text-tertiary text-center mt-4">
               Za chvíli tě přesměrujeme...
             </p>
@@ -132,25 +215,19 @@ export function ResetPasswordPage() {
     );
   }
 
-  // Form state
+  // ============================================================
+  // FORM STATE — session navázána, zobraz formulář
+  // ============================================================
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] p-4">
       <div className="modal-card max-w-md w-full">
         <div className="auth-view">
-          {/* Header */}
           <div className="modal-header">
-            <h2 className="modal-title">
-              {MESSAGES.auth.resetPasswordTitle}
-            </h2>
-            <p className="modal-subtitle">
-              {MESSAGES.auth.resetPasswordSubtitle}
-            </p>
+            <h2 className="modal-title">{MESSAGES.auth.resetPasswordTitle}</h2>
+            <p className="modal-subtitle">{MESSAGES.auth.resetPasswordSubtitle}</p>
           </div>
 
-          {/* Reset Form */}
           <form onSubmit={handleSubmit} className="auth-form" noValidate>
-            
-            {/* New Password */}
             <div>
               <Input
                 type="password"
@@ -161,16 +238,15 @@ export function ResetPasswordPage() {
                 required
                 disabled={isLoading}
                 helperText={MESSAGES.hints.passwordStrength}
+                autoFocus
               />
-              
-              {/* Password Strength Indicator */}
               {newPassword.length > 0 && (
                 <div className="password-strength">
                   <div className="password-strength-bar">
-                    <div 
+                    <div
                       className={`password-strength-fill ${passwordStrength}`}
                       style={{
-                        width: passwordStrength === 'weak' ? '33%' : 
+                        width: passwordStrength === 'weak' ? '33%' :
                                passwordStrength === 'medium' ? '66%' : '100%'
                       }}
                     />
@@ -183,7 +259,6 @@ export function ResetPasswordPage() {
               )}
             </div>
 
-            {/* Confirm Password */}
             <Input
               type="password"
               label={MESSAGES.form.passwordConfirm}
@@ -194,12 +269,8 @@ export function ResetPasswordPage() {
               disabled={isLoading}
             />
 
-            {/* Error Message */}
-            {formError && (
-              <ErrorMessage message={formError} />
-            )}
+            {formError && <ErrorMessage message={formError} />}
 
-            {/* Submit Button */}
             <Button
               type="submit"
               variant="primary"

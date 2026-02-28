@@ -34,8 +34,12 @@ export async function fetchCategories(userId: string | undefined): Promise<Akade
     ...cat,
     cover_image_url: cat.cover_image_url ?? null,
     required_module_id: cat.required_module_id ?? null,
-    isAccessible: cat.required_module_id === null || ownedModuleIds.has(cat.required_module_id),
-    // is_active: true (active) or false (coming soon placeholder) — oboje zobrazíme v gridu
+    // is_active=false → coming soon, vždy locked
+    // is_active=true + required_module_id=null → přístupné pro všechny
+    // is_active=true + required_module_id → přístupné jen s modulem
+    isAccessible:
+      cat.is_active === true &&
+      (cat.required_module_id == null || ownedModuleIds.has(cat.required_module_id)),
   }))
 }
 

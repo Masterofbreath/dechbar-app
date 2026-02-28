@@ -12,35 +12,54 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Logo, Button } from '@/platform';
 import { useAuth } from '@/platform/auth';
 import { AuthModal } from '@/components/auth/AuthModal';
+import type { AuthModalProps } from '@/components/auth/AuthModal';
 import { MESSAGES } from '@/config/messages';
 
 export function Header() {
   const { user } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Derive initial modal state from URL params at render time (no useEffect needed)
+  // /?returnTo=%2Fapp  → auto-open login, remember returnTo for post-login redirect
+  // /?openAuth=reset   → auto-open forgot-password view
+  // /?openAuth=register → auto-open register view
+  const urlReturnTo = searchParams.get('returnTo') || undefined;
+  const urlOpenAuth = searchParams.get('openAuth');
+  const hasAuthParams = !!(urlReturnTo || urlOpenAuth);
+
+  function resolveView(): AuthModalProps['defaultView'] {
+    if (urlOpenAuth === 'reset') return 'reset';
+    if (urlOpenAuth === 'register') return 'register';
+    return 'login';
+  }
+
+  const [showAuthModal, setShowAuthModal] = useState(() => hasAuthParams && !user);
+  const [authView, setAuthView] = useState<AuthModalProps['defaultView']>(resolveView);
+  const [returnTo, setReturnTo] = useState<string | undefined>(urlReturnTo);
 
   // Scroll listener for glassmorphism effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   function openLoginModal() {
+    setReturnTo(undefined);
     setAuthView('login');
     setShowAuthModal(true);
   }
 
   function openRegisterModal() {
+    setReturnTo(undefined);
     setAuthView('register');
     setShowAuthModal(true);
   }
@@ -114,10 +133,17 @@ export function Header() {
 
       {/* AuthModal only shown when unauthenticated */}
       {!user && (
-        <AuthModal 
+        <AuthModal
           isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
+          onClose={() => {
+            setShowAuthModal(false);
+            // Clean URL params after modal is closed without login
+            if (searchParams.get('returnTo') || searchParams.get('openAuth')) {
+              navigate('/', { replace: true });
+            }
+          }}
           defaultView={authView}
+          returnTo={returnTo}
         />
       )}
     </>

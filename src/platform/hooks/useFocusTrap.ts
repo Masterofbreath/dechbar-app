@@ -76,12 +76,11 @@ export function useFocusTrap(isActive: boolean) {
     };
     
     container.addEventListener('keydown', handleKeyDown);
-    
-    // Focus first element on mount
-    const focusableElements = getFocusableElements();
-    if (focusableElements.length > 0) {
-      focusableElements[0].focus();
-    }
+
+    // Intentionally NOT auto-focusing the first element here.
+    // Reason: forcing focus to the first element (often a CloseButton) steals it from
+    // inputs that use `autoFocus`, making it impossible to type right away.
+    // Components that need specific focus behavior should handle it themselves.
     
     return () => {
       container.removeEventListener('keydown', handleKeyDown);

@@ -86,8 +86,8 @@ export async function sendChallengeMagicLink(
     const { error: authError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // Redirect na děkovnou stránku po kliknutí na magic link
-        emailRedirectTo: `${window.location.origin}/vyzva/dekujeme`,
+        // Redirect přímo do aplikace — /vyzva/dekujeme stránka se již nepoužívá
+        emailRedirectTo: `${window.location.origin}/app`,
         data: {
           kp_value: finalKpValue,
           challenge_id: CHALLENGE_ID,
