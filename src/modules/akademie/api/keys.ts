@@ -34,6 +34,9 @@ export const akademieKeys = {
   featuredProgram: () =>
     [...akademieKeys.all, 'featuredProgram'] as const,
 
+  dailyOverride: () =>
+    [...akademieKeys.all, 'dailyOverride'] as const,
+
   nextLesson: (userId: string) =>
     [...akademieKeys.all, 'nextLesson', userId] as const,
 }

@@ -4,12 +4,13 @@
  * Self-contained component. Handles its own data loading and audio playback.
  *
  * Priority logic:
- *   1. User has pinned program (user_active_program) → show their program + "Dnešní dýchačka"
- *   2. Admin featured program (platform_featured_program) → show featured + "Vyzkoušet"
- *   3. Nothing → return null
+ *   1. User has pinned program (user_active_program) → show their program + "Přehrát"
+ *   2. Admin daily override (platform_daily_override) → custom audio with custom text
+ *   3. Admin featured program (platform_featured_program) → show featured + "Zjistit více"
+ *   4. Nothing → return null
  *
- * Clicking "Dnešní dýchačka" / "Vyzkoušet" triggers StickyPlayer via useAkademiePlayback.
- * CRITICAL: playLesson must be called synchronously in onClick (iOS Safari requirement).
+ * Clicking "Přehrát" / "Spustit" triggers StickyPlayer via useAkademiePlayback / playSticky.
+ * CRITICAL: playLesson / playSticky must be called synchronously in onClick (iOS Safari).
  *
  * @package DechBar_App
  * @subpackage MVP0/Components
@@ -18,10 +19,13 @@
 import { useAuth } from '@/platform/auth';
 import { useActiveDailyProgram } from '../../hooks/useActiveDailyProgram';
 import { usePlatformFeaturedProgram } from '../../hooks/usePlatformFeaturedProgram';
+import { usePlatformDailyOverride } from '../../hooks/usePlatformDailyOverride';
 import { useAkademiePlayback } from '@/modules/akademie/hooks/useAkademiePlayback';
 import { useAkademieNav } from '@/modules/akademie/hooks/useAkademieNav';
 import { useNavigation } from '@/platform/hooks';
+import { useAudioPlayerStore } from '@/platform/components/AudioPlayer/store';
 import type { ActiveDailyProgramInfo } from '../../hooks/useActiveDailyProgram';
+import type { DailyOverrideData } from '../../hooks/usePlatformDailyOverride';
 import type { AkademieLesson } from '@/modules/akademie/types';
 import './TodaysChallengeButton.css';
 
@@ -71,7 +75,6 @@ function SkeletonState({ className }: { className?: string }) {
 
 interface ProgramCardProps {
   program: ActiveDailyProgramInfo;
-  /** Hlavní řádek pod názvem programu — u aktivního: "Dnes: [lekce] · X min", u featured: metadata */
   subtitle: string;
   ctaLabel: string;
   ctaAriaLabel: string;
@@ -171,6 +174,48 @@ function CompletedState({ program, onClear, className }: CompletedStateProps) {
 }
 
 // --------------------------------------------------
+// Override state (admin-scheduled custom audio)
+// --------------------------------------------------
+
+interface OverrideStateProps {
+  override: DailyOverrideData;
+  onPlay: () => void;
+  className?: string;
+}
+
+function OverrideState({ override, onPlay, className }: OverrideStateProps) {
+  return (
+    <button
+      className={`todays-challenge-button todays-challenge-button--active todays-challenge-button--override ${className || ''}`}
+      onClick={onPlay}
+      type="button"
+      aria-label={`Spustit ${override.title}`}
+    >
+      <div className="todays-challenge-button__cover" aria-hidden="true">
+        {override.cover_image_url ? (
+          <img src={override.cover_image_url} alt="" className="todays-challenge-button__cover-img" />
+        ) : (
+          <div className="todays-challenge-button__cover-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none" />
+            </svg>
+          </div>
+        )}
+      </div>
+      <div className="todays-challenge-button__content">
+        <h3 className="todays-challenge-button__title">{override.title}</h3>
+        <p className="todays-challenge-button__subtitle">{override.subtitle}</p>
+      </div>
+      <div className="todays-challenge-button__cta">
+        <PlayArrowIcon />
+        <span>Spustit</span>
+      </div>
+    </button>
+  );
+}
+
+// --------------------------------------------------
 // Main component
 // --------------------------------------------------
 
@@ -178,12 +223,16 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
   const { user } = useAuth();
 
   const userProgram = useActiveDailyProgram(user?.id);
+  const dailyOverride = usePlatformDailyOverride();
   const featuredProgram = usePlatformFeaturedProgram();
 
-  // Navigace pro featured CTA — deep link mechanismus (stejný vzor jako StickyPlayer)
+  // Navigace pro featured CTA (stejný vzor jako StickyPlayer)
   const { setCurrentTab } = useNavigation();
   const selectCategory = useAkademieNav((s) => s.selectCategory);
   const setPendingModuleId = useAkademieNav((s) => s.setPendingModuleId);
+
+  // Audio store pro přímé přehrání override audia (bez akademie lekce)
+  const playSticky = useAudioPlayerStore((s) => s.playSticky);
 
   // Determine active program info for playback
   const activeProgramInfo = userProgram.data?.program ?? null;
@@ -194,9 +243,38 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
     categorySlug: activeProgramInfo?.category_slug ?? undefined,
   });
 
-  // Loading: wait for both queries — uživatel nemá pin (nebo se teprve načítá)
-  // a featured program ještě není připravený → skeleton místo prázdna
-  if (userProgram.isLoading || (!userProgram.data && featuredProgram.isLoading)) {
+  function handleOverridePlay() {
+    if (!dailyOverride.data) return;
+    const o = dailyOverride.data;
+    playSticky({
+      id: `override-${o.id}`,
+      album_id: null,
+      title: o.title,
+      artist: 'DechBar',
+      album: null,
+      duration: o.duration_seconds,
+      audio_url: o.audio_url,
+      cover_url: o.cover_image_url,
+      duration_category: '3-9',
+      mood_category: null,
+      difficulty_level: 'easy',
+      kp_suitability: null,
+      media_type: 'audio',
+      exercise_format: 'meditace',
+      intensity_level: 'jemna',
+      narration_type: 'pribeh',
+      tags: ['override'],
+      description: o.subtitle,
+      track_order: 0,
+      is_published: true,
+      play_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
+
+  // Loading: wait for user program + override before showing skeleton
+  if (userProgram.isLoading || (!userProgram.data && dailyOverride.isLoading)) {
     return <SkeletonState className={className} />;
   }
 
@@ -236,7 +314,18 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
     );
   }
 
-  // --- State 2: Admin featured program (no user pin) ---
+  // --- State 2: Admin daily override (time-limited custom audio) ---
+  if (dailyOverride.data) {
+    return (
+      <OverrideState
+        override={dailyOverride.data}
+        onPlay={handleOverridePlay}
+        className={className}
+      />
+    );
+  }
+
+  // --- State 3: Admin featured program (no user pin, no override) ---
   if (featuredProgram.data) {
     const { program, titleOverride } = featuredProgram.data;
     const displayProgram = titleOverride ? { ...program, name: titleOverride } : program;
@@ -247,10 +336,6 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
     ].filter(Boolean).join(' · ');
 
     function handleFeaturedClick() {
-      // Navigace do detailu programu přes Akademii deep-link mechanismus:
-      //   1. Přepnout na tab Akademie
-      //   2. Otevřít kategorii programu (načte seznam programů)
-      //   3. setPendingModuleId → AkademieRoot auto-otevře program jakmile je načten
       if (program.category_slug) {
         selectCategory(program.category_slug);
       }
@@ -271,7 +356,7 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
     );
   }
 
-  // --- State 3: Nothing to show ---
+  // --- State 4: Nothing to show ---
   return null;
 }
 
@@ -282,16 +367,6 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
 /**
  * Sestaví subtitle pro aktivní denní program.
  * Zobrazuje název dnešní lekce + délku v minutách.
- *
- * Priorita délky:
- *   1. programDailyMinutes (z akademie_programs.daily_minutes) — "slíbená" délka programu
- *   2. lesson.duration_seconds → minuty — skutečná délka konkrétního audia
- *   3. nic — subtitle bez délky
- *
- * Proč priorita programDailyMinutes:
- *   - Den 1 má sample audio (7 min), ale program slibuje 15 min/den
- *   - Uživatel vidí konzistentní číslo odpovídající popisu programu
- *   - Po nahrání plných audiích se délka automaticky upřesní přes duration_seconds
  */
 function buildLessonSubtitle(lesson: AkademieLesson, programDailyMinutes?: number | null): string {
   const durationMin =

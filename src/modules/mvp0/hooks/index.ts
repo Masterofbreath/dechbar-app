@@ -21,3 +21,5 @@ export type {
   FeaturedProgramData,
   UsePlatformFeaturedProgramReturn,
 } from './usePlatformFeaturedProgram';
+export { usePlatformDailyOverride } from './usePlatformDailyOverride';
+export type { DailyOverrideData, UsePlatformDailyOverrideReturn } from './usePlatformDailyOverride';
