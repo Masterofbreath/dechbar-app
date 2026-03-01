@@ -156,10 +156,20 @@ async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramDat
       (progress ?? []).forEach((row: { lesson_id: string }) => completedIds.add(row.lesson_id));
     }
 
+    // Primárně: první nedokončená dostupná lekce
     nextLesson =
       lessons.find(
         (l) => !completedIds.has(l.id) && (daysElapsed === Infinity || l.day_number <= daysElapsed),
       ) ?? null;
+
+    // Fallback: pokud jsou všechny dostupné lekce dokončeny, umožni přehrání
+    // poslední dostupné lekce (replay). Lepší UX než "Zjistit více" po splnění.
+    if (!nextLesson) {
+      const availableLessons = lessons.filter(
+        (l) => daysElapsed === Infinity || l.day_number <= daysElapsed,
+      );
+      nextLesson = availableLessons[availableLessons.length - 1] ?? null;
+    }
   }
 
   const programInfo: ActiveDailyProgramInfo = {

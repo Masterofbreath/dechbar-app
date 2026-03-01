@@ -4,7 +4,7 @@
    Based on Session Engine mobile patterns
    ============================================================ */
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   /* Modal container - fullscreen */
   .kp-center {
     position: fixed !important;
@@ -35,6 +35,7 @@
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
+
     /* ✅ PWA FIX: Rovnoměrný padding pro TRUE vertical center
        iOS safe areas: top ~47px, bottom ~34px
        Používáme max() z obou hodnot pro symetrii */
@@ -74,9 +75,11 @@
   }
   
   /* Breathing circle - absolute center (via shared component CSS) */
+
   /* Already handled in breathing-circle.css */
   
   /* Touch target optimization - ensure all buttons meet iOS standard (48x48px min) */
+
   /* MUST come before more specific .button selectors for proper specificity */
   .button {
     min-height: 48px !important;
@@ -232,17 +235,31 @@
     margin: -8px -12px;
   }
   
-  /* Touch feedback */
-  .button:active,
+  /* Touch feedback — obecný fallback (pro ne-fixed prvky) */
   .text-link:active,
   .close-button:active {
     transform: scale(0.98);
     transition: transform 0.1s ease;
   }
+
+  /* FIX: button jump při kliknutí v KP Center.
+     Problém: button je position:fixed + translateX(-50%). Hover/active styly
+     z button.css (translateY(-1px), scale) přepíší TranslateX → tlačítko skočí.
+     Řešení: override hover/active aby vždy obsahovaly translateX(-50%). */
+  .kp-center__measurement-area > .button--primary:hover:not(:disabled),
+  .kp-center__actions > .button--primary:hover:not(:disabled) {
+    transform: translateX(-50%) !important;
+  }
+
+  .kp-center__measurement-area > .button:active:not(:disabled),
+  .kp-center__actions > .button:active:not(:disabled) {
+    transform: translateX(-50%) scale(0.97) !important;
+    transition: transform 0.1s ease !important;
+  }
 }
 
 /* Landscape mobile (iPhone SE landscape: 667x375) */
-@media (max-width: 768px) and (max-height: 600px) and (orientation: landscape) {
+@media (width <= 768px) and (height <= 600px) and (orientation: landscape) {
   .kp-center {
     overflow-y: auto !important;
   }

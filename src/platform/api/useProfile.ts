@@ -163,8 +163,30 @@ export function useProfile() {
 
       if (authError) throw authError;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // 1. Invalidate React Query cache — triggers refetch wherever useProfile is mounted
       queryClient.invalidateQueries({ queryKey: profileKeys.detail(userId ?? '') });
+
+      // 2. Directly refresh auth store after auth metadata update.
+      //    supabase.auth.updateUser() fires USER_UPDATED → onAuthStateChange, but that
+      //    async event may not propagate to other instances (e.g. Capacitor native app).
+      //    Calling _setUser() here guarantees user.full_name / user.vocative_name update
+      //    immediately in the same session — no WebSocket or auth event needed.
+      try {
+        const { data: { user: freshUser } } = await supabase.auth.getUser();
+        if (freshUser) {
+          useAuthStore.getState()._setUser({
+            id: freshUser.id,
+            email: freshUser.email!,
+            full_name: freshUser.user_metadata.full_name,
+            vocative_name: freshUser.user_metadata.vocative_name,
+            avatar_url: freshUser.user_metadata.avatar_url,
+            created_at: freshUser.created_at,
+          });
+        }
+      } catch {
+        // Non-blocking — onAuthStateChange handles this as fallback
+      }
     },
   });
 
