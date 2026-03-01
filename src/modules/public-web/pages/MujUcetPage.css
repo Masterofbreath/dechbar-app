@@ -76,6 +76,89 @@
   margin-bottom: var(--spacing-4);
 }
 
+.muj-ucet-section__count {
+  margin-left: var(--spacing-2);
+  font-weight: 400;
+  opacity: 0.5;
+}
+
+.muj-ucet-section__divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--spacing-5) 0 var(--spacing-4);
+}
+
+/* ===================================
+   MODULE CARDS (Moje programy)
+   =================================== */
+
+.muj-ucet-modules-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.muj-ucet-module-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.muj-ucet-module-card:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.muj-ucet-module-card__thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: var(--module-color, var(--color-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.muj-ucet-module-card__thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.muj-ucet-module-card__thumb-label {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.muj-ucet-module-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.muj-ucet-module-card__name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muj-ucet-module-card__meta {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
 /* ===================================
    IDENTITY SECTION
    =================================== */

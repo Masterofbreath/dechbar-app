@@ -25,7 +25,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/platform/api/supabase';
 import { useAuthStore } from '@/platform/auth/authStore';
-import { useProfile } from '@/platform/api/useProfile';
+import { useProfile, checkNicknameAvailable } from '@/platform/api/useProfile';
 import { useAccountData } from '@/platform/api/useAccountData';
 import { useManageSubscription, MEMBERSHIP_QUERY_KEY } from '@/platform/payments/useManageSubscription';
 import { Header } from '../components/landing/Header';
@@ -63,6 +63,7 @@ interface MembershipFull {
 }
 
 type NameEditState = 'idle' | 'editing' | 'saving' | 'success' | 'error';
+type NicknameEditState = 'idle' | 'editing' | 'checking' | 'saving' | 'success' | 'error';
 type EmailChangeState = 'idle' | 'expanded' | 'loading' | 'success' | 'error';
 type PasswordState = 'idle' | 'loading' | 'success' | 'error';
 type DeleteState = 'idle' | 'confirm' | 'loading' | 'error';
@@ -174,6 +175,9 @@ export function MujUcetPage() {
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('annual');
   const [nameEditState, setNameEditState] = useState<NameEditState>('idle');
   const [nameValue, setNameValue] = useState('');
+  const [nicknameEditState, setNicknameEditState] = useState<NicknameEditState>('idle');
+  const [nicknameValue, setNicknameValue] = useState('');
+  const [nicknameErrMsg, setNicknameErrMsg] = useState('');
   const [emailChangeState, setEmailChangeState] = useState<EmailChangeState>('idle');
   const [newEmail, setNewEmail] = useState('');
   const [passwordState, setPasswordState] = useState<PasswordState>('idle');
@@ -186,6 +190,13 @@ export function MujUcetPage() {
       setNameValue(profile.full_name);
     }
   }, [profile?.full_name, nameEditState]);
+
+  // Sync nickname input when profile loads
+  useEffect(() => {
+    if (nicknameEditState === 'idle') {
+      setNicknameValue(profile?.nickname ?? '');
+    }
+  }, [profile?.nickname, nicknameEditState]);
 
   // Fetch invoices when subscription section is visible
   const isPremiumSubscription =
@@ -218,6 +229,38 @@ export function MujUcetPage() {
     setNameEditState('idle');
     setNameValue(profile?.full_name ?? '');
   }, [profile?.full_name]);
+
+  const handleSaveNickname = useCallback(async () => {
+    const trimmed = nicknameValue.trim();
+    // No change — just close
+    if (trimmed === (profile?.nickname ?? '')) {
+      setNicknameEditState('idle');
+      return;
+    }
+    setNicknameErrMsg('');
+    setNicknameEditState('checking');
+    try {
+      const available = await checkNicknameAvailable(trimmed, user?.id ?? '');
+      if (!available) {
+        setNicknameErrMsg('Tato přezdívka je již obsazena. Zkus jinou.');
+        setNicknameEditState('error');
+        return;
+      }
+      setNicknameEditState('saving');
+      await updateProfile({ nickname: trimmed });
+      setNicknameEditState('success');
+      setTimeout(() => setNicknameEditState('idle'), 2000);
+    } catch {
+      setNicknameErrMsg('Nepodařilo se uložit. Zkus to znovu.');
+      setNicknameEditState('error');
+    }
+  }, [nicknameValue, profile?.nickname, user?.id, updateProfile]);
+
+  const handleCancelNicknameEdit = useCallback(() => {
+    setNicknameEditState('idle');
+    setNicknameValue(profile?.nickname ?? '');
+    setNicknameErrMsg('');
+  }, [profile?.nickname]);
 
   const handleEmailChange = useCallback(async () => {
     const trimmed = newEmail.trim();
@@ -301,33 +344,256 @@ export function MujUcetPage() {
                 <div className="muj-ucet-skeleton__line" style={{ width: '45%' }} />
               </div>
             ) : (
-              <div className="muj-ucet-identity">
-                <div className="muj-ucet-identity__avatar" aria-hidden="true">
-                  {profile?.avatar_url ? (
-                    <img
-                      src={profile.avatar_url}
-                      alt=""
-                      className="muj-ucet-identity__avatar-img"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <div className="muj-ucet-identity__avatar-placeholder">
-                      {avatarInitial}
-                    </div>
+              <>
+                {/* ── Display block ── */}
+                <div className="muj-ucet-identity">
+                  <div className="muj-ucet-identity__avatar" aria-hidden="true">
+                    {profile?.avatar_url ? (
+                      <img
+                        src={profile.avatar_url}
+                        alt=""
+                        className="muj-ucet-identity__avatar-img"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="muj-ucet-identity__avatar-placeholder">
+                        {avatarInitial}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="muj-ucet-identity__info">
+                    <p className="muj-ucet-identity__name">{displayName}</p>
+                    <p className="muj-ucet-identity__email">{user.email}</p>
+                    {user.created_at && (
+                      <p className="muj-ucet-identity__since">
+                        Člen od: {formatDate(user.created_at)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <hr className="muj-ucet-section__divider" />
+
+                {/* ── Celé jméno ── */}
+                <div className="muj-ucet-profile__field">
+                  <div className="muj-ucet-profile__field-info">
+                    <span className="muj-ucet-profile__field-label">Celé jméno</span>
+                    {(nameEditState === 'idle' || nameEditState === 'success') && (
+                      <span className={`muj-ucet-profile__field-value ${!profile?.full_name ? 'muj-ucet-profile__field-value--empty' : ''}`}>
+                        {profile?.full_name ?? '–'}
+                      </span>
+                    )}
+                  </div>
+                  {nameEditState === 'idle' && (
+                    <button
+                      type="button"
+                      className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
+                      onClick={() => { setNameValue(profile?.full_name ?? ''); setNameEditState('editing'); }}
+                    >
+                      Upravit
+                    </button>
+                  )}
+                  {nameEditState === 'success' && (
+                    <span className="muj-ucet-feedback muj-ucet-feedback--success" style={{ margin: 0 }}>
+                      Uloženo
+                    </span>
                   )}
                 </div>
 
-                <div className="muj-ucet-identity__info">
-                  <p className="muj-ucet-identity__name">{displayName}</p>
-                  <p className="muj-ucet-identity__email">{user.email}</p>
-                  {user.created_at && (
-                    <p className="muj-ucet-identity__since">
-                      Člen od: {formatDate(user.created_at)}
+                {(nameEditState === 'editing' || nameEditState === 'saving' || nameEditState === 'error') && (
+                  <div className="muj-ucet-profile__edit-form">
+                    <input
+                      type="text"
+                      className="muj-ucet-profile__input"
+                      value={nameValue}
+                      onChange={(e) => setNameValue(e.target.value)}
+                      placeholder="Celé jméno"
+                      autoComplete="name"
+                      disabled={nameEditState === 'saving' || isUpdating}
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveName();
+                        if (e.key === 'Escape') handleCancelNameEdit();
+                      }}
+                    />
+                    {nameEditState === 'error' && (
+                      <p className="muj-ucet-feedback muj-ucet-feedback--error">
+                        Nepodařilo se uložit. Zkus to znovu.
+                      </p>
+                    )}
+                    <div className="muj-ucet-profile__edit-actions">
+                      <button
+                        type="button"
+                        className="muj-ucet-btn muj-ucet-btn--primary muj-ucet-btn--sm"
+                        onClick={handleSaveName}
+                        disabled={nameEditState === 'saving' || isUpdating || !nameValue.trim()}
+                      >
+                        {nameEditState === 'saving' || isUpdating ? 'Ukládám...' : 'Uložit'}
+                      </button>
+                      <button
+                        type="button"
+                        className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
+                        onClick={handleCancelNameEdit}
+                        disabled={nameEditState === 'saving' || isUpdating}
+                      >
+                        Zrušit
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Přezdívka ── */}
+                <div className="muj-ucet-profile__field">
+                  <div className="muj-ucet-profile__field-info">
+                    <span className="muj-ucet-profile__field-label">Přezdívka</span>
+                    {(nicknameEditState === 'idle' || nicknameEditState === 'success') && (
+                      <span className={`muj-ucet-profile__field-value ${!profile?.nickname ? 'muj-ucet-profile__field-value--empty' : ''}`}>
+                        {profile?.nickname ?? '–'}
+                      </span>
+                    )}
+                  </div>
+                  {nicknameEditState === 'idle' && (
+                    <button
+                      type="button"
+                      className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
+                      onClick={() => { setNicknameValue(profile?.nickname ?? ''); setNicknameEditState('editing'); setNicknameErrMsg(''); }}
+                    >
+                      {profile?.nickname ? 'Upravit' : 'Nastavit'}
+                    </button>
+                  )}
+                  {nicknameEditState === 'success' && (
+                    <span className="muj-ucet-feedback muj-ucet-feedback--success" style={{ margin: 0 }}>
+                      Uloženo
+                    </span>
+                  )}
+                </div>
+
+                {(nicknameEditState === 'editing' || nicknameEditState === 'checking' || nicknameEditState === 'saving' || nicknameEditState === 'error') && (
+                  <div className="muj-ucet-profile__edit-form">
+                    <input
+                      type="text"
+                      className="muj-ucet-profile__input"
+                      value={nicknameValue}
+                      onChange={(e) => { setNicknameValue(e.target.value); setNicknameErrMsg(''); }}
+                      placeholder="Přezdívka (nepovinné)"
+                      autoComplete="nickname"
+                      disabled={nicknameEditState === 'checking' || nicknameEditState === 'saving' || isUpdating}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveNickname();
+                        if (e.key === 'Escape') handleCancelNicknameEdit();
+                      }}
+                    />
+                    {nicknameErrMsg && (
+                      <p className="muj-ucet-feedback muj-ucet-feedback--error">{nicknameErrMsg}</p>
+                    )}
+                    <div className="muj-ucet-profile__edit-actions">
+                      <button
+                        type="button"
+                        className="muj-ucet-btn muj-ucet-btn--primary muj-ucet-btn--sm"
+                        onClick={handleSaveNickname}
+                        disabled={nicknameEditState === 'checking' || nicknameEditState === 'saving' || isUpdating}
+                      >
+                        {nicknameEditState === 'checking' ? 'Kontroluji...' : nicknameEditState === 'saving' || isUpdating ? 'Ukládám...' : 'Uložit'}
+                      </button>
+                      <button
+                        type="button"
+                        className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
+                        onClick={handleCancelNicknameEdit}
+                        disabled={nicknameEditState === 'checking' || nicknameEditState === 'saving' || isUpdating}
+                      >
+                        Zrušit
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── E-mail ── */}
+                <div className="muj-ucet-security__item">
+                  <div className="muj-ucet-security__row">
+                    <div className="muj-ucet-security__field-info">
+                      <span className="muj-ucet-security__field-label">E-mail</span>
+                      <span className="muj-ucet-security__field-value">{user.email}</span>
+                    </div>
+                    {emailChangeState === 'idle' && (
+                      <button
+                        type="button"
+                        className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
+                        onClick={() => setEmailChangeState('expanded')}
+                      >
+                        Změnit
+                      </button>
+                    )}
+                  </div>
+
+                  {(emailChangeState === 'expanded' || emailChangeState === 'loading' || emailChangeState === 'error') && (
+                    <div className="muj-ucet-security__email-form">
+                      <input
+                        type="email"
+                        className="muj-ucet-security__email-input"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        placeholder="Nový e-mail"
+                        autoComplete="email"
+                        disabled={emailChangeState === 'loading'}
+                        autoFocus
+                      />
+                      {emailChangeState === 'error' && (
+                        <p className="muj-ucet-feedback muj-ucet-feedback--error">
+                          Nepodařilo se odeslat. Zkontroluj formát nebo zkus jiný email.
+                        </p>
+                      )}
+                      <div className="muj-ucet-security__email-actions">
+                        <button
+                          type="button"
+                          className="muj-ucet-btn muj-ucet-btn--primary muj-ucet-btn--sm"
+                          onClick={handleEmailChange}
+                          disabled={emailChangeState === 'loading' || !newEmail.trim()}
+                        >
+                          {emailChangeState === 'loading' ? 'Odesílám...' : 'Odeslat'}
+                        </button>
+                        <button
+                          type="button"
+                          className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
+                          onClick={() => { setEmailChangeState('idle'); setNewEmail(''); }}
+                          disabled={emailChangeState === 'loading'}
+                        >
+                          Zrušit
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {emailChangeState === 'success' && (
+                    <p className="muj-ucet-feedback muj-ucet-feedback--success">
+                      Potvrzovací odkaz byl odeslán na nový email.
                     </p>
                   )}
                 </div>
-              </div>
+
+                {/* ── Heslo ── */}
+                <div className="muj-ucet-security__item">
+                  <button
+                    type="button"
+                    className="muj-ucet-security__password-btn"
+                    onClick={handleChangePassword}
+                    disabled={passwordState === 'loading' || passwordState === 'success'}
+                  >
+                    {passwordState === 'loading' ? 'Odesílám...' : 'Změnit heslo'}
+                  </button>
+                  {passwordState === 'success' && (
+                    <p className="muj-ucet-feedback muj-ucet-feedback--success">
+                      Odkaz byl odeslán na tvůj email.
+                    </p>
+                  )}
+                  {passwordState === 'error' && (
+                    <p className="muj-ucet-feedback muj-ucet-feedback--error">
+                      Nepodařilo se odeslat, zkus to znovu.
+                    </p>
+                  )}
+                </div>
+              </>
             )}
           </section>
 
@@ -371,7 +637,7 @@ export function MujUcetPage() {
                       'Sledování výsledků v čase',
                       'Neomezené vlastní cvičení',
                     ]}
-                    ctaText="Upgradovat →"
+                    ctaText="Aktivovat →"
                     ctaVariant="primary"
                     highlighted
                   />
@@ -566,196 +832,54 @@ export function MujUcetPage() {
             </section>
           )}
 
-          {/* ─── 4. PROFIL ───────────────────────────────────── */}
-          <section className="muj-ucet-section" aria-label="Profil">
-            <p className="muj-ucet-section__label">Profil</p>
-
-            {/* Full name — inline edit */}
-            <div className="muj-ucet-profile__field">
-              <div className="muj-ucet-profile__field-info">
-                <span className="muj-ucet-profile__field-label">Celé jméno</span>
-                {nameEditState === 'idle' || nameEditState === 'success' ? (
-                  <span className={`muj-ucet-profile__field-value ${!profile?.full_name ? 'muj-ucet-profile__field-value--empty' : ''}`}>
-                    {profile?.full_name ?? '–'}
-                  </span>
-                ) : null}
-              </div>
-
-              {nameEditState === 'idle' && (
-                <button
-                  type="button"
-                  className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
-                  onClick={() => {
-                    setNameValue(profile?.full_name ?? '');
-                    setNameEditState('editing');
-                  }}
-                >
-                  Upravit
-                </button>
-              )}
-
-              {nameEditState === 'success' && (
-                <span className="muj-ucet-feedback muj-ucet-feedback--success" style={{ margin: 0 }}>
-                  Uloženo
-                </span>
-              )}
-            </div>
-
-            {/* Expandable edit form */}
-            {(nameEditState === 'editing' || nameEditState === 'saving' || nameEditState === 'error') && (
-              <div className="muj-ucet-profile__edit-form">
-                <input
-                  type="text"
-                  className="muj-ucet-profile__input"
-                  value={nameValue}
-                  onChange={(e) => setNameValue(e.target.value)}
-                  placeholder="Celé jméno"
-                  autoComplete="name"
-                  disabled={nameEditState === 'saving' || isUpdating}
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSaveName();
-                    if (e.key === 'Escape') handleCancelNameEdit();
-                  }}
-                />
-                {nameEditState === 'error' && (
-                  <p className="muj-ucet-feedback muj-ucet-feedback--error">
-                    Nepodařilo se uložit. Zkus to znovu.
-                  </p>
-                )}
-                <div className="muj-ucet-profile__edit-actions">
-                  <button
-                    type="button"
-                    className="muj-ucet-btn muj-ucet-btn--primary muj-ucet-btn--sm"
-                    onClick={handleSaveName}
-                    disabled={nameEditState === 'saving' || isUpdating || !nameValue.trim()}
-                  >
-                    {nameEditState === 'saving' || isUpdating ? 'Ukládám...' : 'Uložit'}
-                  </button>
-                  <button
-                    type="button"
-                    className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
-                    onClick={handleCancelNameEdit}
-                    disabled={nameEditState === 'saving' || isUpdating}
-                  >
-                    Zrušit
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* ─── 3b. MOJE PROGRAMY ───────────────────────────── */}
+          {/* ─── 4. MOJE PROGRAMY ────────────────────────────── */}
           {!modulesLoading && ownedModules.length > 0 && (
             <section className="muj-ucet-section" aria-label="Moje programy">
               <p className="muj-ucet-section__label">
                 Moje programy
-                <span style={{ marginLeft: 8, opacity: 0.5 }}>({ownedModules.length})</span>
+                <span className="muj-ucet-section__count">{ownedModules.length}</span>
               </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {ownedModules.map((mod) => (
-                  <li key={mod.module_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--color-border)', fontSize: '0.875rem' }}>
-                    <span style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>{mod.name}</span>
-                    <span style={{ color: 'var(--color-text-tertiary)' }}>
-                      {mod.purchase_type === 'lifetime' ? 'Doživotní' : 'Předplatné'} · {formatDate(mod.purchased_at)}
-                    </span>
-                  </li>
-                ))}
+              <ul className="muj-ucet-modules-grid" role="list">
+                {ownedModules.map((mod) => {
+                  const thumbColor = mod.color ?? 'var(--color-primary)';
+                  const iconValue = mod.icon ?? '';
+                  const isEmoji = iconValue.length <= 2 && /\p{Emoji}/u.test(iconValue);
+                  const thumbLabel = isEmoji ? iconValue : mod.name.charAt(0).toUpperCase();
+                  return (
+                    <li key={mod.module_id} className="muj-ucet-module-card" role="listitem">
+                      <div
+                        className="muj-ucet-module-card__thumb"
+                        style={{ '--module-color': thumbColor } as React.CSSProperties}
+                        aria-hidden="true"
+                      >
+                        {mod.cover_image_url ? (
+                          <img
+                            src={mod.cover_image_url}
+                            alt=""
+                            className="muj-ucet-module-card__thumb-img"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : (
+                          <span className="muj-ucet-module-card__thumb-label">{thumbLabel}</span>
+                        )}
+                      </div>
+                      <div className="muj-ucet-module-card__info">
+                        <p className="muj-ucet-module-card__name">{mod.name}</p>
+                        <p className="muj-ucet-module-card__meta">
+                          {mod.purchase_type === 'lifetime' ? 'Doživotní přístup' : 'Předplatné'}
+                          {' · '}
+                          {formatDate(mod.purchased_at)}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           )}
 
-          {/* ─── 5. ZABEZPEČENÍ ──────────────────────────────── */}
-          <section className="muj-ucet-section" aria-label="Zabezpečení">
-            <p className="muj-ucet-section__label">Zabezpečení</p>
-
-            {/* Email */}
-            <div className="muj-ucet-security__item">
-              <div className="muj-ucet-security__row">
-                <div className="muj-ucet-security__field-info">
-                  <span className="muj-ucet-security__field-label">E-mail</span>
-                  <span className="muj-ucet-security__field-value">{user.email}</span>
-                </div>
-                {emailChangeState === 'idle' && (
-                  <button
-                    type="button"
-                    className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
-                    onClick={() => setEmailChangeState('expanded')}
-                  >
-                    Změnit
-                  </button>
-                )}
-              </div>
-
-              {(emailChangeState === 'expanded' || emailChangeState === 'loading' || emailChangeState === 'error') && (
-                <div className="muj-ucet-security__email-form">
-                  <input
-                    type="email"
-                    className="muj-ucet-security__email-input"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="Nový e-mail"
-                    autoComplete="email"
-                    disabled={emailChangeState === 'loading'}
-                    autoFocus
-                  />
-                  {emailChangeState === 'error' && (
-                    <p className="muj-ucet-feedback muj-ucet-feedback--error">
-                      Nepodařilo se odeslat. Zkontroluj formát nebo zkus jiný email.
-                    </p>
-                  )}
-                  <div className="muj-ucet-security__email-actions">
-                    <button
-                      type="button"
-                      className="muj-ucet-btn muj-ucet-btn--primary muj-ucet-btn--sm"
-                      onClick={handleEmailChange}
-                      disabled={emailChangeState === 'loading' || !newEmail.trim()}
-                    >
-                      {emailChangeState === 'loading' ? 'Odesílám...' : 'Odeslat'}
-                    </button>
-                    <button
-                      type="button"
-                      className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
-                      onClick={() => { setEmailChangeState('idle'); setNewEmail(''); }}
-                      disabled={emailChangeState === 'loading'}
-                    >
-                      Zrušit
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {emailChangeState === 'success' && (
-                <p className="muj-ucet-feedback muj-ucet-feedback--success">
-                  Potvrzovací odkaz byl odeslán na nový email.
-                </p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="muj-ucet-security__item">
-              <button
-                type="button"
-                className="muj-ucet-security__password-btn"
-                onClick={handleChangePassword}
-                disabled={passwordState === 'loading' || passwordState === 'success'}
-              >
-                {passwordState === 'loading' ? 'Odesílám...' : 'Změnit heslo'}
-              </button>
-              {passwordState === 'success' && (
-                <p className="muj-ucet-feedback muj-ucet-feedback--success">
-                  Odkaz byl odeslán na tvůj email.
-                </p>
-              )}
-              {passwordState === 'error' && (
-                <p className="muj-ucet-feedback muj-ucet-feedback--error">
-                  Nepodařilo se odeslat, zkus to znovu.
-                </p>
-              )}
-            </div>
-          </section>
-
-          {/* ─── 6. ZÓNA NEBEZPEČÍ ───────────────────────────── */}
+          {/* ─── 5. ZÓNA NEBEZPEČÍ (vždy poslední) ──────────── */}
           <section className="muj-ucet-danger-section" aria-label="Smazat účet">
             {deleteState === 'idle' && (
               <button

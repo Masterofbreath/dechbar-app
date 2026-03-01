@@ -84,7 +84,7 @@ export function Header() {
                 <Button 
                   variant="ghost" 
                   size="md"
-                  onClick={() => navigate('/app/profile')}
+                  onClick={() => navigate('/muj-ucet')}
                   className="landing-header__profile-btn"
                 >
                   <svg
