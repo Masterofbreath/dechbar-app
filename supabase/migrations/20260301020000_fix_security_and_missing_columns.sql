@@ -1,6 +1,7 @@
 -- Fix: Enable RLS on webhook_debug_logs (reported by Supabase security advisors)
 ALTER TABLE public.webhook_debug_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "webhook_debug_logs_admin_only" ON public.webhook_debug_logs;
 CREATE POLICY "webhook_debug_logs_admin_only"
   ON public.webhook_debug_logs
   FOR ALL
