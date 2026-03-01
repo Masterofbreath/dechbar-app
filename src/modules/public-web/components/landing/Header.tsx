@@ -98,7 +98,8 @@ export function Header() {
                     <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  Tvůj profil
+                  <span className="landing-header__profile-label-full">Tvůj profil</span>
+                  <span className="landing-header__profile-label-short">Profil</span>
                 </Button>
                 <Button 
                   variant="primary" 

@@ -98,6 +98,11 @@ function getPlanLabel(plan: string): string {
   return 'Zdarma';
 }
 
+function getModuleDeepLink(moduleId: string): string {
+  if (moduleId.startsWith('membership-')) return '/app?tab=akademie';
+  return `/app?module=${moduleId}`;
+}
+
 function getBillingLabel(membership: MembershipFull | null): string {
   if (!membership || membership.type !== 'subscription' || !membership.expiresAt) return '';
 
@@ -847,31 +852,52 @@ export function MujUcetPage() {
                   const thumbLabel = isEmoji ? iconValue : mod.name.charAt(0).toUpperCase();
                   return (
                     <li key={mod.module_id} className="muj-ucet-module-card" role="listitem">
-                      <div
-                        className="muj-ucet-module-card__thumb"
-                        style={{ '--module-color': thumbColor } as React.CSSProperties}
-                        aria-hidden="true"
+                      <button
+                        type="button"
+                        className="muj-ucet-module-card__btn"
+                        onClick={() => navigate(getModuleDeepLink(mod.module_id))}
+                        aria-label={`Otevřít program ${mod.name}`}
                       >
-                        {mod.cover_image_url ? (
-                          <img
-                            src={mod.cover_image_url}
-                            alt=""
-                            className="muj-ucet-module-card__thumb-img"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        ) : (
-                          <span className="muj-ucet-module-card__thumb-label">{thumbLabel}</span>
-                        )}
-                      </div>
-                      <div className="muj-ucet-module-card__info">
-                        <p className="muj-ucet-module-card__name">{mod.name}</p>
-                        <p className="muj-ucet-module-card__meta">
-                          {mod.purchase_type === 'lifetime' ? 'Doživotní přístup' : 'Předplatné'}
-                          {' · '}
-                          {formatDate(mod.purchased_at)}
-                        </p>
-                      </div>
+                        <div
+                          className="muj-ucet-module-card__thumb"
+                          style={{ '--module-color': thumbColor } as React.CSSProperties}
+                          aria-hidden="true"
+                        >
+                          {mod.cover_image_url ? (
+                            <img
+                              src={mod.cover_image_url}
+                              alt=""
+                              className="muj-ucet-module-card__thumb-img"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : (
+                            <span className="muj-ucet-module-card__thumb-label">{thumbLabel}</span>
+                          )}
+                        </div>
+                        <div className="muj-ucet-module-card__info">
+                          <p className="muj-ucet-module-card__name">{mod.name}</p>
+                          <p className="muj-ucet-module-card__meta">
+                            {mod.purchase_type === 'lifetime' ? 'Doživotní přístup' : 'Předplatné'}
+                            {' · '}
+                            {formatDate(mod.purchased_at)}
+                          </p>
+                        </div>
+                        <svg
+                          className="muj-ucet-module-card__arrow"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </button>
                     </li>
                   );
                 })}

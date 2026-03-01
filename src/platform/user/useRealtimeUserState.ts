@@ -16,6 +16,7 @@
  */
 
 import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/platform/api/supabase';
 import { useAuth } from '@/platform/auth';
 import { useUserState } from './userStateStore';
@@ -23,6 +24,7 @@ import { useUserState } from './userStateStore';
 export function useRealtimeUserState() {
   const { user } = useAuth();
   const { refreshRoles, refreshMembership, refreshModules } = useUserState();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!user?.id) {
@@ -57,7 +59,7 @@ export function useRealtimeUserState() {
           
           // Optional: Show toast notification
           if (payload.eventType === 'INSERT' && payload.new && 'role_id' in payload.new) {
-            const roleId = (payload.new as any).role_id;
+            const roleId = (payload.new as Record<string, unknown>).role_id;
             console.log(`🎉 New role assigned: ${roleId}`);
           }
         }
@@ -97,8 +99,8 @@ export function useRealtimeUserState() {
           
           // Show toast notification for upgrades
           if (payload.new && 'plan' in payload.new) {
-            const newPlan = (payload.new as any).plan;
-            const oldPlan = payload.old && 'plan' in payload.old ? (payload.old as any).plan : null;
+            const newPlan = (payload.new as Record<string, unknown>).plan;
+            const oldPlan = payload.old && 'plan' in payload.old ? (payload.old as Record<string, unknown>).plan : null;
             
             if (newPlan !== oldPlan) {
               console.log(`🎉 Membership ${oldPlan ? 'upgraded' : 'changed'} to ${newPlan}!`);
@@ -143,7 +145,7 @@ export function useRealtimeUserState() {
           
           // Show toast notification for new purchases
           if (payload.eventType === 'INSERT' && payload.new && 'module_id' in payload.new) {
-            const moduleId = (payload.new as any).module_id;
+            const moduleId = (payload.new as Record<string, unknown>).module_id as string;
             const moduleNames: Record<string, string> = {
               studio: 'DechBar STUDIO',
               challenges: 'Výzvy',
@@ -169,17 +171,76 @@ export function useRealtimeUserState() {
         }
       });
 
-    console.log('✅ Unified real-time sync setup complete (3 channels)');
+    // ========================================
+    // CHANNEL 4: Profile Changes
+    // Propagates full_name / nickname edits (e.g. from /muj-ucet) to the app
+    // without requiring a full page reload.
+    // Invalidates: useProfile React Query cache → ['profile', userId]
+    // ========================================
+    const profileChannel = supabase
+      .channel(`profiles:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          console.log('🔔 Real-time event: profile changed → invalidating profile cache');
+          queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Real-time: profiles channel active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Real-time: profiles channel failed to connect');
+        }
+      });
+
+    // ========================================
+    // CHANNEL 5: Notification Changes
+    // New notifications appear instantly — no manual refresh needed.
+    // Invalidates: useNotifications React Query cache → ['notifications', userId]
+    // ========================================
+    const notificationsChannel = supabase
+      .channel(`user_notifications:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT (new notification), UPDATE (read status), DELETE (soft-delete)
+          schema: 'public',
+          table: 'user_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          console.log('🔔 Real-time event: notification changed → invalidating notifications cache');
+          queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Real-time: user_notifications channel active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Real-time: user_notifications channel failed to connect');
+        }
+      });
+
+    console.log('✅ Unified real-time sync setup complete (5 channels)');
 
     // Cleanup all channels on unmount or user change
     return () => {
-      console.log('🔌 Cleaning up unified real-time sync (unsubscribing from 3 channels)');
+      console.log('🔌 Cleaning up unified real-time sync (unsubscribing from 5 channels)');
       
       rolesChannel.unsubscribe();
       membershipChannel.unsubscribe();
       modulesChannel.unsubscribe();
+      profileChannel.unsubscribe();
+      notificationsChannel.unsubscribe();
       
       console.log('✅ Real-time channels unsubscribed');
     };
-  }, [user?.id, refreshRoles, refreshMembership, refreshModules]);
+  }, [user?.id, refreshRoles, refreshMembership, refreshModules, queryClient]);
 }

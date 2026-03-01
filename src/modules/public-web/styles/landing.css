@@ -152,6 +152,21 @@ section[id] {
   gap: 6px;
 }
 
+/* Responsive label: show "Tvůj profil" on desktop, "Profil" on mobile */
+.landing-header__profile-label-short {
+  display: none;
+}
+
+@media (width <= 480px) {
+  .landing-header__profile-label-full {
+    display: none;
+  }
+
+  .landing-header__profile-label-short {
+    display: inline;
+  }
+}
+
 /* Mobile responsive */
 @media (width <= 390px) {
   .landing-header {
