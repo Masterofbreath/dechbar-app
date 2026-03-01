@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAkademieSeries, useAkademieLessons, useToggleLessonFavorite } from '../../api/useAkademieProgram'
 import { useAkademiePlayback } from '../../hooks/useAkademiePlayback'
 import { useActiveDailyProgram } from '@/modules/mvp0/hooks/useActiveDailyProgram'
@@ -58,12 +58,43 @@ function LessonHeartIcon({ filled }: { filled: boolean }) {
   )
 }
 
-function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, programId, categorySlug, programTitle, onLockedPlay }: LessonRowProps) {
+interface LessonRowPropsWithDays extends LessonRowProps {
+  daysElapsed: number
+  launchDate: Date | null
+}
+
+function DayLockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14, opacity: 0.55 }}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+}
+
+function formatCzechDate(date: Date): string {
+  return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' })
+}
+
+function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, programId, categorySlug, programTitle, onLockedPlay, daysElapsed, launchDate }: LessonRowPropsWithDays) {
   const { playLesson, isCurrentlyPlaying } = useAkademiePlayback({ coverUrl, programId, categorySlug, programTitle })
   const toggleFavorite = useToggleLessonFavorite()
   const playing = isCurrentlyPlaying(lesson.id)
 
+  // Postupné odemykání: pokud je launch_date nastaveno a day_number překračuje daysElapsed
+  const isDayLocked = isFinite(daysElapsed) && lesson.day_number > daysElapsed
+
+  // Tooltip pro zamčenou lekci — "Dostupné od D3 — 5. 3. 2026"
+  const dayLockTitle = isDayLocked && launchDate
+    ? (() => {
+        const unlockDate = new Date(launchDate)
+        unlockDate.setDate(unlockDate.getDate() + lesson.day_number - 1)
+        return `Dostupné od D${lesson.day_number} — ${formatCzechDate(unlockDate)}`
+      })()
+    : undefined
+
   function handleClick() {
+    if (isDayLocked) return
     if (isSeriesLocked) {
       onLockedPlay()
       return
@@ -73,7 +104,7 @@ function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, program
 
   function handleFavorite(e: React.MouseEvent) {
     e.stopPropagation()
-    if (!userId || isSeriesLocked) return
+    if (!userId || isSeriesLocked || isDayLocked) return
     toggleFavorite.mutate({
       userId,
       lessonId: lesson.id,
@@ -89,14 +120,18 @@ function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, program
         playing ? 'akademie-lesson-row--playing' : '',
         lesson.isCompleted ? 'akademie-lesson-row--completed' : '',
         isSeriesLocked ? 'akademie-lesson-row--locked' : '',
+        isDayLocked ? 'akademie-lesson-row--day-locked' : '',
       ]
         .filter(Boolean)
         .join(' ')}
       role="button"
-      tabIndex={0}
-      aria-label={`${lesson.title}${lesson.isCompleted ? ', dokončeno' : ''}${lesson.isFavorite ? ', oblíbené' : ''}`}
+      tabIndex={isDayLocked ? -1 : 0}
+      aria-label={isDayLocked ? dayLockTitle : `${lesson.title}${lesson.isCompleted ? ', dokončeno' : ''}${lesson.isFavorite ? ', oblíbené' : ''}`}
+      aria-disabled={isDayLocked}
+      title={dayLockTitle}
       onClick={handleClick}
       onKeyDown={(e) => {
+        if (isDayLocked) return
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           handleClick()
@@ -111,8 +146,8 @@ function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, program
         <span className="akademie-lesson-row__title">{lesson.title}</span>
       </div>
 
-      {/* Favourite star — pouze pro vlastněné série */}
-      {!isSeriesLocked && userId && (
+      {/* Favourite star — pouze pro odemčené, vlastněné série */}
+      {!isSeriesLocked && !isDayLocked && userId && (
         <button
           className={[
             'akademie-lesson-row__star',
@@ -128,7 +163,11 @@ function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, program
       )}
 
       <div className="akademie-lesson-row__status">
-        {lesson.isCompleted ? (
+        {isDayLocked ? (
+          <span className="akademie-lesson-row__day-lock" aria-label={dayLockTitle}>
+            <DayLockIcon />
+          </span>
+        ) : lesson.isCompleted ? (
           <span className="akademie-lesson-row__check" aria-label="Dokončeno">
             <CheckIcon />
           </span>
@@ -157,6 +196,8 @@ interface AccordionSeriesProps {
   programTitle: string
   isOpen: boolean
   onToggle: () => void
+  daysElapsed: number
+  launchDate: Date | null
 }
 
 function LockIcon() {
@@ -176,7 +217,7 @@ function ChevronRightIcon() {
   )
 }
 
-function AccordionSeries({ series, seriesIndex, isOwned, userId, coverUrl, programId, categorySlug, programTitle, isOpen, onToggle }: AccordionSeriesProps) {
+function AccordionSeries({ series, seriesIndex, isOwned, userId, coverUrl, programId, categorySlug, programTitle, isOpen, onToggle, daysElapsed, launchDate }: AccordionSeriesProps) {
   const [lockedModalOpen, setLockedModalOpen] = useState(false)
 
   const { data: lessons, isLoading } = useAkademieLessons(
@@ -250,6 +291,8 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, coverUrl, progr
               categorySlug={categorySlug}
               programTitle={programTitle}
               onLockedPlay={() => setLockedModalOpen(true)}
+              daysElapsed={daysElapsed}
+              launchDate={launchDate}
             />
           ))}
       </div>
@@ -279,6 +322,15 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', ca
   // Prefer DB value; fall back to computed from series count
   const durationDays = program.duration_days ?? (series?.length ?? 0) * 7
   const dailyMinutes = program.daily_minutes ?? null
+
+  // Postupné odemykání dnů — useMemo zabraňuje volání Date.now() při každém re-renderu
+  const { launchDate, daysElapsed } = useMemo(() => {
+    const ld = program.launch_date ? new Date(program.launch_date) : null
+    const elapsed = ld
+      ? Math.max(0, Math.floor((new Date().getTime() - ld.getTime()) / 86_400_000) + 1)
+      : Infinity
+    return { launchDate: ld, daysElapsed: elapsed }
+  }, [program.launch_date])
 
   return (
     <div>
@@ -392,6 +444,8 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', ca
               programTitle={program.name}
               isOpen={openSeriesId === s.id}
               onToggle={() => setOpenSeriesId((prev) => (prev === s.id ? null : s.id))}
+              daysElapsed={daysElapsed}
+              launchDate={launchDate}
             />
           ))}
       </div>

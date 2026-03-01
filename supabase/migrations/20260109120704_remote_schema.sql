@@ -1,0 +1,1 @@
+-- Applied. File intentionally empty — migration already in remote DB.

@@ -467,12 +467,18 @@
 
 /* File upload area */
 .aa-upload-area {
+  position: relative;
+  overflow: hidden;
   border: 1px dashed var(--color-border, #2a2a2a);
   border-radius: 8px;
   padding: 1rem;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .aa-upload-area:hover {
@@ -569,4 +575,88 @@
     justify-content: center;
     min-height: 48px;
   }
+}
+
+/* ============================================================
+   EditProgramModal — upload area extensions (placeholder + overlay)
+   Base .aa-upload-area is defined above in ProgramWizard section
+   ============================================================ */
+
+.aa-upload-area__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+  padding: 20px;
+}
+
+.aa-upload-area__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 55%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-size: 0.875rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.aa-upload-area:hover .aa-upload-area__overlay {
+  opacity: 1;
+}
+
+.aa-input--textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+}
+
+/* Modal wider variant */
+.aa-modal--wide {
+  max-width: 680px;
+}
+
+/* ============================================================
+   ProgramTable — Featured (hvězdička) inline potvrzení
+   ============================================================ */
+
+.aa-star-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.aa-star-confirm__check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.aa-star-confirm__actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ============================================================
+   ProgramDetail — zamčené lekce (day_number > daysElapsed)
+   ============================================================ */
+
+.akademie-lesson-row--day-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.akademie-lesson-row--day-locked .lesson-row__play-btn {
+  display: none;
 }

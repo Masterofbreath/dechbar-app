@@ -41,6 +41,12 @@ export interface AkademieProgram {
   duration_days: number | null
   /** Doporučená délka denní lekce v minutách (např. 15). NULL = nezadáno. */
   daily_minutes: number | null
+  /**
+   * Datum spuštění programu (ISO string).
+   * Pokud je nastaveno, lekce se odemykají postupně: day_number <= daysElapsed.
+   * NULL = vše dostupné okamžitě.
+   */
+  launch_date: string | null
 }
 
 export interface AkademieSeries {

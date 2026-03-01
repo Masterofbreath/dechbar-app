@@ -1,185 +1,166 @@
 /**
  * useActiveDailyProgram
  *
- * Loads the user's pinned daily program and determines the next lesson to play.
+ * Čte uživatelův pinnutý denní program z user_active_program,
+ * načítá kompletní data programu (JOIN modules + akademie_categories)
+ * a počítá stav postupného odemykání dnů na základě launch_date.
  *
- * Query strategy (no N+1):
- *   1. user_active_program          → module_id
- *   2. akademie_programs JOIN modules → name, cover, duration_days, daily_minutes
- *   3. akademie_series               → series list (sort_order ASC)
- *   4. akademie_lessons              → ALL lessons for module (sort_order ASC)
- *   5. user_lesson_progress          → completed lesson IDs for user (batch)
- *   JS: find first lesson not in completed set = nextLesson
+ * Vrací:
+ *   data.program          — kompletní data programu (ActiveDailyProgramInfo)
+ *   data.daysElapsed      — kolik dní uplynulo od launch_date (Infinity = vše odemčeno)
+ *   data.notStartedYet    — true, pokud launch_date je v budoucnosti
+ *   data.startDate        — Date objekt launch_date nebo null
+ *   setActiveProgram()    — uloží/přepíše pinnutý program uživatele
+ *   clearActiveProgram()  — odstraní pin
  *
- * Mutations:
- *   setActiveProgram(moduleId) — upsert (switch programs)
- *   clearActiveProgram()       — delete row
+ * @package DechBar_App
+ * @subpackage MVP0/Hooks
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/platform/api/supabase';
 import { akademieKeys } from '@/modules/akademie/api/keys';
-import type { AkademieLesson, AkademieSeries } from '@/modules/akademie/types';
 
 // --------------------------------------------------
 // Types
 // --------------------------------------------------
 
 export interface ActiveDailyProgramInfo {
+  /** UUID záznamu v akademie_programs */
+  id: string;
+  /** Slug modulu, e.g. 'digitalni-ticho' */
   module_id: string;
-  /** UUID z akademie_programs.id — potřebný pro source_program_id v Track (StickyPlayer navigace) */
+  /** Aliased pro TodaysChallengeButton + StickyPlayer */
   program_uuid: string;
   name: string;
   cover_image_url: string | null;
+  category_id: string;
+  /** Slug kategorie — nutný pro navigaci ze StickyPlayeru */
+  category_slug: string;
   duration_days: number | null;
   daily_minutes: number | null;
-  /** Slug kategorie — potřebný pro source_category_slug v Track */
-  category_slug: string | null;
+  launch_date: string | null;
+  description_long: string | null;
+  price_czk: number;
+  sort_order: number;
+  isOwned: boolean;
+  isLocked: boolean;
+  isFavorite: boolean;
 }
 
 export interface ActiveDailyProgramData {
   program: ActiveDailyProgramInfo;
-  nextLesson: AkademieLesson | null; // null = all lessons completed
-  nextLessonSeries: AkademieSeries | null;
-  totalLessons: number;
-  completedLessons: number;
+  moduleId: string;
+  /**
+   * Počet dní od launch_date (včetně dnešního).
+   * Infinity = program nemá launch_date → vše odemčeno.
+   */
+  daysElapsed: number;
+  /** true pokud launch_date je v budoucnosti — program ještě nezačal */
+  notStartedYet: boolean;
+  startDate: Date | null;
 }
 
 export interface UseActiveDailyProgramReturn {
   data: ActiveDailyProgramData | null;
   isLoading: boolean;
   error: string | null;
-  setActiveProgram: (moduleId: string) => void;
-  clearActiveProgram: () => void;
-}
-
-// --------------------------------------------------
-// Raw DB row shapes
-// --------------------------------------------------
-
-interface RawProgramRow {
-  id: string;
-  module_id: string;
-  cover_image_url: string | null;
-  duration_days: number | null;
-  daily_minutes: number | null;
-  modules: { id: string; name: string } | null;
-  akademie_categories: { slug: string } | null;
-}
-
-interface RawProgressRow {
-  lesson_id: string;
+  setActiveProgram: (moduleId: string) => Promise<void>;
+  clearActiveProgram: () => Promise<void>;
 }
 
 // --------------------------------------------------
 // Query function
 // --------------------------------------------------
 
-async function fetchActiveDailyProgram(
-  userId: string,
-): Promise<ActiveDailyProgramData | null> {
-  // 1. Load user's active program
-  const { data: activeRow, error: activeError } = await supabase
+interface RawActiveRecord {
+  module_id: string;
+}
+
+interface RawProgramJoined {
+  id: string;
+  module_id: string;
+  cover_image_url: string | null;
+  description_long: string | null;
+  sort_order: number;
+  duration_days: number | null;
+  daily_minutes: number | null;
+  launch_date: string | null;
+  modules: { name: string; price_czk: number | null } | null;
+  akademie_categories: { id: string; slug: string } | null;
+}
+
+async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramData | null> {
+  // 1. Zjisti module_id z user_active_program
+  const { data: activeRec, error: activeErr } = await supabase
     .from('user_active_program')
     .select('module_id')
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (activeError) throw activeError;
-  if (!activeRow) return null;
+  if (activeErr) throw activeErr;
+  if (!activeRec) return null;
 
-  const moduleId = activeRow.module_id;
+  const activeModuleId = (activeRec as RawActiveRecord).module_id;
 
-  // 2. Load program detail (JOIN modules for name, akademie_categories for slug)
-  const { data: programRow, error: programError } = await supabase
+  // 2. Načti kompletní data programu (JOIN modules + akademie_categories)
+  const { data: prog, error: progErr } = await supabase
     .from('akademie_programs')
-    .select('id, module_id, cover_image_url, duration_days, daily_minutes, modules(id, name), akademie_categories(slug)')
-    .eq('module_id', moduleId)
+    .select(`
+      id,
+      module_id,
+      cover_image_url,
+      description_long,
+      sort_order,
+      duration_days,
+      daily_minutes,
+      launch_date,
+      modules ( name, price_czk ),
+      akademie_categories ( id, slug )
+    `)
+    .eq('module_id', activeModuleId)
     .maybeSingle();
 
-  if (programError) throw programError;
-  if (!programRow) return null;
+  if (progErr) throw progErr;
+  if (!prog) return null;
 
-  const raw = programRow as unknown as RawProgramRow;
+  const r = prog as unknown as RawProgramJoined;
 
-  const program: ActiveDailyProgramInfo = {
-    module_id: raw.module_id,
-    program_uuid: raw.id,
-    name: raw.modules?.name ?? moduleId,
-    cover_image_url: raw.cover_image_url,
-    duration_days: raw.duration_days,
-    daily_minutes: raw.daily_minutes,
-    category_slug: raw.akademie_categories?.slug ?? null,
+  const programInfo: ActiveDailyProgramInfo = {
+    id: r.id,
+    module_id: r.module_id,
+    program_uuid: r.id,
+    name: r.modules?.name ?? r.module_id,
+    cover_image_url: r.cover_image_url,
+    category_id: r.akademie_categories?.id ?? '',
+    category_slug: r.akademie_categories?.slug ?? '',
+    duration_days: r.duration_days,
+    daily_minutes: r.daily_minutes,
+    launch_date: r.launch_date,
+    description_long: r.description_long,
+    price_czk: r.modules?.price_czk ?? 990,
+    sort_order: r.sort_order,
+    isOwned: true,
+    isLocked: false,
+    isFavorite: false,
   };
 
-  // 3. Load all series for this module (sort_order ASC)
-  const { data: seriesRows, error: seriesError } = await supabase
-    .from('akademie_series')
-    .select('*')
-    .eq('module_id', moduleId)
-    .order('sort_order', { ascending: true });
+  // 3. Výpočet postupného odemykání
+  const launchDate = r.launch_date ? new Date(r.launch_date) : null;
+  const now = new Date();
 
-  if (seriesError) throw seriesError;
-  const series = (seriesRows ?? []) as AkademieSeries[];
+  const daysElapsed = launchDate
+    ? Math.max(0, Math.floor((now.getTime() - launchDate.getTime()) / 86_400_000) + 1)
+    : Infinity;
 
-  if (series.length === 0) {
-    return { program, nextLesson: null, nextLessonSeries: null, totalLessons: 0, completedLessons: 0 };
-  }
-
-  // 4. Load ALL lessons for this module at once (sort_order ASC)
-  const { data: lessonRows, error: lessonError } = await supabase
-    .from('akademie_lessons')
-    .select('*')
-    .eq('module_id', moduleId)
-    .eq('is_published', true)
-    .order('sort_order', { ascending: true });
-
-  if (lessonError) throw lessonError;
-  const allLessons = (lessonRows ?? []) as AkademieLesson[];
-
-  if (allLessons.length === 0) {
-    return { program, nextLesson: null, nextLessonSeries: null, totalLessons: 0, completedLessons: 0 };
-  }
-
-  // 5. Load all progress for this user + these lessons (batch)
-  const lessonIds = allLessons.map((l) => l.id);
-  const { data: progressRows, error: progressError } = await supabase
-    .from('user_lesson_progress')
-    .select('lesson_id')
-    .eq('user_id', userId)
-    .in('lesson_id', lessonIds);
-
-  if (progressError) throw progressError;
-
-  const completedIds = new Set<string>(
-    ((progressRows ?? []) as RawProgressRow[]).map((r) => r.lesson_id),
-  );
-
-  // 6. Build series lookup for nextLessonSeries resolution
-  const seriesById = new Map<string, AkademieSeries>(series.map((s) => [s.id, s]));
-
-  // 7. Find first uncompleted lesson (lessons already sorted by sort_order from DB)
-  //    Series ordering is guaranteed because lessons are ordered by sort_order globally,
-  //    and series share that sort space via day_number / sort_order alignment.
-  //    For multi-series programs: sort lessons by (series.sort_order, lesson.sort_order).
-  const seriesSortOrder = new Map<string, number>(series.map((s) => [s.id, s.sort_order]));
-
-  const sortedLessons = [...allLessons].sort((a, b) => {
-    const sa = seriesSortOrder.get(a.series_id) ?? 0;
-    const sb = seriesSortOrder.get(b.series_id) ?? 0;
-    if (sa !== sb) return sa - sb;
-    return a.sort_order - b.sort_order;
-  });
-
-  const nextLesson = sortedLessons.find((l) => !completedIds.has(l.id)) ?? null;
-  const nextLessonSeries = nextLesson ? (seriesById.get(nextLesson.series_id) ?? null) : null;
+  const notStartedYet = launchDate ? launchDate > now : false;
 
   return {
-    program,
-    nextLesson,
-    nextLessonSeries,
-    totalLessons: allLessons.length,
-    completedLessons: completedIds.size,
+    program: programInfo,
+    moduleId: activeModuleId,
+    daysElapsed,
+    notStartedYet,
+    startDate: launchDate,
   };
 }
 
@@ -188,49 +169,44 @@ async function fetchActiveDailyProgram(
 // --------------------------------------------------
 
 export function useActiveDailyProgram(userId: string | undefined): UseActiveDailyProgramReturn {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: akademieKeys.activeProgram(userId ?? ''),
-    queryFn: () => fetchActiveDailyProgram(userId!),
+    queryFn: () => fetchActiveProgram(userId!),
     enabled: !!userId,
-    staleTime: 1000 * 60 * 2, // 2 min — short, nextLesson must stay fresh after completion
+    staleTime: 1000 * 60 * 2,
     gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: false,
   });
 
-  const setActiveProgramMutation = useMutation({
-    mutationFn: async (moduleId: string) => {
-      if (!userId) throw new Error('User not authenticated');
-      const { error } = await supabase
-        .from('user_active_program')
-        .upsert({ user_id: userId, module_id: moduleId }, { onConflict: 'user_id' });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: akademieKeys.activeProgram(userId ?? '') });
-    },
-  });
+  const setActiveProgram = async (moduleId: string) => {
+    if (!userId) return;
+    const { error: upsertErr } = await supabase
+      .from('user_active_program')
+      .upsert(
+        { user_id: userId, module_id: moduleId, activated_at: new Date().toISOString() },
+        { onConflict: 'user_id' },
+      );
+    if (upsertErr) throw upsertErr;
+    await qc.invalidateQueries({ queryKey: akademieKeys.activeProgram(userId) });
+  };
 
-  const clearActiveProgramMutation = useMutation({
-    mutationFn: async () => {
-      if (!userId) throw new Error('User not authenticated');
-      const { error } = await supabase
-        .from('user_active_program')
-        .delete()
-        .eq('user_id', userId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: akademieKeys.activeProgram(userId ?? '') });
-    },
-  });
+  const clearActiveProgram = async () => {
+    if (!userId) return;
+    const { error: deleteErr } = await supabase
+      .from('user_active_program')
+      .delete()
+      .eq('user_id', userId);
+    if (deleteErr) throw deleteErr;
+    await qc.invalidateQueries({ queryKey: akademieKeys.activeProgram(userId) });
+  };
 
   return {
     data: data ?? null,
     isLoading,
     error: error ? 'Nepodařilo se načíst denní program' : null,
-    setActiveProgram: (moduleId: string) => setActiveProgramMutation.mutate(moduleId),
-    clearActiveProgram: () => clearActiveProgramMutation.mutate(),
+    setActiveProgram,
+    clearActiveProgram,
   };
 }

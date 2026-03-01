@@ -179,6 +179,20 @@ export interface AkademieLesson {
   updated_at: string;
 }
 
+export interface AkademieProgramModuleUpdate {
+  name?: string;
+  price_czk?: number;
+}
+
+export interface FeaturedProgramRecord {
+  id: string;
+  module_id: string;
+  title_override: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface AkademieProgramCreateResult {
   moduleId: string;
   programId: string;

@@ -156,6 +156,7 @@ interface RawProgramRow {
   sort_order: number
   duration_days: number | null
   daily_minutes: number | null
+  launch_date: string | null
   modules: {
     id: string
     name: string
@@ -193,6 +194,7 @@ export async function fetchProgramsForCategory(
       sort_order,
       duration_days,
       daily_minutes,
+      launch_date,
       modules ( id, name, price_czk )
     `)
     .eq('category_id', cat.id)
@@ -233,6 +235,7 @@ export async function fetchProgramsForCategory(
       sort_order: row.sort_order,
       duration_days: row.duration_days,
       daily_minutes: row.daily_minutes,
+      launch_date: row.launch_date,
       name: row.modules?.name ?? row.module_id,
       price_czk: row.modules?.price_czk ?? 990,
       isOwned,

@@ -62,6 +62,7 @@ import type {
   TrackInput, TrackFilters, AlbumInput, AlbumFilters,
   AkademieCategoryInput, AkademieCategory,
   AkademieProgramInput, AkademieProgram, AkademieProgramCreateResult,
+  AkademieProgramModuleUpdate, FeaturedProgramRecord,
   AkademieSeriesInput, AkademieSeries,
   AkademieLessonInput, AkademieLesson,
 } from './types';
@@ -690,6 +691,100 @@ export const adminApi = {
           .delete()
           .eq('id', id);
         if (error) throw new Error(`Failed to delete program: ${error.message}`);
+      },
+
+      async updateModule(moduleId: string, input: AkademieProgramModuleUpdate): Promise<void> {
+        const payload: Record<string, unknown> = {};
+        if (input.name !== undefined) payload.name = input.name;
+        if (input.price_czk !== undefined) payload.price_czk = input.price_czk;
+        if (Object.keys(payload).length === 0) return;
+        const { error } = await supabase.from('modules').update(payload).eq('id', moduleId);
+        if (error) throw new Error(`Failed to update module: ${error.message}`);
+      },
+    },
+
+    featuredProgram: {
+      async getActive(): Promise<FeaturedProgramRecord | null> {
+        const { data, error } = await supabase
+          .from('platform_featured_program')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (error) throw new Error(`Failed to fetch featured program: ${error.message}`);
+        return data as FeaturedProgramRecord | null;
+      },
+
+      /**
+       * Nastaví featured program:
+       *   1. Deaktivuje všechny stávající řádky
+       *   2. Smaže stávající řádek pro tento module_id
+       *   3. Vloží nový aktivní řádek
+       *   4. Pokud notify=true: vytvoří notifikaci + fanout na uživatele s pinnutým programem
+       */
+      async set(moduleId: string, opts: { notify: boolean; programName: string }): Promise<void> {
+        // 1. Deaktivuj všechny
+        const { error: deactivateErr } = await supabase
+          .from('platform_featured_program')
+          .update({ is_active: false })
+          .eq('is_active', true);
+        if (deactivateErr) throw new Error(`Failed to deactivate featured programs: ${deactivateErr.message}`);
+
+        // 2. Smaž stávající řádek pro tento module (čistý slate)
+        await supabase.from('platform_featured_program').delete().eq('module_id', moduleId);
+
+        // 3. Vlož nový aktivní řádek
+        const { error: insertErr } = await supabase
+          .from('platform_featured_program')
+          .insert({ module_id: moduleId, is_active: true, sort_order: 0, title_override: null });
+        if (insertErr) throw new Error(`Failed to insert featured program: ${insertErr.message}`);
+
+        if (!opts.notify) return;
+
+        // 4a. Vlož notifikaci
+        const { data: notifData, error: notifErr } = await supabase
+          .from('notifications')
+          .insert({
+            type: 'promo',
+            title: `Spustili jsme: ${opts.programName}`,
+            message: 'Chceš se přidat k special eventu? Přejdi do Akademie a zjisti více.',
+            action_url: '/app/akademie',
+            action_label: 'Zobrazit program',
+            target_audience: 'all',
+            sent_at: new Date().toISOString(),
+            is_auto_generated: true,
+            auto_trigger: 'featured_program_set',
+          })
+          .select('id')
+          .single();
+        if (notifErr) throw new Error(`Failed to create notification: ${notifErr.message}`);
+        const notifId = (notifData as { id: string }).id;
+
+        // 4b. Načti všechny uživatele s pinnutým programem
+        const { data: activeProgramUsers, error: usersErr } = await supabase
+          .from('user_active_program')
+          .select('user_id');
+        if (usersErr) throw new Error(`Failed to fetch active program users: ${usersErr.message}`);
+
+        const userIds = ((activeProgramUsers ?? []) as { user_id: string }[]).map((r) => r.user_id);
+        if (userIds.length === 0) return;
+
+        // 4c. Fanout — bulk INSERT do user_notifications
+        const fanout = userIds.map((uid) => ({ user_id: uid, notification_id: notifId, read: false }));
+        const { error: fanoutErr } = await supabase
+          .from('user_notifications')
+          .insert(fanout)
+          .throwOnError();
+        if (fanoutErr) throw new Error(`Failed to fanout notification: ${fanoutErr.message}`);
+      },
+
+      async unset(moduleId: string): Promise<void> {
+        const { error } = await supabase
+          .from('platform_featured_program')
+          .update({ is_active: false })
+          .eq('module_id', moduleId);
+        if (error) throw new Error(`Failed to unset featured program: ${error.message}`);
       },
     },
 
