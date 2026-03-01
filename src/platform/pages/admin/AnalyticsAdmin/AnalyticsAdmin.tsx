@@ -451,19 +451,19 @@ function RetentionSection() {
 
 // ── Protocol Stats ──
 
-function ProtocolStatsSection({ isLoading }: { isLoading: boolean }) {
-  const { stats } = useProtocolStats();
+function ProtocolStatsSection({ isLoading, period }: { isLoading: boolean; period: DashboardPeriod }) {
+  const { stats } = useProtocolStats(period);
   const { count: churnCount } = useChurnRisk();
 
   if (isLoading && stats.length === 0) return null;
 
   return (
     <div className="analytics-admin__row-2col">
-      {/* Protocol heatmap */}
+      {/* Protocol stats */}
       <div className="analytics-admin__chart">
-        <div className="analytics-admin__chart-title">Protokoly — dokončení</div>
+        <div className="analytics-admin__chart-title">Protokoly — spuštění / dokončení</div>
         {stats.length === 0 ? (
-          <div className="analytics-admin__empty">Zatím žádná data</div>
+          <div className="analytics-admin__empty">Zatím žádná data za toto období</div>
         ) : (
           <div className="analytics-admin__protocol-list">
             {stats.map((s) => (
@@ -476,8 +476,12 @@ function ProtocolStatsSection({ isLoading }: { isLoading: boolean }) {
                   />
                 </div>
                 <div className="analytics-admin__protocol-meta">
-                  <span>{s.completionRate}%</span>
-                  <span className="analytics-admin__protocol-count">{s.total}×</span>
+                  <span className="analytics-admin__protocol-pct">{s.completionRate}%</span>
+                  <span className="analytics-admin__protocol-counts">
+                    <span className="analytics-admin__protocol-started" title="Spuštěno">{s.started}×</span>
+                    <span className="analytics-admin__protocol-sep">/</span>
+                    <span className="analytics-admin__protocol-completed" title="Dokončeno">{s.completed}✓</span>
+                  </span>
                 </div>
               </div>
             ))}
@@ -646,7 +650,7 @@ export default function AnalyticsAdmin() {
       <RetentionSection />
 
       {/* Protocol heatmap + Churn risk */}
-      <ProtocolStatsSection isLoading={false} />
+      <ProtocolStatsSection isLoading={false} period={period} />
 
       {/* Top Content Table */}
       <div className="analytics-admin__top-content">
@@ -662,7 +666,8 @@ export default function AnalyticsAdmin() {
                 <th>#</th>
                 <th>Lekce</th>
                 <th>Kategorie</th>
-                <th>Přehrání</th>
+                <th title="Celkový počet spuštění (včetně re-openů)">Přehrání</th>
+                <th title="Počet unikátních uživatelů">Uživatelé</th>
                 <th>Dokončení</th>
               </tr>
             </thead>
@@ -674,7 +679,17 @@ export default function AnalyticsAdmin() {
                   <td style={{ color: 'rgba(255,255,255,0.45)' }}>
                     {item.programTitle || item.categorySlug || '—'}
                   </td>
-                  <td>{item.playCount}</td>
+                  <td>
+                    <span title="Celkový počet spuštění">{item.playCount}</span>
+                  </td>
+                  <td>
+                    <span
+                      className="analytics-admin__unique-users"
+                      title={`${item.uniqueUsers} unikátních uživatelů`}
+                    >
+                      {item.uniqueUsers}
+                    </span>
+                  </td>
                   <td>
                     <div className="analytics-admin__completion-bar-wrap">
                       <div className="analytics-admin__completion-bar-bg">

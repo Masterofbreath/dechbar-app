@@ -123,7 +123,8 @@ export interface TopContentItem {
   lessonTitle: string;
   programTitle: string | null;
   categorySlug: string;
-  playCount: number;
+  playCount: number;       // celkový počet spuštění (včetně re-openů)
+  uniqueUsers: number;     // počet unikátních uživatelů
   completionRate: number;  // 0-100 %
   favoriteCount: number;
 }

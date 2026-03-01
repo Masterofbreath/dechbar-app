@@ -408,7 +408,7 @@ export function usePrimeTime(): { slots: PrimeTimeSlot[]; peakHour: number | nul
 export interface ProtocolStat {
   type: string;        // 'rano' | 'klid' | 'vecer' | other
   label: string;       // 'Ráno' | 'Klid' | 'Večer'
-  total: number;
+  started: number;     // počet spuštěných (=total)
   completed: number;
   completionRate: number;
 }
@@ -419,17 +419,29 @@ const PROTOCOL_LABELS: Record<string, string> = {
   vecer: 'Večer',
 };
 
-export function useProtocolStats(): { stats: ProtocolStat[]; isLoading: boolean } {
+export function useProtocolStats(period: DashboardPeriod = 'today'): { stats: ProtocolStat[]; isLoading: boolean } {
+  const periodStart = getAdminPeriodStart(period);
   const { data, isLoading } = useQuery({
-    queryKey: ['analytics', 'protocolStats'] as const,
+    queryKey: ['analytics', 'protocolStats', period] as const,
     queryFn: async () => {
-      const { data: rows, error } = await supabase
+      // Filtrujeme exercise_sessions podle periody
+      let query = supabase
         .from('exercise_sessions')
-        .select('exercise_id, was_completed');
+        .select('exercise_id, was_completed, started_at');
+
+      if (period === 'today') {
+        query = query.gte('started_at', `${periodStart}T00:00:00.000Z`);
+      } else if (period === 'yesterday') {
+        query = query
+          .gte('started_at', `${periodStart}T00:00:00.000Z`)
+          .lt('started_at', `${toIsoDateString(new Date(new Date(periodStart).getTime() + 86400000))}T00:00:00.000Z`);
+      } else {
+        query = query.gte('started_at', `${periodStart}T00:00:00.000Z`);
+      }
+
+      const { data: rows, error } = await query;
       if (error) throw new Error(error.message);
 
-      // Group by exercise type prefix (rano/klid/vecer determined by exercise_id convention)
-      // Also query exercise names to get the type
       const { data: exercises } = await supabase
         .from('exercises')
         .select('id, exercise_type, title')
@@ -439,27 +451,27 @@ export function useProtocolStats(): { stats: ProtocolStat[]; isLoading: boolean 
         (exercises ?? []).map((e) => [e.id, e.exercise_type ?? 'other'])
       );
 
-      const counts = new Map<string, { total: number; completed: number }>();
+      const counts = new Map<string, { started: number; completed: number }>();
       for (const row of rows ?? []) {
         const type = typeMap.get(row.exercise_id) ?? 'other';
-        const existing = counts.get(type) ?? { total: 0, completed: 0 };
-        existing.total++;
+        const existing = counts.get(type) ?? { started: 0, completed: 0 };
+        existing.started++;
         if (row.was_completed) existing.completed++;
         counts.set(type, existing);
       }
 
       return Array.from(counts.entries())
         .filter(([type]) => type !== 'other')
-        .map(([type, { total, completed }]) => ({
+        .map(([type, { started, completed }]) => ({
           type,
           label: PROTOCOL_LABELS[type] ?? type,
-          total,
+          started,
           completed,
-          completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+          completionRate: started > 0 ? Math.round((completed / started) * 100) : 0,
         }))
-        .sort((a, b) => b.total - a.total);
+        .sort((a, b) => b.started - a.started);
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
   return { stats: data ?? [], isLoading };
 }
@@ -840,10 +852,10 @@ export function useTopContent(limit = 5): { data: TopContentItem[]; isLoading: b
   const { data, isLoading, error } = useQuery({
     queryKey: analyticsKeys.topContent(limit),
     queryFn: async (): Promise<TopContentItem[]> => {
-      // Aggregate audio_sessions by lesson_id
+      // Aggregate audio_sessions by lesson_id (incl. user_id pro unique users)
       const { data: rows, error: err } = await supabase
         .from('audio_sessions')
-        .select('lesson_id, lesson_title, program_title, category_slug, is_completed, unique_listen_seconds')
+        .select('lesson_id, lesson_title, program_title, category_slug, is_completed, unique_listen_seconds, user_id')
         .order('created_at', { ascending: false })
         .limit(5000); // Reasonable cap for aggregation
 
@@ -858,6 +870,7 @@ export function useTopContent(limit = 5): { data: TopContentItem[]; isLoading: b
         playCount: number;
         completedCount: number;
         totalListenSeconds: number;
+        userIds: Set<string>;
       }>();
 
       for (const row of rows ?? []) {
@@ -867,6 +880,7 @@ export function useTopContent(limit = 5): { data: TopContentItem[]; isLoading: b
           existing.playCount += 1;
           if (row.is_completed) existing.completedCount += 1;
           existing.totalListenSeconds += row.unique_listen_seconds ?? 0;
+          if (row.user_id) existing.userIds.add(row.user_id);
         } else {
           map.set(key, {
             lessonId: row.lesson_id,
@@ -876,6 +890,7 @@ export function useTopContent(limit = 5): { data: TopContentItem[]; isLoading: b
             playCount: 1,
             completedCount: row.is_completed ? 1 : 0,
             totalListenSeconds: row.unique_listen_seconds ?? 0,
+            userIds: new Set(row.user_id ? [row.user_id] : []),
           });
         }
       }
@@ -890,6 +905,7 @@ export function useTopContent(limit = 5): { data: TopContentItem[]; isLoading: b
           programTitle: item.programTitle,
           categorySlug: item.categorySlug,
           playCount: item.playCount,
+          uniqueUsers: item.userIds.size,
           completionRate: item.playCount > 0
             ? Math.round((item.completedCount / item.playCount) * 100)
             : 0,

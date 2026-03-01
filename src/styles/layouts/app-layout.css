@@ -132,6 +132,11 @@
       var(--spacing-4)                    /* 16px breathing space */
     ) !important;
   }
+
+  /* FIX: Carousel spravuje vlastní padding — přebíjí !important výše */
+  .app-layout__content:has(.tab-carousel) {
+    padding: 0 !important;
+  }
   
   .app-layout__content::-webkit-scrollbar {
     display: none !important;

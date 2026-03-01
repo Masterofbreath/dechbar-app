@@ -66,12 +66,14 @@ export function AppLayout({
   // iOS PWA fix: force layout recalculation after first render.
   // In standalone PWA mode, iOS sometimes computes position:fixed coordinates
   // before viewport-fit=cover is fully applied → BottomNav appears with a gap
-  // on initial load. Reading a layout property via rAF triggers iOS to
-  // recalculate and repaint fixed elements with correct viewport metrics.
+  // on initial load. Single rAF fires too early; double-rAF waits for the
+  // second paint cycle when iOS has finalized the safe-area metrics.
+  // Timeout fallback covers edge cases where rAF still fires too early.
   useEffect(() => {
-    requestAnimationFrame(() => {
-      void document.documentElement.getBoundingClientRect();
-    });
+    const fix = () => void document.documentElement.getBoundingClientRect();
+    requestAnimationFrame(() => requestAnimationFrame(fix));
+    const t = setTimeout(fix, 300);
+    return () => clearTimeout(t);
   }, []);
 
   return (

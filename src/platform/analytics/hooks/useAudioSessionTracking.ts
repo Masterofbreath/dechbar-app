@@ -338,5 +338,110 @@ export function useAudioSessionTracking({
     });
   }, []);
 
+  // Finální uložení při unmount (tab switch, navigace pryč, app zavření).
+  // Zachytí všechny sessions kde uživatel nepoklepá X, ale prostě odejde.
+  // Prázdné deps [] — záměrně čte jen refs (jsou vždy aktuální, bez stale closure).
+  useEffect(() => {
+    return () => {
+      if (closedRef.current || !sessionStartedRef.current) return;
+      const uid = userIdRef.current;
+      const ctx = sessionContextRef.current;
+      if (!uid || !ctx) return;
+
+      closedRef.current = true;
+      const totalListened = calculateTotalListenedRef.current();
+      const dur = durationRef.current;
+      const listenPercent = dur > 0
+        ? Math.round(Math.min(100, (totalListened / dur) * 10000)) / 100
+        : 0;
+      const pos = currentTimeRef.current;
+
+      logAudioEvent({
+        session_id: sessionIdRef.current,
+        user_id: uid,
+        lesson_id: ctx.lessonId,
+        event_type: 'closed',
+        position_seconds: pos,
+        listen_percent: listenPercent,
+      });
+
+      upsertAudioSession({
+        session_id: sessionIdRef.current,
+        user_id: uid,
+        lesson_id: ctx.lessonId,
+        lesson_title: ctx.lessonTitle,
+        series_id: ctx.seriesId,
+        program_id: ctx.programId,
+        program_title: ctx.programTitle,
+        category_slug: ctx.categorySlug,
+        category_title: ctx.categoryTitle,
+        started_at: startedAtRef.current,
+        ended_at: new Date().toISOString(),
+        audio_duration_seconds: ctx.audioDurationSeconds
+          ? Math.round(ctx.audioDurationSeconds)
+          : undefined,
+        unique_listen_seconds: Math.round(totalListened),
+        completion_percent: listenPercent,
+        is_completed: isCompletedRef.current,
+        was_abandoned: !isCompletedRef.current,
+        seek_count: seekCountRef.current,
+        pause_count: pauseCountRef.current,
+      });
+    };
+   
+  }, []);
+
+  // Záloha: beforeunload/pagehide — pro případ zavření tab/browser/PWA.
+  // Fetch nemá zaručené dokončení při unload → sendBeacon je spolehlivější,
+  // ale vyžaduje serializaci. Zde používáme keepalive fetch (Supabase client
+  // to interně dělá přes fetch — na mobilech dostačující).
+  useEffect(() => {
+    const handleUnload = () => {
+      if (closedRef.current || !sessionStartedRef.current) return;
+      const uid = userIdRef.current;
+      const ctx = sessionContextRef.current;
+      if (!uid || !ctx) return;
+
+      closedRef.current = true;
+      const totalListened = calculateTotalListenedRef.current();
+      const dur = durationRef.current;
+      const listenPercent = dur > 0
+        ? Math.round(Math.min(100, (totalListened / dur) * 10000)) / 100
+        : 0;
+
+      upsertAudioSession({
+        session_id: sessionIdRef.current,
+        user_id: uid,
+        lesson_id: ctx.lessonId,
+        lesson_title: ctx.lessonTitle,
+        series_id: ctx.seriesId,
+        program_id: ctx.programId,
+        program_title: ctx.programTitle,
+        category_slug: ctx.categorySlug,
+        category_title: ctx.categoryTitle,
+        started_at: startedAtRef.current,
+        ended_at: new Date().toISOString(),
+        audio_duration_seconds: ctx.audioDurationSeconds
+          ? Math.round(ctx.audioDurationSeconds)
+          : undefined,
+        unique_listen_seconds: Math.round(totalListened),
+        completion_percent: listenPercent,
+        is_completed: isCompletedRef.current,
+        was_abandoned: !isCompletedRef.current,
+        seek_count: seekCountRef.current,
+        pause_count: pauseCountRef.current,
+      });
+    };
+
+    // pagehide je spolehlivější než beforeunload na mobilních prohlížečích/PWA
+    window.addEventListener('pagehide', handleUnload);
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('pagehide', handleUnload);
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+   
+  }, []);
+
   return { logSeek, logClose };
 }
