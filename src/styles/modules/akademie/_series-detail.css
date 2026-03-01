@@ -293,6 +293,43 @@
   height: 18px;
 }
 
+/* Replay indicator pro dokončené lekce: ✓ + ▶ */
+.akademie-lesson-row__replay {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.akademie-lesson-row__replay-check {
+  width: 12px;
+  height: 12px;
+  color: var(--color-accent, #D6A23A); /* gold */
+  flex-shrink: 0;
+}
+
+.akademie-lesson-row__replay-play {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-tertiary);
+  opacity: 0.45;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+/* Hover: play ikonka se rozsvítí → výzva k přehrání */
+.akademie-lesson-row--completed:hover .akademie-lesson-row__replay-play,
+.akademie-lesson-row--completed:focus-within .akademie-lesson-row__replay-play {
+  opacity: 0.85;
+  color: var(--color-primary);
+}
+
+/* Levá ikona: gold tint pro dokončené lekce */
+.akademie-lesson-row--completed .akademie-lesson-row__icon {
+  border-color: rgb(214 162 58 / 35%);
+  color: var(--color-accent, #D6A23A);
+}
+
 /* Playing indicator (animated equalizer dots) */
 .akademie-lesson-row__playing-indicator {
   flex-shrink: 0;

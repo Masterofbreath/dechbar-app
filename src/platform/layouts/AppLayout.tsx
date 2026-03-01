@@ -21,6 +21,7 @@ import { TopNav } from '../components/navigation/TopNav';
 import { BottomNav } from '../components/navigation/BottomNav';
 import { StickyAudioPlayer } from '../components/AudioPlayer';
 import { useAudioPlayerStore } from '../components/AudioPlayer/store';
+import { usePlayerBroadcast } from '../components/AudioPlayer/usePlayerBroadcast';
 import { useAuthStore } from '@/platform/auth';
 import { useAppSession } from '@/platform/analytics';
 
@@ -62,6 +63,9 @@ export function AppLayout({
 
   // Log app_open event once per mount (DAU Level 1 tracking)
   useAppSession({ userId });
+
+  // Synchronizace přehrávače mezi záložkami ve stejném browseru (BroadcastChannel)
+  usePlayerBroadcast();
 
   // iOS PWA fix: force layout recalculation after first render.
   // In standalone PWA mode, iOS sometimes computes position:fixed coordinates

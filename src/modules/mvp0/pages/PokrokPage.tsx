@@ -20,6 +20,7 @@
 import { useState } from 'react';
 import { useUserPokrokStats, getDaysSinceRegistration, usePersonalRecords, useAllTimeMinutes } from '@/platform/analytics';
 import { formatMinutes, getActivityLevel } from '@/platform/analytics';
+import { usePokrokRealtime } from '@/platform/analytics/hooks/usePokrokRealtime';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useAuthStore } from '@/platform/auth';
 import type { ActivityPeriod, ActivityDayData } from '@/platform/analytics';
@@ -258,6 +259,9 @@ const PERIOD_TABS: PeriodTab[] = [
 export function PokrokPage() {
   const [period, setPeriod] = useState<ActivityPeriod>('all');
   const userId = useAuthStore((s) => s.user?.id);
+
+  // Real-time invalidace při změně audio/exercise session (bez refreshe stránky)
+  usePokrokRealtime(userId);
 
   // Prefetch všech period dopředu — eliminuje skeleton při přepínání tabů
   useUserPokrokStats(userId, 'day');

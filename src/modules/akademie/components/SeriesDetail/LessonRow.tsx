@@ -21,14 +21,16 @@ export function LessonRow({ lesson, playback }: LessonRowProps) {
     playback.playLesson(lesson)
   }
 
+  const isCompleted = lesson.isCompleted && !isCurrent;
+
   return (
     <div
-      className={`akademie-lesson-row${isCurrent ? ' akademie-lesson-row--playing' : ''}`}
+      className={`akademie-lesson-row${isCurrent ? ' akademie-lesson-row--playing' : ''}${isCompleted ? ' akademie-lesson-row--completed' : ''}`}
       onClick={handlePlay}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && handlePlay()}
-      aria-label={`${lesson.title}${lesson.isCompleted ? ', dokončeno' : ''}${isCurrent ? ', právě hraje' : ''}`}
+      aria-label={`${lesson.title}${lesson.isCompleted ? ', dokončeno' : ''}${isCurrent ? ', právě hraje' : ''}${isCompleted ? ' — kliknutím přehraješ znovu' : ''}`}
     >
       {/* Icon: day number / play indicator */}
       <div className="akademie-lesson-row__icon" aria-hidden="true">
@@ -62,17 +64,21 @@ export function LessonRow({ lesson, playback }: LessonRowProps) {
         )}
       </div>
 
-      {/* Status indicator: playing animation, checkmark, or empty */}
+      {/* Status indicator: playing animation, replay+check, or empty */}
       {isPlaying ? (
         <div className="akademie-lesson-row__playing-indicator" aria-hidden="true">
           <span />
           <span />
           <span />
         </div>
-      ) : lesson.isCompleted ? (
-        <div className="akademie-lesson-row__check" aria-label="Dokončeno">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      ) : isCompleted ? (
+        /* Replay indicator: malý check ✓ + play ▶ — ukazuje "splněno + lze přehrát znovu" */
+        <div className="akademie-lesson-row__replay" aria-hidden="true">
+          <svg className="akademie-lesson-row__replay-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <svg className="akademie-lesson-row__replay-play" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5,3 19,12 5,21" />
           </svg>
         </div>
       ) : null}
