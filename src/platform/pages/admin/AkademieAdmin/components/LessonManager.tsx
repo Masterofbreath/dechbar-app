@@ -32,6 +32,16 @@ interface EditingDuration {
   saving: boolean;
 }
 
+interface EditingLesson {
+  lessonId: string;
+  title: string;
+  audioFile: File | null;
+  uploadProgress: number | null;
+  isUploading: boolean;
+  isSaving: boolean;
+  error: string | null;
+}
+
 const emptyForm = (): LessonForm => ({
   title: '', audioFile: null, uploadProgress: null, isUploading: false, error: null,
 });
@@ -45,6 +55,7 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
   const [addForms, setAddForms] = useState<Record<string, LessonForm>>({});
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [editingDuration, setEditingDuration] = useState<EditingDuration | null>(null);
+  const [editingLesson, setEditingLesson] = useState<EditingLesson | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -163,6 +174,56 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
     }
   };
 
+  const openEditLesson = (lesson: AkademieLesson) => {
+    setEditingLesson({
+      lessonId: lesson.id,
+      title: lesson.title,
+      audioFile: null,
+      uploadProgress: null,
+      isUploading: false,
+      isSaving: false,
+      error: null,
+    });
+    setDeleteConfirmId(null);
+  };
+
+  const handleSaveLesson = async (lesson: AkademieLesson) => {
+    if (!editingLesson || editingLesson.lessonId !== lesson.id) return;
+    if (!editingLesson.title.trim()) return;
+
+    setEditingLesson((prev) => prev ? { ...prev, isSaving: true, error: null } : null);
+
+    try {
+      const patch: Record<string, unknown> = { title: editingLesson.title.trim() };
+
+      // Pokud je vybrán nový audio soubor → nahrát na CDN
+      if (editingLesson.audioFile) {
+        setEditingLesson((prev) => prev ? { ...prev, isUploading: true } : null);
+        const audioUrl = await uploadService.uploadAkademieAudio(
+          editingLesson.audioFile,
+          getCategorySlug(),
+          lesson.module_id,
+          lesson.day_number,
+          editingLesson.title.trim(),
+          (p) => setEditingLesson((prev) => prev ? { ...prev, uploadProgress: p.percent } : null),
+        );
+        const meta = await uploadService.extractAudioMetadata(editingLesson.audioFile);
+        patch.audio_url = audioUrl;
+        patch.duration_seconds = meta.duration ?? lesson.duration_seconds;
+        setEditingLesson((prev) => prev ? { ...prev, isUploading: false, uploadProgress: null } : null);
+      }
+
+      await adminApi.akademie.lessons.update(lesson.id, patch as Parameters<typeof adminApi.akademie.lessons.update>[1]);
+      setEditingLesson(null);
+      await load();
+    } catch (err) {
+      setEditingLesson((prev) => prev
+        ? { ...prev, isSaving: false, isUploading: false, error: err instanceof Error ? err.message : 'Chyba při ukládání' }
+        : null,
+      );
+    }
+  };
+
   return (
     <div className="aa-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="aa-modal aa-modal--wide">
@@ -226,90 +287,187 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
                             </tr>
                           </thead>
                           <tbody>
-                            {lessons.map((lesson) => (
-                              <tr key={lesson.id}>
-                                <td style={{ color: 'var(--color-text-tertiary)', fontWeight: 600 }}>
-                                  D{lesson.day_number}
-                                </td>
-                                <td style={{ fontWeight: 500 }}>{lesson.title}</td>
-                                <td>
-                                  {editingDuration?.lessonId === lesson.id ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                      <input
-                                        type="number"
-                                        step="0.5"
-                                        min="0.5"
-                                        className="aa-input"
-                                        style={{ width: 60, padding: '2px 6px', fontSize: '0.8125rem' }}
-                                        value={editingDuration.value}
-                                        onChange={(e) => setEditingDuration((prev) => prev ? { ...prev, value: e.target.value } : null)}
-                                        onKeyDown={(e) => {
-                                          if (e.key === 'Enter') void handleSaveDuration(lesson.id);
-                                          if (e.key === 'Escape') setEditingDuration(null);
-                                        }}
-                                        autoFocus
-                                      />
-                                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>min</span>
-                                      <button
-                                        className="aa-btn aa-btn--ghost aa-btn--sm"
-                                        style={{ padding: '2px 6px' }}
-                                        onClick={() => void handleSaveDuration(lesson.id)}
-                                        disabled={editingDuration.saving}
-                                      >✓</button>
-                                      <button
-                                        className="aa-btn aa-btn--ghost aa-btn--sm"
-                                        style={{ padding: '2px 6px' }}
-                                        onClick={() => setEditingDuration(null)}
-                                      >✕</button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      className="aa-btn--icon"
-                                      style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
-                                      title="Klikni pro úpravu délky"
-                                      onClick={() => setEditingDuration({
-                                        lessonId: lesson.id,
-                                        value: lesson.duration_seconds ? String(Math.round(lesson.duration_seconds / 60)) : '',
-                                        saving: false,
-                                      })}
-                                    >
-                                      {lesson.duration_seconds
-                                        ? `${Math.round(lesson.duration_seconds / 60)} min ✎`
-                                        : '— ✎'}
-                                    </button>
+                            {lessons.map((lesson) => {
+                              const isEditing = editingLesson?.lessonId === lesson.id;
+                              return (
+                                <>
+                                  <tr key={lesson.id} style={{ opacity: isEditing ? 0.5 : 1 }}>
+                                    <td style={{ color: 'var(--color-text-tertiary)', fontWeight: 600 }}>
+                                      D{lesson.day_number}
+                                    </td>
+                                    <td style={{ fontWeight: 500 }}>{lesson.title}</td>
+                                    <td>
+                                      {editingDuration?.lessonId === lesson.id ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                          <input
+                                            type="number"
+                                            step="0.5"
+                                            min="0.5"
+                                            className="aa-input"
+                                            style={{ width: 60, padding: '2px 6px', fontSize: '0.8125rem' }}
+                                            value={editingDuration.value}
+                                            onChange={(e) => setEditingDuration((prev) => prev ? { ...prev, value: e.target.value } : null)}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') void handleSaveDuration(lesson.id);
+                                              if (e.key === 'Escape') setEditingDuration(null);
+                                            }}
+                                            autoFocus
+                                          />
+                                          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>min</span>
+                                          <button
+                                            className="aa-btn aa-btn--ghost aa-btn--sm"
+                                            style={{ padding: '2px 6px' }}
+                                            onClick={() => void handleSaveDuration(lesson.id)}
+                                            disabled={editingDuration.saving}
+                                          >✓</button>
+                                          <button
+                                            className="aa-btn aa-btn--ghost aa-btn--sm"
+                                            style={{ padding: '2px 6px' }}
+                                            onClick={() => setEditingDuration(null)}
+                                          >✕</button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          className="aa-btn--icon"
+                                          style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
+                                          title="Klikni pro úpravu délky"
+                                          onClick={() => setEditingDuration({
+                                            lessonId: lesson.id,
+                                            value: lesson.duration_seconds ? String(Math.round(lesson.duration_seconds / 60)) : '',
+                                            saving: false,
+                                          })}
+                                        >
+                                          {lesson.duration_seconds
+                                            ? `${Math.round(lesson.duration_seconds / 60)} min ✎`
+                                            : '— ✎'}
+                                        </button>
+                                      )}
+                                    </td>
+                                    <td>
+                                      {lesson.audio_url ? (
+                                        <span className="aa-badge aa-badge--active">✓</span>
+                                      ) : (
+                                        <span className="aa-badge aa-badge--inactive">Chybí</span>
+                                      )}
+                                    </td>
+                                    <td>
+                                      <div className="aa-actions">
+                                        {deleteConfirmId === lesson.id ? (
+                                          <>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Smazat?</span>
+                                            <button
+                                              className="aa-btn aa-btn--danger aa-btn--sm"
+                                              onClick={() => void handleDeleteLesson(lesson.id)}
+                                            >Ano</button>
+                                            <button
+                                              className="aa-btn aa-btn--ghost aa-btn--sm"
+                                              onClick={() => setDeleteConfirmId(null)}
+                                            >Ne</button>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <button
+                                              className="aa-btn aa-btn--ghost aa-btn--sm"
+                                              onClick={() => isEditing ? setEditingLesson(null) : openEditLesson(lesson)}
+                                            >
+                                              {isEditing ? 'Zrušit' : 'Upravit'}
+                                            </button>
+                                            <button
+                                              className="aa-btn aa-btn--danger aa-btn--sm"
+                                              onClick={() => setDeleteConfirmId(lesson.id)}
+                                            >
+                                              Smazat
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+
+                                  {/* Inline edit form — rozbalí se pod řádkem */}
+                                  {isEditing && editingLesson && (
+                                    <tr key={`${lesson.id}-edit`}>
+                                      <td colSpan={5} style={{ padding: '0 0 8px 0' }}>
+                                        <div style={{
+                                          background: 'rgba(248,202,0,0.06)',
+                                          border: '1px solid rgba(248,202,0,0.25)',
+                                          borderRadius: 8,
+                                          padding: '0.875rem 1rem',
+                                        }}>
+                                          {editingLesson.error && (
+                                            <div className="aa-error-banner" style={{ marginBottom: 8 }}>
+                                              {editingLesson.error}
+                                            </div>
+                                          )}
+                                          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                            {/* Název */}
+                                            <div className="aa-field" style={{ flex: 2, minWidth: 160 }}>
+                                              <label className="aa-field__label" style={{ fontSize: '0.75rem' }}>Název lekce</label>
+                                              <input
+                                                className="aa-input"
+                                                value={editingLesson.title}
+                                                onChange={(e) => setEditingLesson((prev) => prev ? { ...prev, title: e.target.value } : null)}
+                                                onKeyDown={(e) => {
+                                                  if (e.key === 'Enter') void handleSaveLesson(lesson);
+                                                  if (e.key === 'Escape') setEditingLesson(null);
+                                                }}
+                                                autoFocus
+                                              />
+                                            </div>
+
+                                            {/* Audio upload */}
+                                            <div className="aa-field" style={{ flex: 2, minWidth: 160 }}>
+                                              <label className="aa-field__label" style={{ fontSize: '0.75rem' }}>
+                                                Audio {lesson.audio_url ? '(nahradit MP3)' : '(nahrát MP3)'}
+                                              </label>
+                                              <div
+                                                className="aa-upload-area"
+                                                style={{ padding: '0.5rem', cursor: 'pointer' }}
+                                                onClick={() => document.getElementById(`lesson-edit-audio-${lesson.id}`)?.click()}
+                                              >
+                                                <div className="aa-upload-area__text" style={{ fontSize: '0.75rem' }}>
+                                                  {editingLesson.audioFile
+                                                    ? editingLesson.audioFile.name
+                                                    : lesson.audio_url
+                                                      ? 'Klikni pro nahrazení audio'
+                                                      : 'Vyberte MP3'}
+                                                </div>
+                                                {editingLesson.uploadProgress !== null && (
+                                                  <div className="aa-progress-bar">
+                                                    <div className="aa-progress-bar__fill" style={{ width: `${editingLesson.uploadProgress}%` }} />
+                                                  </div>
+                                                )}
+                                              </div>
+                                              <input
+                                                id={`lesson-edit-audio-${lesson.id}`}
+                                                type="file"
+                                                accept="audio/mpeg,audio/mp4,audio/wav"
+                                                style={{ display: 'none' }}
+                                                onChange={(e) => setEditingLesson((prev) => prev ? { ...prev, audioFile: e.target.files?.[0] ?? null } : null)}
+                                              />
+                                            </div>
+
+                                            {/* Uložit */}
+                                            <button
+                                              className="aa-btn aa-btn--primary aa-btn--sm"
+                                              onClick={() => void handleSaveLesson(lesson)}
+                                              disabled={!editingLesson.title.trim() || editingLesson.isUploading || editingLesson.isSaving}
+                                              style={{ marginBottom: 4 }}
+                                            >
+                                              {editingLesson.isUploading
+                                                ? `Uploading… ${editingLesson.uploadProgress ?? 0}%`
+                                                : editingLesson.isSaving
+                                                  ? 'Ukládám…'
+                                                  : 'Uložit'}
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </tr>
                                   )}
-                                </td>
-                                <td>
-                                  {lesson.audio_url ? (
-                                    <span className="aa-badge aa-badge--active">✓</span>
-                                  ) : (
-                                    <span className="aa-badge aa-badge--inactive">Chybí</span>
-                                  )}
-                                </td>
-                                <td>
-                                  {deleteConfirmId === lesson.id ? (
-                                    <div className="aa-actions">
-                                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Smazat?</span>
-                                      <button
-                                        className="aa-btn aa-btn--danger aa-btn--sm"
-                                        onClick={() => void handleDeleteLesson(lesson.id)}
-                                      >Ano</button>
-                                      <button
-                                        className="aa-btn aa-btn--ghost aa-btn--sm"
-                                        onClick={() => setDeleteConfirmId(null)}
-                                      >Ne</button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      className="aa-btn aa-btn--danger aa-btn--sm"
-                                      onClick={() => setDeleteConfirmId(lesson.id)}
-                                    >
-                                      Smazat
-                                    </button>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
+                                </>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
