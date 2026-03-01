@@ -225,7 +225,7 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
 
   const userProgram = useActiveDailyProgram(user?.id);
   const dailyOverride = usePlatformDailyOverride();
-  const featuredProgram = usePlatformFeaturedProgram();
+  const featuredProgram = usePlatformFeaturedProgram(user?.id);
 
   // Navigace pro featured CTA (stejný vzor jako StickyPlayer)
   const { setCurrentTab } = useNavigation();
@@ -237,11 +237,12 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
 
   // Determine active program info for playback
   const activeProgramInfo = userProgram.data?.program ?? null;
+  const featuredProgramInfo = featuredProgram.data?.program ?? null;
 
   const { playLesson } = useAkademiePlayback({
-    coverUrl: activeProgramInfo?.cover_image_url ?? featuredProgram.data?.program.cover_image_url,
-    programId: activeProgramInfo?.program_uuid ?? undefined,
-    categorySlug: activeProgramInfo?.category_slug ?? undefined,
+    coverUrl: activeProgramInfo?.cover_image_url ?? featuredProgramInfo?.cover_image_url,
+    programId: activeProgramInfo?.program_uuid ?? featuredProgramInfo?.program_uuid,
+    categorySlug: activeProgramInfo?.category_slug ?? featuredProgramInfo?.category_slug,
   });
 
   function handleOverridePlay() {
@@ -352,21 +353,38 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
 
   // --- State 3: Admin featured program (no user pin, no override) ---
   if (featuredProgram.data) {
-    const { program, titleOverride } = featuredProgram.data;
+    const { program, titleOverride, nextLesson: featuredNextLesson } = featuredProgram.data;
     const displayProgram = titleOverride ? { ...program, name: titleOverride } : program;
 
-    const featuredSubtitle = [
-      program.duration_days ? `${program.duration_days} dní` : null,
-      program.daily_minutes ? `${program.daily_minutes} min/den` : null,
-    ].filter(Boolean).join(' · ');
-
-    function handleFeaturedClick() {
+    function handleFeaturedNavigate() {
       if (program.category_slug) {
         selectCategory(program.category_slug);
       }
       setPendingModuleId(program.module_id);
       setCurrentTab('akademie');
     }
+
+    // Má dostupnou lekci → přehrát přímo (sdílíme `playLesson` z top-level useAkademiePlayback)
+    if (featuredNextLesson) {
+      const featuredLessonSubtitle = buildLessonSubtitle(featuredNextLesson, program.daily_minutes);
+      return (
+        <ProgramCard
+          program={displayProgram}
+          subtitle={featuredLessonSubtitle}
+          ctaLabel="Přehrát"
+          ctaAriaLabel={`Spustit ${featuredNextLesson.title} z programu ${displayProgram.name}`}
+          modifier="todays-challenge-button--featured"
+          onClick={() => playLesson(featuredNextLesson)}
+          className={className}
+        />
+      );
+    }
+
+    // Nemá lekci (program dokončen / nezačal / neznámé) → navigace do Akademie
+    const featuredSubtitle = [
+      program.duration_days ? `${program.duration_days} dní` : null,
+      program.daily_minutes ? `${program.daily_minutes} min/den` : null,
+    ].filter(Boolean).join(' · ');
 
     return (
       <ProgramCard
@@ -375,7 +393,7 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
         ctaLabel="Zjistit více"
         ctaAriaLabel={`Zobrazit program ${displayProgram.name} v Akademii`}
         modifier="todays-challenge-button--featured"
-        onClick={handleFeaturedClick}
+        onClick={handleFeaturedNavigate}
         className={className}
       />
     );

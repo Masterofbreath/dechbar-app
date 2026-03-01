@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/platform/api/supabase';
 import { akademieKeys } from '@/modules/akademie/api/keys';
 import type { ActiveDailyProgramInfo } from './useActiveDailyProgram';
+import type { AkademieLesson } from '@/modules/akademie/types';
 
 // --------------------------------------------------
 // Types
@@ -31,6 +32,12 @@ export interface FeaturedProgramData {
    * undefined = žádný override → použij program.name.
    */
   titleOverride: string | undefined;
+  /**
+   * Nejbližší nesplněná dostupná lekce (stejná logika jako useActiveDailyProgram).
+   * null = program dokončen / nezačal / uživatel není přihlášen.
+   * Když je non-null, TodaysChallengeButton zobrazí "Přehrát" místo "Zjistit více".
+   */
+  nextLesson: AkademieLesson | null;
 }
 
 export interface UsePlatformFeaturedProgramReturn {
@@ -62,7 +69,18 @@ interface RawProgramJoined {
   akademie_categories: { id: string; slug: string } | null;
 }
 
-async function fetchFeaturedProgram(): Promise<FeaturedProgramData | null> {
+interface RawLesson {
+  id: string;
+  series_id: string;
+  module_id: string;
+  title: string;
+  audio_url: string;
+  duration_seconds: number;
+  day_number: number;
+  sort_order: number;
+}
+
+async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramData | null> {
   const now = new Date().toISOString();
 
   // 1. Načti aktivní featured záznam
@@ -103,6 +121,41 @@ async function fetchFeaturedProgram(): Promise<FeaturedProgramData | null> {
 
   const r = prog as unknown as RawProgramJoined;
 
+  // 3. Výpočet postupného odemykání (stejná logika jako useActiveDailyProgram)
+  const launchDate = r.launch_date ? new Date(r.launch_date) : null;
+  const nowDate = new Date();
+  const daysElapsed = launchDate
+    ? Math.max(0, Math.floor((nowDate.getTime() - launchDate.getTime()) / 86_400_000) + 1)
+    : Infinity;
+
+  // 4. Načti lekce + progress pokud je přihlášen uživatel
+  let nextLesson: AkademieLesson | null = null;
+  if (userId) {
+    const { data: lessonsRaw } = await supabase
+      .from('akademie_lessons')
+      .select('id, series_id, module_id, title, audio_url, duration_seconds, day_number, sort_order')
+      .eq('module_id', featuredRec.module_id)
+      .order('day_number', { ascending: true })
+      .order('sort_order', { ascending: true });
+
+    const lessons = (lessonsRaw ?? []) as RawLesson[];
+
+    const completedIds = new Set<string>();
+    if (lessons.length > 0) {
+      const { data: progress } = await supabase
+        .from('user_lesson_progress')
+        .select('lesson_id')
+        .eq('user_id', userId)
+        .in('lesson_id', lessons.map((l) => l.id));
+      (progress ?? []).forEach((row: { lesson_id: string }) => completedIds.add(row.lesson_id));
+    }
+
+    nextLesson =
+      lessons.find(
+        (l) => !completedIds.has(l.id) && (daysElapsed === Infinity || l.day_number <= daysElapsed),
+      ) ?? null;
+  }
+
   const programInfo: ActiveDailyProgramInfo = {
     id: r.id,
     module_id: r.module_id,
@@ -117,8 +170,9 @@ async function fetchFeaturedProgram(): Promise<FeaturedProgramData | null> {
     description_long: r.description_long,
     price_czk: r.modules?.price_czk ?? 990,
     sort_order: r.sort_order,
-    isOwned: false,
-    isLocked: true,
+    // Všichni mají přístup k Ranní výzvě — isOwned/isLocked určí konzument
+    isOwned: !!userId,
+    isLocked: false,
     isFavorite: false,
   };
 
@@ -129,6 +183,7 @@ async function fetchFeaturedProgram(): Promise<FeaturedProgramData | null> {
     },
     program: programInfo,
     titleOverride: featuredRec.title_override ?? undefined,
+    nextLesson,
   };
 }
 
@@ -136,10 +191,10 @@ async function fetchFeaturedProgram(): Promise<FeaturedProgramData | null> {
 // Hook
 // --------------------------------------------------
 
-export function usePlatformFeaturedProgram(): UsePlatformFeaturedProgramReturn {
+export function usePlatformFeaturedProgram(userId?: string): UsePlatformFeaturedProgramReturn {
   const { data, isLoading, error } = useQuery({
-    queryKey: akademieKeys.featuredProgram(),
-    queryFn: fetchFeaturedProgram,
+    queryKey: [...akademieKeys.featuredProgram(), userId ?? 'anon'],
+    queryFn: () => fetchFeaturedProgram(userId),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 15,
     refetchOnWindowFocus: false,
