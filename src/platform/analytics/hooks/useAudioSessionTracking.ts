@@ -123,7 +123,9 @@ export function useAudioSessionTracking({
       category_slug: sessionContext.categorySlug,
       category_title: sessionContext.categoryTitle,
       started_at: startedAtRef.current,
-      audio_duration_seconds: sessionContext.audioDurationSeconds || undefined,
+      audio_duration_seconds: sessionContext.audioDurationSeconds
+        ? Math.round(sessionContext.audioDurationSeconds)
+        : undefined,
       unique_listen_seconds: 0,
       completion_percent: 0,
       is_completed: false,
@@ -210,7 +212,9 @@ export function useAudioSessionTracking({
         category_slug: ctx.categorySlug,
         category_title: ctx.categoryTitle,
         started_at: startedAtRef.current,
-        audio_duration_seconds: ctx.audioDurationSeconds || undefined,
+        audio_duration_seconds: ctx.audioDurationSeconds
+          ? Math.round(ctx.audioDurationSeconds)
+          : undefined,
         unique_listen_seconds: Math.round(totalListened),
         completion_percent: roundedPercent,
         is_completed: isCompletedRef.current,
@@ -255,7 +259,9 @@ export function useAudioSessionTracking({
       category_slug: sessionContext.categorySlug,
       category_title: sessionContext.categoryTitle,
       started_at: startedAtRef.current,
-      audio_duration_seconds: sessionContext.audioDurationSeconds || undefined,
+      audio_duration_seconds: sessionContext.audioDurationSeconds
+        ? Math.round(sessionContext.audioDurationSeconds)
+        : undefined,
       unique_listen_seconds: Math.round(totalListened),
       completion_percent: Math.round(listenPercent * 100) / 100,
       is_completed: true,
@@ -320,7 +326,9 @@ export function useAudioSessionTracking({
       category_title: ctx.categoryTitle,
       started_at: startedAtRef.current,
       ended_at: new Date().toISOString(),
-      audio_duration_seconds: ctx.audioDurationSeconds || undefined,
+      audio_duration_seconds: ctx.audioDurationSeconds
+        ? Math.round(ctx.audioDurationSeconds)
+        : undefined,
       unique_listen_seconds: Math.round(totalListened),
       completion_percent: listenPercent,
       is_completed: isCompletedRef.current,

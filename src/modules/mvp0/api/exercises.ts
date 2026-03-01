@@ -390,7 +390,7 @@ export function useSafetyFlags() {
       const { data, error } = await supabase
         .from('profiles')
         .select('safety_flags')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
       
       if (error) throw error;
@@ -425,7 +425,7 @@ export function useUpdateSafetyFlags() {
       const { error } = await supabase
         .from('profiles')
         .update({ safety_flags: safetyFlags as Record<string, unknown> })
-        .eq('id', user.id);
+        .eq('user_id', user.id);
       
       if (error) throw error;
       return safetyFlags;

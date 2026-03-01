@@ -17,7 +17,7 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { supabase } from '../api/supabase';
+import { supabase, supabaseImplicit } from '../api/supabase';
 import type { User, SignInCredentials, SignUpCredentials } from './types';
 import { getVocative } from '@/utils/inflection';
 import { isWebApp } from '@/platform/utils/environment';
@@ -418,12 +418,20 @@ export const useAuthStore = create<AuthStore>()(
       
       /**
        * Reset password (send email)
+       *
+       * Uses the implicit-flow client so that the recovery link in the email
+       * contains the access_token in the URL hash fragment instead of a PKCE
+       * code. This avoids two problems:
+       *   1. PKCE flow_state on the server expires after 300 s — users who wait
+       *      longer than 5 minutes before clicking the link get a 422 error.
+       *   2. Email security scanners follow links via HTTP GET which strips the
+       *      hash fragment, so they cannot consume the implicit token.
        */
       resetPassword: async (email) => {
         try {
           get()._setError(null);
 
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          const { error } = await supabaseImplicit.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/reset-password`,
           });
 

@@ -4,7 +4,7 @@
   "description": "Dechová cvičení, gamifikace a wellbeing",
   "display": "standalone",
   "orientation": "portrait",
-  "start_url": "/",
+  "start_url": "/app",
   "scope": "/",
   "background_color": "#121212",
   "theme_color": "#121212",

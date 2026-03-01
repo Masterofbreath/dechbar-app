@@ -10,21 +10,35 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Create Supabase client
+// Primary Supabase client — PKCE flow for magic links (protects against email scanners)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // Persist auth session in localStorage (default)
     persistSession: true,
-    // Storage key for auth session
     storageKey: 'dechbar-auth',
-    // Storage provider (default: localStorage)
     storage: window.localStorage,
-    // Auto refresh token before expiration
     autoRefreshToken: true,
-    // Detect session in URL (for OAuth callbacks)
     detectSessionInUrl: true,
-    // Flow type for auth
     flowType: 'pkce',
+  },
+});
+
+// Implicit-flow client — used ONLY for password reset.
+//
+// WHY: PKCE flow_state on the Supabase server expires after 300 s. If the user
+// takes longer than 5 minutes to click the reset link they receive a 422
+// "invalid flow state, flow state has expired" error. Implicit flow embeds the
+// access_token in the URL hash fragment, which:
+//   1. Never expires before the OTP expiry (configured in Supabase dashboard).
+//   2. Is NOT sent to servers (hash fragments are browser-only), so email
+//      security scanners cannot consume the token before the user clicks.
+export const supabaseImplicit = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+    storageKey: 'dechbar-auth-implicit',
+    storage: window.localStorage,
+    autoRefreshToken: false,
+    detectSessionInUrl: true,
+    flowType: 'implicit',
   },
 });
 

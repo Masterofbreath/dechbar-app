@@ -13,7 +13,7 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/platform/api/supabase';
+import { supabase, supabaseImplicit } from '@/platform/api/supabase';
 import { Button, Input } from '@/platform/components';
 import { ErrorMessage } from '@/components/shared';
 import { MESSAGES } from '@/config/messages';
@@ -31,36 +31,55 @@ export function ResetPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>('weak');
   const [sessionState, setSessionState] = useState<SessionState>('waiting');
+  const [showSlowHint, setShowSlowHint] = useState(false);
 
   // ============================================================
-  // SESSION: Čekáme na PASSWORD_RECOVERY event od Supabase
-  // Supabase.js zpracuje token z URL a vyšle tento event
+  // SESSION: Čekáme na PASSWORD_RECOVERY event od Supabase.
+  //
+  // Posíláme reset přes implicit-flow klient (supabaseImplicit), takže
+  // access_token přijde v hash fragmentu URL (#access_token=…&type=recovery).
+  // supabaseImplicit ho automaticky zpracuje přes detectSessionInUrl: true
+  // a vyšle PASSWORD_RECOVERY event.
   // ============================================================
   useEffect(() => {
-    // Nejdřív zkontrolujeme, zda session již existuje (např. při F5)
+    // Zkontrolujeme existující session (F5 reload, nebo pokud byl odkaz
+    // kliknut v témže prohlížeči, kde session stále trvá)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session) setSessionState('ready');
+    });
+    supabaseImplicit.auth.getSession().then(({ data: { session } }) => {
+      if (session) setSessionState('ready');
+    });
+
+    // Primární listener — implicit klient zpracoval hash fragment
+    const { data: { subscription: implicitSub } } = supabaseImplicit.auth.onAuthStateChange((event, session) => {
+      if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') && session) {
         setSessionState('ready');
       }
     });
 
-    // Posloucháme na auth events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' && session) {
-        setSessionState('ready');
-      } else if (event === 'SIGNED_IN' && session) {
-        // Fallback: přijmeme i SIGNED_IN pokud přijde session
+    // Záložní listener — PKCE klient (pro případ starších odkazů)
+    const { data: { subscription: pkceSub } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') && session) {
         setSessionState('ready');
       }
     });
 
-    // Timeout: pokud session nepřijde do 6 sekund → odkaz expiroval nebo byl použit
+    // Po 5 sekundách zobrazíme hint "trvá to déle než obvykle"
+    const slowHintTimeout = setTimeout(() => {
+      setShowSlowHint(prev => !prev || prev);  // trigger re-render
+      setShowSlowHint(true);
+    }, 5_000);
+
+    // Timeout: 15 s → pokud session nepřijde, odkaz expiroval
     const timeout = setTimeout(() => {
       setSessionState(prev => (prev === 'waiting' ? 'error' : prev));
-    }, 6000);
+    }, 15_000);
 
     return () => {
-      subscription.unsubscribe();
+      implicitSub.unsubscribe();
+      pkceSub.unsubscribe();
+      clearTimeout(slowHintTimeout);
       clearTimeout(timeout);
     };
   }, []);
@@ -100,7 +119,10 @@ export function ResetPasswordPage() {
 
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      // Zkusíme nejdřív implicit klient (nový flow), pak PKCE klient (fallback pro starší linky)
+      const implicitSession = await supabaseImplicit.auth.getSession();
+      const client = implicitSession.data.session ? supabaseImplicit : supabase;
+      const { error } = await client.auth.updateUser({ password: newPassword });
       if (error) throw error;
 
       setIsSuccess(true);
@@ -138,7 +160,7 @@ export function ResetPasswordPage() {
           <div className="auth-view" style={{ textAlign: 'center', padding: '40px 24px' }}>
             <div style={{ marginBottom: '20px' }}>
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto', display: 'block', opacity: 0.6 }}>
-                <circle cx="12" cy="12" r="10" stroke="#2CBEC6" strokeWidth="2" strokeDasharray="30 10" style={{ animation: 'spin 1.5s linear infinite', transformOrigin: 'center' }}>
+                <circle cx="12" cy="12" r="10" stroke="#2CBEC6" strokeWidth="2" strokeDasharray="30 10">
                   <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1.5s" repeatCount="indefinite" />
                 </circle>
               </svg>
@@ -149,6 +171,28 @@ export function ResetPasswordPage() {
             <p style={{ color: '#888', fontSize: '14px' }}>
               Chvilku strpení, připravujeme tvůj formulář.
             </p>
+            {showSlowHint && (
+              <div style={{ marginTop: '24px', padding: '12px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                <p style={{ color: '#aaa', fontSize: '13px', marginBottom: '12px' }}>
+                  Trvá to déle než obvykle? Odkaz mohl vypršet.
+                </p>
+                <button
+                  onClick={() => navigate('/?openAuth=reset')}
+                  style={{
+                    color: '#2CBEC6',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: 0,
+                  }}
+                >
+                  Zaslat nový odkaz →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
