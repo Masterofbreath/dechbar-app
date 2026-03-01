@@ -323,11 +323,18 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', ca
   const durationDays = program.duration_days ?? (series?.length ?? 0) * 7
   const dailyMinutes = program.daily_minutes ?? null
 
-  // Postupné odemykání dnů — useMemo zabraňuje volání Date.now() při každém re-renderu
+  // Postupné odemykání dnů — nový den začíná ve 4:00 ráno CET
   const { launchDate, daysElapsed } = useMemo(() => {
+    const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000
     const ld = program.launch_date ? new Date(program.launch_date) : null
+    const now = new Date()
     const elapsed = ld
-      ? Math.max(0, Math.floor((new Date().getTime() - ld.getTime()) / 86_400_000) + 1)
+      ? Math.max(
+          0,
+          Math.floor(
+            ((now.getTime() - UNLOCK_HOUR_OFFSET_MS) - (ld.getTime() - UNLOCK_HOUR_OFFSET_MS)) / 86_400_000,
+          ) + 1,
+        )
       : Infinity
     return { launchDate: ld, daysElapsed: elapsed }
   }, [program.launch_date])

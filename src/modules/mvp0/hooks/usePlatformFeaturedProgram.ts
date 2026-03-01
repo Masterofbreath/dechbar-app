@@ -121,11 +121,17 @@ async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramDat
 
   const r = prog as unknown as RawProgramJoined;
 
-  // 3. Výpočet postupného odemykání (stejná logika jako useActiveDailyProgram)
+  // 3. Výpočet postupného odemykání — nový den začíná ve 4:00 ráno CET
+  const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
   const launchDate = r.launch_date ? new Date(r.launch_date) : null;
   const nowDate = new Date();
   const daysElapsed = launchDate
-    ? Math.max(0, Math.floor((nowDate.getTime() - launchDate.getTime()) / 86_400_000) + 1)
+    ? Math.max(
+        0,
+        Math.floor(
+          ((nowDate.getTime() - UNLOCK_HOUR_OFFSET_MS) - (launchDate.getTime() - UNLOCK_HOUR_OFFSET_MS)) / 86_400_000,
+        ) + 1,
+      )
     : Infinity;
 
   // 4. Načti lekce + progress pokud je přihlášen uživatel

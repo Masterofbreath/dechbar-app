@@ -163,11 +163,19 @@ async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramDat
   };
 
   // 3. Výpočet postupného odemykání
+  // Nový den začíná ve 4:00 ráno CET — posuneme osu o 4 hodiny dozadu,
+  // takže "půlnoc výpočtu" = 04:00 skutečného času.
+  const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
   const launchDate = r.launch_date ? new Date(r.launch_date) : null;
   const now = new Date();
 
   const daysElapsed = launchDate
-    ? Math.max(0, Math.floor((now.getTime() - launchDate.getTime()) / 86_400_000) + 1)
+    ? Math.max(
+        0,
+        Math.floor(
+          ((now.getTime() - UNLOCK_HOUR_OFFSET_MS) - (launchDate.getTime() - UNLOCK_HOUR_OFFSET_MS)) / 86_400_000,
+        ) + 1,
+      )
     : Infinity;
 
   const notStartedYet = launchDate ? launchDate > now : false;
