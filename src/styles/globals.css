@@ -103,6 +103,7 @@
 @import url('./pages/dashboard.css');
 @import url('./pages/profil.css');
 @import url('./pages/ucet.css');
+@import url('../modules/public-web/pages/MujUcetPage.css');
 
 /* ===================================
    IMPORT MODULE STYLES

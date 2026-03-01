@@ -19,6 +19,7 @@ import { createBrowserRouter, Navigate, Outlet, useSearchParams } from 'react-ro
 import { RootLayout } from './layouts/RootLayout';
 import { ErrorPage } from './layouts/ErrorPage';
 import { authLoader } from './loaders/authLoader';
+import { webAuthLoader } from './loaders/webAuthLoader';
 import { adminLoader } from './loaders/adminLoader';
 import { AppLayout } from '@/platform/layouts/AppLayout';
 import { AdminLayout } from '@/platform/layouts/AdminLayout';
@@ -38,6 +39,7 @@ const MODULE_CATEGORY_MAP: Record<string, string> = {
 
 // Public pages (eager load for landing)
 import { LandingPage } from '@/modules/public-web/pages/LandingPage';
+import { MujUcetPage } from '@/modules/public-web/pages/MujUcetPage';
 import { SciencePage } from '@/modules/public-web/pages/SciencePage';
 import { ChallengePage } from '@/modules/public-web/pages/ChallengePage';
 import { ChallengeThankYouPage } from '@/modules/public-web/pages/ChallengeThankYouPage';
@@ -342,6 +344,14 @@ export const router = createBrowserRouter([
         path: 'kontakt',
         element: <ContactPage />,
       },
+
+      // Web account management — requires auth, redirects to / if not logged in
+      {
+        path: 'muj-ucet',
+        loader: webAuthLoader,
+        element: <MujUcetPage />,
+      },
+
       {
         path: 'reset-password',
         element: <ResetPasswordPage />,

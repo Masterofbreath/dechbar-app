@@ -10,7 +10,9 @@
  */
 
 /* ===================================== */
+
 /* LIGHT MODE (fallback for future) */
+
 /* ===================================== */
 :root {
   /* Primary: Teal (main brand color - breathing, clarity) */
@@ -24,9 +26,9 @@
   --color-accent-dark: #B8892F;
   
   /* Backgrounds (light mode fallback - not used yet) */
-  --color-background: #FFFFFF;
+  --color-background: #FFF;
   --color-surface: #F5F5F5;
-  --color-surface-elevated: #FFFFFF;
+  --color-surface-elevated: #FFF;
   
   /* Text (light mode fallback - not used yet) */
   --color-text-primary: #1A1A1A;
@@ -39,7 +41,9 @@
 }
 
 /* ===================================== */
+
 /* DARK MODE (default per Brand Book) */
+
 /* ===================================== */
 :root,
 [data-theme="dark"] {
@@ -58,11 +62,14 @@
   --color-border-focus: var(--color-primary); /* Teal focus rings */
   
   /* Primary & Accent colors stay the same in both modes */
+
   /* They're designed to work on both light and dark backgrounds */
 }
 
 /* ===================================== */
+
 /* SEMANTIC COLORS (work in both modes) */
+
 /* ===================================== */
 :root {
   /* Success (Green) */
@@ -87,12 +94,14 @@
 }
 
 /* ===================================== */
+
 /* NEUTRAL GRAYS (Material Design dark palette) */
+
 /* ===================================== */
 :root {
   --color-gray-50: #FAFAFA;   /* Lightest - rare use in dark mode */
   --color-gray-100: #F5F5F5;
-  --color-gray-200: #EEEEEE;
+  --color-gray-200: #EEE;
   --color-gray-300: #E0E0E0;  /* Same as text-primary */
   --color-gray-400: #BDBDBD;
   --color-gray-500: #9E9E9E;  /* Middle gray */
@@ -103,32 +112,37 @@
 }
 
 /* ===================================== */
+
 /* OVERLAY & SHADOW COLORS (for modals, popovers) */
+
 /* ===================================== */
 :root {
   /* Overlay backgrounds */
-  --color-overlay-dark: rgba(0, 0, 0, 0.85);       /* Dark semi-transparent overlay */
-  --color-overlay-surface: rgba(30, 30, 30, 0.8);  /* Surface with transparency */
+  --color-overlay-dark: rgb(0 0 0 / 85%);       /* Dark semi-transparent overlay */
+  --color-overlay-surface: rgb(30 30 30 / 80%);  /* Surface with transparency */
   
   /* Subtle borders and accents */
-  --color-border-subtle: rgba(255, 255, 255, 0.05); /* Very subtle white border */
-  --color-surface-hover: rgba(255, 255, 255, 0.05); /* Hover state for dark surfaces */
+  --color-border-subtle: rgb(255 255 255 / 5%); /* Very subtle white border */
+  --color-surface-hover: rgb(255 255 255 / 5%); /* Hover state for dark surfaces */
   
   /* Shadow colors (for elevation) */
-  --shadow-color-dark: rgba(0, 0, 0, 0.5);    /* Strong shadow */
-  --shadow-color-medium: rgba(0, 0, 0, 0.3);  /* Medium shadow */
-  --shadow-color-light: rgba(0, 0, 0, 0.2);   /* Light shadow */
+  --shadow-color-dark: rgb(0 0 0 / 50%);    /* Strong shadow */
+  --shadow-color-medium: rgb(0 0 0 / 30%);  /* Medium shadow */
+  --shadow-color-light: rgb(0 0 0 / 20%);   /* Light shadow */
   
   /* Accent glows (for premium effects) */
-  --glow-primary-subtle: rgba(44, 190, 198, 0.05);  /* Teal glow - very subtle */
-  --glow-accent-subtle: rgba(214, 162, 58, 0.03);   /* Gold glow - very subtle */
-  --glow-accent-medium: rgba(214, 162, 58, 0.1);    /* Gold glow - medium */
-  --glow-accent-border: rgba(214, 162, 58, 0.2);    /* Gold border - visible */
+  --glow-primary-subtle: rgb(44 190 198 / 5%);  /* Teal glow - very subtle */
+  --glow-accent-subtle: rgb(214 162 58 / 3%);   /* Gold glow - very subtle */
+  --glow-accent-medium: rgb(214 162 58 / 10%);    /* Gold glow - medium */
+  --glow-accent-border: rgb(214 162 58 / 20%);    /* Gold border - visible */
 }
 
 /* ===================================== */
+
 /* BREATHING & GLOW EFFECTS (Session Engine) */
+
 /* Pre-calculated opacity variants for performance */
+
 /* ===================================== */
 :root {
   /* ============================================
@@ -137,32 +151,32 @@
      ============================================ */
   
   /* Background glows (radial gradients) */
-  --glow-primary-bg-strong: rgba(44, 190, 198, 0.4);     /* 40% - gradient center */
-  --glow-primary-bg-medium: rgba(44, 190, 198, 0.2);     /* 20% - gradient mid */
-  --glow-primary-bg-subtle: rgba(44, 190, 198, 0.05);    /* 5% - gradient edge */
+  --glow-primary-bg-strong: rgb(44 190 198 / 40%);     /* 40% - gradient center */
+  --glow-primary-bg-medium: rgb(44 190 198 / 20%);     /* 20% - gradient mid */
+  --glow-primary-bg-subtle: rgb(44 190 198 / 5%);    /* 5% - gradient edge */
   
   /* Shadow glows (box-shadow effects) */
-  --glow-primary-shadow-strong: rgba(44, 190, 198, 0.3);   /* 30% - outer glow */
-  --glow-primary-shadow-medium: rgba(44, 190, 198, 0.2);   /* 20% - mid glow */
-  --glow-primary-shadow-subtle: rgba(44, 190, 198, 0.15);  /* 15% - subtle glow */
-  --glow-primary-shadow-light: rgba(44, 190, 198, 0.1);    /* 10% - very subtle */
-  --glow-primary-shadow-faint: rgba(44, 190, 198, 0.08);   /* 8% - barely visible */
+  --glow-primary-shadow-strong: rgb(44 190 198 / 30%);   /* 30% - outer glow */
+  --glow-primary-shadow-medium: rgb(44 190 198 / 20%);   /* 20% - mid glow */
+  --glow-primary-shadow-subtle: rgb(44 190 198 / 15%);  /* 15% - subtle glow */
+  --glow-primary-shadow-light: rgb(44 190 198 / 10%);    /* 10% - very subtle */
+  --glow-primary-shadow-faint: rgb(44 190 198 / 8%);   /* 8% - barely visible */
   
   /* ============================================
      TEAL LIGHT GLOWS (106, 219, 224)
      Used for: Inhale phase, active states
      ============================================ */
-  --glow-primary-light-subtle: rgba(106, 219, 224, 0.15);  /* 15% - light teal shadow */
-  --glow-primary-light-medium: rgba(106, 219, 224, 0.10);  /* 10% - light teal mid */
-  --glow-primary-light-faint: rgba(106, 219, 224, 0.08);   /* 8% - light teal faint */
+  --glow-primary-light-subtle: rgb(106 219 224 / 15%);  /* 15% - light teal shadow */
+  --glow-primary-light-medium: rgb(106 219 224 / 10%);  /* 10% - light teal mid */
+  --glow-primary-light-faint: rgb(106 219 224 / 8%);   /* 8% - light teal faint */
   
   /* ============================================
      TEAL DARK GLOWS (21, 147, 154)
      Used for: Exhale phase, rest states
      ============================================ */
-  --glow-primary-dark-subtle: rgba(21, 147, 154, 0.15);    /* 15% - dark teal shadow */
-  --glow-primary-dark-medium: rgba(21, 147, 154, 0.10);    /* 10% - dark teal mid */
-  --glow-primary-dark-faint: rgba(21, 147, 154, 0.08);     /* 8% - dark teal faint */
+  --glow-primary-dark-subtle: rgb(21 147 154 / 15%);    /* 15% - dark teal shadow */
+  --glow-primary-dark-medium: rgb(21 147 154 / 10%);    /* 10% - dark teal mid */
+  --glow-primary-dark-faint: rgb(21 147 154 / 8%);     /* 8% - dark teal faint */
   
   /* ============================================
      GOLD ACCENT GLOWS (214, 162, 58)
@@ -170,46 +184,72 @@
      ============================================ */
   
   /* Background tints */
-  --glow-accent-bg-strong: rgba(214, 162, 58, 0.1);        /* 10% - background tint */
-  --glow-accent-bg-subtle: rgba(214, 162, 58, 0.05);       /* 5% - subtle bg */
-  --glow-accent-bg-faint: rgba(214, 162, 58, 0.02);        /* 2% - barely visible */
+  --glow-accent-bg-strong: rgb(214 162 58 / 10%);        /* 10% - background tint */
+  --glow-accent-bg-subtle: rgb(214 162 58 / 5%);       /* 5% - subtle bg */
+  --glow-accent-bg-faint: rgb(214 162 58 / 2%);        /* 2% - barely visible */
   
   /* Shadow glows */
-  --glow-accent-shadow-strong: rgba(214, 162, 58, 0.6);    /* 60% - strong glow */
-  --glow-accent-shadow-medium: rgba(214, 162, 58, 0.5);    /* 50% - medium glow */
-  --glow-accent-shadow-subtle: rgba(214, 162, 58, 0.3);    /* 30% - subtle glow */
-  --glow-accent-shadow-fade: rgba(214, 162, 58, 0.8);      /* 80% - gradient fade */
+  --glow-accent-shadow-strong: rgb(214 162 58 / 60%);    /* 60% - strong glow */
+  --glow-accent-shadow-medium: rgb(214 162 58 / 50%);    /* 50% - medium glow */
+  --glow-accent-shadow-subtle: rgb(214 162 58 / 30%);    /* 30% - subtle glow */
+  --glow-accent-shadow-fade: rgb(214 162 58 / 80%);      /* 80% - gradient fade */
   
   /* Text effects */
-  --glow-accent-text: rgba(214, 162, 58, 0.3);             /* 30% - text shadow */
+  --glow-accent-text: rgb(214 162 58 / 30%);             /* 30% - text shadow */
   
   /* ============================================
      BLACK OVERLAYS & SHADOWS
      Used for: Modals, dropdowns, elevation
      ============================================ */
-  --overlay-black-opaque: rgba(0, 0, 0, 0.98);     /* 98% - nearly opaque modal */
-  --overlay-black-strong: rgba(0, 0, 0, 0.95);     /* 95% - modal backdrop */
-  --overlay-black-medium: rgba(0, 0, 0, 0.5);      /* 50% - modal shadow */
-  --overlay-black-subtle: rgba(0, 0, 0, 0.4);      /* 40% - hover shadow */
-  --overlay-black-light: rgba(0, 0, 0, 0.3);       /* 30% - shadow medium */
+  --overlay-black-opaque: rgb(0 0 0 / 98%);     /* 98% - nearly opaque modal */
+  --overlay-black-strong: rgb(0 0 0 / 95%);     /* 95% - modal backdrop */
+  --overlay-black-medium: rgb(0 0 0 / 50%);      /* 50% - modal shadow */
+  --overlay-black-subtle: rgb(0 0 0 / 40%);      /* 40% - hover shadow */
+  --overlay-black-light: rgb(0 0 0 / 30%);       /* 30% - shadow medium */
 }
 
 /* ===================================== */
+
+/* UI TINT TOKENS (badge backgrounds, borders, focus rings) */
+
+/* Used by MujUcetPage and similar components */
+
+/* ===================================== */
+:root {
+  /* Teal tints */
+  --color-primary-tint: rgb(44 190 198 / 15%);       /* 15% - badge bg, focus rings */
+
+  /* Gold tints */
+  --color-accent-tint: rgb(214 162 58 / 15%);         /* 15% - badge bg */
+
+  /* Error tints */
+  --color-error-tint: rgb(239 68 68 / 12%);           /* 12% - error badge bg */
+  --color-error-tint-hover: rgb(239 68 68 / 8%);     /* 8%  - danger hover */
+  --color-error-border-faint: rgb(239 68 68 / 18%);   /* 18% - danger section border */
+  --color-error-border-subtle: rgb(239 68 68 / 30%);  /* 30% - danger button border */
+}
+
+/* ===================================== */
+
 /* LEGACY COLOR COMPATIBILITY */
+
 /* Temporary: Map old gold to new accent for backward compatibility */
+
 /* TODO: Remove after all components updated to use accent */
+
 /* ===================================== */
 :root {
   --color-gold: var(--color-accent);        /* OLD: #F8CA00 → NEW: #D6A23A */
   --color-gold-dark: var(--color-accent-dark);
   --color-gold-light: var(--color-accent-light);
-  
   --color-black: #1A1A1A;  /* Kept for potential use in light mode */
-  --color-white: #FFFFFF;  /* Kept for potential use */
+  --color-white: #FFF;  /* Kept for potential use */
 }
 
 /* ===================================== */
+
 /* USAGE EXAMPLES (for reference) */
+
 /* ===================================== */
 
 /*
@@ -241,7 +281,9 @@ Card:
 */
 
 /* ===================================== */
+
 /* ACCESSIBILITY NOTES */
+
 /* ===================================== */
 
 /*

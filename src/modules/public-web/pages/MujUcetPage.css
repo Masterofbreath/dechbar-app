@@ -1,0 +1,718 @@
+/**
+ * MujUcetPage Styles
+ *
+ * Web account management page — dechbar.cz/muj-ucet
+ * Dark-first, Apple Premium style, BEM naming (.muj-ucet-*)
+ * Uses shared design tokens from /styles/design-tokens/
+ *
+ * @package DechBar_App
+ * @subpackage Modules/PublicWeb/Pages
+ */
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+
+@keyframes muj-ucet-fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes muj-ucet-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ===================================
+   PAGE LAYOUT
+   =================================== */
+
+.muj-ucet-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);
+}
+
+.muj-ucet-main {
+  flex: 1;
+  padding-top: 80px; /* header height */
+  padding-bottom: var(--spacing-20);
+}
+
+.muj-ucet-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--spacing-12) var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+/* ===================================
+   SECTION CARD (shared base)
+   =================================== */
+
+.muj-ucet-section {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-6);
+  border: 1px solid var(--color-border);
+}
+
+.muj-ucet-section__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-4);
+}
+
+/* ===================================
+   IDENTITY SECTION
+   =================================== */
+
+.muj-ucet-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.muj-ucet-identity__avatar {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.muj-ucet-identity__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.muj-ucet-identity__avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-background);
+  user-select: none;
+}
+
+.muj-ucet-identity__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.muj-ucet-identity__name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muj-ucet-identity__email {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muj-ucet-identity__since {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+/* Skeleton loading state */
+.muj-ucet-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.muj-ucet-skeleton__line {
+  height: 14px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-elevated) 0%,
+    rgb(255 255 255 / 6%) 50%,
+    var(--color-surface-elevated) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===================================
+   PLAN SECTION
+   =================================== */
+
+.muj-ucet-plan__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.muj-ucet-plan__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.muj-ucet-plan__badge--zdarma {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+}
+
+.muj-ucet-plan__badge--smart {
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+.muj-ucet-plan__badge--ai-coach {
+  background: var(--color-accent-tint);
+  color: var(--color-accent);
+}
+
+.muj-ucet-plan__badge--cancelled {
+  background: var(--color-error-tint);
+  color: var(--color-error);
+}
+
+.muj-ucet-plan__billing-label {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.muj-ucet-plan__details {
+  margin-top: var(--spacing-3);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.muj-ucet-plan__detail {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.muj-ucet-plan__detail--cancelled {
+  color: var(--color-error);
+}
+
+.muj-ucet-plan__detail--strong {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.muj-ucet-plan__actions {
+  margin-top: var(--spacing-5);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Upgrade cards — ZDARMA state */
+.muj-ucet-plan__upgrade-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-4);
+}
+
+.muj-ucet-plan__upgrade-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-4);
+}
+
+/* Cancel confirm dialog */
+.muj-ucet-cancel-confirm {
+  margin-top: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  animation: muj-ucet-fade-in-down 0.2s ease;
+}
+
+.muj-ucet-cancel-confirm__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.muj-ucet-cancel-confirm__text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-4);
+}
+
+.muj-ucet-cancel-confirm__actions {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* ===================================
+   ACTION BUTTONS (shared pattern)
+   =================================== */
+
+.muj-ucet-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-base);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 9px 18px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.muj-ucet-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.muj-ucet-btn--primary {
+  background: var(--color-primary);
+  color: var(--color-background);
+}
+
+.muj-ucet-btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.muj-ucet-btn--ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.muj-ucet-btn--ghost:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.muj-ucet-btn--danger {
+  background: transparent;
+  color: var(--color-error);
+  border: 1px solid var(--color-error-border-subtle);
+}
+
+.muj-ucet-btn--danger:hover:not(:disabled) {
+  background: var(--color-error-tint-hover);
+}
+
+.muj-ucet-btn--destructive {
+  background: var(--color-error);
+  color: #fff;
+}
+
+.muj-ucet-btn--destructive:hover:not(:disabled) {
+  background: var(--color-error-dark);
+}
+
+.muj-ucet-btn--sm {
+  font-size: 0.8125rem;
+  padding: 6px 14px;
+}
+
+/* ===================================
+   INVOICES SECTION
+   =================================== */
+
+.muj-ucet-invoices__empty {
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  padding: var(--spacing-2) 0;
+}
+
+.muj-ucet-invoice-table {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.muj-ucet-invoice-row {
+  display: grid;
+  grid-template-columns: 110px 1fr auto auto;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-3) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+}
+
+.muj-ucet-invoice-row:last-child {
+  border-bottom: none;
+}
+
+.muj-ucet-invoice-row__date {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.muj-ucet-invoice-row__desc {
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muj-ucet-invoice-row__amount {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.muj-ucet-invoice-row__pdf {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  padding-left: var(--spacing-2);
+  transition: opacity 0.15s ease;
+}
+
+.muj-ucet-invoice-row__pdf:hover {
+  opacity: 0.75;
+}
+
+/* Skeleton rows for invoice loading */
+.muj-ucet-invoice-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-2);
+}
+
+.muj-ucet-invoice-skeleton__row {
+  height: 18px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-elevated) 0%,
+    rgb(255 255 255 / 6%) 50%,
+    var(--color-surface-elevated) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ===================================
+   PROFILE SECTION
+   =================================== */
+
+.muj-ucet-profile__field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  padding: var(--spacing-2) 0;
+}
+
+.muj-ucet-profile__field + .muj-ucet-profile__field {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--spacing-3);
+  margin-top: var(--spacing-1);
+}
+
+.muj-ucet-profile__field-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.muj-ucet-profile__field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+.muj-ucet-profile__field-value {
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muj-ucet-profile__field-value--empty {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* Inline edit form */
+.muj-ucet-profile__edit-form {
+  margin-top: var(--spacing-3);
+  animation: muj-ucet-fade-in-down 0.18s ease;
+}
+
+.muj-ucet-profile__input {
+  width: 100%;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-focus);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-2) var(--spacing-3);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-family: var(--font-family-base);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.muj-ucet-profile__input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-tint);
+}
+
+.muj-ucet-profile__input:disabled {
+  opacity: 0.6;
+}
+
+.muj-ucet-profile__edit-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+}
+
+/* ===================================
+   SECURITY SECTION
+   =================================== */
+
+.muj-ucet-security__item {
+  padding: var(--spacing-3) 0;
+}
+
+.muj-ucet-security__item + .muj-ucet-security__item {
+  border-top: 1px solid var(--color-border);
+}
+
+.muj-ucet-security__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+}
+
+.muj-ucet-security__field-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.muj-ucet-security__field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+.muj-ucet-security__field-value {
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Inline email change form (same expand pattern as UcetPage) */
+.muj-ucet-security__email-form {
+  margin-top: var(--spacing-3);
+  animation: muj-ucet-fade-in-down 0.18s ease;
+}
+
+.muj-ucet-security__email-input {
+  width: 100%;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-focus);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-2) var(--spacing-3);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-family: var(--font-family-base);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.muj-ucet-security__email-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-tint);
+}
+
+.muj-ucet-security__email-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+}
+
+/* Password button */
+.muj-ucet-security__password-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-family-base);
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  transition: opacity 0.15s ease;
+}
+
+.muj-ucet-security__password-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.muj-ucet-security__password-btn:hover:not(:disabled) {
+  opacity: 0.75;
+}
+
+/* ===================================
+   FEEDBACK MESSAGES (shared)
+   =================================== */
+
+.muj-ucet-feedback {
+  font-size: 0.8125rem;
+  margin-top: var(--spacing-2);
+  animation: muj-ucet-fade-in 0.2s ease;
+}
+
+.muj-ucet-feedback--success {
+  color: var(--color-success);
+}
+
+.muj-ucet-feedback--error {
+  color: var(--color-error);
+}
+
+/* ===================================
+   DANGER SECTION
+   =================================== */
+
+.muj-ucet-danger-section {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-6);
+  border: 1px solid var(--color-error-border-faint);
+}
+
+.muj-ucet-danger__confirm {
+  animation: muj-ucet-fade-in-down 0.2s ease;
+}
+
+.muj-ucet-danger__confirm-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.muj-ucet-danger__confirm-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-4);
+}
+
+.muj-ucet-danger__confirm-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* ===================================
+   RESPONSIVE — Mobile (< 480px)
+   =================================== */
+
+@media (width <= 480px) {
+  .muj-ucet-container {
+    padding: var(--spacing-8) var(--spacing-4);
+  }
+
+  .muj-ucet-plan__upgrade-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .muj-ucet-invoice-row {
+    grid-template-columns: 90px 1fr auto;
+  }
+
+  /* Hide desc column on very small screens — amount + PDF stay */
+  .muj-ucet-invoice-row__desc {
+    display: none;
+  }
+
+  .muj-ucet-cancel-confirm__actions {
+    flex-direction: column;
+  }
+
+  .muj-ucet-danger__confirm-actions {
+    flex-direction: column;
+  }
+
+  .muj-ucet-identity__name {
+    font-size: 1rem;
+  }
+}
+
+/* ===================================
+   RESPONSIVE — Tablet (480px – 768px)
+   =================================== */
+
+@media (width >= 480px) and (width <= 768px) {
+  .muj-ucet-container {
+    padding: var(--spacing-10) var(--spacing-5);
+  }
+}
+
+/* ===================================
+   RESPONSIVE — Desktop (> 768px)
+   Container is 680px max, already centered.
+   No special overrides needed beyond base styles.
+   =================================== */
