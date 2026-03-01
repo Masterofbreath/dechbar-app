@@ -26,6 +26,11 @@ export interface FeaturedProgramData {
     title_override: string | null;
   };
   program: ActiveDailyProgramInfo;
+  /**
+   * Alias pro title_override — TodaysChallengeButton ho čte přímo z data.
+   * undefined = žádný override → použij program.name.
+   */
+  titleOverride: string | undefined;
 }
 
 export interface UsePlatformFeaturedProgramReturn {
@@ -123,6 +128,7 @@ async function fetchFeaturedProgram(): Promise<FeaturedProgramData | null> {
       title_override: featuredRec.title_override,
     },
     program: programInfo,
+    titleOverride: featuredRec.title_override ?? undefined,
   };
 }
 

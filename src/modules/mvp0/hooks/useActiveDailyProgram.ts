@@ -59,6 +59,12 @@ export interface ActiveDailyProgramData {
   /** true pokud launch_date je v budoucnosti — program ještě nezačal */
   notStartedYet: boolean;
   startDate: Date | null;
+  /**
+   * Nejbližší nesplněná dostupná lekce.
+   * null = program dokončen (nebo ještě nezačal / žádné lekce).
+   * TodaysChallengeButton ho používá pro přehrání audio z Dnes stránky.
+   */
+  nextLesson: import('@/modules/akademie/types').AkademieLesson | null;
 }
 
 export interface UseActiveDailyProgramReturn {
@@ -75,6 +81,17 @@ export interface UseActiveDailyProgramReturn {
 
 interface RawActiveRecord {
   module_id: string;
+}
+
+interface RawLesson {
+  id: string;
+  series_id: string;
+  module_id: string;
+  title: string;
+  audio_url: string;
+  duration_seconds: number;
+  day_number: number;
+  sort_order: number;
 }
 
 interface RawProgramJoined {
@@ -155,12 +172,42 @@ async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramDat
 
   const notStartedYet = launchDate ? launchDate > now : false;
 
+  // 4. Načti všechny lekce programu seřazené podle day_number
+  const { data: lessonsRaw, error: lessonsErr } = await supabase
+    .from('akademie_lessons')
+    .select('id, series_id, module_id, title, audio_url, duration_seconds, day_number, sort_order')
+    .eq('module_id', activeModuleId)
+    .order('day_number', { ascending: true })
+    .order('sort_order', { ascending: true });
+
+  if (lessonsErr) throw lessonsErr;
+
+  const lessons = (lessonsRaw ?? []) as RawLesson[];
+
+  // 5. Načti dokončené lekce uživatele
+  const completedIds = new Set<string>();
+  if (lessons.length > 0) {
+    const { data: progress } = await supabase
+      .from('user_lesson_progress')
+      .select('lesson_id')
+      .eq('user_id', userId)
+      .in('lesson_id', lessons.map((l) => l.id));
+    (progress ?? []).forEach((row: { lesson_id: string }) => completedIds.add(row.lesson_id));
+  }
+
+  // 6. Najdi první dostupnou (day_number <= daysElapsed) nesplněnou lekci
+  const nextLesson =
+    lessons.find(
+      (l) => !completedIds.has(l.id) && (daysElapsed === Infinity || l.day_number <= daysElapsed),
+    ) ?? null;
+
   return {
     program: programInfo,
     moduleId: activeModuleId,
     daysElapsed,
     notStartedYet,
     startDate: launchDate,
+    nextLesson,
   };
 }
 
