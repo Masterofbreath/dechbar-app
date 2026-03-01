@@ -4,10 +4,15 @@
  * Provides React Query hooks for the admin analytics dashboard.
  *
  * Periods:
- *   'today'     → reads LIVE from audio_sessions, exercise_sessions, user_activity_log
- *   'yesterday' → reads from platform_daily_stats (populated by nightly cron at 2:00)
- *   '7days'     → reads from platform_daily_stats
- *   '30days'    → reads from platform_daily_stats
+ *   'today'     → LIVE queries (audio_sessions, exercise_sessions, user_activity_log)
+ *   'yesterday' → LIVE queries for yesterday date range
+ *   'week'      → LIVE queries for Mon–yesterday + today from live hook
+ *   'month'     → LIVE queries for 1st–yesterday + today from live hook
+ *   'year'      → LIVE queries for Jan1–yesterday + today from live hook
+ *
+ * NOTE: platform_daily_stats (cron-based) is bypassed. All periods use direct
+ * raw-table queries. Set up pg_cron `aggregate-daily-stats` to optimise large
+ * date ranges in the future.
  *
  * Access control: Admin/CEO role enforced at DB level (RLS).
  *
@@ -192,27 +197,110 @@ function getAdminPrevPeriodRange(period: DashboardPeriod): { from: string; to: s
   }
 }
 
-function fetchCronKpis(fromDate: string, toDate?: string): Promise<DailyKpis[]> {
-  let q = supabase
-    .from('platform_daily_stats')
-    .select('*')
-    .gte('stat_date', fromDate)
-    .order('stat_date', { ascending: false });
-  if (toDate) q = q.lte('stat_date', toDate);
-  return q.then(({ data: rows, error: err }) => {
-    if (err) throw new Error(err.message);
-    return (rows ?? []).map((row) => ({
-      date: row.stat_date,
-      dauL1: row.dau_l1,
-      dauL2: row.dau_l2,
-      dauL3: row.dau_l3,
-      newRegistrations: row.new_registrations,
-      totalMinutesBeathed: Number(row.total_minutes_breathed),
-      totalAudioSessions: row.total_audio_sessions,
-      completedAudioSessions: row.completed_audio_sessions,
-      totalExerciseSessions: row.total_exercise_sessions,
-      completedExerciseSessions: row.completed_exercise_sessions,
-    }));
+/**
+ * Queries raw tables (audio_sessions, exercise_sessions, user_activity_log)
+ * for a date range and returns per-day DailyKpis[].
+ *
+ * Replaces platform_daily_stats / fetchCronKpis which relied on a nightly
+ * cron job that was never set up in production.
+ *
+ * @param fromDate  ISO date string, e.g. '2026-03-01'
+ * @param toDate    ISO date string (inclusive). Defaults to fromDate.
+ */
+async function fetchLiveKpisByRange(fromDate: string, toDate?: string): Promise<DailyKpis[]> {
+  const endDate = toDate ?? fromDate;
+
+  // Guard: avoid reversed range (e.g. week starting today = only today data)
+  if (fromDate > endDate) return [];
+
+  const startISO = `${fromDate}T00:00:00.000Z`;
+  const endISO   = `${endDate}T23:59:59.999Z`;
+
+  const [audioRes, exerciseRes, activityRes, profilesRes] = await Promise.all([
+    supabase
+      .from('audio_sessions')
+      .select('user_id, unique_listen_seconds, is_completed, started_at')
+      .gte('started_at', startISO)
+      .lte('started_at', endISO)
+      .limit(10000),
+    supabase
+      .from('exercise_sessions')
+      .select('user_id, started_at, completed_at, was_completed')
+      .gte('started_at', startISO)
+      .lte('started_at', endISO)
+      .limit(10000),
+    supabase
+      .from('user_activity_log')
+      .select('user_id, created_at')
+      .gte('created_at', startISO)
+      .lte('created_at', endISO)
+      .eq('event_type', 'app_open')
+      .limit(10000),
+    // New registrations via SECURITY DEFINER RPC (bypasses RLS on auth.users)
+    supabase.rpc('get_daily_new_registrations', {
+      from_ts: startISO,
+      to_ts: endISO,
+    }),
+  ]);
+
+  if (audioRes.error) throw new Error(audioRes.error.message);
+  if (exerciseRes.error) throw new Error(exerciseRes.error.message);
+
+  // Build per-day registration map from RPC result (may return [] if RPC missing)
+  const regByDay = new Map<string, number>();
+  for (const row of ((profilesRes.data ?? []) as Array<{ reg_date: string; count: number }>)) {
+    regByDay.set(row.reg_date, Number(row.count));
+  }
+
+  // Generate all calendar dates in range
+  const days: string[] = [];
+  const fromMs = new Date(`${fromDate}T12:00:00.000Z`).getTime();
+  const toMs   = new Date(`${endDate}T12:00:00.000Z`).getTime();
+  for (let ms = fromMs; ms <= toMs; ms += 86_400_000) {
+    days.push(new Date(ms).toISOString().slice(0, 10));
+  }
+
+  return days.map((date) => {
+    const dayStart = `${date}T00:00:00.000Z`;
+    const dayEnd   = `${date}T23:59:59.999Z`;
+    const inDay    = (ts: string | null) => !!ts && ts >= dayStart && ts <= dayEnd;
+
+    const dayAudio    = (audioRes.data ?? []).filter((r) => inDay(r.started_at));
+    const dayExercise = (exerciseRes.data ?? []).filter((r) => inDay(r.started_at));
+    const dayActivity = (activityRes.data ?? []).filter((r) => inDay(r.created_at));
+
+    const dauL1 = new Set(dayActivity.map((r) => r.user_id)).size;
+    const dauL2Set = new Set([
+      ...dayAudio.map((r) => r.user_id),
+      ...dayExercise.map((r) => r.user_id),
+    ]);
+    const dauL3Set = new Set([
+      ...dayAudio.filter((r) => r.is_completed).map((r) => r.user_id),
+      ...dayExercise.filter((r) => r.was_completed).map((r) => r.user_id),
+    ]);
+
+    const audioMinutes = dayAudio.reduce(
+      (sum, r) => sum + secondsToMinutes(r.unique_listen_seconds ?? 0), 0,
+    );
+    const exerciseMinutes = dayExercise.reduce((sum, r) => {
+      const dur = r.completed_at && r.started_at
+        ? (new Date(r.completed_at).getTime() - new Date(r.started_at).getTime()) / 1000
+        : 0;
+      return sum + secondsToMinutes(Math.max(0, dur));
+    }, 0);
+
+    return {
+      date,
+      dauL1,
+      dauL2: dauL2Set.size,
+      dauL3: dauL3Set.size,
+      newRegistrations: regByDay.get(date) ?? 0,
+      totalMinutesBeathed: Math.round((audioMinutes + exerciseMinutes) * 10) / 10,
+      totalAudioSessions: dayAudio.length,
+      completedAudioSessions: dayAudio.filter((r) => r.is_completed).length,
+      totalExerciseSessions: dayExercise.length,
+      completedExerciseSessions: dayExercise.filter((r) => r.was_completed).length,
+    };
   });
 }
 
@@ -228,28 +316,31 @@ export function useAdminDashboard(
   // Real-time today — always mounted
   const todayQuery = useAdminDashboardToday();
 
-  // Historical cron data
+  // Historical live data (always queries raw tables, not cron cache)
+  // For multi-day periods we fetch from period start to YESTERDAY — today is
+  // always added separately from the live hook to avoid double-counting.
+  const histToDate = period === 'yesterday' ? daysBack(1) : daysBack(1);
   const { data: cronData, isLoading, error } = useQuery({
     queryKey: analyticsKeys.dashboard(period),
     enabled: !isTodayPeriod,
-    queryFn: () => fetchCronKpis(fromDate),
-    staleTime: 5 * 60 * 1000,
+    queryFn: () => fetchLiveKpisByRange(fromDate, histToDate),
+    staleTime: 2 * 60 * 1000,
   });
 
   // Previous period — for comparison deltas
   const { data: prevData } = useQuery({
     queryKey: [...analyticsKeys.dashboard(period), 'prev'],
-    enabled: !isTodayPeriod,
-    queryFn: () => fetchCronKpis(prevFromDate, prevToDate),
+    enabled: !isTodayPeriod && !!prevRange,
+    queryFn: () => fetchLiveKpisByRange(prevFromDate, prevToDate),
     staleTime: 5 * 60 * 1000,
   });
 
-  // For today: compare against yesterday (from cron)
+  // For today: compare against yesterday (live query)
   const { data: yesterdayData } = useQuery({
     queryKey: analyticsKeys.dashboard('yesterday'),
     enabled: isTodayPeriod,
-    queryFn: () => fetchCronKpis(daysBack(1), daysBack(1)),
-    staleTime: 5 * 60 * 1000,
+    queryFn: () => fetchLiveKpisByRange(daysBack(1), daysBack(1)),
+    staleTime: 2 * 60 * 1000,
   });
 
   if (isTodayPeriod) {
@@ -848,16 +939,27 @@ export function useOnboardingFunnel(): { funnel: OnboardingFunnel | null; isLoad
 // useTopContent
 // ============================================================
 
-export function useTopContent(limit = 5): { data: TopContentItem[]; isLoading: boolean; error: string | null } {
+export function useTopContent(
+  limit = 5,
+  period: DashboardPeriod | 'all' = 'all',
+): { data: TopContentItem[]; isLoading: boolean; error: string | null } {
+  const periodStartISO: string | null = (() => {
+    if (period === 'all' || period === 'today') return null;
+    const periodStart = getAdminPeriodStart(period as DashboardPeriod);
+    return `${periodStart}T00:00:00.000Z`;
+  })();
+
   const { data, isLoading, error } = useQuery({
-    queryKey: analyticsKeys.topContent(limit),
+    queryKey: [...analyticsKeys.topContent(limit), period],
     queryFn: async (): Promise<TopContentItem[]> => {
       // Aggregate audio_sessions by lesson_id (incl. user_id pro unique users)
-      const { data: rows, error: err } = await supabase
+      let q = supabase
         .from('audio_sessions')
         .select('lesson_id, lesson_title, program_title, category_slug, is_completed, unique_listen_seconds, user_id')
         .order('created_at', { ascending: false })
-        .limit(5000); // Reasonable cap for aggregation
+        .limit(5000);
+      if (periodStartISO) q = q.gte('started_at', periodStartISO);
+      const { data: rows, error: err } = await q;
 
       if (err) throw new Error(err.message);
 

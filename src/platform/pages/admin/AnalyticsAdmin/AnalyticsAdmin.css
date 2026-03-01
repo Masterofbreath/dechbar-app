@@ -698,13 +698,49 @@
   overflow-x: auto;
 }
 
+.analytics-admin__top-content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
 .analytics-admin__top-content-title {
   font-size: 14px;
   font-weight: 600;
   color: rgb(255 255 255 / 60%);
-  margin-bottom: 20px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-bottom: 0;
+}
+
+.analytics-admin__top-content-filters {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Smaller variant of period-tab used inside cards/sections */
+.analytics-admin__period-tab--sm {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  min-height: 28px;
+  border-radius: 6px;
+  border-bottom: none;
+  background: rgb(255 255 255 / 5%);
+  margin-bottom: 0;
+}
+
+.analytics-admin__period-tab--sm:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+.analytics-admin__period-tab--sm.analytics-admin__period-tab--active {
+  background: var(--dechbar-gold, #F8CA00);
+  color: #000;
+  border-bottom: none;
 }
 
 .analytics-admin__table {

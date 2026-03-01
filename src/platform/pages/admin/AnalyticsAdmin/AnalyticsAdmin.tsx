@@ -534,7 +534,8 @@ const PERIODS: { key: DashboardPeriod; label: string }[] = [
 export default function AnalyticsAdmin() {
   const [period, setPeriod] = useState<DashboardPeriod>('today');
   const { kpis, prevKpis, isLoading, error } = useAdminDashboard(period) as AdminDashboardData & { prevKpis: DailyKpis[] };
-  const { data: topContent, isLoading: topLoading } = useTopContent(5);
+  const [topPeriod, setTopPeriod] = useState<DashboardPeriod | 'all'>('all');
+  const { data: topContent, isLoading: topLoading } = useTopContent(5, topPeriod);
   const { count: totalUsers, isLoading: usersLoading } = useTotalUsers();
   const { minutes: allTimeMinutes, isLoading: allTimeLoading } = useAllTimeMinutes();
   const { slots: primeSlots, peakHour, isLoading: primeLoading } = usePrimeTime();
@@ -652,9 +653,23 @@ export default function AnalyticsAdmin() {
       {/* Protocol heatmap + Churn risk */}
       <ProtocolStatsSection isLoading={false} period={period} />
 
-      {/* Top Content Table */}
+      {/* Top Content Table — s period filtrem */}
       <div className="analytics-admin__top-content">
-        <div className="analytics-admin__top-content-title">TOP 5 lekcí (vždy živě)</div>
+        <div className="analytics-admin__top-content-header">
+          <div className="analytics-admin__top-content-title">TOP 5 lekcí</div>
+          <div className="analytics-admin__top-content-filters">
+            {([['all', 'Celkem'], ['today', 'Dnes'], ['yesterday', 'Včera'], ['week', 'Týden'], ['month', 'Měsíc']] as [DashboardPeriod | 'all', string][]).map(([p, label]) => (
+              <button
+                key={p}
+                type="button"
+                className={`analytics-admin__period-tab analytics-admin__period-tab--sm${topPeriod === p ? ' analytics-admin__period-tab--active' : ''}`}
+                onClick={() => setTopPeriod(p)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         {topLoading ? (
           <div className="analytics-admin__empty">Načítám...</div>
         ) : topContent.length === 0 ? (
