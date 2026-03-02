@@ -38,13 +38,16 @@
 
 .challenge-banner__badge {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  line-height: 1.2;
   color: var(--color-background);
   background: var(--dechbar-gold, #F8CA00);
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 999px;
 }
 
@@ -52,6 +55,8 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.2;
 }
 
 .challenge-banner__text strong {
@@ -570,7 +575,22 @@ section[id] {
   margin-top: var(--spacing-6);  /* 24px */
 }
 
-/* ✅ NEW: Disabled state for "Aktivní" pricing cards */
+/* ===================================
+   PRICING CARD — COMING SOON variant
+   =================================== */
+
+.pricing-card--coming-soon {
+  position: relative;
+  opacity: 0.65;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pricing-card--coming-soon .pricing-card__cta {
+  pointer-events: none;
+}
+
+/* Disabled state for "Aktivní" pricing cards */
 .pricing-card__cta:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -579,8 +599,36 @@ section[id] {
 }
 
 .pricing-card__cta:disabled:hover {
-  transform: none;  /* Remove hover lift effect */
-  box-shadow: none;  /* Remove hover shadow */
+  transform: none;
+  box-shadow: none;
+}
+
+.pricing-card__coming-soon-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: var(--spacing-3);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pricing-card__coming-soon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid rgb(255 255 255 / 20%);
+  color: var(--color-text-secondary);
+  backdrop-filter: blur(8px);
 }
 
 /* ===================================

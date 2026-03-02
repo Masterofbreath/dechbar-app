@@ -105,7 +105,11 @@ export function DemoSettingsDrawer({ isOpen, onClose }: DemoSettingsDrawerProps)
   };
   
   const handleMenuClick = (itemName: string) => {
-    show(`${itemName} dostupný po registraci`, { icon: '🔒' });
+    // Close drawer first, then show toast — avoids z-index stacking issues in foreignObject
+    handleClose();
+    setTimeout(() => {
+      show(`${itemName} dostupný po registraci`, { icon: '🔒' });
+    }, 320); // After close animation completes (300ms) + buffer
   };
   
   return (

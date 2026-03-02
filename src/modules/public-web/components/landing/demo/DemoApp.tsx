@@ -175,7 +175,7 @@ export function DemoApp() {
   
   /**
    * Handle email registration
-   * UPDATED: Now sends magic link for challenge registration
+   * Sends magic link on both /vyzva and homepage — consistent UX across all pages
    */
   const handleEmailSubmit = async (email: string) => {
     track({
@@ -185,29 +185,20 @@ export function DemoApp() {
       timestamp: Date.now(),
     });
     
-    // On /vyzva page with KP measurement → Send magic link
+    // /vyzva with KP measurement → Send magic link with KP data
     if (isChallengePage && state.kpMeasurementData) {
       const kpValue = state.kpMeasurementData.average || state.kpMeasurementData.lastValue;
-      
       await sendLink(email, kpValue, 'demo_measurement_round_1');
-      
-      // Magic link hook handles success/error state
-      // We just close the modal after send
       setTimeout(() => {
         setState(prev => ({ ...prev, isEmailModalOpen: false }));
-      }, 2000); // Give user time to see success message
-      
+      }, 2000);
       return;
     }
     
-    // Fallback for non-challenge pages (old behavior)
-    if (import.meta.env.DEV) {
-      console.log('[Demo] Email registration:', email, 'for:', state.selectedExercise?.name);
-      alert(`Demo: Email registrace\n\nEmail: ${email}\nCvičení: ${state.selectedExercise?.name}\n\nV produkci: redirect to /exercise/${state.selectedExercise?.id}`);
-    } else {
-      // Production: Redirect to real auth with email pre-filled
-      window.location.href = `/register?email=${encodeURIComponent(email)}`;
-    }
+    // All other cases (homepage, /vyzva without KP) → Send magic link
+    const source = isChallengePage ? 'challenge_exercise_click' : 'homepage_demo_exercise';
+    await sendLink(email, 0, source);
+    // Magic link hook handles success/error state in modal
   };
   
   /**

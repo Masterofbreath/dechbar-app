@@ -31,6 +31,7 @@ export interface PricingCardProps {
   ctaVariant: 'primary' | 'ghost';
   highlighted?: boolean;
   isDisabled?: boolean;
+  comingSoon?: boolean;  // Shows "Brzy dostupné" overlay and disables purchase
   onFreeTierCTA?: () => void;  // For free tier (auth modal)
 }
 
@@ -50,6 +51,7 @@ export function PricingCard({
   ctaVariant,
   highlighted = false,
   isDisabled = false,
+  comingSoon = false,
   onFreeTierCTA,
 }: PricingCardProps) {
   const { user } = useAuth();
@@ -132,7 +134,14 @@ export function PricingCard({
 
   return (
     <>
-      <div className={`pricing-card ${highlighted ? 'pricing-card--highlighted' : ''}`}>
+      <div className={`pricing-card ${highlighted ? 'pricing-card--highlighted' : ''} ${comingSoon ? 'pricing-card--coming-soon' : ''}`}>
+      {/* Coming soon overlay */}
+      {comingSoon && (
+        <div className="pricing-card__coming-soon-overlay" aria-hidden="true">
+          <span className="pricing-card__coming-soon-label">Brzy dostupné</span>
+        </div>
+      )}
+
       {/* Badge (if exists) */}
       {badge && (
         <div className={`pricing-card__badge ${highlighted ? 'pricing-card__badge--gold' : 'pricing-card__badge--teal'}`}>
@@ -203,10 +212,10 @@ export function PricingCard({
         size="lg"
         fullWidth
         onClick={handleCTA}
-        disabled={isDisabled || isButtonLoading}
+        disabled={isDisabled || isButtonLoading || comingSoon}
         className="pricing-card__cta"
       >
-        {isButtonLoading ? 'Načítání...' : ctaText}
+        {isButtonLoading ? 'Načítání...' : comingSoon ? 'Brzy dostupné' : ctaText}
       </Button>
 
       {/* Error message */}

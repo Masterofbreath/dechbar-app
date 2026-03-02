@@ -41,10 +41,11 @@ const PRICING_DATA = {
       '3 základní cvičení',
       'Ranní + večerní protokoly',
       '3 vlastní cvičení',
-      'Audio průvodce',
+      'Sledování výsledků v čase',
+      'Osobní profil a uložená data',
     ] as string[],
     ctaText: 'Začít zdarma',
-    ctaVariant: 'ghost' as const,
+    ctaVariant: 'primary' as const,
     highlighted: false,
   },
   smart: {
@@ -53,10 +54,11 @@ const PRICING_DATA = {
     subtitle: 'Inteligentní doporučení',
     badge: 'OBLÍBENÉ',
     features: [
-      'Trénink na míru',
-      'Sledování výsledků v čase',
-      'Tvůj účet',
+      'SMART cvičení přesně pro tebe',
       'Neomezené vlastní cvičení',
+      'Přístup k dechovým výzvám',
+      'Přístup k 150+ audio lekcím',
+      'Záznamy z pravidelných online session',
     ] as string[],
     ctaText: 'Začít →',
     ctaVariant: 'primary' as const,
@@ -88,6 +90,7 @@ const PRICING_DATA = {
     ctaText: 'Získat AI Coache →',
     ctaVariant: 'primary' as const,
     highlighted: false,
+    comingSoon: true,
     pricing: {
       monthly: {
         price: '490 Kč',
@@ -162,7 +165,7 @@ export function PricingSection() {
               badge={PRICING_DATA.free.badge}
               features={PRICING_DATA.free.features}
               ctaText={user ? 'Aktivní' : PRICING_DATA.free.ctaText}
-              ctaVariant={PRICING_DATA.free.ctaVariant}
+              ctaVariant="primary"
               highlighted={PRICING_DATA.free.highlighted}
               isDisabled={Boolean(user)}
               onFreeTierCTA={() => setShowAuthModal(true)}
@@ -210,6 +213,7 @@ export function PricingSection() {
                   ctaText={PRICING_DATA.aiCoach.ctaText}
                   ctaVariant={PRICING_DATA.aiCoach.ctaVariant}
                   highlighted={PRICING_DATA.aiCoach.highlighted}
+                  comingSoon={PRICING_DATA.aiCoach.comingSoon}
                 />
               );
             })()}
