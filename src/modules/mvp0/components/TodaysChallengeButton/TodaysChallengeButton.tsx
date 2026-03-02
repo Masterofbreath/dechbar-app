@@ -320,10 +320,11 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
   const { user } = useAuth();
   const isPremium = useUserState((s) => s.isPremium);
 
-  const userProgram = useActiveDailyProgram(user?.id);
+  // user.created_at slouží jako per-user start date pro oba hooky:
+  //   effectiveStartDate = MAX(user.created_at, program.launch_date)
+  // Pinnutí (activated_at) výzvu neresetuje — je to jen UI preference.
+  const userProgram = useActiveDailyProgram(user?.id, user?.created_at);
   const dailyOverride = usePlatformDailyOverride();
-  // Předáváme user.created_at aby hook mohl spočítat per-user effectiveStartDate
-  // a rozhodnou, zda má uživatel early access (registrace před early_access_until).
   const featuredProgram = usePlatformFeaturedProgram(user?.id, user?.created_at);
 
   // Navigace pro featured CTA (stejný vzor jako StickyPlayer)

@@ -81,7 +81,6 @@ export interface UseActiveDailyProgramReturn {
 
 interface RawActiveRecord {
   module_id: string;
-  activated_at: string;
 }
 
 interface RawLesson {
@@ -108,18 +107,23 @@ interface RawProgramJoined {
   akademie_categories: { id: string; slug: string } | null;
 }
 
-async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramData | null> {
-  // 1. Zjisti module_id + activated_at z user_active_program
+async function fetchActiveProgram(
+  userId: string,
+  userCreatedAt?: string,
+): Promise<ActiveDailyProgramData | null> {
+  // 1. Zjisti module_id z user_active_program
+  // activated_at ukládáme pro analytics, ale NEPOČÍTÁME z něj start výzvy —
+  // pinnutí = UI preference, ne "začínám odznovu".
   const { data: activeRec, error: activeErr } = await supabase
     .from('user_active_program')
-    .select('module_id, activated_at')
+    .select('module_id')
     .eq('user_id', userId)
     .maybeSingle();
 
   if (activeErr) throw activeErr;
   if (!activeRec) return null;
 
-  const activeModuleId = (activeRec as RawActiveRecord).module_id;
+  const activeModuleId = (activeRec as Pick<RawActiveRecord, 'module_id'>).module_id;
 
   // 2. Načti kompletní data programu (JOIN modules + akademie_categories)
   const { data: prog, error: progErr } = await supabase
@@ -164,21 +168,22 @@ async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramDat
   };
 
   // 3. Výpočet postupného odemykání
-  // Nový den začíná ve 4:00 ráno CET — posuneme osu o 4 hodiny dozadu,
-  // takže "půlnoc výpočtu" = 04:00 skutečného času.
+  // Nový den začíná ve 4:00 ráno CET — posuneme osu o 4 hodiny dozadu.
   //
-  // Per-user start date: použijeme pozdější z launch_date a activated_at.
-  // → Uživatel, který si program připnul PŘED globálním startem, sleduje globální start.
-  // → Uživatel, který si program připnul PO globálním startu, sleduje svůj osobní start.
+  // Per-user start date: MAX(user.created_at, program.launch_date)
+  // → Registroval se před globálním startem → sleduje globální start.
+  // → Registroval se po globálním startu → sleduje svůj datum registrace.
+  //
+  // DŮLEŽITÉ: pinnutí (activated_at) start NERESETUJE — jde jen o UI preferenci.
   const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
   const launchDate = r.launch_date ? new Date(r.launch_date) : null;
-  const activatedAt = (activeRec as RawActiveRecord).activated_at
-    ? new Date((activeRec as RawActiveRecord).activated_at)
-    : null;
+  const userCreatedAtDate = userCreatedAt ? new Date(userCreatedAt) : null;
 
-  // effectiveStartDate = MAX(activated_at, launch_date)
+  // effectiveStartDate = MAX(user.created_at, launch_date)
   const effectiveStartDate =
-    activatedAt && launchDate && activatedAt > launchDate ? activatedAt : launchDate;
+    userCreatedAtDate && launchDate && userCreatedAtDate > launchDate
+      ? userCreatedAtDate
+      : launchDate;
 
   const now = new Date();
 
@@ -236,12 +241,15 @@ async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramDat
 // Hook
 // --------------------------------------------------
 
-export function useActiveDailyProgram(userId: string | undefined): UseActiveDailyProgramReturn {
+export function useActiveDailyProgram(
+  userId: string | undefined,
+  userCreatedAt?: string,
+): UseActiveDailyProgramReturn {
   const qc = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: akademieKeys.activeProgram(userId ?? ''),
-    queryFn: () => fetchActiveProgram(userId!),
+    queryKey: [...akademieKeys.activeProgram(userId ?? ''), userCreatedAt ?? 'unknown'],
+    queryFn: () => fetchActiveProgram(userId!, userCreatedAt),
     enabled: !!userId,
     staleTime: 1000 * 60 * 2,
     gcTime: 1000 * 60 * 10,
