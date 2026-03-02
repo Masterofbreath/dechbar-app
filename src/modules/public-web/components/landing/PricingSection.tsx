@@ -181,7 +181,7 @@ export function PricingSection() {
                   billingInterval={billingInterval}
                   title={PRICING_DATA.smart.title}
                   subtitle={PRICING_DATA.smart.subtitle}
-                  price={smartPricing.price}
+                  price={PRICING_DATA.smart.pricing.monthly.price}
                   period={smartPricing.period}
                   priceAnnual={'priceAnnual' in smartPricing ? smartPricing.priceAnnual : undefined}
                   badge={PRICING_DATA.smart.badge}
@@ -204,7 +204,7 @@ export function PricingSection() {
                   billingInterval={billingInterval}
                   title={PRICING_DATA.aiCoach.title}
                   subtitle={PRICING_DATA.aiCoach.subtitle}
-                  price={aiCoachPricing.price}
+                  price={PRICING_DATA.aiCoach.pricing.monthly.price}
                   period={aiCoachPricing.period}
                   priceAnnual={'priceAnnual' in aiCoachPricing ? aiCoachPricing.priceAnnual : undefined}
                   badge={PRICING_DATA.aiCoach.badge}

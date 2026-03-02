@@ -734,14 +734,16 @@ export function MujUcetPage() {
                         title="SMART"
                         subtitle="Inteligentní doporučení"
                         badge="OBLÍBENÉ"
-                        price={billingInterval === 'annual' ? '125 Kč' : '249 Kč'}
+                        price="249 Kč"
                         period="měsíc"
                         priceAnnual={billingInterval === 'annual' ? '125 Kč/měsíc' : undefined}
                         savingsBadge={billingInterval === 'annual' ? 'Ušetříš 1 494 Kč ročně' : undefined}
                         features={[
-                          'Trénink na míru',
-                          'Sledování výsledků v čase',
-                          'Neomezené vlastní cvičení',
+                          'SMART cvičení přesně pro tebe',
+                          'Neomezená vlastní cvičení',
+                          'Přístup k dechovým výzvám',
+                          'Přístup k 150+ audio lekcím',
+                          'Záznamy z pravidelných Online Session',
                         ]}
                         ctaText="Zachovat přístup →"
                         ctaVariant="primary"
@@ -754,7 +756,7 @@ export function MujUcetPage() {
                         title="AI COACH"
                         subtitle="Tvůj osobní AI trenér"
                         badge="PREMIUM"
-                        price={billingInterval === 'annual' ? '245 Kč' : '490 Kč'}
+                        price="490 Kč"
                         period="měsíc"
                         priceAnnual={billingInterval === 'annual' ? '245 Kč/měsíc' : undefined}
                         savingsBadge={billingInterval === 'annual' ? 'Ušetříš 2 940 Kč ročně' : undefined}
@@ -762,6 +764,7 @@ export function MujUcetPage() {
                           'Osobní AI trenér 24/7',
                           'Neomezený počet zpráv s AI',
                           'Pokročilá analýza dýchání',
+                          'Prioritní podpora',
                         ]}
                         ctaText="Zachovat přístup →"
                         ctaVariant="primary"

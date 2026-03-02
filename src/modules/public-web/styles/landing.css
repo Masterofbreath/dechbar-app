@@ -583,7 +583,10 @@ section[id] {
 
 .pricing-card__cta {
   margin-top: 0;          /* Features flex:1 already handles spacing */
-  min-height: 52px;       /* Consistent button height on all cards */
+  height: 52px;           /* Fixed height — prevents stretching in flex column */
+  min-height: 52px;
+  flex-shrink: 0;         /* Never compress below 52px */
+  white-space: nowrap;    /* Prevent text wrapping */
 }
 
 /* ===================================
