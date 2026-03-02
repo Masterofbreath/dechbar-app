@@ -408,6 +408,113 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_ENV=development
 ```
 
+## 🗄️ SUPABASE DEV → PROD WORKFLOW (CRITICAL!)
+
+### Dva projekty — NIKDY je nezaměň!
+
+```
+DEV  project_id = nrlqzighwaeuxcicuhse   ← vždy první, localhost testování
+PROD project_id = iqyahebbteiwzwyrtmns   ← jen po ověření na DEV, 451 reálných uživatelů
+```
+
+### Zlaté pravidlo (MANDATORY):
+
+```
+1. Napiš migration soubor → supabase/migrations/YYYYMMDDHHMMSS_nazev.sql
+2. Spusť na DEV (MCP project_id = nrlqzighwaeuxcicuhse)
+3. Otestuj na localhost + DEV
+4. Commitni do gitu (git add + git commit)
+5. TEPRVE PAK spusť STEJNÝ soubor na PROD (MCP project_id = iqyahebbteiwzwyrtmns)
+6. Deployni edge functions: DEV první, pak PROD
+```
+
+### Jak poznat, které migrace jít na PROD?
+
+Timestamp `YYYYMMDDHHMMSS` v názvu souboru = pořadí. Pokud PROD naposledy dostal
+migraci `20260302110000_fix_protocol_durations.sql`, pak **všechny soubory s vyšším
+timestampem** jsou nové pro PROD. Porovnej seznam v `supabase/migrations/` s tím,
+co je v `supabase_migrations.schema_migrations` na PROD.
+
+### Příkazy pro edge functions:
+
+```bash
+# Deploy na DEV:
+supabase functions deploy <nazev> --project-ref nrlqzighwaeuxcicuhse
+
+# Deploy na PROD (jen po DEV testu!):
+supabase functions deploy <nazev> --project-ref iqyahebbteiwzwyrtmns
+```
+
+### 🚨 ZAKÁZÁNO:
+- Nikdy nepsat SQL přes MCP přímo na PROD bez migration souboru
+- Nikdy přeskočit DEV a psát migraci rovnou na PROD
+- Nikdy deploynout edge function jen na PROD bez DEV
+
+### Tracking divergencí DEV ↔ PROD:
+Viz `supabase/SYNC_STATUS.md` — seznam zbývajících rozdílů a plán sjednocení.
+
+---
+
+## 💳 STRIPE TESTING PRAVIDLA (CRITICAL!)
+
+### Stripe mód podle prostředí:
+
+```
+DEV  (nrlqzighwaeuxcicuhse) → Stripe TEST mode (sk_test_...)
+                               Webhook secret: whsec_test_...
+                               Test eventy: cs_test_a1..., sub_test_...
+
+PROD (iqyahebbteiwzwyrtmns) → Stripe LIVE mode (sk_live_...)
+                               Webhook secret: whsec_live_...
+                               Reálné platby: cs_live_a1...
+```
+
+### ⚠️ NIKDY nemíchat:
+- `sk_test_` klíče NESMÍ být v PROD Supabase secrets
+- `sk_live_` klíče NESMÍ být v DEV Supabase secrets
+- Test platby nezpracovávají se na PROD webhook endpointu (jiný webhook secret)
+
+### Testovací karty (DEV pouze):
+
+```
+Úspěšná platba:    4242 4242 4242 4242  | libovolný exp | libovolný CVC
+Odmítnutá karta:   4000 0000 0000 9995  | (insufficient_funds)
+3D Secure:         4000 0025 0000 3155  | (vyžaduje ověření)
+Subscription trial: 4242 4242 4242 4242 | funguje i pro recurring
+```
+
+### Testování webhooků na DEV:
+
+```bash
+# Forward webhooků ze Stripe CLI na DEV:
+stripe listen --forward-to https://nrlqzighwaeuxcicuhse.supabase.co/functions/v1/stripe-webhooks
+
+# Trigger testovacího eventu:
+stripe trigger checkout.session.completed
+stripe trigger customer.subscription.created
+stripe trigger invoice.payment_succeeded
+```
+
+### Stripe Price IDs — DEV vs PROD:
+
+```
+PROD LIVE price IDs (v subscriptionPriceMap v stripe-webhooks):
+  SMART monthly:    price_1T2S3eK0OYr7u1q9W5ZW042C
+  SMART annual:     price_1T2S3dK0OYr7u1q9bwA0cNS8
+  AI_COACH annual:  price_1SraIaK7en1dcW6HsYyN0Aj9
+
+DEV TEST price IDs: JINÉ — generované Stripe TEST modem.
+Při DEV testování subscription: musíš použít test price IDs z Stripe TEST dashboardu.
+Přidej je do modules.stripe_price_id v DEV DB pro testování.
+```
+
+### Zakázáno:
+- Nikdy neprovádět testovací platbu na PROD (reálné peníze!)
+- Nikdy deploy `stripe-webhooks` na PROD bez předchozího DEV testu
+- Nikdy manuálně upravovat `memberships` tabulku na PROD — vždy přes webhook
+
+---
+
 ## 🗄️ DATABASE MIGRATIONS (Supabase CLI)
 
 ### IMPORTANT: All DB changes go through migrations!

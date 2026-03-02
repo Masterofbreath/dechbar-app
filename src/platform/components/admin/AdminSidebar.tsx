@@ -20,7 +20,6 @@ import { NavIcon, Logo } from '@/platform/components';
 import './AdminSidebar.css';
 
 const ADMIN_MENU_ITEMS = [
-  { path: '/app/admin/media',        icon: 'music',          label: 'Media'        },
   { path: '/app/admin/akademie',     icon: 'graduation-cap', label: 'Akademie'     },
   { path: '/app/admin/daily-program',icon: 'clock',          label: 'Denní program'},
   { path: '/app/admin/notifications',icon: 'bell',           label: 'Notifikace'   },

@@ -77,7 +77,6 @@ import { SettingsDrawer } from '@/platform/components';
 import { FeedbackModal } from '@/platform/components/FeedbackModal';
 
 // Admin pages (lazy loaded)
-const AudioPlayerAdmin = lazy(() => import('@/platform/pages/admin/AudioPlayerAdmin'));
 const AdminComingSoon = lazy(() => import('@/platform/pages/admin/AdminComingSoon'));
 const AkademieAdmin = lazy(() => import('@/platform/pages/admin/AkademieAdmin/AkademieAdmin'));
 const NotificationsAdmin = lazy(() => import('@/platform/pages/admin/NotificationsAdmin/NotificationsAdmin'));
@@ -430,11 +429,7 @@ export const router = createBrowserRouter([
             children: [
               {
                 index: true,
-                element: <Navigate to="media" replace />,
-              },
-              {
-                path: 'media',
-                element: <AudioPlayerAdmin />,
+                element: <Navigate to="akademie" replace />,
               },
               {
                 path: 'akademie',
