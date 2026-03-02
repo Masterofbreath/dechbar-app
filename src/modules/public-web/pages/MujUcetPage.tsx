@@ -763,7 +763,7 @@ export function MujUcetPage() {
                           'Neomezený počet zpráv s AI',
                           'Pokročilá analýza dýchání',
                         ]}
-                        ctaText="Získat AI Coache →"
+                        ctaText="Zachovat přístup →"
                         ctaVariant="primary"
                         highlighted={false}
                       />

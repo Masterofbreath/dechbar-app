@@ -123,6 +123,41 @@ const SMART_BENEFITS = [
   },
 ];
 
+const AI_COACH_BENEFITS = [
+  {
+    id: 'ai',
+    title: 'Osobní AI trenér 24/7',
+    desc: 'Okamžitá zpětná vazba a doporučení dle tvého stavu.',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+        <circle cx="9" cy="14" r="1" fill="currentColor"/>
+        <circle cx="15" cy="14" r="1" fill="currentColor"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'messages',
+    title: 'Neomezený počet zpráv',
+    desc: 'Ptej se, sdílej pokrok, dostávej odpovědi bez limitu.',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'analysis',
+    title: 'Pokročilá analýza dýchání',
+    desc: 'Hlubší pohled na tvůj KP, vzorce a dlouhodobý pokrok.',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    ),
+  },
+];
+
 // ============================================================
 // Component
 // ============================================================
@@ -136,6 +171,8 @@ export function TrialExpiryModal() {
   const userId = user?.id ?? '';
   const trial = isMembershipTrial(membership);
   const expiresAt = membership?.expiresAt ?? null;
+  const plan = membership?.plan ?? 'SMART';
+  const isAiCoach = plan === 'AI_COACH';
 
   const daysRemaining = useMemo(() => {
     if (!expiresAt) return null;
@@ -190,11 +227,14 @@ export function TrialExpiryModal() {
   // Počet dní pro texty (v preview módu simuluj 2 dny)
   const displayDays = previewMode === 'warning' ? 2 : (daysRemaining ?? 0);
 
+  const planLabel = isAiCoach ? 'AI Coach' : 'SMART';
+  const benefits = isAiCoach ? AI_COACH_BENEFITS : SMART_BENEFITS;
+
   const headline =
     mode === 'expired'
-      ? 'Tvůj SMART tarif skončil'
+      ? `Tvůj ${planLabel} tarif skončil`
       : displayDays <= 1
-        ? 'Zítra přijdeš o SMART přístup'
+        ? `Zítra přijdeš o ${planLabel} přístup`
         : `Zbývají poslední ${displayDays} dny přístupu`;
 
   const subline =
@@ -235,11 +275,11 @@ export function TrialExpiryModal() {
 
         {/* ── Badge + countdown ── */}
         <div className="tem-badge-row">
-          <span className={`tem-badge ${mode === 'expired' ? 'tem-badge--expired' : 'tem-badge--smart'}`}>
+          <span className={`tem-badge ${mode === 'expired' ? 'tem-badge--expired' : isAiCoach ? 'tem-badge--ai-coach' : 'tem-badge--smart'}`}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
-            SMART
+            {planLabel}
           </span>
           {mode === 'warning' && (
             <span className={`tem-countdown tem-countdown--${countdownUrgency}`}>
@@ -259,8 +299,8 @@ export function TrialExpiryModal() {
         </div>
 
         {/* ── Benefits ── */}
-        <ul className="tem-benefits" aria-label="Co zahrnuje SMART tarif">
-          {SMART_BENEFITS.map((b) => (
+        <ul className="tem-benefits" aria-label={`Co zahrnuje ${planLabel} tarif`}>
+          {benefits.map((b) => (
             <li key={b.id} className="tem-benefit">
               <span className="tem-benefit__icon">{b.icon}</span>
               <span className="tem-benefit__text">

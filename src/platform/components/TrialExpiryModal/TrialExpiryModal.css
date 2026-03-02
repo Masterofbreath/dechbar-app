@@ -112,9 +112,14 @@
   color: var(--color-primary, #2CBEC6);
 }
 
+.tem-badge--ai-coach {
+  background: var(--color-accent-tint, rgb(214 162 58 / 15%));
+  color: var(--color-accent, #D6A23A);
+}
+
 .tem-badge--expired {
-  background: rgb(229 62 62 / 12%);
-  color: var(--color-error, #E53E3E);
+  background: var(--color-error-tint, rgb(239 68 68 / 12%));
+  color: var(--color-error, #EF4444);
 }
 
 .tem-countdown {
