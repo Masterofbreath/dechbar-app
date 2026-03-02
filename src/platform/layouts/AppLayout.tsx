@@ -20,6 +20,7 @@ import { useEffect, type ReactNode } from 'react';
 import { TopNav } from '../components/navigation/TopNav';
 import { BottomNav } from '../components/navigation/BottomNav';
 import { StickyAudioPlayer } from '../components/AudioPlayer';
+import { TrialExpiryModal } from '../components/TrialExpiryModal/TrialExpiryModal';
 import { useAudioPlayerStore } from '../components/AudioPlayer/store';
 import { usePlayerBroadcast } from '../components/AudioPlayer/usePlayerBroadcast';
 import { useAuthStore } from '@/platform/auth';
@@ -92,6 +93,9 @@ export function AppLayout({
       
       {/* Sticky Audio Player (global, shows when track playing) */}
       <StickyAudioPlayer />
+
+      {/* Trial expiry modal — poslední dny trialu / po expiraci */}
+      <TrialExpiryModal />
     </div>
   );
 }
