@@ -36,12 +36,27 @@ function sumKpi(kpis: DailyKpis[], key: keyof DailyKpis): number {
 }
 
 /** Returns delta string "+5" / "-3" / "" and direction 'up'|'down'|'same' */
-function getDelta(current: number, prev: number): { label: string; dir: 'up' | 'down' | 'same' } {
-  if (prev === 0) return { label: '', dir: 'same' };
+/** Format a minutes value as human-readable diff: +1h 20 min, −45 min, etc. */
+function formatMinutesDelta(absDiff: number): string {
+  const h = Math.floor(absDiff / 60);
+  const m = Math.round(absDiff % 60);
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m} min`;
+}
+
+function getDelta(
+  current: number,
+  prev: number,
+  type: 'count' | 'minutes' = 'count',
+): { label: string; dir: 'up' | 'down' | 'same' } {
+  if (prev === 0 && current === 0) return { label: '', dir: 'same' };
   const diff = current - prev;
   if (diff === 0) return { label: '= stejně', dir: 'same' };
+  const absDiff = Math.abs(diff);
+  const formatted = type === 'minutes' ? formatMinutesDelta(absDiff) : formatNumber(absDiff);
   return {
-    label: diff > 0 ? `+${formatNumber(diff)} vs. předchozí` : `${formatNumber(diff)} vs. předchozí`,
+    label: diff > 0 ? `+${formatted} vs. předchozí` : `−${formatted} vs. předchozí`,
     dir: diff > 0 ? 'up' : 'down',
   };
 }
@@ -401,7 +416,7 @@ function RetentionSection() {
       {/* Onboarding Funnel */}
       <div className="analytics-admin__chart">
         <div className="analytics-admin__chart-title">Onboarding funnel</div>
-        <div className="analytics-admin__chart-subtitle">noví uživatelé · posledních 30 dní</div>
+        <div className="analytics-admin__chart-subtitle">noví uživatelé · od spuštění aplikace (28.&thinsp;2.)</div>
         {funnelLoading ? (
           <div className="analytics-admin__empty">Načítám...</div>
         ) : !funnel || funnel.registered === 0 ? (
@@ -625,7 +640,7 @@ export default function AnalyticsAdmin() {
           label="Minuty prodýchány"
           value={isLoading ? '—' : formatMinutes(minutes)}
           sublabel={periodLabel[period]}
-          delta={prevKpis.length > 0 ? getDelta(minutes, prevMinutes) : undefined}
+          delta={prevKpis.length > 0 ? getDelta(minutes, prevMinutes, 'minutes') : undefined}
           isLoading={isLoading}
           gold
         />

@@ -980,10 +980,28 @@ export function useTopContent(
   limit = 5,
   period: DashboardPeriod | 'all' = 'all',
 ): { data: TopContentItem[]; isLoading: boolean; error: string | null } {
-  const periodStartISO: string | null = (() => {
-    if (period === 'all' || period === 'today') return null;
+  // Compute [startISO, endISO) for the selected period
+  const { periodStartISO, periodEndISO } = (() => {
+    if (period === 'all') return { periodStartISO: null, periodEndISO: null };
+
+    const now = new Date();
+    const todayStart = `${toIsoDateString(now)}T00:00:00.000Z`;
+
+    if (period === 'today') {
+      return { periodStartISO: todayStart, periodEndISO: null }; // up to now
+    }
+
+    if (period === 'yesterday') {
+      const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+      return {
+        periodStartISO: `${toIsoDateString(yesterday)}T00:00:00.000Z`,
+        periodEndISO: todayStart, // strictly BEFORE today
+      };
+    }
+
+    // week / month / year — from period start to now (end = null means "up to now")
     const periodStart = getAdminPeriodStart(period as DashboardPeriod);
-    return `${periodStart}T00:00:00.000Z`;
+    return { periodStartISO: `${periodStart}T00:00:00.000Z`, periodEndISO: null };
   })();
 
   const { data, isLoading, error } = useQuery({
@@ -996,6 +1014,7 @@ export function useTopContent(
         .order('created_at', { ascending: false })
         .limit(5000);
       if (periodStartISO) q = q.gte('started_at', periodStartISO);
+      if (periodEndISO)   q = q.lt('started_at', periodEndISO);  // strict < (excludes today when 'yesterday')
       const { data: rows, error: err } = await q;
 
       if (err) throw new Error(err.message);
@@ -1382,7 +1401,7 @@ export function useUserPokrokStats(
     ? Math.round((totalMinutes / periodDays) * 10) / 10
     : 0;
 
-  // Build activity graph (last 84 days)
+  // Build activity graph (last 168 days) from cached graph queries
   const dayMinutesMap = new Map<string, number>();
   for (const r of audioGraphData ?? []) {
     const day = r.started_at.slice(0, 10);
@@ -1394,6 +1413,26 @@ export function useUserPokrokStats(
       ? (new Date(r.completed_at).getTime() - new Date(r.started_at).getTime()) / 1000
       : 0;
     dayMinutesMap.set(day, (dayMinutesMap.get(day) ?? 0) + secondsToMinutes(Math.max(0, durationSec)));
+  }
+
+  // Always override TODAY with live period data (audioData + exerciseData are always fresher
+  // than the cached graph queries — fixes heatmap/weekly-dots not showing today's activity).
+  const todayUTC = new Date().toISOString().slice(0, 10);
+  const liveTodayAudioMin = (audioData ?? [])
+    .filter((r) => r.started_at?.slice(0, 10) === todayUTC)
+    .reduce((s, r) => s + secondsToMinutes(r.unique_listen_seconds ?? 0), 0);
+  const liveTodayExMin = (exerciseData ?? [])
+    .filter((r) => r.started_at?.slice(0, 10) === todayUTC)
+    .reduce((s, r) => {
+      const dur = r.completed_at && r.started_at
+        ? (new Date(r.completed_at).getTime() - new Date(r.started_at).getTime()) / 1000
+        : 0;
+      return s + secondsToMinutes(Math.max(0, dur));
+    }, 0);
+  const liveTodayTotal = liveTodayAudioMin + liveTodayExMin;
+  // Set today's entry (override graph cache — live data wins)
+  if (liveTodayTotal > 0 || dayMinutesMap.has(todayUTC)) {
+    dayMinutesMap.set(todayUTC, Math.max(liveTodayTotal, dayMinutesMap.get(todayUTC) ?? 0));
   }
 
   const activityGraph: ActivityDayData[] = [];

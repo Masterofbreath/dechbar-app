@@ -257,7 +257,7 @@ const PERIOD_TABS: PeriodTab[] = [
 ];
 
 export function PokrokPage() {
-  const [period, setPeriod] = useState<ActivityPeriod>('all');
+  const [period, setPeriod] = useState<ActivityPeriod>('day');
   const userId = useAuthStore((s) => s.user?.id);
 
   // Real-time invalidace při změně audio/exercise session (bez refreshe stránky)
