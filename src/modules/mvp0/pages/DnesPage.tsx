@@ -33,11 +33,25 @@ import type { Exercise } from '../types/exercises';
  *   <DnesPage />
  * </AppLayout>
  */
+/**
+ * Převede sekundy na "X min" label.
+ * Používá Math.round — 570s → "10 min", 330s → "6 min", 420s → "7 min".
+ */
+function formatDuration(seconds: number | undefined): string {
+  if (!seconds) return '';
+  return `${Math.round(seconds / 60)} min`;
+}
+
 export function DnesPage() {
   const { user } = useAuth();
   const { data: exercises, isLoading, error } = useExercises();
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [skipFlow, setSkipFlow] = useState(false); // NEW: Track if direct start
+
+  // Dynamické délky z DB — aktualizují se automaticky když se změní protokol
+  const ranoExercise = exercises?.find(ex => ex.name === 'RÁNO');
+  const klidExercise = exercises?.find(ex => ex.name === 'KLID');
+  const vecerExercise = exercises?.find(ex => ex.name === 'VEČER');
   
   // Handle protocol button clicks - open SessionEngineModal
   function handleProtocolClick(protocolName: string) {
@@ -116,21 +130,21 @@ export function DnesPage() {
               protocol="rano"
               icon="sun"
               label="RÁNO"
-              duration="6 min"
+              duration={formatDuration(ranoExercise?.total_duration_seconds)}
               onClick={() => handleProtocolClick('RÁNO')}
             />
             <PresetProtocolButton
               protocol="klid"
               icon="wind"
               label="KLID"
-              duration="7 min"
+              duration={formatDuration(klidExercise?.total_duration_seconds)}
               onClick={() => handleProtocolClick('KLID')}
             />
             <PresetProtocolButton
               protocol="vecer"
               icon="moon"
               label="VEČER"
-              duration="10 min"
+              duration={formatDuration(vecerExercise?.total_duration_seconds)}
               onClick={() => handleProtocolClick('VEČER')}
             />
           </div>
