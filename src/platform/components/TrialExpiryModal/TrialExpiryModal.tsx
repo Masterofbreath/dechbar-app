@@ -150,8 +150,8 @@ export function TrialExpiryModal() {
       ? null
       : daysRemaining <= 0
         ? 'expired'
-        : daysRemaining <= WARN_DAYS_THRESHOLD
-          ? 'warning'
+        : daysRemaining === WARN_DAYS_THRESHOLD
+          ? 'warning'   // pouze přesně 3 dny před koncem, pak ticho
           : null;
 
   // Preview přepíše reálný stav (bez ohledu na dismiss)

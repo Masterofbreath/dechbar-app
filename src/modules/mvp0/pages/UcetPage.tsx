@@ -181,7 +181,9 @@ export function UcetPage() {
           </span>
 
           <div className="ucet-plan-card__content">
-            <p className="ucet-plan-card__name">{planInfo.label}</p>
+            <p className="ucet-plan-card__name">
+              {planInfo.modifier !== 'zdarma' ? `Tarif ${planInfo.label}` : planInfo.label}
+            </p>
             <p className="ucet-plan-card__subtitle">{planInfo.subtitle}</p>
 
             {/* Active since / expiry / cancelled */}
