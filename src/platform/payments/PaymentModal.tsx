@@ -17,13 +17,46 @@
  * @since 2026-02-20
  */
 
-import { useEffect } from 'react';
+import { useEffect, Component } from 'react';
+import type { ReactNode } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { CloseButton } from '@/components/shared';
 
 // Load Stripe.js (cached after first load, inicializuje se při importu modulu)
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+/**
+ * Catches DOM-level errors from Stripe's EmbeddedCheckout during unmount.
+ * "removeChild" errors happen when React unmounts the component while
+ * Stripe is still doing internal DOM cleanup — prevents them from
+ * propagating to the global error boundary (error-page).
+ */
+class StripeCheckoutErrorBoundary extends Component<
+  { children: ReactNode; onClose: () => void },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; onClose: () => void }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.warn('⚠️ Stripe checkout cleanup error (suppressed):', error.message);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      setTimeout(() => this.props.onClose(), 0);
+      return null;
+    }
+    return this.props.children;
+  }
+}
 
 export interface PaymentModalProps {
   isOpen: boolean;
@@ -119,9 +152,11 @@ export function PaymentModal({
         />
 
         <div className="payment-modal__stripe-wrapper">
-          <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
-            <EmbeddedCheckout />
-          </EmbeddedCheckoutProvider>
+          <StripeCheckoutErrorBoundary onClose={onClose}>
+            <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          </StripeCheckoutErrorBoundary>
         </div>
       </div>
     </div>
