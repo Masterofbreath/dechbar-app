@@ -161,61 +161,53 @@ function getAdminPeriodStart(period: DashboardPeriod): string {
 }
 
 /**
- * Returns { from, to } date strings for the PREVIOUS admin period — elapsed-window logic.
+ * Returns { from, to } date strings for the FULL previous admin period.
  *
- * Rule (same as PokrokPage getPreviousPeriodRange):
- *   If current period = Mon–Wed (3 elapsed days), prev = last Mon–Wed (3 days).
- *   Never compare a partial current period against a FULL previous period.
+ * Admin logic: compare current partial period against the COMPLETE previous period.
+ * Goal: "How many users do I need to match/beat last week's total?"
  *
  * Examples (today = Wed Mar 4):
- *   week  → prev Mon Feb 24 – prev Wed Feb 26  (not Mon–Sun)
- *   month → prev Feb 1–4                        (not whole Feb)
- *   year  → only from 2027+ (no 2025 data yet)
+ *   today     → yesterday (full day)
+ *   yesterday → day-before-yesterday (full day)
+ *   week      → last FULL week Mon Feb 24 – Sun Mar 2  (not elapsed window)
+ *   month     → last FULL month Feb 1 – Feb 28
+ *   year      → last full year (only from 2027+)
  */
 function getAdminPrevPeriodRange(period: DashboardPeriod): { from: string; to: string } | null {
   const now = new Date();
   switch (period) {
     case 'today': {
-      // Today 00:00→now vs. yesterday same window (full previous day)
       const d = new Date(now); d.setDate(d.getDate() - 1);
       const s = toIsoDateString(d);
       return { from: s, to: s };
     }
     case 'yesterday': {
-      // Yesterday (full day) vs. day-before-yesterday (full day)
       const d = new Date(now); d.setDate(d.getDate() - 2);
       const s = toIsoDateString(d);
       return { from: s, to: s };
     }
     case 'week': {
-      // Current: this Monday 00:00 → now
-      // Previous equivalent: last Monday 00:00 → (now − 7 days)  [same elapsed days]
+      // Last FULL week: Mon–Sun before this week
       const dow = now.getDay();
       const mondayOffset = dow === 0 ? -6 : 1 - dow;
       const thisMonday = new Date(now);
       thisMonday.setDate(thisMonday.getDate() + mondayOffset);
       thisMonday.setHours(0, 0, 0, 0);
-      const prevStart = new Date(thisMonday); prevStart.setDate(prevStart.getDate() - 7);
-      const prevEnd   = new Date(now);        prevEnd.setDate(prevEnd.getDate() - 7);
-      return { from: toIsoDateString(prevStart), to: toIsoDateString(prevEnd) };
+      const lastSunday  = new Date(thisMonday); lastSunday.setDate(lastSunday.getDate() - 1);
+      const lastMonday  = new Date(thisMonday); lastMonday.setDate(lastMonday.getDate() - 7);
+      return { from: toIsoDateString(lastMonday), to: toIsoDateString(lastSunday) };
     }
     case 'month': {
-      // Current: 1st of this month → today (day N)
-      // Previous: 1st of last month → day N of last month (capped at last day)
-      const dayOfMonth = now.getDate();
-      const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
-      const cappedDay = Math.min(dayOfMonth, lastDayOfPrevMonth);
-      const prevMonthEnd = new Date(now.getFullYear(), now.getMonth() - 1, cappedDay);
-      return { from: toIsoDateString(prevMonthStart), to: toIsoDateString(prevMonthEnd) };
+      // Last FULL calendar month: 1st to last day
+      const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastOfLastMonth  = new Date(now.getFullYear(), now.getMonth(), 0);
+      return { from: toIsoDateString(firstOfLastMonth), to: toIsoDateString(lastOfLastMonth) };
     }
     case 'year': {
-      // Only from 2027 — no 2025 data available yet
       if (now.getFullYear() <= 2026) return null;
-      // Current: Jan 1 → today. Previous: Jan 1 of last year → same calendar day last year
-      const prevStart = new Date(now.getFullYear() - 1, 0, 1);
-      const prevEnd   = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-      return { from: toIsoDateString(prevStart), to: toIsoDateString(prevEnd) };
+      const firstOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
+      const lastOfLastYear  = new Date(now.getFullYear() - 1, 11, 31);
+      return { from: toIsoDateString(firstOfLastYear), to: toIsoDateString(lastOfLastYear) };
     }
     default: return null;
   }

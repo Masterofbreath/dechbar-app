@@ -45,18 +45,31 @@ function formatMinutesDelta(absDiff: number): string {
   return `${h}h ${m} min`;
 }
 
+/**
+ * Computes delta label for admin KPI cards.
+ *
+ * Shows: diff value + % change vs the FULL previous period.
+ * Example: "+68 · +∞%  vs. min. týden"  or  "−1h 5 min · −12%  vs. min. měsíc"
+ *
+ * Admin perspective: How close am I to last period's TOTAL? (not elapsed-window)
+ */
 function getDelta(
   current: number,
   prev: number,
   type: 'count' | 'minutes' = 'count',
+  periodLabel = 'předchozí',
 ): { label: string; dir: 'up' | 'down' | 'same' } {
   if (prev === 0 && current === 0) return { label: '', dir: 'same' };
   const diff = current - prev;
-  if (diff === 0) return { label: '= stejně', dir: 'same' };
+  if (diff === 0) return { label: `= stejně vs. ${periodLabel}`, dir: 'same' };
   const absDiff = Math.abs(diff);
   const formatted = type === 'minutes' ? formatMinutesDelta(absDiff) : formatNumber(absDiff);
+  const sign = diff > 0 ? '+' : '−';
+  // % change
+  const pct = prev > 0 ? Math.round(Math.abs(diff / prev) * 100) : null;
+  const pctStr = pct != null ? ` · ${sign}${pct}%` : '';
   return {
-    label: diff > 0 ? `+${formatted} vs. předchozí` : `−${formatted} vs. předchozí`,
+    label: `${sign}${formatted}${pctStr} vs. ${periodLabel}`,
     dir: diff > 0 ? 'up' : 'down',
   };
 }
@@ -579,6 +592,15 @@ export default function AnalyticsAdmin() {
     year: 'letos',
   };
 
+  // Short label for "vs. X" delta suffix — always describes the FULL previous period
+  const prevPeriodShortLabel: Record<DashboardPeriod, string> = {
+    today: 'včera',
+    yesterday: 'předevčírem',
+    week: 'min. týden',
+    month: 'min. měsíc',
+    year: 'min. rok',
+  };
+
   return (
     <div className="analytics-admin">
       {/* Header */}
@@ -633,14 +655,14 @@ export default function AnalyticsAdmin() {
           label="Aktivní uživatelé"
           value={isLoading ? '—' : formatNumber(dauL2)}
           sublabel="spustili alespoň 1 aktivitu"
-          delta={prevKpis.length > 0 ? getDelta(dauL2, prevDauL2) : undefined}
+          delta={prevKpis.length > 0 ? getDelta(dauL2, prevDauL2, 'count', prevPeriodShortLabel[period]) : undefined}
           isLoading={isLoading}
         />
         <KpiCard
           label="Minuty prodýchány"
           value={isLoading ? '—' : formatMinutes(minutes)}
           sublabel={periodLabel[period]}
-          delta={prevKpis.length > 0 ? getDelta(minutes, prevMinutes, 'minutes') : undefined}
+          delta={prevKpis.length > 0 ? getDelta(minutes, prevMinutes, 'minutes', prevPeriodShortLabel[period]) : undefined}
           isLoading={isLoading}
           gold
         />
@@ -648,7 +670,7 @@ export default function AnalyticsAdmin() {
           label="Noví uživatelé"
           value={isLoading ? '—' : formatNumber(newUsers)}
           sublabel={`registrací ${periodLabel[period]}`}
-          delta={prevKpis.length > 0 ? getDelta(newUsers, prevNewUsers) : undefined}
+          delta={prevKpis.length > 0 ? getDelta(newUsers, prevNewUsers, 'count', prevPeriodShortLabel[period]) : undefined}
           isLoading={isLoading}
         />
       </div>

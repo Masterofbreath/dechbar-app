@@ -39,8 +39,15 @@ export function TracksManager() {
       const data = await adminApi.tracks.getAll();
       setTracks(data);
     } catch (err) {
-      console.error('Failed to load tracks:', err);
-      setError('Nepodařilo se načíst tracky');
+      const msg = err instanceof Error ? err.message : String(err);
+      // Tabulka tracks zatím neexistuje v schématu — není to crash, jen legacy feature
+      if (msg.includes("public.tracks") || msg.includes("tracks") && msg.includes("schema cache")) {
+        console.warn('TracksManager: tabulka public.tracks ještě neexistuje v DB — zobrazuji prázdný seznam');
+        setTracks([]);
+      } else {
+        console.error('Failed to load tracks:', err);
+        setError('Nepodařilo se načíst tracky');
+      }
     } finally {
       setIsLoading(false);
     }

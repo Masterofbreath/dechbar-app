@@ -15,7 +15,7 @@
  * @since 2.47.0
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/platform/api/supabase';
 import { useAuth } from '@/platform/auth';
@@ -23,8 +23,17 @@ import { useUserState } from './userStateStore';
 
 export function useRealtimeUserState() {
   const { user } = useAuth();
-  const { refreshRoles, refreshMembership, refreshModules } = useUserState();
   const queryClient = useQueryClient();
+  // Stable refs — prevent re-running the effect when store methods change reference
+  const userStateRef = useRef(useUserState.getState());
+
+  // Keep the ref updated without triggering re-runs
+  const refreshRoles = useUserState((s) => s.refreshRoles);
+  const refreshMembership = useUserState((s) => s.refreshMembership);
+  const refreshModules = useUserState((s) => s.refreshModules);
+  useEffect(() => { userStateRef.current.refreshRoles = refreshRoles; }, [refreshRoles]);
+  useEffect(() => { userStateRef.current.refreshMembership = refreshMembership; }, [refreshMembership]);
+  useEffect(() => { userStateRef.current.refreshModules = refreshModules; }, [refreshModules]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -54,8 +63,7 @@ export function useRealtimeUserState() {
             new: payload.new,
           });
           
-          // Refresh roles from DB
-          await refreshRoles();
+          await userStateRef.current.refreshRoles();
           
           // Optional: Show toast notification
           if (payload.eventType === 'INSERT' && payload.new && 'role_id' in payload.new) {
@@ -94,8 +102,7 @@ export function useRealtimeUserState() {
             new: payload.new,
           });
           
-          // Refresh membership from DB
-          await refreshMembership();
+          await userStateRef.current.refreshMembership();
           
           // Show toast notification for upgrades
           if (payload.new && 'plan' in payload.new) {
@@ -140,8 +147,7 @@ export function useRealtimeUserState() {
             new: payload.new,
           });
           
-          // Refresh modules from DB
-          await refreshModules();
+          await userStateRef.current.refreshModules();
           
           // Show toast notification for new purchases
           if (payload.eventType === 'INSERT' && payload.new && 'module_id' in payload.new) {
@@ -242,5 +248,6 @@ export function useRealtimeUserState() {
       
       console.log('✅ Real-time channels unsubscribed');
     };
-  }, [user?.id, refreshRoles, refreshMembership, refreshModules, queryClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Pouze user.id — store metody jsou v userStateRef aby nedošlo k reconnect loopu
 }

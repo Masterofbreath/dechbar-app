@@ -23,6 +23,7 @@ import { formatMinutes, getActivityLevel } from '@/platform/analytics';
 import { usePokrokRealtime } from '@/platform/analytics/hooks/usePokrokRealtime';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useAuthStore } from '@/platform/auth';
+import { useNavigation } from '@/platform/hooks/useNavigation';
 import type { ActivityPeriod, ActivityDayData } from '@/platform/analytics';
 import '@/styles/pages/pokrok.css';
 
@@ -259,6 +260,17 @@ const PERIOD_TABS: PeriodTab[] = [
 export function PokrokPage() {
   const [period, setPeriod] = useState<ActivityPeriod>('day');
   const userId = useAuthStore((s) => s.user?.id);
+  const { currentTab } = useNavigation();
+
+  // Reset period na 'day' pokaždé, když uživatel přejde na tab "pokrok".
+  // Officiální React pattern: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevTab, setPrevTab] = useState(currentTab);
+  if (prevTab !== currentTab) {
+    setPrevTab(currentTab);
+    if (currentTab === 'pokrok' && period !== 'day') {
+      setPeriod('day');
+    }
+  }
 
   // Real-time invalidace při změně audio/exercise session (bez refreshe stránky)
   usePokrokRealtime(userId);
