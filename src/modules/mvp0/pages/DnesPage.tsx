@@ -4,7 +4,7 @@
  * MVP0 Core: 4 essential elements
  * 1. Greeting (dynamic time-based)
  * 2. SMART exercise button (tier-gated)
- * 3. 3 Preset protocols (RÁNO, RESET, NOC)
+ * 3. 3 Preset protocols (RÁNO, KLID, VEČER)
  * 4. Daily tip widget
  * 
  * @package DechBar_App
@@ -116,14 +116,14 @@ export function DnesPage() {
               protocol="rano"
               icon="sun"
               label="RÁNO"
-              duration="7 min"
+              duration="6 min"
               onClick={() => handleProtocolClick('RÁNO')}
             />
             <PresetProtocolButton
               protocol="klid"
               icon="wind"
               label="KLID"
-              duration="5 min"
+              duration="7 min"
               onClick={() => handleProtocolClick('KLID')}
             />
             <PresetProtocolButton
