@@ -14,6 +14,7 @@
 import { useState } from 'react';
 import { ExerciseList, SessionEngineModal } from '../components';
 import { useNavigation } from '@/platform/hooks';
+import { isProtocol } from '@/utils/exerciseHelpers';
 import type { Exercise } from '../types/exercises';
 
 /**
@@ -58,11 +59,14 @@ export function CvicitPage() {
         />
       </div>
       
-      {/* Session Engine Modal */}
+      {/* Session Engine Modal
+          skipFlow=true pro protokoly → přeskočí start screen a rovnou spustí odpočet
+          (stejné chování jako kliknutí na tlačítko protokolu na view Dnes) */}
       {selectedExercise && (
         <SessionEngineModal
           exercise={selectedExercise}
           isOpen={isSessionOpen}
+          skipFlow={isProtocol(selectedExercise)}
           onClose={() => {
             setIsSessionOpen(false);
             setSelectedExercise(null);

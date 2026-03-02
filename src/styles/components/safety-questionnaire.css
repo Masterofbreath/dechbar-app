@@ -1,238 +1,303 @@
 /* ============================================================
-   Safety Questionnaire Modal Styles
-   First-time user safety check with disclaimer
-   DechBar Tone of Voice: Friendly but responsible
+   Safety Questionnaire Modal
+   First-time safety check — 1× per account lifetime.
+   Design: konzistentní s ostatními modaly appky
+   (dark surface, teal accent, žádné emoji)
    ============================================================ */
 
-/* ============================================================
-   Modal Container
-   ============================================================ */
-.safety-questionnaire-modal {
+/* =====================================================
+   WRAPPER + OVERLAY
+   ===================================================== */
+
+.sq-modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 10001;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 1rem;
 }
 
-.safety-questionnaire-modal__overlay {
+.sq-modal__overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(10px);
+  inset: 0;
+  background: rgb(0 0 0 / 80%);
+  backdrop-filter: blur(8px);
 }
 
-.safety-questionnaire-modal__content {
+.sq-modal__content {
   position: relative;
   width: 100%;
-  max-width: 540px;
-  max-height: 90vh;
+  max-width: 520px;
+  max-height: 90dvh;
   overflow-y: auto;
   background: var(--color-surface-elevated);
-  border-radius: 24px;
-  padding: 32px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 24px 48px rgb(0 0 0 / 50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-/* ============================================================
-   Header
-   ============================================================ */
-.questionnaire-header {
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.sq-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-bottom: 32px;
+  gap: 0.75rem;
 }
 
-.questionnaire-title {
-  font-size: 28px;
+.sq-header__icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgb(44 190 198 / 15%), rgb(44 190 198 / 8%));
+  border: 1px solid rgb(44 190 198 / 25%);
+  color: var(--color-primary);
+}
+
+.sq-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.sq-icon--alert {
+  color: var(--color-warning, #f59e0b);
+}
+
+.sq-icon--sm {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.sq-header__title {
+  font-size: 1.375rem;
   font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0 0 8px 0;
+  margin: 0;
   letter-spacing: -0.01em;
 }
 
-.questionnaire-subtitle {
-  font-size: 15px;
+.sq-header__subtitle {
+  font-size: 0.9375rem;
   color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* =====================================================
+   QUESTIONS
+   ===================================================== */
+
+.sq-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.875rem;
+}
+
+/* =====================================================
+   DISCLAIMER
+   ===================================================== */
+
+.sq-disclaimer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sq-disclaimer__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-secondary);
+}
+
+.sq-disclaimer__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
-/* ============================================================
-   Questions Section
-   ============================================================ */
-.questionnaire-questions {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 32px;
-  padding: 20px;
+.sq-disclaimer__body {
+  padding: 1.125rem;
   background: var(--color-surface);
-  border-radius: 16px;
   border: 1px solid var(--color-border);
-}
-
-/* ============================================================
-   Disclaimer Section
-   ============================================================ */
-.disclaimer {
-  margin-bottom: 24px;
-}
-
-.disclaimer__title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 16px 0;
-}
-
-.disclaimer__text {
-  padding: 20px;
-  background: var(--color-surface);
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-  font-size: 14px;
+  border-radius: 0.875rem;
+  font-size: 0.875rem;
   color: var(--color-text-secondary);
   line-height: 1.6;
-  margin-bottom: 20px;
-  max-height: 300px;
+  max-height: 220px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.disclaimer__text p {
-  margin: 0 0 12px 0;
+.sq-disclaimer__body p {
+  margin: 0;
 }
 
-.disclaimer__text p:last-child {
-  margin-bottom: 0;
-}
-
-.disclaimer__text strong {
+.sq-disclaimer__body strong {
   color: var(--color-text-primary);
   font-weight: 600;
 }
 
-.disclaimer__text ul {
-  margin: 8px 0 12px 20px;
+.sq-disclaimer__body ul {
+  margin: 0 0 0 1.125rem;
   padding: 0;
 }
 
-.disclaimer__text li {
-  margin-bottom: 4px;
+.sq-disclaimer__body li {
+  margin-bottom: 0.25rem;
 }
 
-.disclaimer__warning {
-  padding: 12px 16px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid var(--color-error);
-  border-radius: 12px;
+.sq-disclaimer__warning {
+  padding: 0.75rem 1rem;
+  background: rgb(239 68 68 / 8%);
+  border: 1px solid rgb(239 68 68 / 30%);
+  border-radius: 0.625rem;
   color: var(--color-error);
-  margin: 12px 0;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
-.disclaimer__footer {
+.sq-disclaimer__footer {
   color: var(--color-text-tertiary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-style: italic;
 }
 
-/* ============================================================
-   Actions
-   ============================================================ */
-.questionnaire-actions {
+/* =====================================================
+   ACTIONS
+   ===================================================== */
+
+.sq-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.625rem;
 }
 
-/* ============================================================
-   Safety Warning Screen
-   ============================================================ */
-.safety-warning {
+/* =====================================================
+   WARNING SCREEN (health concerns)
+   ===================================================== */
+
+.sq-warning {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
   text-align: center;
 }
 
-.safety-warning__icon {
-  font-size: 64px;
-  margin-bottom: 16px;
+.sq-warning__icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: rgb(245 158 11 / 10%);
+  border: 1px solid rgb(245 158 11 / 25%);
+  color: var(--color-warning, #f59e0b);
 }
 
-.safety-warning__title {
-  font-size: 24px;
+.sq-warning__icon .sq-icon--alert {
+  width: 32px;
+  height: 32px;
+}
+
+.sq-warning__title {
+  font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-error);
-  margin: 0 0 16px 0;
+  color: var(--color-text-primary);
+  margin: 0;
 }
 
-.safety-warning__message {
-  font-size: 16px;
-  color: var(--color-text-primary);
-  margin: 0 0 24px 0;
+.sq-warning__message {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  margin: 0;
   line-height: 1.5;
 }
 
-.safety-warning__recommendations {
-  text-align: left;
-  padding: 20px;
-  background: var(--color-surface);
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-  margin-bottom: 24px;
-}
-
-.safety-warning__recommendations h3 {
-  font-size: 16px;
-  font-weight: 600;
+.sq-warning__message strong {
   color: var(--color-text-primary);
-  margin: 0 0 12px 0;
 }
 
-.safety-warning__recommendations ul {
-  margin: 0 0 16px 20px;
-  padding: 0;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.safety-warning__recommendations p {
-  margin: 0;
-  font-size: 14px;
+.sq-warning__box {
+  width: 100%;
+  text-align: left;
+  padding: 1.125rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.875rem;
+  font-size: 0.875rem;
   color: var(--color-text-secondary);
   line-height: 1.6;
-}
-
-.safety-warning__actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.5rem;
 }
 
-/* ============================================================
-   Responsive Design
-   ============================================================ */
-@media (max-width: 768px) {
-  .safety-questionnaire-modal__content {
-    padding: 24px 20px;
+.sq-warning__box h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.sq-warning__box ul {
+  margin: 0 0 0 1.125rem;
+  padding: 0;
+}
+
+.sq-warning__box li {
+  margin-bottom: 0.25rem;
+}
+
+.sq-warning__box p {
+  margin: 0;
+}
+
+.sq-warning .sq-actions {
+  width: 100%;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (width <= 767px) {
+  .sq-modal__content {
+    padding: 1.5rem 1.25rem;
+    border-radius: 1rem;
   }
-  
-  .questionnaire-title {
-    font-size: 24px;
+
+  .sq-header__title {
+    font-size: 1.25rem;
   }
-  
-  .questionnaire-questions {
-    padding: 16px;
+
+  .sq-questions {
+    padding: 1rem;
   }
-  
-  .disclaimer__text {
-    padding: 16px;
-    font-size: 13px;
+
+  .sq-disclaimer__body {
+    font-size: 0.8125rem;
+    max-height: 180px;
   }
 }

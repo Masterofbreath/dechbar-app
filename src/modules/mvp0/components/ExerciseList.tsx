@@ -220,7 +220,9 @@ export function ExerciseList({
                     key={exercise.id}
                     exercise={exercise}
                     onStart={onStartExercise}
-                    onDuplicate={handleDuplicate}
+                    // Protokoly (RÁNO, KLID, VEČER…) nemají duplicate/edit —
+                    // spravují se přes admin panel a DB, ne uživatelsky.
+                    onDuplicate={isProtocol(exercise) ? undefined : handleDuplicate}
                   />
                 ))}
               </div>
