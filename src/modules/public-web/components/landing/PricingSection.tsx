@@ -14,6 +14,7 @@ import { useAuth } from '@/platform/auth';
 import { PricingCard } from './PricingCard';
 import { BillingToggle, type BillingInterval } from './BillingToggle';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { AiCoachWaitlistModal } from './AiCoachWaitlistModal';
 import { trackMetaEvent } from '@/platform/utils/analytics';
 
 // Stripe Price IDs (from Stripe Dashboard)
@@ -110,6 +111,7 @@ export function PricingSection() {
   const { user } = useAuth();
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('annual');
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
 
   // Meta Pixel: user scrolled to pricing section and saw the plans
   useEffect(() => {
@@ -214,6 +216,7 @@ export function PricingSection() {
                   ctaVariant={PRICING_DATA.aiCoach.ctaVariant}
                   highlighted={PRICING_DATA.aiCoach.highlighted}
                   comingSoon={PRICING_DATA.aiCoach.comingSoon}
+                  onComingSoonCTA={() => setShowWaitlistModal(true)}
                 />
               );
             })()}
@@ -227,6 +230,11 @@ export function PricingSection() {
         onClose={() => setShowAuthModal(false)}
         defaultView="register"
       />
+
+      {/* AI Coach Waitlist Modal */}
+      {showWaitlistModal && (
+        <AiCoachWaitlistModal onClose={() => setShowWaitlistModal(false)} />
+      )}
     </>
   );
 }

@@ -25,16 +25,19 @@ export const ECOMAIL_BASE_URL = 'https://api2.ecomailapp.cz';
  * Setup: docs/marketing/ECOMAIL_DEPLOYMENT.md
  */
 export const ECOMAIL_LISTS = {
-  UNREG: 'unreg_users',      // Magic link sent, not clicked
-  REG: 'reg_users',          // Registered + onboarded
-  ENGAGED: 'engaged_users',  // 5+ hours breathed
-  PREMIUM: 'premium_users',  // Paid members
-  CHURNED: 'churned_users'   // Inactive 60+ days
+  UNREG: 'unreg_users',                   // Magic link sent, not clicked
+  REG: 'reg_users',                        // Registered + onboarded
+  ENGAGED: 'engaged_users',               // 5+ hours breathed
+  PREMIUM: 'premium_users',               // Paid members
+  CHURNED: 'churned_users',               // Inactive 60+ days
+  AI_COACH_WAITLIST: 'ai_coach_waitlist', // Waitlist for AI Coach (coming soon)
 } as const;
 
 /**
  * List IDs by environment
  * Updated: 2026-01-28 (Created via API)
+ * TODO: After creating AI_COACH_WAITLIST list in Ecomail dashboard,
+ *       update PROD list ID (currently placeholder).
  */
 export const ECOMAIL_LIST_IDS = {
   DEV: {
@@ -42,14 +45,16 @@ export const ECOMAIL_LIST_IDS = {
     REG: '6',
     ENGAGED: '7',
     PREMIUM: '8',
-    CHURNED: '9'
+    CHURNED: '9',
+    AI_COACH_WAITLIST: '10',
   },
   PROD: {
     UNREG: 'LIST_ID_UNREG_PROD',
     REG: 'LIST_ID_REG_PROD',
     ENGAGED: 'LIST_ID_ENGAGED_PROD',
     PREMIUM: 'LIST_ID_PREMIUM_PROD',
-    CHURNED: 'LIST_ID_CHURNED_PROD'
+    CHURNED: 'LIST_ID_CHURNED_PROD',
+    AI_COACH_WAITLIST: 'LIST_ID_AI_COACH_WAITLIST_PROD',
   }
 } as const;
 

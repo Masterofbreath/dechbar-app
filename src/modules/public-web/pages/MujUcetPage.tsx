@@ -33,6 +33,7 @@ import { Header } from '../components/landing/Header';
 import { Footer } from '../components/landing/Footer';
 import { BillingToggle } from '../components/landing/BillingToggle';
 import { PricingCard } from '../components/landing/PricingCard';
+import { AiCoachWaitlistModal } from '../components/landing/AiCoachWaitlistModal';
 import type { BillingInterval } from '../components/landing/BillingToggle';
 import './MujUcetPage.css';
 
@@ -184,6 +185,7 @@ export function MujUcetPage() {
 
   // ── Local UI state ─────────────────────────────────────────
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('annual');
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [nameEditState, setNameEditState] = useState<NameEditState>('idle');
   const [nameValue, setNameValue] = useState('');
   const [nicknameEditState, setNicknameEditState] = useState<NicknameEditState>('idle');
@@ -770,6 +772,7 @@ export function MujUcetPage() {
                         ctaVariant="primary"
                         highlighted={false}
                         comingSoon
+                        onComingSoonCTA={() => setShowWaitlistModal(true)}
                       />
                     </div>
                   </div>
@@ -1041,6 +1044,11 @@ export function MujUcetPage() {
       </main>
 
       <Footer />
+
+      {/* AI Coach Waitlist Modal */}
+      {showWaitlistModal && (
+        <AiCoachWaitlistModal onClose={() => setShowWaitlistModal(false)} />
+      )}
     </div>
   );
 }

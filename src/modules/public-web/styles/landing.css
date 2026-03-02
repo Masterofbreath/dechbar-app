@@ -604,6 +604,18 @@ section[id] {
   pointer-events: none;
 }
 
+/* Waitlist variant — karta je faded, ale CTA tlačítko je klikatelné */
+.pricing-card--waitlist {
+  pointer-events: auto;
+  user-select: auto;
+}
+
+.pricing-card--waitlist .pricing-card__cta {
+  pointer-events: auto;
+  opacity: 1;
+  cursor: pointer;
+}
+
 /* Disabled state for "Aktivní" pricing cards */
 .pricing-card__cta:disabled {
   opacity: 0.6;

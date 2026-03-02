@@ -31,8 +31,9 @@ export interface PricingCardProps {
   ctaVariant: 'primary' | 'ghost';
   highlighted?: boolean;
   isDisabled?: boolean;
-  comingSoon?: boolean;  // Shows "Brzy dostupné" overlay and disables purchase
-  onFreeTierCTA?: () => void;  // For free tier (auth modal)
+  comingSoon?: boolean;       // Shows "Brzy dostupné" and disables purchase
+  onFreeTierCTA?: () => void; // For free tier (auth modal)
+  onComingSoonCTA?: () => void; // For comingSoon: opens waitlist modal instead of disabling
 }
 
 export function PricingCard({
@@ -53,6 +54,7 @@ export function PricingCard({
   isDisabled = false,
   comingSoon = false,
   onFreeTierCTA,
+  onComingSoonCTA,
 }: PricingCardProps) {
   const { user } = useAuth();
   const { 
@@ -70,6 +72,12 @@ export function PricingCard({
     // Free tier: Open auth modal
     if (moduleId === 'free' && onFreeTierCTA) {
       onFreeTierCTA();
+      return;
+    }
+
+    // Coming soon with waitlist: open waitlist modal
+    if (comingSoon && onComingSoonCTA) {
+      onComingSoonCTA();
       return;
     }
 
@@ -134,7 +142,7 @@ export function PricingCard({
 
   return (
     <>
-      <div className={`pricing-card ${highlighted ? 'pricing-card--highlighted' : ''} ${comingSoon ? 'pricing-card--coming-soon' : ''}`}>
+      <div className={`pricing-card ${highlighted ? 'pricing-card--highlighted' : ''} ${comingSoon ? (onComingSoonCTA ? 'pricing-card--coming-soon pricing-card--waitlist' : 'pricing-card--coming-soon') : ''}`}>
       {/* Badge (if exists) */}
       {badge && (
         <div className={`pricing-card__badge ${highlighted ? 'pricing-card__badge--gold' : 'pricing-card__badge--teal'}`}>
@@ -205,10 +213,14 @@ export function PricingCard({
         size="lg"
         fullWidth
         onClick={handleCTA}
-        disabled={isDisabled || isButtonLoading || comingSoon}
+        disabled={isDisabled || isButtonLoading || (comingSoon && !onComingSoonCTA)}
         className="pricing-card__cta"
       >
-        {isButtonLoading ? 'Načítání...' : comingSoon ? 'Brzy dostupné' : ctaText}
+        {isButtonLoading
+          ? 'Načítání...'
+          : comingSoon && !onComingSoonCTA
+            ? 'Brzy dostupné'
+            : ctaText}
       </Button>
 
       {/* Error message */}

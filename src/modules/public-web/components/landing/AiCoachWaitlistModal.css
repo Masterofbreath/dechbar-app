@@ -1,0 +1,289 @@
+/**
+ * AiCoachWaitlistModal Styles
+ *
+ * Apple premium dark style, konzistentní s TrialExpiryModal.
+ * BEM prefix: .acwm-
+ *
+ * @package DechBar_App
+ */
+
+/* ─── Overlay ──────────────────────────────────────────────── */
+
+.acwm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 72%);
+  z-index: 10100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: acwm-fade-in 0.25s ease;
+}
+
+@media (width >= 480px) {
+  .acwm-overlay {
+    align-items: center;
+    padding: var(--spacing-6);
+  }
+}
+
+@keyframes acwm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Card ─────────────────────────────────────────────────── */
+
+.acwm-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--spacing-8) var(--spacing-6) var(--spacing-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+  animation: acwm-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  border-top: 1px solid var(--color-border);
+}
+
+@media (width >= 480px) {
+  .acwm-card {
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-8) var(--spacing-8) var(--spacing-7);
+    border: 1px solid var(--color-border);
+  }
+}
+
+/* Pull handle (mobile) */
+.acwm-card::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  margin: 0 auto var(--spacing-2);
+}
+
+@media (width >= 480px) {
+  .acwm-card::before { display: none; }
+}
+
+@keyframes acwm-slide-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ─── Close button ─────────────────────────────────────────── */
+
+.acwm-close {
+  position: absolute;
+  top: var(--spacing-4);
+  right: var(--spacing-4);
+}
+
+/* ─── Badge row ────────────────────────────────────────────── */
+
+.acwm-badge-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.acwm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgb(255 255 255 / 8%);
+  color: var(--color-text-secondary);
+}
+
+.acwm-badge--ai {
+  background: var(--color-accent-tint, rgb(214 162 58 / 15%));
+  color: var(--color-accent, #D6A23A);
+}
+
+/* ─── Headline ─────────────────────────────────────────────── */
+
+.acwm-headline {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.acwm-subline {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: var(--spacing-1) 0 0;
+}
+
+/* ─── Perks ────────────────────────────────────────────────── */
+
+.acwm-perks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.acwm-perk {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-2);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.acwm-perk__dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent, #D6A23A);
+  margin-top: 2px;
+}
+
+/* ─── Form ─────────────────────────────────────────────────── */
+
+.acwm-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.acwm-form__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.acwm-form__input {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-surface-raised, rgb(255 255 255 / 5%));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--duration-fast);
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+.acwm-form__input:focus {
+  border-color: var(--color-accent, #D6A23A);
+}
+
+.acwm-form__input--error {
+  border-color: var(--color-error, #EF4444);
+}
+
+.acwm-form__error {
+  font-size: 0.8125rem;
+  color: var(--color-error, #EF4444);
+  margin: 0;
+}
+
+/* ─── CTA ──────────────────────────────────────────────────── */
+
+.acwm-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--spacing-4) var(--spacing-6);
+  background: var(--color-accent, #D6A23A);
+  color: var(--color-background, #121212);
+  border: none;
+  border-radius: var(--radius-xl);
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  transition: opacity var(--duration-fast), box-shadow var(--duration-fast);
+  min-height: 52px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.acwm-cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .acwm-cta:not(:disabled):hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 16px var(--glow-accent-shadow-subtle, rgb(214 162 58 / 30%));
+  }
+}
+
+.acwm-cta:active:not(:disabled) {
+  opacity: 0.8;
+}
+
+/* ─── Disclaimer ───────────────────────────────────────────── */
+
+.acwm-disclaimer {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: calc(-1 * var(--spacing-2)) 0 0;
+}
+
+/* ─── Success state ────────────────────────────────────────── */
+
+.acwm-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+  text-align: center;
+  padding: var(--spacing-4) 0;
+}
+
+.acwm-success__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-accent-tint, rgb(214 162 58 / 15%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent, #D6A23A);
+}
+
+.acwm-success .acwm-headline {
+  font-size: 1.375rem;
+}
+
+.acwm-success .acwm-subline {
+  max-width: 320px;
+}
