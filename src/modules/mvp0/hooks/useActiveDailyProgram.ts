@@ -81,6 +81,7 @@ export interface UseActiveDailyProgramReturn {
 
 interface RawActiveRecord {
   module_id: string;
+  activated_at: string;
 }
 
 interface RawLesson {
@@ -108,10 +109,10 @@ interface RawProgramJoined {
 }
 
 async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramData | null> {
-  // 1. Zjisti module_id z user_active_program
+  // 1. Zjisti module_id + activated_at z user_active_program
   const { data: activeRec, error: activeErr } = await supabase
     .from('user_active_program')
-    .select('module_id')
+    .select('module_id, activated_at')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -165,20 +166,32 @@ async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramDat
   // 3. Výpočet postupného odemykání
   // Nový den začíná ve 4:00 ráno CET — posuneme osu o 4 hodiny dozadu,
   // takže "půlnoc výpočtu" = 04:00 skutečného času.
+  //
+  // Per-user start date: použijeme pozdější z launch_date a activated_at.
+  // → Uživatel, který si program připnul PŘED globálním startem, sleduje globální start.
+  // → Uživatel, který si program připnul PO globálním startu, sleduje svůj osobní start.
   const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
   const launchDate = r.launch_date ? new Date(r.launch_date) : null;
+  const activatedAt = (activeRec as RawActiveRecord).activated_at
+    ? new Date((activeRec as RawActiveRecord).activated_at)
+    : null;
+
+  // effectiveStartDate = MAX(activated_at, launch_date)
+  const effectiveStartDate =
+    activatedAt && launchDate && activatedAt > launchDate ? activatedAt : launchDate;
+
   const now = new Date();
 
-  const daysElapsed = launchDate
+  const daysElapsed = effectiveStartDate
     ? Math.max(
         0,
         Math.floor(
-          ((now.getTime() - UNLOCK_HOUR_OFFSET_MS) - (launchDate.getTime() - UNLOCK_HOUR_OFFSET_MS)) / 86_400_000,
+          ((now.getTime() - UNLOCK_HOUR_OFFSET_MS) - (effectiveStartDate.getTime() - UNLOCK_HOUR_OFFSET_MS)) / 86_400_000,
         ) + 1,
       )
     : Infinity;
 
-  const notStartedYet = launchDate ? launchDate > now : false;
+  const notStartedYet = effectiveStartDate ? effectiveStartDate > now : false;
 
   // 4. Načti všechny lekce programu seřazené podle day_number
   const { data: lessonsRaw, error: lessonsErr } = await supabase
@@ -214,7 +227,7 @@ async function fetchActiveProgram(userId: string): Promise<ActiveDailyProgramDat
     moduleId: activeModuleId,
     daysElapsed,
     notStartedYet,
-    startDate: launchDate,
+    startDate: effectiveStartDate,
     nextLesson,
   };
 }

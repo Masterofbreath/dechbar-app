@@ -155,10 +155,10 @@ serve(async (req) => {
       };
     }
 
-    // Default return URL per module
+    // Default return/success path per module (no query params — prevents double-? in URL)
     const moduleReturnPath = (() => {
       if (moduleId === 'digitalni-ticho') return '/digitalni-ticho/dekujeme';
-      if (paymentMode === 'subscription') return '/muj-ucet?payment=success';
+      if (paymentMode === 'subscription') return '/muj-ucet';
       return '/';
     })();
 

@@ -6,7 +6,11 @@
  * Priority logic:
  *   1. User has pinned program (user_active_program) → show their program + "Přehrát"
  *   2. Admin daily override (platform_daily_override) → custom audio with custom text
- *   3. Admin featured program (platform_featured_program) → show featured + "Zjistit více"
+ *   3. Admin featured program (platform_featured_program):
+ *      a) isPremium → always play / show
+ *      b) userHasEarlyAccess && !isAllCompleted → play for free
+ *      c) userHasEarlyAccess && isAllCompleted  → locked (completed, SMART for replay)
+ *      d) !userHasEarlyAccess                   → locked (registered after deadline, SMART required)
  *   4. Nothing → return null
  *
  * Clicking "Přehrát" / "Spustit" triggers StickyPlayer via useAkademiePlayback / playSticky.
@@ -16,7 +20,10 @@
  * @subpackage MVP0/Components
  */
 
+import { useState } from 'react';
 import { useAuth } from '@/platform/auth';
+import { useUserState } from '@/platform/user/userStateStore';
+import { TierLockModal } from '../../TierLockModal/TierLockModal';
 import { supabase } from '@/platform/api/supabase';
 import { useActiveDailyProgram } from '../../hooks/useActiveDailyProgram';
 import { usePlatformFeaturedProgram } from '../../hooks/usePlatformFeaturedProgram';
@@ -42,6 +49,15 @@ function PlayArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ width: 16, height: 16 }}>
       <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 20, height: 20 }}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   );
 }
@@ -175,6 +191,86 @@ function CompletedState({ program, onClear, className }: CompletedStateProps) {
 }
 
 // --------------------------------------------------
+// Locked featured state (SMART required)
+// --------------------------------------------------
+
+type LockedReason = 'completed' | 'no-access';
+
+interface LockedFeaturedStateProps {
+  program: ActiveDailyProgramInfo;
+  reason: LockedReason;
+  className?: string;
+}
+
+function LockedFeaturedState({ program, reason, className }: LockedFeaturedStateProps) {
+  const [showModal, setShowModal] = useState(false);
+
+  const modalDescription =
+    reason === 'completed'
+      ? 'Gratulujeme k dokončení výzvy! Pro opakované přehrávání všech výzev aktivuj tarif SMART.'
+      : 'Tato výzva je součástí tarifu SMART. Aktivuj předplatné a získej přístup ke všem dechovým výzvám.';
+
+  const benefits =
+    reason === 'completed'
+      ? [
+          'Neomezené opakování všech výzev',
+          'Přístup ke všem dechovým programům',
+          'Prémiová cvičení a meditace',
+        ]
+      : [
+          'Ranní dechová výzva (30 dní)',
+          'Všechny dechové programy a výzvy',
+          'Prémiová cvičení a meditace',
+        ];
+
+  return (
+    <>
+      <button
+        className={`todays-challenge-button todays-challenge-button--active todays-challenge-button--featured todays-challenge-button--locked ${className || ''}`}
+        onClick={() => setShowModal(true)}
+        type="button"
+        aria-label={`Odemknout program ${program.name} — vyžaduje SMART tarif`}
+      >
+        {/* Cover thumbnail */}
+        <div className="todays-challenge-button__cover" aria-hidden="true">
+          {program.cover_image_url ? (
+            <img src={program.cover_image_url} alt="" className="todays-challenge-button__cover-img todays-challenge-button__cover-img--locked" />
+          ) : (
+            <div className="todays-challenge-button__cover-placeholder">
+              <LockIcon />
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="todays-challenge-button__content">
+          <h3 className="todays-challenge-button__title">{program.name}</h3>
+          <p className="todays-challenge-button__subtitle todays-challenge-button__subtitle--locked">
+            {reason === 'completed' ? 'Výzva dokončena' : 'Výzva uzamčena'}
+          </p>
+        </div>
+
+        {/* CTA — SMART badge */}
+        <div className="todays-challenge-button__cta todays-challenge-button__cta--smart">
+          <LockIcon />
+          <span>SMART</span>
+        </div>
+      </button>
+
+      {/* iOS-compliant paywall modal */}
+      <TierLockModal
+        isOpen={showModal}
+        requiredTier="SMART"
+        featureName={reason === 'completed' ? 'Opakování dechových výzev' : 'Dechové výzvy — SMART'}
+        description={modalDescription}
+        benefits={benefits}
+        onClose={() => setShowModal(false)}
+      />
+    </>
+  );
+}
+
+// --------------------------------------------------
 // Override state (admin-scheduled custom audio)
 // --------------------------------------------------
 
@@ -222,10 +318,13 @@ function OverrideState({ override, onPlay, className }: OverrideStateProps) {
 
 export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps) {
   const { user } = useAuth();
+  const isPremium = useUserState((s) => s.isPremium);
 
   const userProgram = useActiveDailyProgram(user?.id);
   const dailyOverride = usePlatformDailyOverride();
-  const featuredProgram = usePlatformFeaturedProgram(user?.id);
+  // Předáváme user.created_at aby hook mohl spočítat per-user effectiveStartDate
+  // a rozhodnou, zda má uživatel early access (registrace před early_access_until).
+  const featuredProgram = usePlatformFeaturedProgram(user?.id, user?.created_at);
 
   // Navigace pro featured CTA (stejný vzor jako StickyPlayer)
   const { setCurrentTab } = useNavigation();
@@ -353,7 +452,13 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
 
   // --- State 3: Admin featured program (no user pin, no override) ---
   if (featuredProgram.data) {
-    const { program, titleOverride, nextLesson: featuredNextLesson } = featuredProgram.data;
+    const {
+      program,
+      titleOverride,
+      nextLesson: featuredNextLesson,
+      isAllCompleted,
+      userHasEarlyAccess,
+    } = featuredProgram.data;
     const displayProgram = titleOverride ? { ...program, name: titleOverride } : program;
 
     function handleFeaturedNavigate() {
@@ -364,7 +469,31 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
       setCurrentTab('akademie');
     }
 
-    // Má dostupnou lekci → přehrát přímo (sdílíme `playLesson` z top-level useAkademiePlayback)
+    // State 3c: Uživatel NEMÁ early access (registroval se po deadline) + není Premium
+    // → výzva uzamčena, SMART required
+    if (!userHasEarlyAccess && !isPremium) {
+      return (
+        <LockedFeaturedState
+          program={displayProgram}
+          reason="no-access"
+          className={className}
+        />
+      );
+    }
+
+    // State 3d: Uživatel MÁ early access (nebo je Premium) + všechny lekce dokončeny
+    // → non-premium users vidí locked-completed state; premium může opakovat
+    if (isAllCompleted && !isPremium) {
+      return (
+        <LockedFeaturedState
+          program={displayProgram}
+          reason="completed"
+          className={className}
+        />
+      );
+    }
+
+    // State 3a/b: Má dostupnou lekci → přehrát přímo
     if (featuredNextLesson) {
       const featuredLessonSubtitle = buildLessonSubtitle(featuredNextLesson, program.daily_minutes);
       return (
@@ -380,7 +509,7 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
       );
     }
 
-    // Nemá lekci (program dokončen / nezačal / neznámé) → navigace do Akademie
+    // Nemá lekci (program ještě nezačal / neznámé) → navigace do Akademie
     const featuredSubtitle = [
       program.duration_days ? `${program.duration_days} dní` : null,
       program.daily_minutes ? `${program.daily_minutes} min/den` : null,

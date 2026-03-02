@@ -4,6 +4,16 @@
  * Načítá admin-nastavený doporučený program z platform_featured_program
  * a vrací kompletní data programu (JOIN modules + akademie_categories).
  *
+ * Podporuje:
+ * - Per-user start date: effectiveStartDate = MAX(userCreatedAt, launch_date)
+ *   → uživatel zaregistrovaný před globálním startem sleduje globální datum
+ *   → uživatel zaregistrovaný po globálním startu sleduje svůj osobní start
+ *
+ * - Early access systém:
+ *   → early_access_until = NULL → bez limitu, přístup pro všechny
+ *   → early_access_until = DATE → uživatelé zaregistrovaní PO tomto datu vidí výzvu
+ *     jako uzamčenou (vyžaduje SMART); dříve registrovaní mají přístup do dokončení
+ *
  * Používá se v TodaysChallengeButton jako fallback (priorita 3),
  * když uživatel nemá pinnutý vlastní program a není aktivní daily override.
  *
@@ -33,11 +43,25 @@ export interface FeaturedProgramData {
    */
   titleOverride: string | undefined;
   /**
-   * Nejbližší nesplněná dostupná lekce (stejná logika jako useActiveDailyProgram).
-   * null = program dokončen / nezačal / uživatel není přihlášen.
-   * Když je non-null, TodaysChallengeButton zobrazí "Přehrát" místo "Zjistit více".
+   * Nejbližší nesplněná dostupná lekce.
+   * null = všechny dostupné lekce dokončeny / nezačal / uživatel není přihlášen.
    */
   nextLesson: AkademieLesson | null;
+  /**
+   * true = všechny aktuálně dostupné lekce jsou splněny.
+   * TodaysChallengeButton podle toho rozhoduje o stavu locked-completed.
+   */
+  isAllCompleted: boolean;
+  /**
+   * Datum konce early access (UTC ISO string). null = bez limitu.
+   */
+  earlyAccessUntil: string | null;
+  /**
+   * true = uživatel se zaregistroval před early_access_until → má bezplatný přístup.
+   * false = uživatel se zaregistroval po deadline → vyžaduje SMART.
+   * Vždy true pokud early_access_until = null (žádný limit).
+   */
+  userHasEarlyAccess: boolean;
 }
 
 export interface UsePlatformFeaturedProgramReturn {
@@ -54,6 +78,7 @@ interface RawFeaturedRecord {
   module_id: string;
   title_override: string | null;
   is_active: boolean;
+  early_access_until: string | null;
 }
 
 interface RawProgramJoined {
@@ -80,13 +105,16 @@ interface RawLesson {
   sort_order: number;
 }
 
-async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramData | null> {
+async function fetchFeaturedProgram(
+  userId?: string,
+  userCreatedAt?: string,
+): Promise<FeaturedProgramData | null> {
   const now = new Date().toISOString();
 
-  // 1. Načti aktivní featured záznam
+  // 1. Načti aktivní featured záznam (včetně early_access_until)
   const { data: featured, error: featuredErr } = await supabase
     .from('platform_featured_program')
-    .select('module_id, title_override, is_active')
+    .select('module_id, title_override, is_active, early_access_until')
     .eq('is_active', true)
     .or(`active_until.is.null,active_until.gt.${now}`)
     .order('sort_order', { ascending: true })
@@ -98,7 +126,18 @@ async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramDat
 
   const featuredRec = featured as RawFeaturedRecord;
 
-  // 2. Načti data programu (JOIN modules + akademie_categories)
+  // 2. Vypočítej early access stav pro tohoto uživatele
+  const earlyAccessUntil = featuredRec.early_access_until ?? null;
+  const earlyAccessUntilDate = earlyAccessUntil ? new Date(earlyAccessUntil) : null;
+  const userCreatedAtDate = userCreatedAt ? new Date(userCreatedAt) : null;
+
+  // Pokud není deadline nastaven → všichni mají přístup.
+  // Pokud je deadline nastaven → přístup pouze pro uživatele zaregistrované před ním.
+  const userHasEarlyAccess =
+    earlyAccessUntilDate === null ||
+    (userCreatedAtDate !== null && userCreatedAtDate <= earlyAccessUntilDate);
+
+  // 3. Načti data programu (JOIN modules + akademie_categories)
   const { data: prog, error: progErr } = await supabase
     .from('akademie_programs')
     .select(`
@@ -121,21 +160,33 @@ async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramDat
 
   const r = prog as unknown as RawProgramJoined;
 
-  // 3. Výpočet postupného odemykání — nový den začíná ve 4:00 ráno CET
+  // 4. Per-user start date pro výpočet odemykání dnů.
+  //    effectiveStartDate = MAX(userCreatedAt, launch_date)
+  //    → zaregistrovaný před globálním startem → globální start
+  //    → zaregistrovaný po globálním startu → jeho vlastní registrace
   const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
   const launchDate = r.launch_date ? new Date(r.launch_date) : null;
+  const effectiveStartDate =
+    userCreatedAtDate && launchDate && userCreatedAtDate > launchDate
+      ? userCreatedAtDate
+      : launchDate;
+
   const nowDate = new Date();
-  const daysElapsed = launchDate
+  const daysElapsed = effectiveStartDate
     ? Math.max(
         0,
         Math.floor(
-          ((nowDate.getTime() - UNLOCK_HOUR_OFFSET_MS) - (launchDate.getTime() - UNLOCK_HOUR_OFFSET_MS)) / 86_400_000,
+          ((nowDate.getTime() - UNLOCK_HOUR_OFFSET_MS) -
+            (effectiveStartDate.getTime() - UNLOCK_HOUR_OFFSET_MS)) /
+            86_400_000,
         ) + 1,
       )
     : Infinity;
 
-  // 4. Načti lekce + progress pokud je přihlášen uživatel
+  // 5. Načti lekce + progress pokud je přihlášen uživatel
   let nextLesson: AkademieLesson | null = null;
+  let isAllCompleted = false;
+
   if (userId) {
     const { data: lessonsRaw } = await supabase
       .from('akademie_lessons')
@@ -156,20 +207,16 @@ async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramDat
       (progress ?? []).forEach((row: { lesson_id: string }) => completedIds.add(row.lesson_id));
     }
 
-    // Primárně: první nedokončená dostupná lekce
-    nextLesson =
-      lessons.find(
-        (l) => !completedIds.has(l.id) && (daysElapsed === Infinity || l.day_number <= daysElapsed),
-      ) ?? null;
+    const availableLessons = lessons.filter(
+      (l) => daysElapsed === Infinity || l.day_number <= daysElapsed,
+    );
 
-    // Fallback: pokud jsou všechny dostupné lekce dokončeny, umožni přehrání
-    // poslední dostupné lekce (replay). Lepší UX než "Zjistit více" po splnění.
-    if (!nextLesson) {
-      const availableLessons = lessons.filter(
-        (l) => daysElapsed === Infinity || l.day_number <= daysElapsed,
-      );
-      nextLesson = availableLessons[availableLessons.length - 1] ?? null;
-    }
+    // Nejbližší nesplněná dostupná lekce (catch-up logika)
+    nextLesson = availableLessons.find((l) => !completedIds.has(l.id)) ?? null;
+
+    // Všechny dostupné lekce splněny?
+    isAllCompleted =
+      availableLessons.length > 0 && availableLessons.every((l) => completedIds.has(l.id));
   }
 
   const programInfo: ActiveDailyProgramInfo = {
@@ -186,7 +233,6 @@ async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramDat
     description_long: r.description_long,
     price_czk: r.modules?.price_czk ?? 990,
     sort_order: r.sort_order,
-    // Všichni mají přístup k Ranní výzvě — isOwned/isLocked určí konzument
     isOwned: !!userId,
     isLocked: false,
     isFavorite: false,
@@ -200,6 +246,9 @@ async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramDat
     program: programInfo,
     titleOverride: featuredRec.title_override ?? undefined,
     nextLesson,
+    isAllCompleted,
+    earlyAccessUntil,
+    userHasEarlyAccess,
   };
 }
 
@@ -207,10 +256,13 @@ async function fetchFeaturedProgram(userId?: string): Promise<FeaturedProgramDat
 // Hook
 // --------------------------------------------------
 
-export function usePlatformFeaturedProgram(userId?: string): UsePlatformFeaturedProgramReturn {
+export function usePlatformFeaturedProgram(
+  userId?: string,
+  userCreatedAt?: string,
+): UsePlatformFeaturedProgramReturn {
   const { data, isLoading, error } = useQuery({
-    queryKey: [...akademieKeys.featuredProgram(), userId ?? 'anon'],
-    queryFn: () => fetchFeaturedProgram(userId),
+    queryKey: [...akademieKeys.featuredProgram(), userId ?? 'anon', userCreatedAt ?? 'unknown'],
+    queryFn: () => fetchFeaturedProgram(userId, userCreatedAt),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 15,
     refetchOnWindowFocus: false,
