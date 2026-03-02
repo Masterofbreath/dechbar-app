@@ -202,6 +202,43 @@
 ✅ Správně: User: "Udělej X" → Agent: *feedback* → User: "OK" → Agent: *tvoří*
 ```
 
+### **5. 🚨 PŘÍMÉ ZMĚNY V SUPABASE DASHBOARDU — ABSOLUTNÍ ZÁKAZ**
+
+> **Incident z 27. 2. 2026:** AI agent přímo přepsal tabulku `exercises` v Supabase
+> dashboardu (mimo migrace). Tím zničil původní 7-fázové protokoly na 4-fázové
+> a smazal historii změn. Oprava trvala hodiny a vyžadovala git forensiku.
+
+```
+❌ ZAKÁZÁNO: INSERT/UPDATE/DELETE přímo v Supabase dashboardu bez migrace
+❌ ZAKÁZÁNO: Seed data přes Supabase SQL Editor bez migration souboru
+❌ ZAKÁZÁNO: Přepisovat existující záznamy mimo migration systém
+
+✅ SPRÁVNĚ — VŽDY:
+   1. Vytvoř migration soubor: supabase/migrations/YYYYMMDDHHMMSS_nazev.sql
+   2. Obsah migrace: SQL příkazy (CREATE, ALTER, INSERT, UPDATE)
+   3. Aplikuj přes: supabase db push (DEV), pak MCP apply_migration (PROD)
+   4. Commit migration souboru do gitu PŘED pushnutím na PROD
+```
+
+**Proč je to kritické:**
+- Git uchovává historii — bez migration souboru neexistuje audit trail
+- Přímé změny nelze rollbackovat skriptem
+- Kolegy (a budoucí agenty) to zmátne: kód říká jedno, DB dělá druhé
+- Uživatel (majitel produktu) se dozví o změně až když je pozdě
+
+**Výjimky:** Čtení dat (SELECT) a debugging dotazy v dashboardu jsou OK.
+
+### **6. 🚨 NEMĚŇ UI LABELY BEZ PTANÍ**
+
+```
+❌ Špatně: Vidím "7 min" v kódu, spočítám 330s = 5.5 min → přepíšu na "6 min"
+✅ Správně: Zeptám se uživatele: "Label říká 7 min, ale protokol trvá 5.5 min.
+           Chceš přesný label nebo upravit délku protokolu?"
+```
+
+UI labely jako délky (min), ceny, jména funkcí jsou **produktová rozhodnutí** —
+ne technická. Vždy se zeptej, nikdy nepřepisuj bez souhlasu.
+
 ---
 
 ## 🧪 SELF-CHECK BEFORE STARTING

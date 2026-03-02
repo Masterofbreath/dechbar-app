@@ -23,7 +23,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/platform/auth';
 import { useUserState } from '@/platform/user/userStateStore';
-import { TierLockModal } from '../../TierLockModal/TierLockModal';
+import { TierLockModal } from '../TierLockModal/TierLockModal';
 import { supabase } from '@/platform/api/supabase';
 import { useActiveDailyProgram } from '../../hooks/useActiveDailyProgram';
 import { usePlatformFeaturedProgram } from '../../hooks/usePlatformFeaturedProgram';
