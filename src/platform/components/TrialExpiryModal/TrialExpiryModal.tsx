@@ -28,10 +28,23 @@ import './TrialExpiryModal.css';
 // Constants
 // ============================================================
 
-const WARN_DAYS_THRESHOLD = 7;
+/** Zobraz "warning" v posledních N dnech trialu */
+const WARN_DAYS_THRESHOLD = 3;
 const DISMISS_STORAGE_KEY = (userId: string) => `tem_dismissed_${userId}`;
 
 const WEB_ACCOUNT_URL = 'https://www.dechbar.cz/muj-ucet';
+
+/**
+ * Dev preview: přidej ?preview_modal=warning nebo ?preview_modal=expired do URL.
+ * Přepíše reálný stav — pouze pro vizuální ladění.
+ */
+function getPreviewMode(): 'warning' | 'expired' | null {
+  try {
+    const p = new URLSearchParams(window.location.search).get('preview_modal');
+    if (p === 'warning' || p === 'expired') return p;
+  } catch { /* noop */ }
+  return null;
+}
 
 // ============================================================
 // Helpers
@@ -130,7 +143,9 @@ export function TrialExpiryModal() {
     return Math.ceil((new Date(expiresAt).getTime() - now.getTime()) / 86_400_000);
   }, [expiresAt]);
 
-  const mode: 'warning' | 'expired' | null =
+  const previewMode = getPreviewMode();
+
+  const realMode: 'warning' | 'expired' | null =
     !trial || daysRemaining === null
       ? null
       : daysRemaining <= 0
@@ -139,15 +154,23 @@ export function TrialExpiryModal() {
           ? 'warning'
           : null;
 
+  // Preview přepíše reálný stav (bez ohledu na dismiss)
+  const mode = previewMode ?? realMode;
+
   // Decide whether to show
   useEffect(() => {
-    if (!mode || !userId) return;
+    if (!mode) return;
+    // V preview módu vždy zobraz (ignoruj dismiss + userId check)
+    if (previewMode) {
+      const t = setTimeout(() => setVisible(true), 400);
+      return () => clearTimeout(t);
+    }
+    if (!userId) return;
     const dismissed = getDismissedDate(userId);
     if (dismissed === todayKey()) return; // already shown today
-    // Small delay so the app renders first
     const t = setTimeout(() => setVisible(true), 1200);
     return () => clearTimeout(t);
-  }, [mode, userId]);
+  }, [mode, previewMode, userId]);
 
   const handleDismiss = useCallback(() => {
     setVisible(false);
@@ -163,20 +186,23 @@ export function TrialExpiryModal() {
 
   const greeting = vocative ? `${vocative},` : null;
 
+  // Počet dní pro texty (v preview módu simuluj 2 dny)
+  const displayDays = previewMode === 'warning' ? 2 : (daysRemaining ?? 0);
+
   const headline =
     mode === 'expired'
       ? 'Tvůj SMART tarif skončil'
-      : daysRemaining === 1
-        ? 'Tvůj SMART tarif vyprší zítra'
-        : `Tvůj SMART tarif vyprší za ${daysRemaining} dní`;
+      : displayDays <= 1
+        ? 'Zítra přijdeš o SMART přístup'
+        : `Zbývají poslední ${displayDays} dny přístupu`;
 
   const subline =
     mode === 'expired'
       ? 'Pokračuj ve svém dýchání — obnov si předplatné a zachovej přístup ke všemu, co sis oblíbil/a.'
-      : `Přístup máš aktivní do ${formatExpiry(expiresAt)}. Obnov si předplatné a pokračuj bez přerušení.`;
+      : `Přístup máš aktivní do ${previewMode ? '22. 3. 2026' : formatExpiry(expiresAt)}. Obnov si předplatné a pokračuj bez přerušení.`;
 
   const ctaLabel =
-    mode === 'expired' ? 'Obnovit předplatné →' : 'Pokračovat se SMART →';
+    mode === 'expired' ? 'Obnovit předplatné →' : 'Zachovat přístup →';
 
   const dismissLabel =
     mode === 'expired' ? 'Pokračovat zdarma' : 'Připomenout zítra';
@@ -201,9 +227,9 @@ export function TrialExpiryModal() {
             </svg>
             SMART
           </span>
-          {mode === 'warning' && daysRemaining !== null && (
+          {mode === 'warning' && (
             <span className={`tem-countdown tem-countdown--${countdownUrgency}`}>
-              {daysRemaining === 1 ? 'Zbývá 1 den' : daysRemaining <= 4 ? `Zbývá ${daysRemaining} dny` : `Zbývá ${daysRemaining} dní`}
+              {displayDays === 1 ? 'Zbývá 1 den' : displayDays <= 4 ? `Zbývá ${displayDays} dny` : `Zbývá ${displayDays} dní`}
             </span>
           )}
           {mode === 'expired' && (

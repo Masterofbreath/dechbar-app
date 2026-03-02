@@ -72,9 +72,9 @@ function getModuleDeepLink(moduleId: string): string {
 function getPlanInfo(plan: string, trial = false): PlanInfo {
   switch (plan) {
     case 'SMART':
-      return { label: 'SMART', subtitle: trial ? 'do 22. 3. 2026' : '249 Kč / měsíc', modifier: 'smart' };
+      return { label: 'SMART', subtitle: trial ? 'Speciální akce' : '249 Kč / měsíc', modifier: 'smart' };
     case 'AI_COACH':
-      return { label: 'AI COACH', subtitle: trial ? 'do 22. 3. 2026' : '490 Kč / měsíc', modifier: 'ai-coach' };
+      return { label: 'AI COACH', subtitle: trial ? 'Speciální akce' : '490 Kč / měsíc', modifier: 'ai-coach' };
     default:
       return { label: 'Zdarma', subtitle: 'Základní přístup', modifier: 'zdarma' };
   }
@@ -202,13 +202,16 @@ export function UcetPage() {
                     Aktivní od: {formatDate(membership.purchasedAt)}
                   </p>
                 )}
-                {membership.type === 'subscription' && membership.expiresAt && (
+                {membership.type === 'subscription' && membership.expiresAt && !trial && (
                   <p className={`ucet-plan-card__detail${membership.status === 'cancelled' ? ' ucet-plan-card__detail--cancelled' : ''}`}>
                     {membership.status === 'cancelled'
                       ? `Zrušeno, aktivní do: ${formatDate(membership.expiresAt)}`
-                      : trial
-                        ? `Přístup aktivní do: ${formatDate(membership.expiresAt)}`
-                        : `Další platba: ${formatDate(membership.expiresAt)}`}
+                      : `Další platba: ${formatDate(membership.expiresAt)}`}
+                  </p>
+                )}
+                {trial && membership.expiresAt && membership.status !== 'cancelled' && (
+                  <p className="ucet-plan-card__detail">
+                    Přístup do: {formatDate(membership.expiresAt)}
                   </p>
                 )}
               </div>
