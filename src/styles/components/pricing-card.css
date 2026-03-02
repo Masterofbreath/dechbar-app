@@ -111,7 +111,6 @@
   /* Glassmorphism */
   background: var(--gradient-pricing-card);
   backdrop-filter: blur(20px) saturate(150%);
-  backdrop-filter: blur(20px) saturate(150%);
   
   /* Borders & Shadows */
   border: 1px solid rgb(255 255 255 / 10%);
@@ -478,7 +477,6 @@
 @media (prefers-reduced-transparency: reduce) {
   .pricing-card {
     background: var(--color-surface);
-    backdrop-filter: none;
     backdrop-filter: none;
   }
   
