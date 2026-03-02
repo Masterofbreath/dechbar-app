@@ -24,6 +24,7 @@ import { DemoEmailModal } from './components/DemoEmailModal';
 import { ToastProvider } from '@/platform/components/Toast';
 import { useDemoAnalytics } from './hooks/useDemoAnalytics';
 import { useChallengeMagicLink } from '@/hooks/useChallenge';
+import { supabase } from '@/platform/api/supabase';
 import type { DemoView, DemoState } from './types/demo.types';
 import type { Exercise } from '@/shared/exercises/types';
 
@@ -46,6 +47,11 @@ export function DemoApp() {
   
   const { track } = useDemoAnalytics();
   const { sendLink, loading: sendingMagicLink, success: magicLinkSent, error: magicLinkError, reset } = useChallengeMagicLink();
+
+  // Separate registration state for homepage (uses signInWithOtp, not challenge API)
+  const [homepageRegLoading, setHomepageRegLoading] = useState(false);
+  const [homepageRegSuccess, setHomepageRegSuccess] = useState(false);
+  const [homepageRegError, setHomepageRegError] = useState<string | null>(null);
   
   /**
    * Detect if we're on challenge landing page (/vyzva)
@@ -136,6 +142,9 @@ export function DemoApp() {
     if (magicLinkSent) {
       reset();
     }
+    // Reset homepage registration state
+    setHomepageRegSuccess(false);
+    setHomepageRegError(null);
     
     setState(prev => ({ 
       ...prev, 
@@ -151,32 +160,42 @@ export function DemoApp() {
   };
   
   /**
-   * Handle email registration
-   * Sends magic link on both /vyzva and homepage — consistent UX across all pages
+   * Homepage registration — uses supabase.auth.signInWithOtp (general app access)
+   * Completely separate from challenge registration API (which has a deadline check)
    */
-  const handleEmailSubmit = async (email: string) => {
+  const handleHomepageEmailSubmit = async (email: string) => {
+    setHomepageRegLoading(true);
+    setHomepageRegError(null);
+    setHomepageRegSuccess(false);
+
     track({
       action: 'registration_start',
       method: 'email',
       exercise: state.selectedExercise || undefined,
       timestamp: Date.now(),
     });
-    
-    // /vyzva with KP measurement → Send magic link with KP data
-    if (isChallengePage && state.kpMeasurementData) {
-      const kpValue = state.kpMeasurementData.averageKP || state.kpMeasurementData.attempts[0] || 0;
-      await sendLink(email, kpValue, 'demo_measurement_round_1');
-      setTimeout(() => {
-        setState(prev => ({ ...prev, isEmailModalOpen: false }));
-      }, 2000);
-      return;
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: 'https://app.dechbar.cz',
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) {
+        setHomepageRegError('Nepodařilo se odeslat odkaz. Zkus to prosím znovu.');
+      } else {
+        setHomepageRegSuccess(true);
+      }
+    } catch {
+      setHomepageRegError('Nepodařilo se odeslat odkaz. Zkus to prosím znovu.');
+    } finally {
+      setHomepageRegLoading(false);
     }
-    
-    // All other cases (homepage, /vyzva without KP) → Send magic link
-    const source = isChallengePage ? 'challenge_exercise_click' : 'homepage_demo_exercise';
-    await sendLink(email, 0, source);
-    // Magic link hook handles success/error state in modal
   };
+
   
   /**
    * Handle Settings open
@@ -393,16 +412,24 @@ export function DemoApp() {
           onViewChange={handleViewChange} 
         />
         
-        {/* Conversion modal — same component everywhere, text adapted per page */}
+        {/* Conversion modal — challenge page uses challenge API, homepage uses signInWithOtp */}
         <ChallengeRegistrationModal
           isOpen={state.isModalOpen}
           onClose={handleModalClose}
           exercise={state.selectedExercise}
           kpMeasurement={state.kpMeasurementData}
-          onSubmit={isChallengePage ? handleChallengeRegistration : handleEmailSubmit}
-          isSubmitting={sendingMagicLink}
-          successMessage={magicLinkSent ? 'Odkaz odeslán! Zkontroluj svůj e-mail.' : ''}
-          errorMessage={magicLinkError || ''}
+          onSubmit={isChallengePage ? handleChallengeRegistration : handleHomepageEmailSubmit}
+          isSubmitting={isChallengePage ? sendingMagicLink : homepageRegLoading}
+          successMessage={
+            isChallengePage
+              ? (magicLinkSent ? 'Odkaz odeslán! Zkontroluj svůj e-mail.' : '')
+              : (homepageRegSuccess ? 'Odkaz odeslán! Zkontroluj svůj e-mail.' : '')
+          }
+          errorMessage={
+            isChallengePage
+              ? (magicLinkError || '')
+              : (homepageRegError || '')
+          }
           {...(!isChallengePage && {
             titleOverride: 'Začni cvičit',
             subtitleOverride: 'Zadej e-mail — pošleme ti přístupový odkaz.',

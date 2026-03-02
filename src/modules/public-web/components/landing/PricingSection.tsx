@@ -55,10 +55,10 @@ const PRICING_DATA = {
     badge: 'OBLÍBENÉ',
     features: [
       'SMART cvičení přesně pro tebe',
-      'Neomezené vlastní cvičení',
+      'Neomezená vlastní cvičení',
       'Přístup k dechovým výzvám',
       'Přístup k 150+ audio lekcím',
-      'Záznamy z pravidelných online session',
+      'Záznamy z pravidelných Online Session',
     ] as string[],
     ctaText: 'Začít →',
     ctaVariant: 'primary' as const,

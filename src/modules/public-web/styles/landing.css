@@ -32,6 +32,11 @@
   transition: background 0.2s ease;
 }
 
+.challenge-banner__link:hover,
+.challenge-banner__link:focus {
+  text-decoration: none;
+}
+
 .challenge-banner__link:hover {
   background: rgb(248 202 0 / 8%);
 }
@@ -571,10 +576,14 @@ section[id] {
   margin-top: 2px;  /* Align with text baseline */
 }
 
+.pricing-card__features {
+  flex: 1;                /* Stretch features to fill available space → CTA stays at bottom */
+  margin-bottom: var(--spacing-6);  /* Gap between features and CTA */
+}
+
 .pricing-card__cta {
-  margin-top: auto;       /* Push to bottom of flex column (equal height cards via grid) */
-  padding-top: var(--spacing-6);  /* Visual gap above button */
-  min-height: 52px;       /* Consistent button height regardless of text */
+  margin-top: 0;          /* Features flex:1 already handles spacing */
+  min-height: 52px;       /* Consistent button height on all cards */
 }
 
 /* ===================================
