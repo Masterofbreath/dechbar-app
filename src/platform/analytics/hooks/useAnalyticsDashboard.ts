@@ -939,16 +939,19 @@ export function useOnboardingFunnel(): { funnel: OnboardingFunnel | null; isLoad
       }
 
       const total = users.length;
+      // Exclusive time windows: each user counted only ONCE in their actual window
       const windows = [
-        { days: 1/24 * 24, label: '1. aktivita do 24h',   threshold: 24 },
-        { days: 7,          label: '1. aktivita do 7 dní',  threshold: 24 * 7 },
-        { days: 14,         label: '1. aktivita do 14 dní', threshold: 24 * 14 },
-        { days: 21,         label: '1. aktivita do 21 dní', threshold: 24 * 21 },
-        { days: 28,         label: '1. aktivita do 28 dní', threshold: 24 * 28 },
+        { days: 1,  label: '1. aktivita 0–24 h',   from: 0,         to: 24 },
+        { days: 3,  label: '1. aktivita 24–72 h',  from: 24,        to: 72 },
+        { days: 7,  label: '1. aktivita 3–7 dní',  from: 72,        to: 24 * 7 },
+        { days: 14, label: '1. aktivita 8–14 dní', from: 24 * 7,    to: 24 * 14 },
+        { days: 21, label: '1. aktivita 15–21 dní',from: 24 * 14,   to: 24 * 21 },
+        { days: 28, label: '1. aktivita 22–28 dní',from: 24 * 21,   to: 24 * 28 },
       ];
 
-      const steps = windows.map(({ days, label, threshold }) => {
-        const count = hoursToFirst.filter((h) => h <= threshold).length;
+      const steps = windows.map(({ days, label, from, to }) => {
+        // Exclusive window: user falls in this bucket if first session is within [from, to)
+        const count = hoursToFirst.filter((h) => h >= from && h < to).length;
         return { days, label, count, pct: Math.round((count / total) * 100) };
       });
 
@@ -1079,6 +1082,21 @@ export function useTopContent(
 import type { UserPokrokStats, ActivityPeriod, ActivityDayData } from '../types';
 
 const GRAPH_DAYS = 168; // 24 weeks
+
+/**
+ * Converts a Date to a LOCAL date string YYYY-MM-DD (not UTC).
+ * Used for graph/heatmap bucketing so that sessions started just
+ * after midnight CET (= before midnight UTC) land on the correct local day.
+ *
+ * Example: 2026-03-01T23:30:00Z for a CET user = 2026-03-02 locally → '2026-03-02'
+ */
+function toLocalDateStr(dateOrStr: Date | string): string {
+  const d = typeof dateOrStr === 'string' ? new Date(dateOrStr) : dateOrStr;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 /**
  * Returns the START timestamp for each period.
@@ -1393,14 +1411,17 @@ export function useUserPokrokStats(
     ? Math.round((totalMinutes / periodDays) * 10) / 10
     : 0;
 
-  // Build activity graph (last 168 days) from cached graph queries
+  // Build activity graph (last 168 days) — using LOCAL dates to avoid timezone-bucketing bug.
+  // Without this, sessions started just after midnight CET (= before midnight UTC) would
+  // appear on the wrong calendar day in the graph (e.g. March-02 session at 00:21 CET
+  // is stored as UTC March-01, so it would appear under Sunday instead of Monday).
   const dayMinutesMap = new Map<string, number>();
   for (const r of audioGraphData ?? []) {
-    const day = r.started_at.slice(0, 10);
+    const day = toLocalDateStr(r.started_at);
     dayMinutesMap.set(day, (dayMinutesMap.get(day) ?? 0) + secondsToMinutes(r.unique_listen_seconds ?? 0));
   }
   for (const r of exerciseGraphData ?? []) {
-    const day = r.started_at.slice(0, 10);
+    const day = toLocalDateStr(r.started_at);
     const durationSec = r.completed_at && r.started_at
       ? (new Date(r.completed_at).getTime() - new Date(r.started_at).getTime()) / 1000
       : 0;
@@ -1409,12 +1430,12 @@ export function useUserPokrokStats(
 
   // Always override TODAY with live period data (audioData + exerciseData are always fresher
   // than the cached graph queries — fixes heatmap/weekly-dots not showing today's activity).
-  const todayUTC = new Date().toISOString().slice(0, 10);
+  const todayLocal = toLocalDateStr(new Date()); // LOCAL today date — avoids CET/UTC boundary bug
   const liveTodayAudioMin = (audioData ?? [])
-    .filter((r) => r.started_at?.slice(0, 10) === todayUTC)
+    .filter((r) => r.started_at && toLocalDateStr(r.started_at) === todayLocal)
     .reduce((s, r) => s + secondsToMinutes(r.unique_listen_seconds ?? 0), 0);
   const liveTodayExMin = (exerciseData ?? [])
-    .filter((r) => r.started_at?.slice(0, 10) === todayUTC)
+    .filter((r) => r.started_at && toLocalDateStr(r.started_at) === todayLocal)
     .reduce((s, r) => {
       const dur = r.completed_at && r.started_at
         ? (new Date(r.completed_at).getTime() - new Date(r.started_at).getTime()) / 1000
@@ -1422,17 +1443,18 @@ export function useUserPokrokStats(
       return s + secondsToMinutes(Math.max(0, dur));
     }, 0);
   const liveTodayTotal = liveTodayAudioMin + liveTodayExMin;
-  // Set today's entry (override graph cache — live data wins)
-  if (liveTodayTotal > 0 || dayMinutesMap.has(todayUTC)) {
-    dayMinutesMap.set(todayUTC, Math.max(liveTodayTotal, dayMinutesMap.get(todayUTC) ?? 0));
+  // Set today's entry using live data (overrides stale graph cache)
+  if (liveTodayTotal > 0 || dayMinutesMap.has(todayLocal)) {
+    dayMinutesMap.set(todayLocal, Math.max(liveTodayTotal, dayMinutesMap.get(todayLocal) ?? 0));
   }
 
+  // Build activityGraph using LOCAL dates (matches dayMinutesMap keys)
   const activityGraph: ActivityDayData[] = [];
   const today = new Date();
   for (let i = GRAPH_DAYS - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const dayStr = d.toISOString().slice(0, 10);
+    const dayStr = toLocalDateStr(d); // LOCAL date — consistent with dayMinutesMap keys
     activityGraph.push({
       date: dayStr,
       minutes: Math.round((dayMinutesMap.get(dayStr) ?? 0) * 10) / 10,

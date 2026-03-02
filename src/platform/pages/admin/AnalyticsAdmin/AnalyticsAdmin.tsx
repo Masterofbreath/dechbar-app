@@ -65,11 +65,11 @@ function getDelta(
   const absDiff = Math.abs(diff);
   const formatted = type === 'minutes' ? formatMinutesDelta(absDiff) : formatNumber(absDiff);
   const sign = diff > 0 ? '+' : '−';
-  // % change
+  // % change displayed at the end for readability
   const pct = prev > 0 ? Math.round(Math.abs(diff / prev) * 100) : null;
-  const pctStr = pct != null ? ` · ${sign}${pct}%` : '';
+  const pctStr = pct != null ? ` (${sign}${pct}%)` : '';
   return {
-    label: `${sign}${formatted}${pctStr} vs. ${periodLabel}`,
+    label: `${sign}${formatted} vs. ${periodLabel}${pctStr}`,
     dir: diff > 0 ? 'up' : 'down',
   };
 }

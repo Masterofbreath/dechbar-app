@@ -205,9 +205,18 @@ function ActivityHeatmap({ days, isLoading }: HeatmapProps) {
 
 // ── Weekly Dots — current week habit tracker ──
 
+/** Returns LOCAL date string YYYY-MM-DD (avoids timezone-bucketing issues for CET/UTC+ users). */
+function toLocalDateStr(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function WeeklyDots({ days }: { days: ActivityDayData[] }) {
   const DOW_SHORT = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
   const today = new Date();
+  const todayStr = toLocalDateStr(today); // LOCAL today — matches graph keys
   // Find this Monday
   const dow = today.getDay();
   const mondayOffset = dow === 0 ? -6 : 1 - dow;
@@ -217,9 +226,9 @@ function WeeklyDots({ days }: { days: ActivityDayData[] }) {
   const week = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(thisMonday);
     d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().slice(0, 10);
+    const dateStr = toLocalDateStr(d); // LOCAL date — consistent with graph
     const graphDay = days.find((g) => g.date === dateStr);
-    const isToday = dateStr === today.toISOString().slice(0, 10);
+    const isToday = dateStr === todayStr;
     const isFuture = d > today;
     return { dateStr, label: DOW_SHORT[i], active: (graphDay?.minutes ?? 0) > 0, isToday, isFuture };
   });
