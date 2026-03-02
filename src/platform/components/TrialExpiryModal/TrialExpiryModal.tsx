@@ -100,7 +100,7 @@ const SMART_BENEFITS = [
   {
     id: 'challenges',
     title: 'Všechny dechové výzvy',
-    desc: 'Ranní, večerní, funkční a další výzvy.',
+    desc: 'Ranní, Večerní, Funkční a další 21denní výzvy.',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M8.56 2.9A7 7 0 0 1 19 9v4"/>

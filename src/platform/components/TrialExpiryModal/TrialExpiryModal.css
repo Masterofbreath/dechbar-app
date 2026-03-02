@@ -220,6 +220,8 @@
 @media (hover: hover) and (pointer: fine) {
   .tem-cta:hover {
     opacity: 0.9;
+    color: var(--color-background, #121212);
+    text-decoration: none;
     box-shadow: 0 4px 16px var(--glow-accent-shadow-subtle, rgb(214 162 58 / 30%));
   }
 }
