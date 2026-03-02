@@ -510,6 +510,8 @@ Before implementing ANY feature:
 - Don't use !important (except critical cases)
 - Don't skip RLS policies in Supabase
 - Don't commit .env.local or secrets
+- **🚨 NEVER INSERT/UPDATE/DELETE in Supabase Dashboard directly!** Every DB change MUST go through a migration file in `supabase/migrations/`. Direct dashboard edits bypass version control, destroy audit trails, and cannot be rolled back. This has already caused a serious incident (27.2.2026: protocols table overwritten without migration). See COMMON PITFALLS #5 in `docs/development/AI_AGENT_ONBOARDING.md`.
+- **🚨 NEVER change UI labels (durations, names, prices) without asking the user first!** These are product decisions, not technical ones.
 
 ## ✅ ALWAYS DO
 
