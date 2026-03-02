@@ -25,7 +25,7 @@ const ECOMAIL_BASE_URL = 'https://api2.ecomailapp.cz';
 const BATCH_SIZE = 50; // Max items to process per run
 const RETRY_DELAYS = [0, 30000, 300000]; // 0s, 30s, 5min
 
-// List IDs - Updated 2026-02-21
+// List IDs - Updated 2026-03-02
 const LIST_IDS: Record<string, string> = {
   UNREG: Deno.env.get('ECOMAIL_LIST_UNREG') || '5',
   REG: Deno.env.get('ECOMAIL_LIST_REG') || '6',
@@ -35,6 +35,8 @@ const LIST_IDS: Record<string, string> = {
   // Product-specific lists — IN = zaplatil, BEFORE = zadal email ale nezaplatil
   DIGITALNI_TICHO: Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO') || '10',
   DIGITALNI_TICHO_BEFORE: Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO_BEFORE') || '11',
+  // Waitlists
+  AI_COACH_WAITLIST: Deno.env.get('ECOMAIL_LIST_AI_COACH_WAITLIST') || '12',
 };
 
 // =====================================================

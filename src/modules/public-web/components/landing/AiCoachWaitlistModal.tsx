@@ -198,13 +198,13 @@ export function AiCoachWaitlistModal({ onClose }: AiCoachWaitlistModalProps) {
               {status === 'loading' ? 'Ukládám…' : 'Zapsat se na čekací listinu →'}
             </button>
 
-            <p className="acwm-disclaimer">
+            <p className="gdpr-notice">
               Zadáním e-mailu souhlasíš s{' '}
-              <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer" className="acwm-disclaimer__link">
+              <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer">
                 obchodními podmínkami
               </a>{' '}
               a{' '}
-              <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer" className="acwm-disclaimer__link">
+              <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer">
                 ochranou osobních údajů
               </a>
               .

@@ -122,13 +122,13 @@
    Styling for children elements rendered inside the circle
    ============================================================ */
 
-/* Breathing instruction (Session Engine - animated variant) */
+/* Breathing instruction (Session Engine - animated variant)
+   display: block + position: relative so the flex-center of .breathing-circle
+   anchors only on __text height → VÝDECH stays at the exact circle center.
+   .breathing-hint is then positioned absolute below, without shifting VÝDECH. */
 .breathing-instruction {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0; /* No gap, tight stacking */
+  display: block;
+  position: relative;
   pointer-events: none;
   text-align: center;
   
@@ -142,7 +142,7 @@
   transition: inherit;
 }
 
-/* Main instruction text - always centered independently */
+/* Main instruction text - centered independently (hint is absolute) */
 .breathing-instruction__text {
   font-size: 24px;              /* ✅ Reduced from 28px - softer, Apple style */
   font-weight: 600;             /* ✅ Semibold from 700 - less aggressive */
@@ -153,16 +153,20 @@
   text-align: center;
 }
 
-/* Breathing hint - smaller text below main instruction (e.g. "(bzzz)") */
+/* Breathing hint - floats below main instruction without affecting its centering */
 .breathing-hint {
-  display: block;
-  font-size: 14px; /* Reduced from 16px - more subtle */
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 5px;
+  white-space: nowrap;
+  font-size: 14px;
   font-weight: 400;
   color: var(--color-text-secondary);
-  margin-top: 2px; /* Minimal spacing from text above */
-  opacity: 0.7; /* More subtle than before */
+  opacity: 0.7;
   letter-spacing: 0.05em;
-  text-transform: none; /* Don't uppercase hints */
+  text-transform: none;
   line-height: 1;
   text-align: center;
 }

@@ -176,10 +176,10 @@
     font-size: 24px !important;
   }
   
-  /* Breathing hint - mobile responsive */
+  /* Breathing hint - mobile responsive (position: absolute inherited from base) */
   .breathing-hint {
     font-size: 14px !important;
-    margin-top: 2px !important;
+    margin-top: 4px !important;
   }
   
   /* Countdown circle container - ABSOLUTE CENTER v ContentZone (stejné jako breathing) */
