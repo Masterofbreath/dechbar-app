@@ -546,8 +546,10 @@ export function SessionEngineModal({
           sessionState === 'completed' ? 'session-engine-modal__content--completion' : ''
         }`}
       >
-        {/* IDLE: Combined start + mood screen (exercises only) */}
-        {sessionState === 'idle' && !isProtocol(exercise) && (
+        {/* IDLE: Combined start + mood screen — shown for all exercises when skipFlow=false.
+            Protocols from Dnes view use skipFlow=true (direct countdown), protocols from
+            Cvičit view use skipFlow=false and correctly land here for mood collection. */}
+        {sessionState === 'idle' && !skipFlow && (
           <>
             <FullscreenModal.TopBar>
               <FullscreenModal.Title>{exercise.name}</FullscreenModal.Title>
