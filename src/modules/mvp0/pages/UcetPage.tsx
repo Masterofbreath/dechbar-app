@@ -57,9 +57,9 @@ function getModuleDeepLink(moduleId: string): string {
 function getPlanInfo(plan: string, trial = false): PlanInfo {
   switch (plan) {
     case 'SMART':
-      return { label: 'SMART', subtitle: trial ? 'Speciální akce – zdarma' : '249 Kč / měsíc', modifier: 'smart' };
+      return { label: 'SMART', subtitle: trial ? 'do 22. 3. 2026' : '249 Kč / měsíc', modifier: 'smart' };
     case 'AI_COACH':
-      return { label: 'AI COACH', subtitle: trial ? 'Speciální akce – zdarma' : '490 Kč / měsíc', modifier: 'ai-coach' };
+      return { label: 'AI COACH', subtitle: trial ? 'do 22. 3. 2026' : '490 Kč / měsíc', modifier: 'ai-coach' };
     default:
       return { label: 'Zdarma', subtitle: 'Základní přístup', modifier: 'zdarma' };
   }
@@ -169,7 +169,7 @@ export function UcetPage() {
               <div className="ucet-plan-card__details">
                 {trial && (
                   <p className="ucet-plan-card__detail ucet-plan-card__detail--trial">
-                    Předplatné v rámci speciální akce
+                    Máš předplatné zdarma v rámci speciální akce
                   </p>
                 )}
                 {membership.purchasedAt && (

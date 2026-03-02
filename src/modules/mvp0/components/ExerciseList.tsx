@@ -41,6 +41,7 @@ export interface ExerciseListProps {
 }
 
 type TabType = 'presets' | 'custom' | 'history';
+type PresetFilter = 'all' | 'protocols' | 'exercises';
 
 /**
  * ExerciseList - Main exercise library with tabs
@@ -51,6 +52,7 @@ export function ExerciseList({
   onEditExercise,
 }: ExerciseListProps) {
   const [activeTab, setActiveTab] = useState<TabType>('presets');
+  const [presetFilter, setPresetFilter] = useState<PresetFilter>('all');
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { plan } = useMembership();
@@ -80,13 +82,14 @@ export function ExerciseList({
   const { data: sessions, isLoading: sessionsLoading } = useExerciseSessions();
   const deleteExercise = useDeleteExercise();
   
-  // Filter exercises by category
-  // Note: Protocols (RÁNO, KLID, VEČER) are shown only on Dnes view (quick access)
-  // Cvičit shows exercises (Box Breathing, Uklidnění, Srdeční koherence + future additions)
-  const presetExercises = exercises?.filter(ex => 
-    ex.category === 'preset' && 
-    !isProtocol(ex) // Hide all protocols (RÁNO, KLID, VEČER)
-  ) || [];
+  // All presets (protocols + exercises) — filter applied per user selection
+  const allPresets = exercises?.filter((ex) => ex.category === 'preset') ?? [];
+  const protocolPresets = allPresets.filter((ex) => isProtocol(ex));
+  const exercisePresets = allPresets.filter((ex) => !isProtocol(ex));
+  const presetExercises =
+    presetFilter === 'protocols' ? protocolPresets
+    : presetFilter === 'exercises' ? exercisePresets
+    : allPresets;
   const customExercises = exercises?.filter(ex => ex.category === 'custom') || [];
   
   // Tier limits
@@ -180,6 +183,30 @@ export function ExerciseList({
         {/* PRESETS TAB */}
         {activeTab === 'presets' && (
           <div className="tab-content" role="tabpanel">
+            {/* Filter: VŠE / PROTOKOLY / CVIČENÍ */}
+            <div className="exercise-list__filter" role="group" aria-label="Filtrovat cvičení">
+              {([
+                { key: 'all',       label: 'Vše' },
+                { key: 'protocols', label: 'Protokoly' },
+                { key: 'exercises', label: 'Cvičení' },
+              ] as { key: PresetFilter; label: string }[]).map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`exercise-list__filter-btn${presetFilter === key ? ' exercise-list__filter-btn--active' : ''}`}
+                  onClick={() => setPresetFilter(key)}
+                  aria-pressed={presetFilter === key}
+                >
+                  {label}
+                  {key === 'protocols' && protocolPresets.length > 0 && (
+                    <span className="exercise-list__filter-count">{protocolPresets.length}</span>
+                  )}
+                  {key === 'exercises' && exercisePresets.length > 0 && (
+                    <span className="exercise-list__filter-count">{exercisePresets.length}</span>
+                  )}
+                </button>
+              ))}
+            </div>
             {exercisesLoading ? (
               <div className="exercise-grid">
                 {Array.from({ length: 6 }).map((_, i) => (

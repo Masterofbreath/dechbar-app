@@ -408,14 +408,20 @@ export function useTotalUsers(): { count: number; isLoading: boolean } {
 // useAllTimeMinutes — Total minutes breathed since launch
 // ============================================================
 
+// App launch date — used as start of "all time" queries for consistent calculation.
+// Must match APP_LAUNCH_DATE in useOnboardingFunnel.
+const ALL_TIME_FROM = '2026-02-28';
+
 export function useAllTimeMinutes(): { minutes: number; isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ['analytics', 'allTimeMinutes'] as const,
     queryFn: async () => {
-      // Use SECURITY DEFINER RPC — bypasses RLS for reliable all-users aggregate
-      const { data, error } = await supabase.rpc('get_all_time_minutes');
-      if (error) throw new Error(error.message);
-      return Math.round(((data as number) ?? 0) * 10) / 10;
+      // Use the same fetchLiveKpisByRange as the dashboard KPI cards — ensures
+      // "Celkem od spuštění" and "Letos" values are calculated identically.
+      const todayStr = toIsoDateString(new Date());
+      const rows = await fetchLiveKpisByRange(ALL_TIME_FROM, todayStr);
+      const total = rows.reduce((s, r) => s + r.totalMinutesBeathed, 0);
+      return Math.round(total * 10) / 10;
     },
     staleTime: 5 * 60 * 1000,
   });

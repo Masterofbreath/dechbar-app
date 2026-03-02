@@ -289,10 +289,20 @@
   opacity: 1;
 }
 
+.analytics-admin__bar--today {
+  opacity: 1;
+  background: var(--dechbar-gold, #F8CA00);
+}
+
 .analytics-admin__bar-label {
   font-size: 10px;
   color: rgb(255 255 255 / 30%);
   white-space: nowrap;
+}
+
+.analytics-admin__bar-wrap--today .analytics-admin__bar-label {
+  color: var(--dechbar-gold, #F8CA00);
+  font-weight: 600;
 }
 
 /* ── Chart header (title + badge inline) ── */

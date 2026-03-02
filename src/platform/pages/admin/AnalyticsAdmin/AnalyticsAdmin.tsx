@@ -118,38 +118,47 @@ interface BarChartProps {
   period: DashboardPeriod;
 }
 
+/** Formats a date string 'YYYY-MM-DD' as short Czech label: '1. 3.', '28. 2.', etc. */
+function formatBarDate(dateStr: string): string {
+  const d = new Date(`${dateStr}T12:00:00Z`);
+  return `${d.getUTCDate()}. ${d.getUTCMonth() + 1}.`;
+}
+
 function BarChart({ kpis, isLoading, period }: BarChartProps) {
-  const days = period === 'today'
-    ? kpis.slice(-1)
-    : [...kpis].reverse().slice(-7);
+  // Always show the LAST N days in chronological order.
+  // kpis is sorted oldest→newest from fetchLiveKpisByRange.
+  // Bug fix: the old code did [...kpis].reverse().slice(-7) = oldest 7, not newest 7.
+  const barCount = period === 'today' ? 1 : 7;
+  const days = kpis.slice(-barCount); // correct: last N days from chronological array
   const maxVal = Math.max(...days.map((d) => d.totalMinutesBeathed), 1);
 
   const title = period === 'today'
     ? 'Minuty prodýchány — dnes (živě)'
-    : 'Minuty prodýchány — 7 dní';
+    : 'Minuty prodýchány — posledních 7 dní';
 
   return (
     <div className="analytics-admin__chart">
       <div className="analytics-admin__chart-title">{title}</div>
       <div className="analytics-admin__bar-chart">
         {isLoading
-          ? Array.from({ length: period === 'today' ? 1 : 7 }).map((_, i) => (
+          ? Array.from({ length: barCount }).map((_, i) => (
               <div key={i} className="analytics-admin__bar-wrap">
                 <div className="analytics-admin__skeleton" style={{ height: '80%', width: '100%' }} />
               </div>
             ))
           : days.map((day) => {
               const pct = maxVal > 0 ? (day.totalMinutesBeathed / maxVal) * 100 : 0;
-              const label = period === 'today' ? 'dnes' : day.date.slice(5);
+              const isToday = day.date === new Date().toISOString().slice(0, 10);
+              const label = period === 'today' ? 'dnes' : formatBarDate(day.date);
               return (
                 <div
                   key={day.date}
-                  className="analytics-admin__bar-wrap"
-                  title={`${day.date}: ${formatMinutes(day.totalMinutesBeathed)}`}
+                  className={`analytics-admin__bar-wrap${isToday ? ' analytics-admin__bar-wrap--today' : ''}`}
+                  title={`${label}: ${formatMinutes(day.totalMinutesBeathed)}`}
                 >
                   <div
-                    className="analytics-admin__bar"
-                    style={{ height: `${Math.max(pct, 2)}%` }}
+                    className={`analytics-admin__bar${isToday ? ' analytics-admin__bar--today' : ''}`}
+                    style={{ height: `${Math.max(pct, day.totalMinutesBeathed > 0 ? 4 : 1)}%` }}
                   />
                   <div className="analytics-admin__bar-label">{label}</div>
                 </div>

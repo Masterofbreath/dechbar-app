@@ -453,6 +453,26 @@ export function ProfilPage() {
         </section>
       )}
 
+      {/* ─── ÚČET & PŘEDPLATNÉ ────────────────────────────── */}
+      {!isEditMode && (
+        <section className="profil-section profil-account-section">
+          <h2 className="profil-section__label">Předplatné a programy</h2>
+          <p className="profil-account__note">
+            Informace o svém předplatném a zakoupených programech najdeš na stránce Účet.
+          </p>
+          <button
+            type="button"
+            className="profil-account__btn"
+            onClick={() => navigate('/app/ucet')}
+          >
+            <span>Přejít na Účet</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </section>
+      )}
+
       {/* ─── REFERRAL SECTION ─────────────────────────────── */}
       {!isEditMode && (
         <section className="profil-section profil-referral-section">
