@@ -416,6 +416,16 @@ export function useTotalUsers(): { count: number; isLoading: boolean } {
 // Must match APP_LAUNCH_DATE in useOnboardingFunnel.
 const ALL_TIME_FROM = '2026-02-28';
 
+/** Returns KPIs for the last 7 calendar days — used by BarChart for Dnes/Včera/Týden periods */
+export function useAdminLast7DaysKpis(): { kpis: DailyKpis[]; isLoading: boolean } {
+  const { data, isLoading } = useQuery({
+    queryKey: ['analytics', 'last7days'] as const,
+    queryFn: () => fetchLiveKpisByRange(daysBack(6), daysBack(0)),
+    staleTime: 2 * 60 * 1000,
+  });
+  return { kpis: data ?? [], isLoading };
+}
+
 export function useAllTimeMinutes(): { minutes: number; isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ['analytics', 'allTimeMinutes'] as const,

@@ -35,6 +35,21 @@ function formatDate(dateString: string | null): string {
   return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
 }
 
+/** Czech declension: 1 den / 2–4 dny / 5+ dní */
+function formatDaysRemaining(days: number): string {
+  if (days <= 0) return 'dnes vyprší';
+  if (days === 1) return 'Zbývá 1 den';
+  if (days <= 4) return `Zbývá ${days} dny`;
+  return `Zbývá ${days} dní`;
+}
+
+/** Returns urgency modifier: 'ok' | 'warning' | 'urgent' */
+function daysUrgency(days: number): 'ok' | 'warning' | 'urgent' {
+  if (days <= 3) return 'urgent';
+  if (days <= 7) return 'warning';
+  return 'ok';
+}
+
 type PasswordState = 'idle' | 'loading' | 'success' | 'error';
 type EmailChangeState = 'idle' | 'expanded' | 'loading' | 'success' | 'error';
 type DeleteState = 'idle' | 'confirm' | 'loading' | 'error';
@@ -134,6 +149,11 @@ export function UcetPage() {
   const planInfo = getPlanInfo(membership?.plan ?? 'ZDARMA', trial);
   const isPremium = membership && membership.plan !== 'ZDARMA';
 
+  // Countdown — pouze pro trial
+  const trialDaysRemaining = trial && membership?.expiresAt
+    ? Math.ceil((new Date(membership.expiresAt).getTime() - Date.now()) / 86_400_000)
+    : null;
+
   return (
     <PageLayout title="Účet" onBack={() => navigate(-1)} className="ucet-page">
 
@@ -170,6 +190,11 @@ export function UcetPage() {
                 {trial && (
                   <p className="ucet-plan-card__detail ucet-plan-card__detail--trial">
                     Máš předplatné zdarma v rámci speciální akce
+                  </p>
+                )}
+                {trial && trialDaysRemaining !== null && trialDaysRemaining <= 14 && (
+                  <p className={`ucet-plan-card__detail ucet-plan-card__countdown ucet-plan-card__countdown--${daysUrgency(trialDaysRemaining)}`}>
+                    {formatDaysRemaining(trialDaysRemaining)}
                   </p>
                 )}
                 {membership.purchasedAt && (

@@ -295,6 +295,10 @@ export function PokrokPage() {
           streak, activityGraph, isLoading, error } =
     useUserPokrokStats(userId, period);
 
+  // All-time personal total — always visible regardless of selected period
+  const { totalMinutes: allTimeTotalMinutes, isLoading: allTimeLoading } =
+    useUserPokrokStats(userId, 'all');
+
   const memberDays = getDaysSinceRegistration(registeredAt ?? undefined);
 
   // Delta with period context — "↑ +32 min · min. týden"
@@ -438,21 +442,6 @@ export function PokrokPage() {
         </div>
       </div>
 
-      {/* "Člen X dní" banner — pouze pro Celkem */}
-      {period === 'all' && !isLoading && memberDays > 0 && (
-        <div className="pokrok-page__member-banner">
-          <span className="pokrok-page__member-days">{memberDays}</span>
-          <span className="pokrok-page__member-label">
-            {memberDays === 1 ? 'den' : memberDays < 5 ? 'dny' : 'dní'} s DechBarem
-          </span>
-          {registeredAt && (
-            <span className="pokrok-page__member-since">
-              člen od {new Date(registeredAt).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </span>
-          )}
-        </div>
-      )}
-
       {/* Stats Grid (2×2) */}
       <div className="pokrok-page__stats-grid">
         <div className="pokrok-page__stat-card">
@@ -531,6 +520,31 @@ export function PokrokPage() {
           </div>
         </div>
       )}
+
+      {/* Info Row — member since + all-time total (always visible, period-independent) */}
+      <div className="pokrok-page__info-row">
+        <div className="pokrok-page__info-card">
+          <div className="pokrok-page__info-value pokrok-page__info-value--gold">
+            {memberDays} {memberDays === 1 ? 'den' : memberDays < 5 ? 'dny' : 'dní'}
+          </div>
+          <div className="pokrok-page__info-label">s DechBarem</div>
+          {registeredAt && (
+            <div className="pokrok-page__info-sub">
+              člen od {new Date(registeredAt).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </div>
+          )}
+        </div>
+        <div className="pokrok-page__info-card">
+          <div className="pokrok-page__info-label">Celkem nadýcháno</div>
+          {allTimeLoading
+            ? <div className="pokrok-page__skeleton" />
+            : <div className="pokrok-page__info-value">
+                {formatHours(allTimeTotalMinutes)}
+              </div>
+          }
+          <div className="pokrok-page__info-sub">za celou dobu</div>
+        </div>
+      </div>
 
       {/* Activity Heatmap (last 24 weeks) — úplně dole */}
       <ActivityHeatmap days={activityGraph} isLoading={isLoading} />

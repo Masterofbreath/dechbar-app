@@ -93,39 +93,53 @@
   background: rgb(248 202 0 / 8%);
 }
 
-/* ── Member banner (Celkem period only) ── */
-.pokrok-page__member-banner {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  background: rgb(248 202 0 / 7%);
-  border: 1px solid rgb(248 202 0 / 18%);
+/* ── Info Row — member since + all-time total (always visible) ── */
+.pokrok-page__info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pokrok-page__info-card {
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 14px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.pokrok-page__member-days {
-  font-size: 28px;
+.pokrok-page__info-value {
+  font-size: 24px;
   font-weight: 700;
-  color: var(--dechbar-gold, #F8CA00);
+  color: var(--dechbar-white, #fff);
   letter-spacing: -0.5px;
-  line-height: 1;
+  line-height: 1.1;
 }
 
-.pokrok-page__member-label {
-  font-size: 16px;
+.pokrok-page__info-value--gold {
+  color: var(--dechbar-gold, #F8CA00);
+}
+
+.pokrok-page__info-label {
+  font-size: 10px;
   font-weight: 600;
-  color: rgb(255 255 255 / 80%);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 45%);
+  order: -1;
 }
 
-.pokrok-page__member-since {
-  margin-left: auto;
-  font-size: 11px;
-  color: rgb(255 255 255 / 35%);
-  align-self: center;
+.pokrok-page__info-sub {
+  font-size: 10px;
+  color: rgb(255 255 255 / 30%);
+  margin-top: 2px;
 }
+
+/* Legacy — kept for any external refs, no longer rendered */
+.pokrok-page__member-banner { display: none; }
 
 /* ── Stat note (formula below avg value) ── */
 .pokrok-page__stat-note {

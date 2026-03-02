@@ -135,6 +135,24 @@
   font-weight: var(--font-weight-medium);
 }
 
+.ucet-plan-card__countdown {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.02em;
+}
+
+.ucet-plan-card__countdown--ok {
+  color: var(--color-primary, #2CBEC6);
+}
+
+.ucet-plan-card__countdown--warning {
+  color: var(--color-accent, #D6A23A);
+}
+
+.ucet-plan-card__countdown--urgent {
+  color: var(--color-error, #E53E3E);
+}
+
 /* Info text (Apple App Store compliant — no in-app CTA) */
 .ucet-plan-card__web-note {
   font-size: var(--font-size-sm);

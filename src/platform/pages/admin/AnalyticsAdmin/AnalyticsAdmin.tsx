@@ -18,7 +18,7 @@
  */
 
 import { useState } from 'react';
-import { useAdminDashboard, useTopContent, useTotalUsers, useAllTimeMinutes, usePrimeTime, useDayOfWeek, useProtocolStats, useChurnRisk, useRetention, useOnboardingFunnel } from '@/platform/analytics';
+import { useAdminDashboard, useTopContent, useTotalUsers, useAllTimeMinutes, usePrimeTime, useDayOfWeek, useProtocolStats, useChurnRisk, useRetention, useOnboardingFunnel, useAdminLast7DaysKpis } from '@/platform/analytics';
 import { formatMinutes } from '@/platform/analytics';
 import type { DailyKpis, AdminDashboardData, PrimeTimeSlot, DayOfWeekSlot } from '@/platform/analytics';
 import type { DashboardPeriod } from '@/platform/analytics';
@@ -114,6 +114,7 @@ function KpiCard({ label, value, sublabel, delta, isLoading, gold }: KpiCardProp
 
 interface BarChartProps {
   kpis: DailyKpis[];
+  last7Kpis: DailyKpis[];
   isLoading: boolean;
   period: DashboardPeriod;
 }
@@ -134,31 +135,71 @@ function formatBarValue(minutes: number): string {
   return `${h}h ${m}m`;
 }
 
+/** Aggregates daily kpis into weekly buckets (ISO week Mon–Sun). Returns one entry per week. */
+function groupByWeek(kpis: DailyKpis[]): DailyKpis[] {
+  const weeks = new Map<string, { total: number; firstDate: string }>();
+  for (const k of kpis) {
+    const d = new Date(`${k.date}T12:00:00Z`);
+    // Find Monday of the ISO week
+    const dow = d.getUTCDay(); // 0=Sun, 1=Mon...
+    const offset = dow === 0 ? -6 : 1 - dow;
+    const mon = new Date(d);
+    mon.setUTCDate(mon.getUTCDate() + offset);
+    const weekKey = mon.toISOString().slice(0, 10);
+    const entry = weeks.get(weekKey);
+    if (!entry) {
+      weeks.set(weekKey, { total: k.totalMinutesBeathed, firstDate: weekKey });
+    } else {
+      entry.total += k.totalMinutesBeathed;
+    }
+  }
+  return Array.from(weeks.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, { total }]) => ({
+      date,
+      totalMinutesBeathed: total,
+      newRegistrations: 0,
+      dauL2: 0,
+      totalAudioSessions: 0,
+      completedAudioSessions: 0,
+      totalExerciseSessions: 0,
+      completedExerciseSessions: 0,
+    }));
+}
+
 const PERIOD_BAR_TITLES: Record<DashboardPeriod, string> = {
-  today:     'Minuty prodýchány — dnes (živě)',
-  yesterday: 'Minuty prodýchány — včera',
-  week:      'Minuty prodýchány — tento týden',
+  today:     'Minuty prodýchány — posledních 7 dní',
+  yesterday: 'Minuty prodýchány — posledních 7 dní',
+  week:      'Minuty prodýchány — posledních 7 dní',
   month:     'Minuty prodýchány — tento měsíc',
-  year:      'Minuty prodýchány — letos',
+  year:      'Minuty prodýchány — letos (po týdnech)',
 };
 
-function BarChart({ kpis, isLoading, period }: BarChartProps) {
-  // Show all days for the current period — chart now REACTS to period selector.
-  // For long periods (month/year) limit to last 30 bars to keep it readable.
-  const MAX_BARS = 30;
-  const days = period === 'today' || period === 'yesterday'
-    ? kpis.slice(-1)
-    : kpis.slice(-MAX_BARS);
+function BarChart({ kpis, last7Kpis, isLoading, period }: BarChartProps) {
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  // Dnes/Včera/Týden → always last 7 calendar days (context for current activity)
+  // Měsíc → up to 30 days
+  // Rok → weekly aggregated bars
+  const days: DailyKpis[] = period === 'month'
+    ? kpis.slice(-30)
+    : period === 'year'
+      ? groupByWeek(kpis)
+      : last7Kpis; // today, yesterday, week → last 7 days
 
   const maxVal = Math.max(...days.map((d) => d.totalMinutesBeathed), 0.01);
-  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const getLabel = (day: DailyKpis): string => {
+    if (period === 'year') return `T. ${formatBarDate(day.date)}`; // week starting date
+    return day.date === todayStr ? 'dnes' : formatBarDate(day.date);
+  };
 
   return (
     <div className="analytics-admin__chart">
       <div className="analytics-admin__chart-title">{PERIOD_BAR_TITLES[period]}</div>
       <div className="analytics-admin__bar-chart">
         {isLoading
-          ? Array.from({ length: Math.min(7, MAX_BARS) }).map((_, i) => (
+          ? Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="analytics-admin__bar-wrap">
                 <div className="analytics-admin__skeleton" style={{ height: '80%', width: '100%' }} />
               </div>
@@ -166,9 +207,7 @@ function BarChart({ kpis, isLoading, period }: BarChartProps) {
           : days.map((day) => {
               const pct = maxVal > 0 ? (day.totalMinutesBeathed / maxVal) * 100 : 0;
               const isToday = day.date === todayStr;
-              const label = period === 'today' || period === 'yesterday'
-                ? (isToday ? 'dnes' : 'včera')
-                : formatBarDate(day.date);
+              const label = getLabel(day);
               const valueLabel = formatBarValue(day.totalMinutesBeathed);
               return (
                 <div
@@ -598,6 +637,8 @@ export default function AnalyticsAdmin() {
   const { data: topContent, isLoading: topLoading } = useTopContent(5, topPeriod);
   const { count: totalUsers, isLoading: usersLoading } = useTotalUsers();
   const { minutes: allTimeMinutes, isLoading: allTimeLoading } = useAllTimeMinutes();
+  // Always-visible last 7 days — used by BarChart for today/yesterday/week periods
+  const { kpis: last7Kpis } = useAdminLast7DaysKpis();
   const { slots: primeSlots, peakHour, isLoading: primeLoading } = usePrimeTime();
   const { slots: dowSlots, peakDay, peakDayLabel, isLoading: dowLoading } = useDayOfWeek();
 
@@ -708,7 +749,7 @@ export default function AnalyticsAdmin() {
       </div>
 
       {/* Bar Chart — minuty za období */}
-      <BarChart kpis={kpis} isLoading={isLoading} period={period} />
+      <BarChart kpis={kpis} last7Kpis={last7Kpis} isLoading={isLoading} period={period} />
 
       {/* Prime Time + Day of Week — vedle sebe v 2 sloupcích */}
       <div className="analytics-admin__row-2col analytics-admin__row-2col--charts">

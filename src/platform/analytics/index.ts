@@ -9,7 +9,7 @@ export { useAppSession } from './hooks/useAppSession';
 export { useAudioSessionTracking } from './hooks/useAudioSessionTracking';
 export {
   useAdminDashboard, useTopContent, useUserPokrokStats,
-  useTotalUsers, useAllTimeMinutes,
+  useTotalUsers, useAllTimeMinutes, useAdminLast7DaysKpis,
   usePrimeTime, useDayOfWeek, useProtocolStats, useChurnRisk,
   usePersonalRecords, useRetention, useOnboardingFunnel,
   getDaysSinceRegistration, analyticsKeys,
