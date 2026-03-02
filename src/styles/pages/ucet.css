@@ -130,6 +130,11 @@
   color: var(--color-error, #E53E3E);
 }
 
+.ucet-plan-card__detail--trial {
+  color: var(--color-accent, #D6A23A);
+  font-weight: var(--font-weight-medium);
+}
+
 /* Info text (Apple App Store compliant — no in-app CTA) */
 .ucet-plan-card__web-note {
   font-size: var(--font-size-sm);

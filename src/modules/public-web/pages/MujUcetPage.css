@@ -318,6 +318,11 @@
   color: var(--color-error);
 }
 
+.muj-ucet-plan__badge--trial {
+  background: rgb(214 162 58 / 12%);
+  color: var(--color-accent, #D6A23A);
+}
+
 .muj-ucet-plan__billing-label {
   font-size: 0.8125rem;
   color: var(--color-text-secondary);
@@ -342,6 +347,15 @@
 .muj-ucet-plan__detail--strong {
   color: var(--color-text-primary);
   font-weight: 500;
+}
+
+.muj-ucet-plan__detail--trial-note {
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+  margin-top: var(--spacing-2);
+  line-height: 1.45;
+  border-left: 2px solid rgb(214 162 58 / 40%);
+  padding-left: var(--spacing-3);
 }
 
 .muj-ucet-plan__actions {

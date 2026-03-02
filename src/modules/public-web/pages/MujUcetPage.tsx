@@ -28,6 +28,7 @@ import { useAuthStore } from '@/platform/auth/authStore';
 import { useProfile, checkNicknameAvailable } from '@/platform/api/useProfile';
 import { useAccountData } from '@/platform/api/useAccountData';
 import { useManageSubscription, MEMBERSHIP_QUERY_KEY } from '@/platform/payments/useManageSubscription';
+import { isMembershipTrial } from '@/platform/user/userStateStore';
 import { Header } from '../components/landing/Header';
 import { Footer } from '../components/landing/Footer';
 import { BillingToggle } from '../components/landing/BillingToggle';
@@ -60,6 +61,7 @@ interface MembershipFull {
   type: 'lifetime' | 'subscription';
   purchasedAt: string;
   expiresAt: string | null;
+  metadata: Record<string, unknown> | null;
 }
 
 type NameEditState = 'idle' | 'editing' | 'saving' | 'success' | 'error';
@@ -106,11 +108,14 @@ function getModuleDeepLink(moduleId: string): string {
 function getBillingLabel(membership: MembershipFull | null): string {
   if (!membership || membership.type !== 'subscription' || !membership.expiresAt) return '';
 
+  if (isMembershipTrial(membership)) {
+    return `${getPlanLabel(membership.plan)} · Speciální akce – zdarma`;
+  }
+
   const msToExpiry = new Date(membership.expiresAt).getTime() - Date.now();
   const daysToExpiry = msToExpiry / (1000 * 60 * 60 * 24);
 
   if (daysToExpiry > 35) {
-    // Annual: next renewal is more than ~35 days away
     const monthlyEq = membership.plan === 'SMART' ? '125 Kč/měsíc' : '245 Kč/měsíc';
     const annual = membership.plan === 'SMART' ? '1 500 Kč' : '2 940 Kč';
     return `${getPlanLabel(membership.plan)} · ${monthlyEq} · účtováno ročně (${annual})`;
@@ -127,7 +132,7 @@ function getBillingLabel(membership: MembershipFull | null): string {
 async function fetchMembershipFull(userId: string): Promise<MembershipFull | null> {
   const { data, error } = await supabase
     .from('memberships')
-    .select('plan, status, type, purchased_at, expires_at')
+    .select('plan, status, type, purchased_at, expires_at, metadata')
     .eq('user_id', userId)
     .in('status', ['active', 'cancelled'])
     .order('created_at', { ascending: false })
@@ -143,6 +148,7 @@ async function fetchMembershipFull(userId: string): Promise<MembershipFull | nul
     type: data.type,
     purchasedAt: data.purchased_at,
     expiresAt: data.expires_at ?? null,
+    metadata: (data.metadata as Record<string, unknown> | null) ?? null,
   };
 }
 
@@ -324,6 +330,7 @@ export function MujUcetPage() {
   const isPremium = membership && membership.plan !== 'ZDARMA';
   const isActiveSub = isPremium && membership?.status === 'active';
   const isCancelledSub = isPremium && membership?.status === 'cancelled';
+  const trial = isMembershipTrial(membership);
   const displayName = profile?.full_name ?? user.email ?? '–';
   const avatarInitial = (profile?.full_name ?? user.email ?? '?')[0].toUpperCase();
 
@@ -677,6 +684,11 @@ export function MujUcetPage() {
                   <span className={`muj-ucet-plan__badge muj-ucet-plan__badge--${getPlanBadgeModifier(membership.plan)}`}>
                     {getPlanLabel(membership.plan)}
                   </span>
+                  {trial && (
+                    <span className="muj-ucet-plan__badge muj-ucet-plan__badge--trial">
+                      Speciální akce
+                    </span>
+                  )}
                 </div>
 
                 <div className="muj-ucet-plan__details">
@@ -690,59 +702,69 @@ export function MujUcetPage() {
                   )}
                   {membership.expiresAt && (
                     <p className="muj-ucet-plan__detail">
-                      Další platba: {formatDate(membership.expiresAt)}
+                      {trial
+                        ? `Přístup aktivní do: ${formatDate(membership.expiresAt)}`
+                        : `Další platba: ${formatDate(membership.expiresAt)}`}
+                    </p>
+                  )}
+                  {trial && (
+                    <p className="muj-ucet-plan__detail muj-ucet-plan__detail--trial-note">
+                      Toto předplatné bylo přiděleno zdarma — žádné platební údaje nebyly zadány.
+                      Po skončení bude třeba předplatné obnovit.
                     </p>
                   )}
                 </div>
 
-                <div className="muj-ucet-plan__actions">
-                  {cancelSubState === 'idle' && (
-                    <button
-                      type="button"
-                      className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
-                      onClick={() => setCancelSubState('confirm')}
-                    >
-                      Zrušit předplatné
-                    </button>
-                  )}
-                </div>
-
-                {/* Inline confirm dialog */}
-                {(cancelSubState === 'confirm' || cancelSubState === 'loading' || cancelSubState === 'error') && (
-                  <div className="muj-ucet-cancel-confirm" role="alertdialog" aria-labelledby="cancel-sub-title">
-                    <p id="cancel-sub-title" className="muj-ucet-cancel-confirm__title">
-                      Opravdu zrušit předplatné?
-                    </p>
-                    <p className="muj-ucet-cancel-confirm__text">
-                      Předplatné zůstane aktivní do konce zaplaceného období
-                      {membership.expiresAt && ` (${formatDate(membership.expiresAt)})`}.
-                      Poté přijdeš o prémiové funkce.
-                    </p>
-                    {(cancelSubState === 'error' || subError) && (
-                      <p className="muj-ucet-feedback muj-ucet-feedback--error" role="alert">
-                        {subError ?? 'Nepodařilo se zrušit. Zkus to znovu nebo nás kontaktuj.'}
-                      </p>
-                    )}
-                    <div className="muj-ucet-cancel-confirm__actions">
+                {/* "Zrušit předplatné" skryto pro trial — uživatel nic neplatí */}
+                {!trial && (
+                  <div className="muj-ucet-plan__actions">
+                    {cancelSubState === 'idle' && (
                       <button
                         type="button"
                         className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
-                        onClick={() => { setCancelSubState('idle'); clearSubError(); }}
-                        disabled={cancelSubState === 'loading' || cancelState === 'loading'}
+                        onClick={() => setCancelSubState('confirm')}
                       >
-                        Ponechat předplatné
+                        Zrušit předplatné
                       </button>
-                      <button
-                        type="button"
-                        className="muj-ucet-btn muj-ucet-btn--danger muj-ucet-btn--sm"
-                        onClick={handleCancelSub}
-                        disabled={cancelSubState === 'loading' || cancelState === 'loading'}
-                      >
-                        {cancelSubState === 'loading' || cancelState === 'loading'
-                          ? 'Ruším...'
-                          : 'Potvrdit zrušení'}
-                      </button>
-                    </div>
+                    )}
+
+                    {(cancelSubState === 'confirm' || cancelSubState === 'loading' || cancelSubState === 'error') && (
+                      <div className="muj-ucet-cancel-confirm" role="alertdialog" aria-labelledby="cancel-sub-title">
+                        <p id="cancel-sub-title" className="muj-ucet-cancel-confirm__title">
+                          Opravdu zrušit předplatné?
+                        </p>
+                        <p className="muj-ucet-cancel-confirm__text">
+                          Předplatné zůstane aktivní do konce zaplaceného období
+                          {membership.expiresAt && ` (${formatDate(membership.expiresAt)})`}.
+                          Poté přijdeš o prémiové funkce.
+                        </p>
+                        {(cancelSubState === 'error' || subError) && (
+                          <p className="muj-ucet-feedback muj-ucet-feedback--error" role="alert">
+                            {subError ?? 'Nepodařilo se zrušit. Zkus to znovu nebo nás kontaktuj.'}
+                          </p>
+                        )}
+                        <div className="muj-ucet-cancel-confirm__actions">
+                          <button
+                            type="button"
+                            className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
+                            onClick={() => { setCancelSubState('idle'); clearSubError(); }}
+                            disabled={cancelSubState === 'loading' || cancelState === 'loading'}
+                          >
+                            Ponechat předplatné
+                          </button>
+                          <button
+                            type="button"
+                            className="muj-ucet-btn muj-ucet-btn--danger muj-ucet-btn--sm"
+                            onClick={handleCancelSub}
+                            disabled={cancelSubState === 'loading' || cancelState === 'loading'}
+                          >
+                            {cancelSubState === 'loading' || cancelState === 'loading'
+                              ? 'Ruším...'
+                              : 'Potvrdit zrušení'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -788,8 +810,8 @@ export function MujUcetPage() {
             )}
           </section>
 
-          {/* ─── 3. FAKTURACE ────────────────────────────────── */}
-          {isPremiumSubscription && (
+          {/* ─── 3. FAKTURACE — skryto pro trial (žádné faktury neexistují) ── */}
+          {isPremiumSubscription && !trial && (
             <section className="muj-ucet-section" aria-label="Fakturace">
               <p className="muj-ucet-section__label">Fakturace</p>
 

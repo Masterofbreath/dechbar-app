@@ -20,7 +20,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/platform/auth/authStore';
-import { useUserState } from '@/platform/user/userStateStore';
+import { useUserState, isMembershipTrial } from '@/platform/user/userStateStore';
 import { useAccountData } from '@/platform/api/useAccountData';
 import { PageLayout } from '@/platform/layouts/PageLayout';
 import { supabase } from '@/platform/api/supabase';
@@ -54,12 +54,12 @@ function getModuleDeepLink(moduleId: string): string {
   return `/app?module=${moduleId}`;
 }
 
-function getPlanInfo(plan: string): PlanInfo {
+function getPlanInfo(plan: string, trial = false): PlanInfo {
   switch (plan) {
     case 'SMART':
-      return { label: 'SMART', subtitle: '249 Kč / měsíc', modifier: 'smart' };
+      return { label: 'SMART', subtitle: trial ? 'Speciální akce – zdarma' : '249 Kč / měsíc', modifier: 'smart' };
     case 'AI_COACH':
-      return { label: 'AI COACH', subtitle: '490 Kč / měsíc', modifier: 'ai-coach' };
+      return { label: 'AI COACH', subtitle: trial ? 'Speciální akce – zdarma' : '490 Kč / měsíc', modifier: 'ai-coach' };
     default:
       return { label: 'Zdarma', subtitle: 'Základní přístup', modifier: 'zdarma' };
   }
@@ -130,7 +130,8 @@ export function UcetPage() {
   }, [user?.email, resetPassword]);
 
   // ── Derived ───────────────────────────────────────────────
-  const planInfo = getPlanInfo(membership?.plan ?? 'ZDARMA');
+  const trial = isMembershipTrial(membership);
+  const planInfo = getPlanInfo(membership?.plan ?? 'ZDARMA', trial);
   const isPremium = membership && membership.plan !== 'ZDARMA';
 
   return (
@@ -163,9 +164,14 @@ export function UcetPage() {
             <p className="ucet-plan-card__name">{planInfo.label}</p>
             <p className="ucet-plan-card__subtitle">{planInfo.subtitle}</p>
 
-            {/* Active since / next payment / cancelled */}
+            {/* Active since / expiry / cancelled */}
             {isPremium && membership && (
               <div className="ucet-plan-card__details">
+                {trial && (
+                  <p className="ucet-plan-card__detail ucet-plan-card__detail--trial">
+                    Předplatné v rámci speciální akce
+                  </p>
+                )}
                 {membership.purchasedAt && (
                   <p className="ucet-plan-card__detail">
                     Aktivní od: {formatDate(membership.purchasedAt)}
@@ -175,7 +181,9 @@ export function UcetPage() {
                   <p className={`ucet-plan-card__detail${membership.status === 'cancelled' ? ' ucet-plan-card__detail--cancelled' : ''}`}>
                     {membership.status === 'cancelled'
                       ? `Zrušeno, aktivní do: ${formatDate(membership.expiresAt)}`
-                      : `Další platba: ${formatDate(membership.expiresAt)}`}
+                      : trial
+                        ? `Přístup aktivní do: ${formatDate(membership.expiresAt)}`
+                        : `Další platba: ${formatDate(membership.expiresAt)}`}
                   </p>
                 )}
               </div>
@@ -197,8 +205,8 @@ export function UcetPage() {
           </a>
         </p>
 
-        {/* Subscription management deeplink — Apple compliant (opens external browser) */}
-        {isPremium && membership?.type === 'subscription' && membership.status !== 'cancelled' && (
+        {/* Subscription management deeplink — Apple compliant, skipped for trial */}
+        {isPremium && !trial && membership?.type === 'subscription' && membership.status !== 'cancelled' && (
           <a
             href="https://www.dechbar.cz/muj-ucet"
             target="_blank"

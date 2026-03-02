@@ -30,6 +30,17 @@ export interface UserMembership {
   type: 'lifetime' | 'subscription';
   purchasedAt: string;
   expiresAt: string | null;
+  /** DB metadata — is_trial / was_zdarma flags set during special actions */
+  metadata: Record<string, unknown> | null;
+}
+
+/**
+ * Returns true if the membership was granted as a free trial / special action
+ * (not a direct Stripe purchase).
+ */
+export function isMembershipTrial(m: Pick<UserMembership, 'metadata'> | null | undefined): boolean {
+  if (!m?.metadata) return false;
+  return m.metadata['is_trial'] === true || m.metadata['was_zdarma'] === true;
 }
 
 /**
@@ -160,6 +171,7 @@ export const useUserState = create<UserState>()(
               type: m.type,
               purchasedAt: m.purchased_at,
               expiresAt: m.expires_at,
+              metadata: (m.metadata as Record<string, unknown> | null) ?? null,
             });
           } else {
             // 'fulfilled' with null data = no membership row → user is on ZDARMA plan (expected)
@@ -173,6 +185,7 @@ export const useUserState = create<UserState>()(
               type: 'lifetime',
               purchasedAt: new Date().toISOString(),
               expiresAt: null,
+              metadata: null,
             });
           }
           
@@ -252,6 +265,7 @@ export const useUserState = create<UserState>()(
               type: data.type,
               purchasedAt: data.purchased_at,
               expiresAt: data.expires_at,
+              metadata: (data.metadata as Record<string, unknown> | null) ?? null,
             });
             console.log('✅ Membership refreshed successfully');
           } else {
@@ -262,6 +276,7 @@ export const useUserState = create<UserState>()(
               type: 'lifetime',
               purchasedAt: new Date().toISOString(),
               expiresAt: null,
+              metadata: null,
             });
           }
         } catch (err) {
