@@ -89,7 +89,7 @@ const SMART_BENEFITS = [
   {
     id: 'audio',
     title: '150+ audio nahrávek',
-    desc: 'Průvodci, relaxace i pokročilé dechové protokoly.',
+    desc: 'Průvodce dechem, relaxace i pokročilé dechové protokoly.',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
@@ -100,7 +100,7 @@ const SMART_BENEFITS = [
   {
     id: 'challenges',
     title: 'Všechny dechové výzvy',
-    desc: 'Ranní výzva, Digitální ticho, REŽIM a další programy.',
+    desc: 'Ranní, večerní, funkční a další výzvy.',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M8.56 2.9A7 7 0 0 1 19 9v4"/>
@@ -177,7 +177,8 @@ export function TrialExpiryModal() {
     if (userId) setDismissedToday(userId);
   }, [userId]);
 
-  if (!visible || !mode || !expiresAt) return null;
+  if (!visible || !mode) return null;
+  if (!expiresAt && !previewMode) return null;
 
   // ── Personalization ───────────────────────────────────────
   const vocative = profile?.vocative_override
@@ -199,7 +200,7 @@ export function TrialExpiryModal() {
   const subline =
     mode === 'expired'
       ? 'Pokračuj ve svém dýchání — obnov si předplatné a zachovej přístup ke všemu, co sis oblíbil/a.'
-      : `Přístup máš aktivní do ${previewMode ? '22. 3. 2026' : formatExpiry(expiresAt)}. Obnov si předplatné a pokračuj bez přerušení.`;
+      : `Přístup máš aktivní do ${previewMode ? '22. 3. 2026' : formatExpiry(expiresAt ?? '')}. Obnov si předplatné a pokračuj bez přerušení.`;
 
   const ctaLabel =
     mode === 'expired' ? 'Obnovit předplatné →' : 'Zachovat přístup →';
@@ -219,6 +220,19 @@ export function TrialExpiryModal() {
     >
       <div className="tem-card">
 
+        {/* ── Close button ── */}
+        <button
+          type="button"
+          className="close-button"
+          onClick={handleDismiss}
+          aria-label="Zavřít"
+        >
+          <svg className="close-button__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
         {/* ── Badge + countdown ── */}
         <div className="tem-badge-row">
           <span className={`tem-badge ${mode === 'expired' ? 'tem-badge--expired' : 'tem-badge--smart'}`}>
@@ -229,7 +243,7 @@ export function TrialExpiryModal() {
           </span>
           {mode === 'warning' && (
             <span className={`tem-countdown tem-countdown--${countdownUrgency}`}>
-              {displayDays === 1 ? 'Zbývá 1 den' : displayDays <= 4 ? `Zbývá ${displayDays} dny` : `Zbývá ${displayDays} dní`}
+              {displayDays === 1 ? 'Zbývá 1 den' : displayDays <= 4 ? `Zbývají ${displayDays} dny` : `Zbývá ${displayDays} dní`}
             </span>
           )}
           {mode === 'expired' && (

@@ -202,8 +202,8 @@
   gap: var(--spacing-2);
   width: 100%;
   padding: var(--spacing-4) var(--spacing-6);
-  background: var(--color-primary, #2CBEC6);
-  color: var(--color-background, #0a0a0a);
+  background: var(--color-accent, #D6A23A);
+  color: var(--color-background, #121212);
   border: none;
   border-radius: var(--radius-xl);
   font-size: 1rem;
@@ -212,9 +212,16 @@
   cursor: pointer;
   text-decoration: none;
   letter-spacing: -0.01em;
-  transition: opacity var(--duration-fast);
+  transition: opacity var(--duration-fast), box-shadow var(--duration-fast);
   min-height: 52px;
   -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tem-cta:hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 16px var(--glow-accent-shadow-subtle, rgb(214 162 58 / 30%));
+  }
 }
 
 .tem-cta:active {
