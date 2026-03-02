@@ -1473,6 +1473,21 @@ export function useUserPokrokStats(
     dayMinutesMap.set(todayLocal, Math.max(liveTodayTotal, dayMinutesMap.get(todayLocal) ?? 0));
   }
 
+  // Track days with ANY session (regardless of unique_listen_seconds) for heatmap.
+  // Sessions with 0 listen seconds (closed without explicit end) still count as "active day"
+  // — without this, the heatmap wouldn't show a square even though the user did exercise.
+  const touchedDaysSet = new Set<string>();
+  for (const r of audioGraphData ?? []) {
+    if (r.started_at) touchedDaysSet.add(toLocalDateStr(r.started_at));
+  }
+  for (const r of exerciseGraphData ?? []) {
+    if (r.started_at) touchedDaysSet.add(toLocalDateStr(r.started_at));
+  }
+  // Also mark today as touched if there's live data (in case audioGraphData cache is stale)
+  if (liveTodayAudioMin > 0 || liveTodayExMin > 0) {
+    touchedDaysSet.add(todayLocal);
+  }
+
   // Build activityGraph using LOCAL dates (matches dayMinutesMap keys)
   const activityGraph: ActivityDayData[] = [];
   const today = new Date();
@@ -1480,10 +1495,16 @@ export function useUserPokrokStats(
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     const dayStr = toLocalDateStr(d); // LOCAL date — consistent with dayMinutesMap keys
+    const rawMinutes = dayMinutesMap.get(dayStr) ?? 0;
+    // Days with sessions but 0 measured seconds still show as level-1 in heatmap.
+    // Uses 0.01 sentinel — getActivityLevel(0.01) → 1. Tooltip shows "žádná aktivita"
+    // for truly 0-min days, which is fine (tooltip rounds to 0).
+    const minutes = rawMinutes > 0 ? Math.round(rawMinutes * 10) / 10
+      : touchedDaysSet.has(dayStr) ? 0.01 : 0;
     activityGraph.push({
       date: dayStr,
-      minutes: Math.round((dayMinutesMap.get(dayStr) ?? 0) * 10) / 10,
-      activityCount: 0,
+      minutes,
+      activityCount: touchedDaysSet.has(dayStr) ? 1 : 0,
     });
   }
 

@@ -208,8 +208,7 @@
 
 /* ── Osobní rekordy ── */
 .pokrok-page__records {
-  padding: 0 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .pokrok-page__records-title {
@@ -221,6 +220,7 @@
   margin-bottom: 12px;
   position: relative;
   padding-left: 14px;
+  text-align: left;
 }
 
 .pokrok-page__records-title::before {
@@ -240,6 +240,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  width: 100%;
 }
 
 .pokrok-page__record-card {

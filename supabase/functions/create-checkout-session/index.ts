@@ -119,8 +119,6 @@ serve(async (req) => {
       payment_method_types: ['card'],  // Apple Pay & Google Pay se zobrazí automaticky v embedded checkoutu (domain registration)
       line_items: [{ price: priceId, quantity: 1 }],
       mode: paymentMode,
-      // Stripe sbírá email v checkoutu pro guest — ulož ho v session
-      customer_creation: customerId ? undefined : 'always',
       metadata: {
         user_id: userId ?? 'guest',
         module_id: moduleId,
@@ -128,6 +126,12 @@ serve(async (req) => {
         is_guest: userId ? 'false' : 'true',
       },
     };
+
+    // customer_creation: POUZE pro payment mode bez zákazníka.
+    // Pro subscription mode je ZAKÁZÁNO — Stripe vytvoří zákazníka automaticky.
+    if (paymentMode === 'payment' && !customerId) {
+      sessionConfig.customer_creation = 'always';
+    }
 
     // Přiřaď existujícího zákazníka jen pokud ho máme
     if (customerId) {
@@ -151,18 +155,25 @@ serve(async (req) => {
       };
     }
 
+    // Default return URL per module
+    const moduleReturnPath = (() => {
+      if (moduleId === 'digitalni-ticho') return '/digitalni-ticho/dekujeme';
+      if (paymentMode === 'subscription') return '/muj-ucet?payment=success';
+      return '/';
+    })();
+
     // Embedded vs Hosted checkout
     if (isEmbedded) {
       sessionConfig.ui_mode = 'embedded';
       // 'if_required' = platba proběhne v embedded checkoutu, redirect jen pokud platební metoda vyžaduje
       sessionConfig.redirect_on_completion = 'if_required';
       sessionConfig.return_url = successUrl
-        ?? `${baseUrl}/digitalni-ticho/dekujeme?session_id={CHECKOUT_SESSION_ID}`;
+        ?? `${baseUrl}${moduleReturnPath}?session_id={CHECKOUT_SESSION_ID}`;
     } else {
       sessionConfig.success_url = successUrl
-        ?? `${baseUrl}/digitalni-ticho/dekujeme?session_id={CHECKOUT_SESSION_ID}`;
+        ?? `${baseUrl}${moduleReturnPath}?session_id={CHECKOUT_SESSION_ID}`;
       sessionConfig.cancel_url = cancelUrl
-        ?? `${baseUrl}/digitalni-ticho`;
+        ?? `${baseUrl}/`;
     }
 
     // ── Create session ────────────────────────────────────────────

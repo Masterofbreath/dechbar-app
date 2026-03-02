@@ -381,6 +381,68 @@ export function PokrokPage() {
         <WeeklyDots days={activityGraph} />
       </div>
 
+      {/* Osobní rekordy — pod weekly dots, always all-time */}
+      {(records || recordsLoading) && (
+        <div className="pokrok-page__records">
+          <div className="pokrok-page__records-title">Tvoje osobní rekordy</div>
+          <div className="pokrok-page__records-grid">
+            <div className="pokrok-page__record-card">
+              <div className="pokrok-page__record-label">Nejdelší streak</div>
+              {recordsLoading
+                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
+                : <div className="pokrok-page__record-value">
+                    {records?.longestStreak ?? 0}
+                    <span className="pokrok-page__record-unit">dní</span>
+                  </div>
+              }
+            </div>
+            <div className="pokrok-page__record-card">
+              <div className="pokrok-page__record-label">Nejlepší den</div>
+              {recordsLoading
+                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
+                : <div className="pokrok-page__record-value">
+                    {formatMinutes(records?.bestDayMinutes ?? 0)}
+                  </div>
+              }
+            </div>
+            <div className="pokrok-page__record-card">
+              <div className="pokrok-page__record-label">Nejdelší sezení</div>
+              {recordsLoading
+                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
+                : <div className="pokrok-page__record-value">
+                    {formatMinutes(records?.bestSessionMinutes ?? 0)}
+                  </div>
+              }
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Info Row — member since + all-time total (always visible, period-independent) */}
+      <div className="pokrok-page__info-row">
+        <div className="pokrok-page__info-card">
+          <div className="pokrok-page__info-value pokrok-page__info-value--gold">
+            {memberDays} {memberDays === 1 ? 'den' : memberDays < 5 ? 'dny' : 'dní'}
+          </div>
+          <div className="pokrok-page__info-label">s DechBarem</div>
+          {registeredAt && (
+            <div className="pokrok-page__info-sub">
+              člen od {new Date(registeredAt).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </div>
+          )}
+        </div>
+        <div className="pokrok-page__info-card">
+          <div className="pokrok-page__info-label">Celkem nadýcháno</div>
+          {allTimeLoading
+            ? <div className="pokrok-page__skeleton" />
+            : <div className="pokrok-page__info-value">
+                {formatHours(allTimeTotalMinutes)}
+              </div>
+          }
+          <div className="pokrok-page__info-sub">za celou dobu</div>
+        </div>
+      </div>
+
       {/* Tier gate for locked periods */}
       {isPeriodLocked && (
         <div className="pokrok-page__tier-gate">
@@ -481,70 +543,8 @@ export function PokrokPage() {
         </div>
       </div>
 
-      {/* Community Milestone — nad osobní rekordy */}
+      {/* Community Milestone */}
       <CommunityMilestone />
-
-      {/* Osobní rekordy — always all-time, not dependent on period */}
-      {(records || recordsLoading) && (
-        <div className="pokrok-page__records">
-          <div className="pokrok-page__records-title">Tvoje osobní rekordy</div>
-          <div className="pokrok-page__records-grid">
-            <div className="pokrok-page__record-card">
-              <div className="pokrok-page__record-label">Nejdelší streak</div>
-              {recordsLoading
-                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
-                : <div className="pokrok-page__record-value">
-                    {records?.longestStreak ?? 0}
-                    <span className="pokrok-page__record-unit">dní</span>
-                  </div>
-              }
-            </div>
-            <div className="pokrok-page__record-card">
-              <div className="pokrok-page__record-label">Nejlepší den</div>
-              {recordsLoading
-                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
-                : <div className="pokrok-page__record-value">
-                    {formatMinutes(records?.bestDayMinutes ?? 0)}
-                  </div>
-              }
-            </div>
-            <div className="pokrok-page__record-card">
-              <div className="pokrok-page__record-label">Nejdelší sezení</div>
-              {recordsLoading
-                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
-                : <div className="pokrok-page__record-value">
-                    {formatMinutes(records?.bestSessionMinutes ?? 0)}
-                  </div>
-              }
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Info Row — member since + all-time total (always visible, period-independent) */}
-      <div className="pokrok-page__info-row">
-        <div className="pokrok-page__info-card">
-          <div className="pokrok-page__info-value pokrok-page__info-value--gold">
-            {memberDays} {memberDays === 1 ? 'den' : memberDays < 5 ? 'dny' : 'dní'}
-          </div>
-          <div className="pokrok-page__info-label">s DechBarem</div>
-          {registeredAt && (
-            <div className="pokrok-page__info-sub">
-              člen od {new Date(registeredAt).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </div>
-          )}
-        </div>
-        <div className="pokrok-page__info-card">
-          <div className="pokrok-page__info-label">Celkem nadýcháno</div>
-          {allTimeLoading
-            ? <div className="pokrok-page__skeleton" />
-            : <div className="pokrok-page__info-value">
-                {formatHours(allTimeTotalMinutes)}
-              </div>
-          }
-          <div className="pokrok-page__info-sub">za celou dobu</div>
-        </div>
-      </div>
 
       {/* Activity Heatmap (last 24 weeks) — úplně dole */}
       <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
