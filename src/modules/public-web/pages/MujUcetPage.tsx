@@ -766,6 +766,7 @@ export function MujUcetPage() {
                         ctaText="Zachovat přístup →"
                         ctaVariant="primary"
                         highlighted={false}
+                        comingSoon
                       />
                     </div>
                   </div>
