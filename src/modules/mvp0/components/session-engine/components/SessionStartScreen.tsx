@@ -12,14 +12,21 @@ interface SessionStartScreenProps {
 // Default preset icon for all preset exercises (unified wind symbol)
 const DEFAULT_PRESET_ICON = 'wind';
 
+// Protocol-specific icons — must match DnesPage PresetProtocolButton icons
+const PROTOCOL_ICONS: Record<string, string> = {
+  'RÁNO': 'sun',
+  'VEČER': 'moon',
+};
+
 export function SessionStartScreen({ 
   exercise, 
   mood,
   onMoodChange,
   onStart
 }: SessionStartScreenProps) {
-  // Ultra simplified: custom = edit, all presets = wind
-  const iconName = exercise.category === 'custom' ? 'edit' : DEFAULT_PRESET_ICON;
+  const iconName = exercise.category === 'custom'
+    ? 'edit'
+    : PROTOCOL_ICONS[exercise.name] ?? DEFAULT_PRESET_ICON;
   
   return (
     <div className="session-start">
