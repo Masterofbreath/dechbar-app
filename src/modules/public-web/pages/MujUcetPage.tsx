@@ -715,6 +715,62 @@ export function MujUcetPage() {
                   )}
                 </div>
 
+                {/* ── Trial: upgrade karty ── */}
+                {trial && (
+                  <div className="muj-ucet-plan__trial-upgrade">
+                    <hr className="muj-ucet-section__divider" />
+                    <p className="muj-ucet-plan__upgrade-label">
+                      Zachovej přístup — vyber si tarif:
+                    </p>
+                    <BillingToggle
+                      value={billingInterval}
+                      onChange={setBillingInterval}
+                    />
+                    <div className="muj-ucet-plan__upgrade-cards">
+                      <PricingCard
+                        moduleId="smart"
+                        priceId={billingInterval === 'annual' ? PRICE_IDS.smart.annual : PRICE_IDS.smart.monthly}
+                        billingInterval={billingInterval}
+                        title="SMART"
+                        subtitle="Inteligentní doporučení"
+                        badge="OBLÍBENÉ"
+                        price={billingInterval === 'annual' ? '125 Kč' : '249 Kč'}
+                        period="měsíc"
+                        priceAnnual={billingInterval === 'annual' ? '125 Kč/měsíc' : undefined}
+                        savingsBadge={billingInterval === 'annual' ? 'Ušetříš 1 494 Kč ročně' : undefined}
+                        features={[
+                          'Trénink na míru',
+                          'Sledování výsledků v čase',
+                          'Neomezené vlastní cvičení',
+                        ]}
+                        ctaText="Zachovat přístup →"
+                        ctaVariant="primary"
+                        highlighted
+                      />
+                      <PricingCard
+                        moduleId="ai-coach"
+                        priceId={billingInterval === 'annual' ? PRICE_IDS.aiCoach.annual : PRICE_IDS.aiCoach.monthly}
+                        billingInterval={billingInterval}
+                        title="AI COACH"
+                        subtitle="Tvůj osobní AI trenér"
+                        badge="PREMIUM"
+                        price={billingInterval === 'annual' ? '245 Kč' : '490 Kč'}
+                        period="měsíc"
+                        priceAnnual={billingInterval === 'annual' ? '245 Kč/měsíc' : undefined}
+                        savingsBadge={billingInterval === 'annual' ? 'Ušetříš 2 940 Kč ročně' : undefined}
+                        features={[
+                          'Osobní AI trenér 24/7',
+                          'Neomezený počet zpráv s AI',
+                          'Pokročilá analýza dýchání',
+                        ]}
+                        ctaText="Získat AI Coache →"
+                        ctaVariant="primary"
+                        highlighted={false}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* "Zrušit předplatné" skryto pro trial — uživatel nic neplatí */}
                 {!trial && (
                   <div className="muj-ucet-plan__actions">
