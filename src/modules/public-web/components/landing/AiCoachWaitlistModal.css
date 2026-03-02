@@ -84,14 +84,6 @@
   }
 }
 
-/* ─── Close button ─────────────────────────────────────────── */
-
-.acwm-close {
-  position: absolute;
-  top: var(--spacing-4);
-  right: var(--spacing-4);
-}
-
 /* ─── Badge row ────────────────────────────────────────────── */
 
 .acwm-badge-row {
@@ -256,6 +248,20 @@
   color: var(--color-text-tertiary);
   text-align: center;
   margin: calc(-1 * var(--spacing-2)) 0 0;
+  line-height: 1.5;
+}
+
+.acwm-disclaimer__link {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .acwm-disclaimer__link:hover {
+    color: var(--color-text-primary);
+    text-decoration: underline;
+  }
 }
 
 /* ─── Success state ────────────────────────────────────────── */

@@ -11,21 +11,25 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/platform/auth';
+import { useUserState, isMembershipTrial } from '@/platform/user/userStateStore';
 import { PricingCard } from './PricingCard';
 import { BillingToggle, type BillingInterval } from './BillingToggle';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { AiCoachWaitlistModal } from './AiCoachWaitlistModal';
-import { trackMetaEvent } from '@/platform/utils/analytics';
+import { trackMetaEvent, trackPurchase, parsePriceString } from '@/platform/utils/analytics';
+import { EmailInputModal } from '@/platform';
+import { PaymentModal } from '@/platform/payments';
+import { useLandingPricingCheckout } from './useLandingPricingCheckout';
 
-// Stripe Price IDs (from Stripe Dashboard)
+// Stripe Price IDs (from Stripe Dashboard — account acct_1S3eJ5K0OYr7u1q9)
 const PRICE_IDS = {
   smart: {
-    monthly: 'price_1Sra65K7en1dcW6HC63iM7bf',
-    annual: 'price_1SraHbK7en1dcW6HjYNfiXau',
+    monthly: 'price_1T2S3eK0OYr7u1q9W5ZW042C',
+    annual:  'price_1T2S3dK0OYr7u1q9bwA0cNS8',
   },
   aiCoach: {
     monthly: 'price_1SraCSK7en1dcW6HFkmAbdIL',
-    annual: 'price_1SraIaK7en1dcW6HsYyN0Aj9',
+    annual:  'price_1SraIaK7en1dcW6HsYyN0Aj9',
   },
 } as const;
 
@@ -109,9 +113,28 @@ const PRICING_DATA = {
 
 export function PricingSection() {
   const { user } = useAuth();
+  const membership = useUserState((s) => s.membership);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('annual');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+
+  // Aktuální stav tarifu uživatele
+  const userPlan = membership?.plan ?? 'ZDARMA';
+  const isTrial = isMembershipTrial(membership);
+
+  // Jeden checkout stav pro celou sekci (Digitální ticho pattern)
+  // Zaručuje 1× EmbeddedCheckoutProvider v DOM — Stripe constraint
+  const {
+    emailModalOpen,
+    setEmailModalOpen,
+    paymentOpen,
+    clientSecret,
+    loadingEmail,
+    openCheckout,
+    handleEmailSubmit,
+    handlePaymentClose,
+    handlePaymentComplete,
+  } = useLandingPricingCheckout();
 
   // Meta Pixel: user scrolled to pricing section and saw the plans
   useEffect(() => {
@@ -124,8 +147,8 @@ export function PricingSection() {
   // Helper to get Price ID for a plan
   const getPriceId = (moduleId: 'smart' | 'ai-coach'): string => {
     if (moduleId === 'smart') {
-      return billingInterval === 'monthly' 
-        ? PRICE_IDS.smart.monthly 
+      return billingInterval === 'monthly'
+        ? PRICE_IDS.smart.monthly
         : PRICE_IDS.smart.annual;
     }
     return billingInterval === 'monthly'
@@ -158,28 +181,59 @@ export function PricingSection() {
           
           <div className="landing-pricing__grid">
             {/* FREE TIER */}
-            <PricingCard 
-              moduleId={PRICING_DATA.free.moduleId}
-              billingInterval={billingInterval}
-              title={PRICING_DATA.free.title}
-              subtitle={PRICING_DATA.free.subtitle}
-              price={PRICING_DATA.free.price}
-              badge={PRICING_DATA.free.badge}
-              features={PRICING_DATA.free.features}
-              ctaText={user ? 'Aktivní' : PRICING_DATA.free.ctaText}
-              ctaVariant="primary"
-              highlighted={PRICING_DATA.free.highlighted}
-              isDisabled={Boolean(user)}
-              onFreeTierCTA={() => setShowAuthModal(true)}
-            />
+            {(() => {
+              // Pokud má uživatel premium tarif, ZDARMA karta je "součástí tarifu X"
+              const isPremiumUser = userPlan !== 'ZDARMA';
+              const freeCta = isPremiumUser
+                ? `Součástí tarifu ${userPlan === 'AI_COACH' ? 'AI COACH' : 'SMART'}`
+                : user
+                  ? 'Aktivní'
+                  : PRICING_DATA.free.ctaText;
+              return (
+                <PricingCard
+                  moduleId={PRICING_DATA.free.moduleId}
+                  billingInterval={billingInterval}
+                  title={PRICING_DATA.free.title}
+                  subtitle={PRICING_DATA.free.subtitle}
+                  price={PRICING_DATA.free.price}
+                  badge={PRICING_DATA.free.badge}
+                  features={PRICING_DATA.free.features}
+                  ctaText={freeCta}
+                  ctaVariant="primary"
+                  highlighted={PRICING_DATA.free.highlighted}
+                  isDisabled={Boolean(user)}
+                  onFreeTierCTA={() => setShowAuthModal(true)}
+                />
+              );
+            })()}
 
             {/* SMART TIER */}
             {(() => {
               const smartPricing = getPricingForInterval(PRICING_DATA.smart);
+              const smartPriceId = getPriceId('smart');
+
+              // Dynamický stav CTA podle aktuálního tarifu uživatele
+              let smartCtaText = PRICING_DATA.smart.ctaText;
+              let smartDisabled = false;
+              let smartCTAOverride: (() => void) | undefined;
+
+              if (userPlan === 'AI_COACH') {
+                smartCtaText = 'Součástí tarifu AI COACH';
+                smartDisabled = true;
+              } else if (userPlan === 'SMART') {
+                if (isTrial) {
+                  smartCtaText = 'Zachovat přístup →';
+                  smartCTAOverride = () => { window.location.href = '/muj-ucet'; };
+                } else {
+                  smartCtaText = 'Aktivní';
+                  smartDisabled = true;
+                }
+              }
+
               return (
-                <PricingCard 
+                <PricingCard
                   moduleId={PRICING_DATA.smart.moduleId}
-                  priceId={getPriceId('smart')}
+                  priceId={smartPriceId}
                   billingInterval={billingInterval}
                   title={PRICING_DATA.smart.title}
                   subtitle={PRICING_DATA.smart.subtitle}
@@ -189,18 +243,23 @@ export function PricingSection() {
                   badge={PRICING_DATA.smart.badge}
                   savingsBadge={'savingsBadge' in smartPricing ? smartPricing.savingsBadge : undefined}
                   features={PRICING_DATA.smart.features}
-                  ctaText={PRICING_DATA.smart.ctaText}
+                  ctaText={smartCtaText}
                   ctaVariant={PRICING_DATA.smart.ctaVariant}
                   highlighted={PRICING_DATA.smart.highlighted}
+                  isDisabled={smartDisabled}
+                  onCTAOverride={smartCTAOverride}
+                  onPaidCTAClick={(priceId, interval, moduleId, title, price) =>
+                    openCheckout({ priceId, billingInterval: interval, moduleId, title, price })
+                  }
                 />
               );
             })()}
 
-            {/* AI COACH TIER */}
+            {/* AI COACH TIER — comingSoon, checkout není potřeba */}
             {(() => {
               const aiCoachPricing = getPricingForInterval(PRICING_DATA.aiCoach);
               return (
-                <PricingCard 
+                <PricingCard
                   moduleId={PRICING_DATA.aiCoach.moduleId}
                   priceId={getPriceId('ai-coach')}
                   billingInterval={billingInterval}
@@ -235,6 +294,29 @@ export function PricingSection() {
       {showWaitlistModal && (
         <AiCoachWaitlistModal onClose={() => setShowWaitlistModal(false)} />
       )}
+
+      {/* Jediný EmailInputModal pro celou pricing sekci */}
+      <EmailInputModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSubmit={handleEmailSubmit}
+        isLoading={loadingEmail}
+      />
+
+      {/* Jediný PaymentModal — 1× EmbeddedCheckoutProvider v DOM (Stripe constraint) */}
+      <PaymentModal
+        isOpen={paymentOpen}
+        onClose={handlePaymentClose}
+        onPaymentComplete={() => {
+          trackPurchase({
+            value: parsePriceString(PRICING_DATA.smart.pricing.monthly.price),
+            currency: 'CZK',
+            itemName: `SMART ${billingInterval === 'annual' ? 'roční' : 'měsíční'}`,
+          });
+          handlePaymentComplete();
+        }}
+        clientSecret={clientSecret}
+      />
     </>
   );
 }

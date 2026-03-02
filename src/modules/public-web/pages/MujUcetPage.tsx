@@ -694,9 +694,12 @@ export function MujUcetPage() {
                 </div>
 
                 <div className="muj-ucet-plan__details">
-                  <p className="muj-ucet-plan__detail muj-ucet-plan__detail--strong">
-                    {getBillingLabel(membership)}
-                  </p>
+                  {/* Pro trial nezobrazujeme billing label — info jsou v badges a datech níže */}
+                  {!trial && (
+                    <p className="muj-ucet-plan__detail muj-ucet-plan__detail--strong">
+                      {getBillingLabel(membership)}
+                    </p>
+                  )}
                   {membership.purchasedAt && (
                     <p className="muj-ucet-plan__detail">
                       Aktivní od: {formatDate(membership.purchasedAt)}
@@ -711,8 +714,8 @@ export function MujUcetPage() {
                   )}
                   {trial && (
                     <p className="muj-ucet-plan__detail muj-ucet-plan__detail--trial-note">
-                      Toto předplatné bylo přiděleno zdarma — žádné platební údaje nebyly zadány.
-                      Po skončení bude třeba předplatné obnovit.
+                      Toto předplatné ti bylo přiděleno zdarma. Žádné platební údaje nebyly
+                      zadány. Po skončení bude třeba předplatné obnovit.
                     </p>
                   )}
                 </div>
@@ -722,7 +725,7 @@ export function MujUcetPage() {
                   <div className="muj-ucet-plan__trial-upgrade">
                     <hr className="muj-ucet-section__divider" />
                     <p className="muj-ucet-plan__upgrade-label">
-                      Zachovej přístup — vyber si tarif:
+                      Zachovej přístup a vyber si tarif:
                     </p>
                     <BillingToggle
                       value={billingInterval}

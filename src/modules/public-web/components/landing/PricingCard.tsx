@@ -32,8 +32,21 @@ export interface PricingCardProps {
   highlighted?: boolean;
   isDisabled?: boolean;
   comingSoon?: boolean;       // Shows "Brzy dostupné" and disables purchase
-  onFreeTierCTA?: () => void; // For free tier (auth modal)
-  onComingSoonCTA?: () => void; // For comingSoon: opens waitlist modal instead of disabling
+  onFreeTierCTA?: () => void;    // For free tier (auth modal)
+  onComingSoonCTA?: () => void;  // For comingSoon: opens waitlist modal instead of disabling
+  onCTAOverride?: () => void;    // Overrides all CTA logic (e.g. navigate to /muj-ucet for trial)
+  /**
+   * Pokud je předán, parent spravuje checkout stav (single modal instance per page).
+   * Karta jen zavolá tento callback — nevytváří vlastní EmailInputModal / PaymentModal.
+   * Pattern: Digitální ticho → celá stránka má 1× EmbeddedCheckout (Stripe constraint).
+   */
+  onPaidCTAClick?: (
+    priceId: string,
+    billingInterval: BillingInterval,
+    moduleId: string,
+    title: string,
+    price: string,
+  ) => void;
 }
 
 export function PricingCard({
@@ -55,6 +68,8 @@ export function PricingCard({
   comingSoon = false,
   onFreeTierCTA,
   onComingSoonCTA,
+  onCTAOverride,
+  onPaidCTAClick,
 }: PricingCardProps) {
   const { user } = useAuth();
   const { 
@@ -69,6 +84,12 @@ export function PricingCard({
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   const handleCTA = async () => {
+    // CTA override: parent handles everything (e.g. navigate to /muj-ucet for trial users)
+    if (onCTAOverride) {
+      onCTAOverride();
+      return;
+    }
+
     // Free tier: Open auth modal
     if (moduleId === 'free' && onFreeTierCTA) {
       onFreeTierCTA();
@@ -96,7 +117,13 @@ export function PricingCard({
       num_items: 1,
     });
 
-    // Authenticated user: Open payment modal directly
+    // Parent-managed checkout (Digitální ticho pattern — single modal per page)
+    if (onPaidCTAClick) {
+      onPaidCTAClick(priceId, billingInterval, moduleId, title, price);
+      return;
+    }
+
+    // Fallback: self-managed checkout (backward compat, used when no parent handler)
     if (user) {
       setLocalLoading(true);
       try {
@@ -104,8 +131,8 @@ export function PricingCard({
           priceId, 
           billingInterval, 
           moduleId,
-          title,  // Module title for modal
-          price   // Display price for modal
+          title,
+          price
         );
       } catch (err) {
         console.error('Payment modal failed:', err);
@@ -113,7 +140,6 @@ export function PricingCard({
         setLocalLoading(false);
       }
     } else {
-      // Guest: Show email modal first
       setIsEmailModalOpen(true);
     }
   };
@@ -127,7 +153,7 @@ export function PricingCard({
         moduleId,
         title,
         price,
-        email  // Guest email
+        email
       );
       setIsEmailModalOpen(false);
     } catch (err) {
@@ -231,27 +257,30 @@ export function PricingCard({
       )}
     </div>
 
-    {/* Email Modal for Guest Checkout */}
-    <EmailInputModal
-      isOpen={isEmailModalOpen}
-      onClose={() => setIsEmailModalOpen(false)}
-      onSubmit={handleEmailSubmit}
-      isLoading={isButtonLoading}
-    />
+    {/* Interní modaly — pouze pokud parent NESPRAVUJE checkout (backward compat) */}
+    {!onPaidCTAClick && (
+      <>
+        <EmailInputModal
+          isOpen={isEmailModalOpen}
+          onClose={() => setIsEmailModalOpen(false)}
+          onSubmit={handleEmailSubmit}
+          isLoading={isButtonLoading}
+        />
 
-    {/* Payment Modal (Embedded Checkout) */}
-    <PaymentModal
-      isOpen={isModalOpen}
-      onClose={closePaymentModal}
-      clientSecret={clientSecret}
-      onPaymentComplete={() => {
-        trackPurchase({
-          value: parsePriceString(price),
-          currency: 'CZK',
-          itemName: `${title} ${billingInterval === 'annual' ? 'roční' : 'měsíční'}`,
-        });
-      }}
-    />
+        <PaymentModal
+          isOpen={isModalOpen}
+          onClose={closePaymentModal}
+          clientSecret={clientSecret}
+          onPaymentComplete={() => {
+            trackPurchase({
+              value: parsePriceString(price),
+              currency: 'CZK',
+              itemName: `${title} ${billingInterval === 'annual' ? 'roční' : 'měsíční'}`,
+            });
+          }}
+        />
+      </>
+    )}
     </>
   );
 }

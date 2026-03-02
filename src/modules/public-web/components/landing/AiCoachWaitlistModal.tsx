@@ -81,14 +81,25 @@ export function AiCoachWaitlistModal({ onClose }: AiCoachWaitlistModalProps) {
       tabIndex={-1}
     >
       <div className="acwm-card">
-        {/* Close button */}
+        {/* Close button — global .close-button styles from close-button.css */}
         <button
           type="button"
-          className="close-button acwm-close"
+          className="close-button"
           aria-label="Zavřít"
           onClick={onClose}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            className="close-button__icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -102,10 +113,9 @@ export function AiCoachWaitlistModal({ onClose }: AiCoachWaitlistModalProps) {
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h2 className="acwm-headline" id="acwm-title">Zapsáno! 🎉</h2>
+            <h2 className="acwm-headline" id="acwm-title">Zapsáno</h2>
             <p className="acwm-subline">
-              Dáme ti vědět jako jedním z prvních, jakmile AI Coach spustíme.
-              Těšíme se na tebe.
+              Brzy ti dáme vědět.
             </p>
             <button type="button" className="acwm-cta" onClick={onClose}>
               Zavřít
@@ -129,10 +139,11 @@ export function AiCoachWaitlistModal({ onClose }: AiCoachWaitlistModalProps) {
             {/* Headline */}
             <div>
               <h2 className="acwm-headline" id="acwm-title">
-                Buď první, kdo vyzkouší AI Coach
+                Buď první, kdo vyzkouší AI COACHe
               </h2>
               <p className="acwm-subline">
-                Tvůj osobní AI trenér dechu. Zapíš se a dáme ti vědět, jakmile spustíme.
+                Tvůj osobní AI trenér dechu. Nech nám svůj e-mail a my ti dáme vědět,
+                jakmile AI trenéra spustíme.
               </p>
             </div>
 
@@ -188,7 +199,15 @@ export function AiCoachWaitlistModal({ onClose }: AiCoachWaitlistModalProps) {
             </button>
 
             <p className="acwm-disclaimer">
-              Žádný spam. Pouze oznámení o spuštění AI Coach.
+              Zadáním e-mailu souhlasíš s{' '}
+              <a href="/obchodni-podminky" target="_blank" rel="noopener noreferrer" className="acwm-disclaimer__link">
+                obchodními podmínkami
+              </a>{' '}
+              a{' '}
+              <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer" className="acwm-disclaimer__link">
+                ochranou osobních údajů
+              </a>
+              .
             </p>
           </>
         )}

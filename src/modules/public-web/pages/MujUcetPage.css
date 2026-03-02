@@ -48,7 +48,7 @@
 }
 
 .muj-ucet-container {
-  max-width: 680px;
+  max-width: 900px;
   margin: 0 auto;
   padding: var(--spacing-12) var(--spacing-6);
   display: flex;

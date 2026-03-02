@@ -415,7 +415,7 @@ const PRODUCT_CONFIG: Record<string, {
     name: 'DechBar SMART',
     subtitle: 'Prémiové členství',
     bodyText: 'Vítej v DechBar SMART! Máš otevřené dveře k prémiovému obsahu, živým sekcím a osobní podpoře. Vše na tebe čeká.',
-    access: 'Měsíční předplatné',
+    access: 'Předplatné (automatické obnovení)',
     paymentType: 'monthly',
     deepLinkPath: '/app?welcome=true&module=membership-smart',
   },
@@ -487,16 +487,14 @@ async function getModuleFromPriceId(
     payment_type: 'subscription';
   }> = {
     // ── Subscriptions (SMART Membership) ──────────────────────
-    'price_1Sra65K7en1dcW6HC63iM7bf': {
+    // acct_1S3eJ5K0OYr7u1q9 — prod_U0SzbyNG0vrzZ0
+    'price_1T2S3eK0OYr7u1q9W5ZW042C': {
       module_id: 'membership-smart', plan: 'SMART', interval: 'monthly', payment_type: 'subscription',
     },
-    'price_1SraCSK7en1dcW6HFkmAbdIL': {
+    'price_1T2S3dK0OYr7u1q9bwA0cNS8': {
       module_id: 'membership-smart', plan: 'SMART', interval: 'annual', payment_type: 'subscription',
     },
-    // ── Subscriptions (AI COACH Membership) ───────────────────
-    'price_1SraHbK7en1dcW6HjYNfiXau': {
-      module_id: 'membership-ai-coach', plan: 'AI_COACH', interval: 'monthly', payment_type: 'subscription',
-    },
+    // ── Subscriptions (AI COACH Membership) ── coming soon ────
     'price_1SraIaK7en1dcW6HsYyN0Aj9': {
       module_id: 'membership-ai-coach', plan: 'AI_COACH', interval: 'annual', payment_type: 'subscription',
     },
