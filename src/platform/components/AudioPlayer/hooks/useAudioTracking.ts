@@ -174,6 +174,12 @@ export const useAudioTracking = ({
         query.queryKey.includes('nextLesson') ||
         query.queryKey.includes('activeProgram'),
     });
+    // Invalidate featured program cache — key ['akademie', 'featuredProgram'] neobsahuje
+    // 'activeProgram' ani 'nextLesson', takže ji musíme invalidovat explicitně.
+    // Jinak by se po dokončení lekce UI neaktualizovalo na další lekci.
+    queryClientRef.current.invalidateQueries({
+      queryKey: akademieKeys.featuredProgram(),
+    });
     // Invalidate Pokrok stats → audio session se zobrazí ihned
     queryClientRef.current.invalidateQueries({ queryKey: ['analytics', 'pokrok'] });
   }, [userId]);
