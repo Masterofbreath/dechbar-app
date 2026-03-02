@@ -98,12 +98,14 @@ async function fetchKPMeasurements(userId: string): Promise<KPMeasurement[]> {
  */
 function calculateStats(measurements: KPMeasurement[]): KPStats {
   const validMeasurements = measurements.filter(m => m.is_valid);
-  const validValues = validMeasurements.map(m => m.value_seconds);
   
-  // Current KP (poslední validní)
+  // Current KP = poslední měření (jakékoli — is_valid je vždy true)
   const currentKP = validMeasurements.length > 0 
     ? validMeasurements[0].value_seconds 
     : null;
+  
+  // Ranní měření — pro kontextovou statistiku (nejpřesnější baseline)
+  const morningMeasurements = measurements.filter(m => m.is_morning_measurement);
   
   // First KP
   const firstMeasurement = measurements.find(m => m.is_first_measurement);
@@ -120,11 +122,15 @@ function calculateStats(measurements: KPMeasurement[]): KPStats {
   // Weekly streak calculation (simplified - full calculation in useKPStreak)
   const weeklyStreak = 0; // TODO: Implement full streak calculation
   
+  // Pro průměr a best preferujeme ranní měření, fallback na všechna
+  const statsSource = morningMeasurements.length > 0 ? morningMeasurements : validMeasurements;
+  const statsValues = statsSource.map(m => m.value_seconds);
+  
   return {
     currentKP,
     firstKP,
-    averageKP: calculatePeriodAverage(validValues),
-    bestKP: getBestKP(validValues),
+    averageKP: calculatePeriodAverage(statsValues),
+    bestKP: getBestKP(statsValues),
     totalMeasurements: measurements.length,
     validMeasurements: validMeasurements.length,
     weeklyStreak,
@@ -238,6 +244,8 @@ export function useKPMeasurements() {
     // Current state
     currentKP: stats?.currentKP ?? null,
     firstKP: stats?.firstKP ?? null,
+    bestKP: stats?.bestKP ?? 0,
+    totalMeasurements: stats?.totalMeasurements ?? 0,
     
     // All measurements (sorted, newest first)
     measurements,

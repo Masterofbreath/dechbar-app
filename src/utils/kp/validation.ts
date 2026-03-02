@@ -36,14 +36,14 @@ export function validateKPMeasurement(measuredAt: Date): ValidationResult {
   const hour = measuredAt.getHours();
   const isMorning = hour >= 4 && hour < 9;
   
-  // Pro validní data: pouze ranní měření (4-9h)
-  const isValid = isMorning;
+  // Každé měření je validní — čas je jen metadata pro kontext.
+  // is_morning_measurement slouží k zobrazení tipu v UI, ne k odmítnutí dat.
+  const isValid = true;
   
-  // Validation notes pro invalid měření
-  let validationNotes: string | null = null;
-  if (!isValid) {
-    validationNotes = 'Měření mimo ranní okno (4-9h). Pro relevantní data měř ráno hned po probuzení.';
-  }
+  // Poznámka pro uživatele (nezpůsobuje odmítnutí záznamu)
+  const validationNotes: string | null = isMorning
+    ? null
+    : 'Pro nejpřesnější výsledky měř ráno hned po probuzení (4–9h).';
   
   return {
     is_morning_measurement: isMorning,
