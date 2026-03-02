@@ -17,7 +17,6 @@ import { DemoDnesView } from './views/DemoDnesView';
 import { DemoCvicitView } from './views/DemoCvicitView';
 import { DemoTopNav } from './components/DemoTopNav';
 import { DemoBottomNav } from './components/DemoBottomNav';
-import { LockedExerciseModal } from './components/LockedExerciseModal';
 import { ChallengeRegistrationModal } from './components/ChallengeRegistrationModal';
 import { DemoSettingsDrawer } from './components/DemoSettingsDrawer';
 import { DemoKPCenter } from './components/DemoKPCenter';
@@ -152,28 +151,6 @@ export function DemoApp() {
   };
   
   /**
-   * Handle Google OAuth registration
-   */
-  const handleGoogleAuth = () => {
-    track({
-      action: 'registration_start',
-      method: 'google',
-      exercise: state.selectedExercise || undefined,
-      timestamp: Date.now(),
-    });
-    
-    // TODO: Integrate with real OAuth (Phase 2)
-    // For now: Demo alert
-    if (import.meta.env.DEV) {
-      console.log('[Demo] Google OAuth clicked:', state.selectedExercise?.name);
-      alert(`Demo: Google registrace pro cvičení "${state.selectedExercise?.name}"\n\nV produkci: redirect to /exercise/${state.selectedExercise?.id}`);
-    } else {
-      // Production: Redirect to real auth
-      window.location.href = '/register';
-    }
-  };
-  
-  /**
    * Handle email registration
    * Sends magic link on both /vyzva and homepage — consistent UX across all pages
    */
@@ -187,7 +164,7 @@ export function DemoApp() {
     
     // /vyzva with KP measurement → Send magic link with KP data
     if (isChallengePage && state.kpMeasurementData) {
-      const kpValue = state.kpMeasurementData.average || state.kpMeasurementData.lastValue;
+      const kpValue = state.kpMeasurementData.averageKP || state.kpMeasurementData.attempts[0] || 0;
       await sendLink(email, kpValue, 'demo_measurement_round_1');
       setTimeout(() => {
         setState(prev => ({ ...prev, isEmailModalOpen: false }));
@@ -416,28 +393,22 @@ export function DemoApp() {
           onViewChange={handleViewChange} 
         />
         
-        {/* Conversion modal - Conditional based on page */}
-        {isChallengePage ? (
-          <ChallengeRegistrationModal
-            isOpen={state.isModalOpen}
-            onClose={handleModalClose}
-            exercise={state.selectedExercise}
-            kpMeasurement={state.kpMeasurementData}
-            onSubmit={handleChallengeRegistration}
-            isSubmitting={sendingMagicLink}
-            successMessage={magicLinkSent ? 'Magic link odeslán! Zkontroluj svůj e-mail.' : ''}
-            errorMessage={magicLinkError || ''}
-          />
-        ) : (
-          <LockedExerciseModal
-            isOpen={state.isModalOpen}
-            onClose={handleModalClose}
-            exercise={state.selectedExercise}
-            kpMeasurement={state.kpMeasurementData}
-            onGoogleAuth={handleGoogleAuth}
-            onEmailSubmit={handleEmailSubmit}
-          />
-        )}
+        {/* Conversion modal — same component everywhere, text adapted per page */}
+        <ChallengeRegistrationModal
+          isOpen={state.isModalOpen}
+          onClose={handleModalClose}
+          exercise={state.selectedExercise}
+          kpMeasurement={state.kpMeasurementData}
+          onSubmit={isChallengePage ? handleChallengeRegistration : handleEmailSubmit}
+          isSubmitting={sendingMagicLink}
+          successMessage={magicLinkSent ? 'Odkaz odeslán! Zkontroluj svůj e-mail.' : ''}
+          errorMessage={magicLinkError || ''}
+          {...(!isChallengePage && {
+            titleOverride: 'Začni cvičit',
+            subtitleOverride: 'Zadej e-mail — pošleme ti přístupový odkaz.',
+            ctaText: 'Poslat odkaz →',
+          })}
+        />
         
         {/* Settings drawer */}
         <DemoSettingsDrawer

@@ -135,13 +135,6 @@ export function PricingCard({
   return (
     <>
       <div className={`pricing-card ${highlighted ? 'pricing-card--highlighted' : ''} ${comingSoon ? 'pricing-card--coming-soon' : ''}`}>
-      {/* Coming soon overlay */}
-      {comingSoon && (
-        <div className="pricing-card__coming-soon-overlay" aria-hidden="true">
-          <span className="pricing-card__coming-soon-label">Brzy dostupné</span>
-        </div>
-      )}
-
       {/* Badge (if exists) */}
       {badge && (
         <div className={`pricing-card__badge ${highlighted ? 'pricing-card__badge--gold' : 'pricing-card__badge--teal'}`}>

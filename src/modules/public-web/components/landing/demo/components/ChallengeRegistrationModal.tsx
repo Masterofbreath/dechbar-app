@@ -29,6 +29,12 @@ export interface ChallengeRegistrationModalProps {
   successMessage?: string;
   errorMessage?: string;
   isSubmitting?: boolean;
+  /** Override computed title (e.g. for homepage context) */
+  titleOverride?: string;
+  /** Override computed subtitle (e.g. for homepage context) */
+  subtitleOverride?: string;
+  /** Override CTA button text */
+  ctaText?: string;
 }
 
 /**
@@ -59,6 +65,9 @@ export function ChallengeRegistrationModal({
   successMessage = '',
   errorMessage = '',
   isSubmitting = false,
+  titleOverride,
+  subtitleOverride,
+  ctaText,
 }: ChallengeRegistrationModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -92,11 +101,14 @@ export function ChallengeRegistrationModal({
   // Determine if user has measured KP
   const hasKPResult = kpMeasurement && kpMeasurement.averageKP > 0;
   
-  // Conditional text based on KP measurement
-  const title = hasKPResult ? 'Vstup do výzvy' : 'Získej přístup';
-  const subtitle = hasKPResult
+  // Conditional text based on KP measurement (can be overridden via props)
+  const defaultTitle = hasKPResult ? 'Vstup do výzvy' : 'Získej přístup';
+  const defaultSubtitle = hasKPResult
     ? 'Registruj se do výzvy a změň své ráno.'
     : 'Zaregistruj se do 21denní výzvy zdarma';
+  const title = titleOverride ?? defaultTitle;
+  const subtitle = subtitleOverride ?? defaultSubtitle;
+  const buttonText = ctaText ?? 'Vstoupit do výzvy';
   
   const contextMessage = kpMeasurement && kpMeasurement.attempts.length === 1
     ? 'Výsledek z jednoho měření'
@@ -217,7 +229,7 @@ export function ChallengeRegistrationModal({
                 loading={isSubmitting}
                 disabled={isSubmitting}
               >
-                Vstoupit do výzvy
+                {buttonText}
               </Button>
             </form>
             

@@ -572,7 +572,9 @@ section[id] {
 }
 
 .pricing-card__cta {
-  margin-top: var(--spacing-6);  /* 24px */
+  margin-top: auto;       /* Push to bottom of flex column (equal height cards via grid) */
+  padding-top: var(--spacing-6);  /* Visual gap above button */
+  min-height: 52px;       /* Consistent button height regardless of text */
 }
 
 /* ===================================
@@ -603,33 +605,6 @@ section[id] {
   box-shadow: none;
 }
 
-.pricing-card__coming-soon-overlay {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: var(--spacing-3);
-  z-index: 2;
-  pointer-events: none;
-}
-
-.pricing-card__coming-soon-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: rgb(255 255 255 / 10%);
-  border: 1px solid rgb(255 255 255 / 20%);
-  color: var(--color-text-secondary);
-  backdrop-filter: blur(8px);
-}
 
 /* ===================================
    FOOTER - Premium Apple-style
