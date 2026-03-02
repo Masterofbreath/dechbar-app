@@ -160,38 +160,62 @@ function getAdminPeriodStart(period: DashboardPeriod): string {
   }
 }
 
-/** Returns { fromDate, toDate } for the PREVIOUS admin period (for delta comparison). */
+/**
+ * Returns { from, to } date strings for the PREVIOUS admin period — elapsed-window logic.
+ *
+ * Rule (same as PokrokPage getPreviousPeriodRange):
+ *   If current period = Mon–Wed (3 elapsed days), prev = last Mon–Wed (3 days).
+ *   Never compare a partial current period against a FULL previous period.
+ *
+ * Examples (today = Wed Mar 4):
+ *   week  → prev Mon Feb 24 – prev Wed Feb 26  (not Mon–Sun)
+ *   month → prev Feb 1–4                        (not whole Feb)
+ *   year  → only from 2027+ (no 2025 data yet)
+ */
 function getAdminPrevPeriodRange(period: DashboardPeriod): { from: string; to: string } | null {
   const now = new Date();
   switch (period) {
     case 'today': {
+      // Today 00:00→now vs. yesterday same window (full previous day)
       const d = new Date(now); d.setDate(d.getDate() - 1);
       const s = toIsoDateString(d);
       return { from: s, to: s };
     }
     case 'yesterday': {
+      // Yesterday (full day) vs. day-before-yesterday (full day)
       const d = new Date(now); d.setDate(d.getDate() - 2);
       const s = toIsoDateString(d);
       return { from: s, to: s };
     }
     case 'week': {
+      // Current: this Monday 00:00 → now
+      // Previous equivalent: last Monday 00:00 → (now − 7 days)  [same elapsed days]
       const dow = now.getDay();
-      const diff = dow === 0 ? -6 : 1 - dow;
-      const thisMonday = new Date(now); thisMonday.setDate(thisMonday.getDate() + diff);
-      const lastMonday = new Date(thisMonday); lastMonday.setDate(lastMonday.getDate() - 7);
-      const lastSunday = new Date(thisMonday); lastSunday.setDate(lastSunday.getDate() - 1);
-      return { from: toIsoDateString(lastMonday), to: toIsoDateString(lastSunday) };
+      const mondayOffset = dow === 0 ? -6 : 1 - dow;
+      const thisMonday = new Date(now);
+      thisMonday.setDate(thisMonday.getDate() + mondayOffset);
+      thisMonday.setHours(0, 0, 0, 0);
+      const prevStart = new Date(thisMonday); prevStart.setDate(prevStart.getDate() - 7);
+      const prevEnd   = new Date(now);        prevEnd.setDate(prevEnd.getDate() - 7);
+      return { from: toIsoDateString(prevStart), to: toIsoDateString(prevEnd) };
     }
     case 'month': {
-      const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const lastOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-      return { from: toIsoDateString(firstOfLastMonth), to: toIsoDateString(lastOfLastMonth) };
+      // Current: 1st of this month → today (day N)
+      // Previous: 1st of last month → day N of last month (capped at last day)
+      const dayOfMonth = now.getDate();
+      const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+      const cappedDay = Math.min(dayOfMonth, lastDayOfPrevMonth);
+      const prevMonthEnd = new Date(now.getFullYear(), now.getMonth() - 1, cappedDay);
+      return { from: toIsoDateString(prevMonthStart), to: toIsoDateString(prevMonthEnd) };
     }
     case 'year': {
+      // Only from 2027 — no 2025 data available yet
       if (now.getFullYear() <= 2026) return null;
-      const firstOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
-      const lastOfLastYear = new Date(now.getFullYear() - 1, 11, 31);
-      return { from: toIsoDateString(firstOfLastYear), to: toIsoDateString(lastOfLastYear) };
+      // Current: Jan 1 → today. Previous: Jan 1 of last year → same calendar day last year
+      const prevStart = new Date(now.getFullYear() - 1, 0, 1);
+      const prevEnd   = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      return { from: toIsoDateString(prevStart), to: toIsoDateString(prevEnd) };
     }
     default: return null;
   }
@@ -504,9 +528,15 @@ export interface ProtocolStat {
   completionRate: number;
 }
 
+// exercises.subcategory values (NOT exercise_type — that column doesn't exist)
 const PROTOCOL_LABELS: Record<string, string> = {
-  rano: 'Ráno',
-  klid: 'Klid',
+  morning: 'Ráno',
+  evening: 'Večer',
+  stress:  'Klid',
+  focus:   'Fokus',
+  // Legacy fallback aliases (kept for safety)
+  rano:  'Ráno',
+  klid:  'Klid',
   vecer: 'Večer',
 };
 
@@ -535,11 +565,12 @@ export function useProtocolStats(period: DashboardPeriod = 'today'): { stats: Pr
 
       const { data: exercises } = await supabase
         .from('exercises')
-        .select('id, exercise_type, title')
+        .select('id, subcategory, name')
         .in('id', [...new Set((rows ?? []).map((r) => r.exercise_id).filter(Boolean))]);
 
+      // Map exercise id → subcategory ('morning', 'evening', 'stress', 'focus', …)
       const typeMap = new Map<string, string>(
-        (exercises ?? []).map((e) => [e.id, e.exercise_type ?? 'other'])
+        (exercises ?? []).map((e) => [e.id, (e as { id: string; subcategory: string | null }).subcategory ?? 'other'])
       );
 
       const counts = new Map<string, { started: number; completed: number }>();
@@ -873,13 +904,19 @@ export interface OnboardingFunnel {
   neverStartedPct: number;
 }
 
+// App launch date — only real users registered from this date onwards.
+// Pre-launch testers (profiles.created_at before this date) are excluded from the funnel
+// to avoid "Nikdy nezačali" inflation from test accounts.
+const APP_LAUNCH_DATE = '2026-02-28T00:00:00.000Z';
+
 export function useOnboardingFunnel(): { funnel: OnboardingFunnel | null; isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ['analytics', 'onboardingFunnel'] as const,
     queryFn: async () => {
-      // Use RPC — bypasses RLS for reliable admin count of recent registrations
+      // Use RPC — bypasses RLS. Filter from launch date (not daysBack(30)) to exclude
+      // 387 pre-launch testers whose profiles.created_at predates the launch.
       const { data: users, error: usersErr } = await supabase
-        .rpc('get_profiles_in_range', { from_ts: daysBack(30), to_ts: new Date().toISOString() });
+        .rpc('get_profiles_in_range', { from_ts: APP_LAUNCH_DATE, to_ts: new Date().toISOString() });
       if (usersErr) throw new Error(usersErr.message);
       if (!users || users.length === 0) {
         return { registered: 0, steps: [], neverStarted: 0, neverStartedPct: 0 };
