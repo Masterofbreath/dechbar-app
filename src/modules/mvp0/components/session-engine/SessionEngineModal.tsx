@@ -255,6 +255,7 @@ export function SessionEngineModal({
     let breathingIntervalId: number | null = null;
     let currentCyclePosition = 0;
     let isWaitingForCycleEnd = false;
+    let cycleEndWaitStartTime = 0;
     // Shared between breathing interval and phase timer (updated each 100ms tick)
     let effectiveEndOfExhalePos = 0;
     
@@ -377,6 +378,7 @@ export function SessionEngineModal({
 
             if (currentCyclePosition > 0.5 && currentCyclePosition < endOfExhalePosition && !isWaitingForCycleEnd) {
               isWaitingForCycleEnd = true;
+              cycleEndWaitStartTime = Date.now();
               return 0;
             }
             
@@ -394,6 +396,21 @@ export function SessionEngineModal({
             }
             
             if (isWaitingForCycleEnd) {
+              // Fallback: if waiting more than 1 full cycle + 2s buffer (handles iOS Safari
+              // background throttling where setInterval is paused and currentCyclePosition
+              // never resets below 0.5), force advance to avoid permanently stuck phase.
+              const maxWaitSeconds = (effectiveEndOfExhalePos > 0 ? effectiveEndOfExhalePos : 15) + 2;
+              if (cycleEndWaitStartTime > 0 && (Date.now() - cycleEndWaitStartTime) / 1000 > maxWaitSeconds) {
+                setCurrentInstruction('');
+                const nextIndex = currentPhaseRef.current + 1;
+                if (nextIndex < totalPhases) {
+                  setCurrentPhaseIndex(nextIndex);
+                  playBell();
+                } else {
+                  completeExercise();
+                }
+                return 0;
+              }
               return 0;
             }
           }

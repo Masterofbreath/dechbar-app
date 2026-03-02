@@ -131,9 +131,14 @@ export function useBreathingCues(): BreathingCuesAPI {
         audio.src = audioUrl;
         audio.volume = audioCueVolume;
         
-        // Wait for canplaythrough
+        // Wait for canplaythrough with 3s timeout — guards against TLS/network failures
+        // where 'canplaythrough' never fires and Promise.all would hang indefinitely.
         return new Promise<void>((resolve) => {
-          audio.addEventListener('canplaythrough', () => resolve(), { once: true });
+          const timeout = window.setTimeout(() => resolve(), 3000);
+          audio.addEventListener('canplaythrough', () => {
+            clearTimeout(timeout);
+            resolve();
+          }, { once: true });
           audio.load();
         });
       });
