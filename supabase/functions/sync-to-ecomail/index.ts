@@ -36,7 +36,7 @@ const LIST_IDS: Record<string, string> = {
   DIGITALNI_TICHO: Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO') || '10',
   DIGITALNI_TICHO_BEFORE: Deno.env.get('ECOMAIL_LIST_DIGITALNI_TICHO_BEFORE') || '11',
   // Waitlists
-  AI_COACH_WAITLIST: Deno.env.get('ECOMAIL_LIST_AI_COACH_WAITLIST') || '12',
+  AI_COACH_WAITLIST: Deno.env.get('ECOMAIL_LIST_AI_COACH_WAITLIST') || '16',
 };
 
 // =====================================================

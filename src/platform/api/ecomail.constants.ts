@@ -46,7 +46,7 @@ export const ECOMAIL_LIST_IDS = {
     ENGAGED: '7',
     PREMIUM: '8',
     CHURNED: '9',
-    AI_COACH_WAITLIST: '12', // '10' = DIGITALNI_TICHO (edge fn conflict!) → use '12'
+    AI_COACH_WAITLIST: '12', // DEV placeholder — PROD uses list ID 16
   },
   PROD: {
     UNREG: 'LIST_ID_UNREG_PROD',
@@ -54,7 +54,7 @@ export const ECOMAIL_LIST_IDS = {
     ENGAGED: 'LIST_ID_ENGAGED_PROD',
     PREMIUM: 'LIST_ID_PREMIUM_PROD',
     CHURNED: 'LIST_ID_CHURNED_PROD',
-    AI_COACH_WAITLIST: 'LIST_ID_AI_COACH_WAITLIST_PROD',
+    AI_COACH_WAITLIST: '16',
   }
 } as const;
 
