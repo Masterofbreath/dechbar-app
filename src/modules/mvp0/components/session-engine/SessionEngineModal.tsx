@@ -293,6 +293,21 @@ export function SessionEngineModal({
           localMultiplier = intensityControl.pendingMultiplierRef.current;
           intensityControl.multiplierRef.current = localMultiplier;
           currentCyclePosition = 0;
+
+          // If phase timer already expired and we were waiting for the natural breath end,
+          // advance NOW — 100ms precision vs relying on 1s timer hitting a 0.5s window.
+          if (isWaitingForCycleEnd) {
+            isWaitingForCycleEnd = false;
+            setCurrentInstruction('');
+            const nextIndex = currentPhaseRef.current + 1;
+            if (nextIndex < totalPhases) {
+              setCurrentPhaseIndex(nextIndex);
+              playBell();
+            } else {
+              completeExercise();
+            }
+          }
+
           return; // Skip rendering this tick — fresh cycle starts on next tick
         }
 
@@ -382,25 +397,15 @@ export function SessionEngineModal({
               return 0;
             }
             
-            if (isWaitingForCycleEnd && currentCyclePosition < 0.5) {
-              setCurrentInstruction('');
-              const nextIndex = currentPhaseRef.current + 1;
-              
-              if (nextIndex < totalPhases) {
-                setCurrentPhaseIndex(nextIndex);
-                playBell();
-              } else {
-                completeExercise();
-              }
-              return 0;
-            }
-            
             if (isWaitingForCycleEnd) {
-              // Fallback: if waiting more than 1 full cycle + 2s buffer (handles iOS Safari
-              // background throttling where setInterval is paused and currentCyclePosition
-              // never resets below 0.5), force advance to avoid permanently stuck phase.
+              // Primary advancement is handled by updateBreathingState at the exact cycle boundary.
+              // This 1s timer block is a safety net for two edge cases:
+              // 1. iOS Safari background throttling: breathing interval paused, currentCyclePosition stuck
+              // 2. Rare race where cycle boundary fires between timer ticks
               const maxWaitSeconds = (effectiveEndOfExhalePos > 0 ? effectiveEndOfExhalePos : 15) + 2;
-              if (cycleEndWaitStartTime > 0 && (Date.now() - cycleEndWaitStartTime) / 1000 > maxWaitSeconds) {
+              const timedOut = cycleEndWaitStartTime > 0 && (Date.now() - cycleEndWaitStartTime) / 1000 > maxWaitSeconds;
+              if (timedOut || currentCyclePosition < 0.5) {
+                isWaitingForCycleEnd = false;
                 setCurrentInstruction('');
                 const nextIndex = currentPhaseRef.current + 1;
                 if (nextIndex < totalPhases) {
@@ -409,7 +414,6 @@ export function SessionEngineModal({
                 } else {
                   completeExercise();
                 }
-                return 0;
               }
               return 0;
             }
