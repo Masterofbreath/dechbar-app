@@ -294,6 +294,20 @@
   background: var(--dechbar-gold, #F8CA00);
 }
 
+.analytics-admin__bar-value {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 50%);
+  white-space: nowrap;
+  text-align: center;
+  margin-bottom: 3px;
+  min-height: 12px;
+}
+
+.analytics-admin__bar-wrap--today .analytics-admin__bar-value {
+  color: var(--dechbar-gold, #F8CA00);
+}
+
 .analytics-admin__bar-label {
   font-size: 10px;
   color: rgb(255 255 255 / 30%);

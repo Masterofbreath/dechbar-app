@@ -154,7 +154,11 @@ function getAdminPeriodStart(period: DashboardPeriod): string {
       return toIsoDateString(new Date(now.getFullYear(), now.getMonth(), 1));
     }
     case 'year': {
-      return toIsoDateString(new Date(now.getFullYear(), 0, 1));
+      // Use app launch date as year start — prevents phantom data from Jan–Feb
+      // test sessions that predate the actual launch. Next year we'll switch to Jan 1.
+      const launchDate = new Date('2026-02-28T00:00:00.000Z');
+      const yearStart = new Date(now.getFullYear(), 0, 1);
+      return toIsoDateString(yearStart > launchDate ? yearStart : launchDate);
     }
     default: return toIsoDateString(now); // 'today' handled separately
   }
@@ -935,13 +939,17 @@ export function useOnboardingFunnel(): { funnel: OnboardingFunnel | null; isLoad
         if (!existing || d < existing) firstSession.set(r.user_id, d);
       }
 
-      // For each user: hours between registration and first session
+      // For each user: hours between registration and first session.
+      // Pre-launch testers have profiles.created_at = Feb 28 (updated), but their
+      // first session might predate that → negative hours. Clamp to 0 so they count
+      // as "activated on launch day" (0–24h bucket), not as "never started".
       const hoursToFirst: number[] = [];
       let neverStarted = 0;
       for (const user of users) {
         const first = firstSession.get(user.user_id);
         if (!first) { neverStarted++; continue; }
-        hoursToFirst.push((first.getTime() - new Date(user.created_at).getTime()) / (1000 * 60 * 60));
+        const raw = (first.getTime() - new Date(user.created_at).getTime()) / (1000 * 60 * 60);
+        hoursToFirst.push(Math.max(0, raw)); // clamp: pre-launch sessions count as day-0
       }
 
       const total = users.length;
@@ -1402,13 +1410,14 @@ export function useUserPokrokStats(
   const totalActivities =
     (audioData?.length ?? 0) + (exerciseData?.length ?? 0);
 
-  // Distinct active days
+  // Distinct active LOCAL days — must use toLocalDateStr (same as activityGraph/heatmap)
+  // otherwise a CET session at 00:21 would count as UTC-yesterday (different day than heatmap shows).
   const activeDaysSet = new Set<string>();
   for (const r of audioData ?? []) {
-    activeDaysSet.add(r.started_at.slice(0, 10));
+    if (r.started_at) activeDaysSet.add(toLocalDateStr(r.started_at));
   }
   for (const r of exerciseData ?? []) {
-    activeDaysSet.add(r.started_at.slice(0, 10));
+    if (r.started_at) activeDaysSet.add(toLocalDateStr(r.started_at));
   }
   const activeDays = activeDaysSet.size;
   // Average: divide by elapsed calendar days — always accurate

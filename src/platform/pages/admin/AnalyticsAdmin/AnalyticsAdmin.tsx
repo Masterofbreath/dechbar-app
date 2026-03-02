@@ -124,41 +124,64 @@ function formatBarDate(dateStr: string): string {
   return `${d.getUTCDate()}. ${d.getUTCMonth() + 1}.`;
 }
 
-function BarChart({ kpis, isLoading, period }: BarChartProps) {
-  // Always show the LAST N days in chronological order.
-  // kpis is sorted oldest→newest from fetchLiveKpisByRange.
-  // Bug fix: the old code did [...kpis].reverse().slice(-7) = oldest 7, not newest 7.
-  const barCount = period === 'today' ? 1 : 7;
-  const days = kpis.slice(-barCount); // correct: last N days from chronological array
-  const maxVal = Math.max(...days.map((d) => d.totalMinutesBeathed), 1);
+/** Compact minutes label for bar: '2h', '45 min', '1h 5m' */
+function formatBarValue(minutes: number): string {
+  if (minutes <= 0) return '';
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
 
-  const title = period === 'today'
-    ? 'Minuty prodýchány — dnes (živě)'
-    : 'Minuty prodýchány — posledních 7 dní';
+const PERIOD_BAR_TITLES: Record<DashboardPeriod, string> = {
+  today:     'Minuty prodýchány — dnes (živě)',
+  yesterday: 'Minuty prodýchány — včera',
+  week:      'Minuty prodýchány — tento týden',
+  month:     'Minuty prodýchány — tento měsíc',
+  year:      'Minuty prodýchány — letos',
+};
+
+function BarChart({ kpis, isLoading, period }: BarChartProps) {
+  // Show all days for the current period — chart now REACTS to period selector.
+  // For long periods (month/year) limit to last 30 bars to keep it readable.
+  const MAX_BARS = 30;
+  const days = period === 'today' || period === 'yesterday'
+    ? kpis.slice(-1)
+    : kpis.slice(-MAX_BARS);
+
+  const maxVal = Math.max(...days.map((d) => d.totalMinutesBeathed), 0.01);
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="analytics-admin__chart">
-      <div className="analytics-admin__chart-title">{title}</div>
+      <div className="analytics-admin__chart-title">{PERIOD_BAR_TITLES[period]}</div>
       <div className="analytics-admin__bar-chart">
         {isLoading
-          ? Array.from({ length: barCount }).map((_, i) => (
+          ? Array.from({ length: Math.min(7, MAX_BARS) }).map((_, i) => (
               <div key={i} className="analytics-admin__bar-wrap">
                 <div className="analytics-admin__skeleton" style={{ height: '80%', width: '100%' }} />
               </div>
             ))
           : days.map((day) => {
               const pct = maxVal > 0 ? (day.totalMinutesBeathed / maxVal) * 100 : 0;
-              const isToday = day.date === new Date().toISOString().slice(0, 10);
-              const label = period === 'today' ? 'dnes' : formatBarDate(day.date);
+              const isToday = day.date === todayStr;
+              const label = period === 'today' || period === 'yesterday'
+                ? (isToday ? 'dnes' : 'včera')
+                : formatBarDate(day.date);
+              const valueLabel = formatBarValue(day.totalMinutesBeathed);
               return (
                 <div
                   key={day.date}
                   className={`analytics-admin__bar-wrap${isToday ? ' analytics-admin__bar-wrap--today' : ''}`}
                   title={`${label}: ${formatMinutes(day.totalMinutesBeathed)}`}
                 >
+                  {valueLabel && (
+                    <div className="analytics-admin__bar-value">{valueLabel}</div>
+                  )}
                   <div
                     className={`analytics-admin__bar${isToday ? ' analytics-admin__bar--today' : ''}`}
-                    style={{ height: `${Math.max(pct, day.totalMinutesBeathed > 0 ? 4 : 1)}%` }}
+                    style={{ height: `${Math.max(pct, day.totalMinutesBeathed > 0 ? 4 : 0)}%` }}
                   />
                   <div className="analytics-admin__bar-label">{label}</div>
                 </div>
