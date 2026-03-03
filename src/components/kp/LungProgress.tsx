@@ -25,7 +25,7 @@ const SIZE_MAP = {
   sm: { width: 60,  height: 70,  svgWidth: 120, svgHeight: 140 },
   md: { width: 80,  height: 93,  svgWidth: 120, svgHeight: 140 },
   lg: { width: 120, height: 140, svgWidth: 120, svgHeight: 140 },
-  xl: { width: 386, height: 424, svgWidth: 120, svgHeight: 140 },
+  xl: { width: 386, height: 196, svgWidth: 120, svgHeight: 140 },
 };
 
 // Levá plíce — zaoblený tvar, střed vlevo, s výřezem pro tracheus nahoře
@@ -56,9 +56,9 @@ export function LungProgress({
   animated = true,
   compact = false,
 }: LungProgressProps) {
-  // compact (mobile): zmenšení xl o 10 % — dims musí souhlasit s viewBox
+  // compact (mobile): zmenšení xl — dims musí souhlasit s viewBox
   const dims = compact && size === 'xl'
-    ? { width: 290, height: 319, svgWidth: 120, svgHeight: 140 }
+    ? { width: 290, height: 186, svgWidth: 120, svgHeight: 140 }
     : SIZE_MAP[size];
   const percent = Math.min(100, Math.max(0, (valueSeconds / maxSeconds) * 100));
   const fillY = (1 - percent / 100) * dims.svgHeight;
