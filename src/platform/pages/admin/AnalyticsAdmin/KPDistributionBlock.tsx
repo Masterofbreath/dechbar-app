@@ -3,7 +3,7 @@
  *
  * Zobrazuje distribuci kontrolních pauz uživatelů v admin analytice.
  * - Coverage tiles (kolik uživatelů si změřilo KP)
- * - Inline SVG histogram (6 bucketů, milníkové čáry, průměr)
+ * - Inline SVG histogram (10 bucketů po 5s + 41–60s + 60s+, milníkové čáry, průměr)
  * - Empty state (ikona plic + text)
  * - Loading state (skeleton)
  *
@@ -23,20 +23,25 @@ const KP_MILESTONE_FUNCTIONAL = 25;  // První funkčnost dýchacího systému
 const KP_MILESTONE_GOAL       = 40;  // Cílová destinace DechBar
 
 // ── SVG layout konstanty ──────────────────────────────────────
+// 10 bucketů: 1–5, 6–10, 11–15, 16–20, 21–25, 26–30, 31–35, 36–40, 41–60, 60s+
+// Milestone čáry mapovány na rozsah 0–60s (x = value/60 * SVG_WIDTH)
 
-const SVG_WIDTH      = 600;
+const SVG_WIDTH      = 700;  // širší pro 10 sloupců
 const SVG_HEIGHT     = 160;
 const BAR_AREA_H     = 110; // výška sloupců
 const LABEL_AREA_H   = 30;  // prostor pod sloupci pro labely
 const CHART_TOP_PAD  = 20;  // prostor nahoře pro hodnoty nad sloupci
-const N_BUCKETS      = 6;
-const BAR_GAP        = 12;
-const BAR_TOTAL_W    = SVG_WIDTH - BAR_GAP * (N_BUCKETS + 1);
-const BAR_W          = BAR_TOTAL_W / N_BUCKETS;
+const BAR_GAP        = 8;   // menší gap pro více sloupců
 
-// x pozice středu bucketu (indexováno 0–5)
-function barX(i: number): number {
-  return BAR_GAP * (i + 1) + BAR_W * i;
+// x pozice levého okraje bucketu (indexováno 0..n-1), dynamicky dle počtu bucketů
+function barX(i: number, nBuckets: number): number {
+  const barW = (SVG_WIDTH - BAR_GAP * (nBuckets + 1)) / nBuckets;
+  return BAR_GAP * (i + 1) + barW * i;
+}
+
+// šířka jednoho sloupce — dynamicky dle počtu bucketů
+function barWidth(nBuckets: number): number {
+  return (SVG_WIDTH - BAR_GAP * (nBuckets + 1)) / nBuckets;
 }
 
 // x pozice milestone čáry — mapujeme 0–60s na celou šířku grafu
@@ -215,9 +220,11 @@ export function KPDistributionBlock({ distribution, coverage, isLoading }: KPDis
 
           {/* ── Sloupce bucketů ── */}
           {distribution.map((bucket, i) => {
+            const nBuckets   = distribution.length;
+            const BAR_W      = barWidth(nBuckets);
             const heightPct  = maxUserCount > 0 ? bucket.user_count / maxUserCount : 0;
             const barH       = Math.max(heightPct * BAR_AREA_H, bucket.user_count > 0 ? 3 : 0);
-            const x          = barX(i);
+            const x          = barX(i, nBuckets);
             const y          = CHART_TOP_PAD + BAR_AREA_H - barH;
             const isPeak     = i === peakIndex;
             const fill       = isPeak ? '#D6A23A' : 'rgba(44,190,198,0.65)';
