@@ -392,6 +392,13 @@
   border: 1px solid var(--color-accent);
 }
 
+.badge--abandoned {
+  background: rgb(255 255 255 / 5%);
+  color: rgb(255 255 255 / 45%);
+  border: 1px solid rgb(255 255 255 / 12%);
+  font-size: 11px;
+}
+
 .badge--notes {
   background: rgb(44 190 198 / 10%); /* Teal background */
   color: var(--color-primary); /* Teal text */
@@ -401,6 +408,11 @@
   align-items: center;
   gap: 4px;
   transition: all 0.2s ease;
+}
+
+.session-card__mood-inline svg {
+  opacity: 0.45;
+  flex-shrink: 0;
 }
 
 .badge--notes svg {
@@ -416,114 +428,6 @@
   color: var(--color-background); /* Dark icon on teal */
 }
 
-.note-tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 200px;
-  max-width: 320px;
-  padding: 12px 16px;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  font-size: 14px;
-  color: var(--color-text-primary);
-  line-height: 1.5;
-  z-index: 100;
-  animation: tooltip-fade-in 0.2s ease;
-}
-
-/* Arrow dole (ukazuje na badge) */
-.note-tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: var(--color-surface-elevated);
-}
-
-.note-tooltip p {
-  margin: 0;
-  color: var(--color-text-primary);
-}
-
-.note-tooltip__close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: transparent;
-  border: none;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  font-size: 16px;
-  padding: 4px;
-}
-
-.note-tooltip__close:hover {
-  color: var(--color-text-primary);
-}
-
-@keyframes tooltip-fade-in {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* Mobile - modal místo tooltip */
-@media (width <= 768px) {
-  .note-tooltip {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    bottom: auto;
-    width: calc(100% - 32px);
-    max-width: 400px;
-    
-    /* Modal styling */
-    padding: 24px;
-    background: var(--color-surface-elevated);
-    box-shadow: var(--shadow-xl);
-    border-radius: var(--radius-xl);
-    z-index: 10000;
-  }
-  
-  /* Odstranit arrow na mobile */
-  .note-tooltip::after {
-    display: none;
-  }
-  
-  /* Overlay pro mobile */
-  .note-tooltip::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgb(0 0 0 / 50%);
-    z-index: -1;
-    animation: overlay-fade-in 0.2s ease;
-  }
-}
-
-@keyframes overlay-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
 /* ============================================================
    Accessibility
    ============================================================ */
@@ -536,10 +440,57 @@
   .session-card {
     transition: none;
   }
-  
-  .note-tooltip {
-    animation: none;
-  }
+}
+
+/* ============================================================
+   Mood inline — pocit po cvičení (vpravo v meta řádku)
+   ============================================================ */
+
+.session-card__mood-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 11px;
+  color: rgb(255 255 255 / 38%);
+  font-weight: 400;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Pevná šířka labelu — "Pocit po tréninku:" vždy začíná na stejném místě */
+.session-card__mood-label {
+  color: rgb(255 255 255 / 25%);
+  margin-right: 3px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Audio Session Card — teal variant
+   ============================================================ */
+
+.session-card--audio {
+  border-left-color: var(--color-primary, #2CBEC6);
+  box-shadow:
+    inset 3px 0 8px rgb(44 190 198 / 8%),
+    0 2px 8px rgb(44 190 198 / 8%);
+}
+
+.session-card--audio::before {
+  background: linear-gradient(90deg, rgb(44 190 198 / 6%) 0%, transparent 30%);
+}
+
+/* ============================================================
+   SMART Badge — gold variant
+   ============================================================ */
+
+.badge--smart {
+  background: rgb(214 162 58 / 15%);
+  color: var(--color-accent, #D6A23A);
+  border: 1px solid rgb(214 162 58 / 30%);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 /* ============================================================

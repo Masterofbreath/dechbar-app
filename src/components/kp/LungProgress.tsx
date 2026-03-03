@@ -24,7 +24,7 @@ const SIZE_MAP = {
   sm: { width: 60,  height: 70,  svgWidth: 120, svgHeight: 140 },
   md: { width: 80,  height: 93,  svgWidth: 120, svgHeight: 140 },
   lg: { width: 120, height: 140, svgWidth: 120, svgHeight: 140 },
-  xl: { width: 280, height: 308, svgWidth: 120, svgHeight: 140 },
+  xl: { width: 322, height: 354, svgWidth: 120, svgHeight: 140 },
 };
 
 // Levá plíce — zaoblený tvar, střed vlevo, s výřezem pro tracheus nahoře
@@ -120,8 +120,8 @@ export function LungProgress({
     .join(' ');
 
   // Teploměr: šířka pruhu, x pozice, výška
-  // THERM_X = -34: pruh dál vlevo, labely budou na THERM_X - 10
-  const THERM_X = -34;
+  // THERM_X = -26: teploměr blíže k plicím, viewBox symetrizován kolem x=60 (střed plic)
+  const THERM_X = -26;
   const THERM_W = 4;
   const THERM_H = dims.svgHeight - 16;
   const THERM_Y_TOP = 8;
@@ -150,7 +150,7 @@ export function LungProgress({
 
       <svg
         className="lung-progress__svg"
-        viewBox={`-60 0 ${dims.svgWidth + 100} ${dims.svgHeight}`}
+        viewBox={`-55 0 230 ${dims.svgHeight}`}
         width={dims.width}
         height={dims.height}
         role="img"
@@ -214,7 +214,7 @@ export function LungProgress({
                   key={pct}
                   x={THERM_X - 10}
                   y={labelY + 3}
-                  fontSize={isCurrentPct ? 11 : 8.5}
+                  fontSize={isCurrentPct ? 13 : 10.5}
                   fontWeight={isCurrentPct ? '700' : isMilestonePct && isReachedPct ? '600' : '400'}
                   fill={isCurrentPct
                     ? 'rgba(255,255,255,0.9)'
@@ -265,15 +265,25 @@ export function LungProgress({
                 />
               );
             })}
-            {/* Aktuální % hladina — svítící tečka na pruhu */}
+            {/* Aktuální % hladina — gold tečka se září na teploměru */}
             {percent > 2 && percent < 98 && (
-              <circle
-                cx={THERM_X + THERM_W / 2}
-                cy={THERM_Y_TOP + THERM_H - thermFillH}
-                r="3"
-                fill="rgba(255,255,255,0.9)"
-                style={{ filter: 'drop-shadow(0 0 3px rgba(96,165,250,0.8))' }}
-              />
+              <g>
+                {/* Halo záře */}
+                <circle
+                  cx={THERM_X + THERM_W / 2}
+                  cy={THERM_Y_TOP + THERM_H - thermFillH}
+                  r="6"
+                  fill="rgba(248,202,0,0.12)"
+                />
+                {/* Zlatá tečka */}
+                <circle
+                  cx={THERM_X + THERM_W / 2}
+                  cy={THERM_Y_TOP + THERM_H - thermFillH}
+                  r="3.5"
+                  fill="rgba(248,202,0,1)"
+                  style={{ filter: 'drop-shadow(0 0 4px rgba(248,202,0,0.9))' }}
+                />
+              </g>
             )}
           </g>
         )}
@@ -332,7 +342,8 @@ export function LungProgress({
         {size !== 'sm' && MILESTONES.map((m) => {
           const markerY = (1 - m.seconds / maxSeconds) * dims.svgHeight;
           const isReached = valueSeconds >= m.seconds;
-          const textSize = size === 'xl' ? 10 : 7;
+          const valSize = size === 'xl' ? 11 : 7;
+          const descSize = size === 'xl' ? 9.5 : 6;
           return (
             <g key={m.seconds}>
               {/* Čára přes plíce */}
@@ -359,11 +370,11 @@ export function LungProgress({
                   style={{ pointerEvents: 'none' }}
                 />
               )}
-              {/* Popisek vpravo — sekundy + název */}
+              {/* Popisek vpravo — sekundy + název, odsazeno od pravé plíce (x=112) */}
               <text
-                x="118"
+                x="122"
                 y={markerY + 1}
-                fontSize={textSize + 1}
+                fontSize={valSize}
                 fontWeight="700"
                 fill={isReached ? m.glowColor : m.markerColor}
                 opacity={isReached ? 1 : 0.8}
@@ -373,9 +384,9 @@ export function LungProgress({
                 {m.seconds}s
               </text>
               <text
-                x="118"
-                y={markerY + textSize + 3}
-                fontSize={textSize - 0.5}
+                x="122"
+                y={markerY + valSize + 2}
+                fontSize={descSize}
                 fontWeight={isReached ? '500' : '400'}
                 fill={isReached ? m.glowColor : m.markerColor}
                 opacity={isReached ? 0.85 : 0.65}

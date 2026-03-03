@@ -39,7 +39,7 @@
   /* Dark glassmorphism */
   background: rgb(30 30 30 / 95%);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   
   /* Border & shadows */
   border: 1px solid rgb(255 255 255 / 10%);
@@ -126,10 +126,56 @@
 }
 
 /* ===================================
-   Mobile Responsive
+   Mobile Responsive — Modal overlay
    =================================== */
 
-@media (width <= 480px) {
+@media (width <= 768px) {
+  /* On mobile, open state triggers full-screen modal */
+  .tooltip-wrapper--open .tooltip {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    bottom: auto;
+    width: calc(100% - 32px);
+    max-width: 400px;
+    padding: 24px;
+    font-size: 14px;
+    border-radius: 16px;
+    z-index: 10000;
+    pointer-events: auto;
+    animation: tooltip-fade-in-center 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* Dark overlay behind modal */
+  .tooltip-wrapper--open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 50%);
+    z-index: 9999;
+    animation: overlay-fade-in 0.2s ease;
+  }
+}
+
+@keyframes tooltip-fade-in-center {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (width > 480px) and (width <= 768px) {
   .tooltip {
     max-width: 260px;
     font-size: 12px;

@@ -1,13 +1,17 @@
 /**
- * Tooltip Component - Click-to-Show Tooltip (Mobile-First)
- * 
- * Premium dark glassmorphism tooltip with click trigger.
+ * Tooltip Component - Click (mobile) / Hover (desktop) Tooltip
+ *
+ * Premium dark glassmorphism tooltip.
+ * - Desktop (>768px): hover trigger
+ * - Mobile (<=768px): click/tap trigger + full modal overlay
+ * - content: ReactNode — supports plain text and future rich content
+ *
  * Follows Visual Brand Book 2.0:
  * - Dark glassmorphism background
  * - Smooth rounded corners (12px)
  * - No emoji (clean, premium)
- * - Haptic feedback on interaction
- * 
+ * - Haptic feedback on mobile tap
+ *
  * @package DechBar_App
  * @subpackage Platform/Components
  */
@@ -20,71 +24,96 @@ export interface TooltipProps {
    * Trigger element (badge, button, etc.)
    */
   children: React.ReactNode;
-  
+
   /**
-   * Tooltip content (text only, no emoji)
+   * Tooltip content — supports plain text and JSX (for future rich text)
    */
-  content: string;
-  
+  content: React.ReactNode;
+
   /**
-   * Position relative to trigger
+   * Position relative to trigger (desktop only; mobile uses centered modal)
    * @default 'top'
    */
   position?: 'top' | 'bottom' | 'left' | 'right';
-  
+
   /**
-   * Additional CSS classes
+   * Additional CSS classes for the wrapper
    */
   className?: string;
 }
 
 /**
- * Tooltip - Click-activated tooltip with premium styling
- * 
+ * Tooltip - Hover (desktop) / click (mobile) tooltip with premium styling
+ *
  * @example
  * <Tooltip content="Poznámky ti pomůžou sledovat pokrok.">
  *   <span className="badge badge--notes">Poznámka</span>
  * </Tooltip>
+ *
+ * @example JSX content
+ * <Tooltip content={<><strong>Tučný text</strong> a normální.</>}>
+ *   <button>Nápověda</button>
+ * </Tooltip>
  */
-export function Tooltip({ 
-  children, 
-  content, 
+export function Tooltip({
+  children,
+  content,
   position = 'top',
-  className = '' 
+  className = '',
 }: TooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const { trigger } = useHaptic();
   const wrapperRef = useRef<HTMLDivElement>(null);
-  
-  // Close on click outside
+
+  // Detect mobile — static at render time, sufficient for PWA
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
+  const isVisible = isMobile ? isOpen : (isHovered || isOpen);
+
+  // Close on click outside (mobile modal)
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
-  
+
   const handleClick = (e: React.MouseEvent) => {
+    if (!isMobile) return; // desktop uses hover only
     e.stopPropagation();
     trigger('light');
-    setIsOpen(!isOpen);
+    setIsOpen((prev) => !prev);
   };
-  
+
+  const wrapperClass = [
+    'tooltip-wrapper',
+    isOpen ? 'tooltip-wrapper--open' : '',
+    className,
+  ].filter(Boolean).join(' ');
+
   return (
-    <div 
+    <div
       ref={wrapperRef}
-      className={`tooltip-wrapper ${className}`}
+      className={wrapperClass}
       onClick={handleClick}
+      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      onMouseLeave={() => {
+        if (!isMobile) {
+          setIsHovered(false);
+          setIsOpen(false);
+        }
+      }}
     >
       {children}
-      
-      {isOpen && (
+
+      {isVisible && (
         <div className={`tooltip tooltip--${position}`}>
           {content}
         </div>

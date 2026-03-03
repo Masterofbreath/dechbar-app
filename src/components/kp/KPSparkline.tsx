@@ -28,13 +28,14 @@ function buildPath(
   h: number,
   padding = 4,
 ): { linePath: string; areaPath: string; firstX: number; firstY: number; lastX: number; lastY: number } {
+  const xPad = 5; // horizontal inset so dots don't get clipped at edges
   if (data.length < 2) {
     const y = h / 2;
     return {
-      linePath: `M 0,${y} L ${w},${y}`,
-      areaPath: `M 0,${y} L ${w},${y} L ${w},${h} L 0,${h} Z`,
-      firstX: 0, firstY: y,
-      lastX: w,
+      linePath: `M ${xPad},${y} L ${w - xPad},${y}`,
+      areaPath: `M ${xPad},${y} L ${w - xPad},${y} L ${w - xPad},${h} L ${xPad},${h} Z`,
+      firstX: xPad, firstY: y,
+      lastX: w - xPad,
       lastY: y,
     };
   }
@@ -43,7 +44,7 @@ function buildPath(
   const max = Math.max(...data);
   const range = max === min ? 1 : max - min;
 
-  const toX = (i: number) => (i / (data.length - 1)) * w;
+  const toX = (i: number) => xPad + (i / (data.length - 1)) * (w - xPad * 2);
   const toY = (v: number) =>
     h - padding - ((v - min) / range) * (h - padding * 2);
 
@@ -57,7 +58,7 @@ function buildPath(
   const firstPt = points[0];
   const areaPath =
     linePath +
-    ` L ${lastPt.x.toFixed(1)},${h} L 0,${h} Z`;
+    ` L ${lastPt.x.toFixed(1)},${h} L ${xPad},${h} Z`;
 
   return { linePath, areaPath, firstX: firstPt.x, firstY: firstPt.y, lastX: lastPt.x, lastY: lastPt.y };
 }
@@ -154,15 +155,15 @@ export function KPSparkline({
               cx={firstX}
               cy={firstY}
               r={2.5}
-              fill="rgba(255,255,255,0.3)"
+              fill="rgba(255,255,255,0.35)"
             />
             <text
-              x={firstX}
-              y={firstY - 5}
+              x={Math.max(firstX, 12)}
+              y={firstY - 9}
               fontSize="9"
               fontWeight="500"
-              fill="rgba(255,255,255,0.4)"
-              textAnchor="middle"
+              fill="rgba(255,255,255,0.55)"
+              textAnchor="start"
               style={{ fontFamily: 'inherit' }}
             >
               {startLabel}
@@ -183,10 +184,10 @@ export function KPSparkline({
             {drawn && endLabel && (
               <text
                 x={Math.min(lastX, svgWidth - 16)}
-                y={lastY - 6}
+                y={Math.max(lastY - 14, -LABEL_H + 2)}
                 fontSize="9"
                 fontWeight="600"
-                fill="rgba(248,202,0,0.85)"
+                fill="rgba(248,202,0,0.9)"
                 textAnchor="middle"
                 style={{ fontFamily: 'inherit' }}
               >

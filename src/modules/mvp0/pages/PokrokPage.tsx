@@ -239,6 +239,12 @@ const SIMPLE_TABS: { key: ActivityPeriod; label: string }[] = [
   { key: 'month', label: 'Měsíc' },
 ];
 
+function formatStreak(days: number): string | null {
+  if (days <= 1) return null;
+  if (days < 5) return `${days} dny v řadě`;
+  return `${days} dnů v řadě`;
+}
+
 export function PokrokPage() {
   const [period, setPeriod] = useState<ActivityPeriod>('day');
   const userId = useAuthStore((s) => s.user?.id);
@@ -330,10 +336,10 @@ export function PokrokPage() {
             <span className="pokrok-page__week-section-title">Tento týden</span>
           </div>
           <WeeklyDots days={activityGraph} />
-          {streak && streak.currentStreakDays > 0 && (
+          {streak && formatStreak(streak.currentStreakDays) && (
             <div className="pokrok-page__streak-inline">
               <span className="pokrok-page__streak-dot" />
-              {streak.currentStreakDays} dní v řadě
+              {formatStreak(streak.currentStreakDays)}
             </div>
           )}
         </div>

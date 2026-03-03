@@ -235,8 +235,15 @@ export function useAudioSessionTracking({
     completedLoggedRef.current = true;
 
     const totalListened = calculateTotalListened();
-    const listenPercent = duration > 0
-      ? Math.min(100, (totalListened / duration) * 100)
+    // Guard: pokud audio duration ještě není načteno (0), použij ref nebo sessionContext jako fallback.
+    // Toto zamezuje zápisu unique_listen_seconds = 0 při race condition (isCompleted true před načtením duration).
+    const effectiveDuration = durationRef.current > 0
+      ? durationRef.current
+      : (sessionContext.audioDurationSeconds ?? duration);
+    // Pokud tracker vrátí 0 (audio se nestihlo spustit), použij currentTime jako dolní odhad.
+    const effectiveListened = totalListened > 0 ? totalListened : currentTimeRef.current;
+    const listenPercent = effectiveDuration > 0
+      ? Math.min(100, (effectiveListened / effectiveDuration) * 100)
       : 0;
 
     logAudioEvent({
@@ -262,7 +269,7 @@ export function useAudioSessionTracking({
       audio_duration_seconds: sessionContext.audioDurationSeconds
         ? Math.round(sessionContext.audioDurationSeconds)
         : undefined,
-      unique_listen_seconds: Math.round(totalListened),
+      unique_listen_seconds: Math.round(effectiveListened),
       completion_percent: Math.round(listenPercent * 100) / 100,
       is_completed: true,
       seek_count: seekCountRef.current,
@@ -351,8 +358,12 @@ export function useAudioSessionTracking({
       closedRef.current = true;
       const totalListened = calculateTotalListenedRef.current();
       const dur = durationRef.current;
-      const listenPercent = dur > 0
-        ? Math.round(Math.min(100, (totalListened / dur) * 10000)) / 100
+      // Guard: pokud duration není načteno, použij audioDurationSeconds z kontextu.
+      const effectiveDur = dur > 0 ? dur : (ctx.audioDurationSeconds ?? 0);
+      // Pokud tracker vrátí 0, použij currentTime jako dolní odhad.
+      const effectiveListened = totalListened > 0 ? totalListened : currentTimeRef.current;
+      const listenPercent = effectiveDur > 0
+        ? Math.round(Math.min(100, (effectiveListened / effectiveDur) * 10000)) / 100
         : 0;
       const pos = currentTimeRef.current;
 
@@ -380,7 +391,7 @@ export function useAudioSessionTracking({
         audio_duration_seconds: ctx.audioDurationSeconds
           ? Math.round(ctx.audioDurationSeconds)
           : undefined,
-        unique_listen_seconds: Math.round(totalListened),
+        unique_listen_seconds: Math.round(effectiveListened),
         completion_percent: listenPercent,
         is_completed: isCompletedRef.current,
         was_abandoned: !isCompletedRef.current,

@@ -13,7 +13,7 @@
 import { useState } from 'react';
 import { ExerciseCard } from './ExerciseCard';
 import { LockedFeatureModal } from './LockedFeatureModal';
-import { Button, LoadingSkeleton, EmptyState, NavIcon, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
+import { Button, LoadingSkeleton, EmptyState, NavIcon, Tooltip, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
 import { useMembership } from '@/platform/membership';
 import { useNavigation } from '@/platform/hooks';
 import { useAuthStore } from '@/platform/auth';
@@ -25,6 +25,8 @@ import {
   useExerciseSessions,
   useDeleteExercise,
 } from '../api/exercises';
+import { useAudioSessions } from '../api/useAudioSessions';
+import type { AudioSessionRow } from '../api/useAudioSessions';
 import type { Exercise } from '../types/exercises';
 
 // Difficulty labels
@@ -42,6 +44,81 @@ export interface ExerciseListProps {
 
 type TabType = 'presets' | 'custom' | 'history';
 type PresetFilter = 'all' | 'protocols' | 'exercises';
+type HistoryFilter = 'all' | 'audio' | 'protocols' | 'exercises';
+
+/**
+ * Vrátí délku cvičení v minutách (z nastavení cvičení).
+ * Zobrazujeme plánovanou délku — skutečná délka se liší o countdown/přípravu.
+ */
+function getExerciseDurationLabel(exercise?: { total_duration_seconds: number } | null): string {
+  if (!exercise?.total_duration_seconds) return '? min';
+  const mins = Math.round(exercise.total_duration_seconds / 60);
+  return `${mins} min`;
+}
+
+/**
+ * Vypočítá % dokončení cvičení z timestamp rozdílu vs. total_duration.
+ * Používáme jen pro nedokončená cvičení kde was_completed = false.
+ * Výsledek je konzervativní odhad (countdown není zahrnut v total_duration).
+ */
+function getCompletionPercent(session: {
+  started_at: string;
+  completed_at?: string | null;
+  exercise?: { total_duration_seconds: number } | null;
+}): number | null {
+  if (!session.completed_at || !session.exercise?.total_duration_seconds) return null;
+  const diffSeconds = Math.round(
+    (new Date(session.completed_at).getTime() - new Date(session.started_at).getTime()) / 1000
+  );
+  if (diffSeconds <= 0) return null;
+  return Math.min(99, Math.round((diffSeconds / session.exercise.total_duration_seconds) * 100));
+}
+
+/** Inline AudioSessionCard — teal variant with headphone badge */
+function AudioSessionCard({ session }: { session: AudioSessionRow }) {
+  const minutes = Math.round((session.unique_listen_seconds ?? 0) / 60);
+  const pct = Math.round(Number(session.completion_percent ?? 0));
+  const isDone = pct >= 80;
+
+  return (
+    <div className="session-card session-card--audio">
+      <div className="session-card__header">
+        <h4 className="session-card__title">{session.lesson_title ?? 'Audio'}</h4>
+        <span className="session-card__date">
+          {new Date(session.started_at).toLocaleDateString('cs-CZ', {
+            day: 'numeric',
+            month: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </span>
+      </div>
+      <div className="session-card__meta">
+        <span className="badge">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+          </svg>
+          {minutes > 0 ? `${minutes} min` : '< 1 min'}
+        </span>
+
+        <span className={`badge${isDone ? ' badge--success' : ''}`}>
+          {isDone ? 'Dokončeno' : `${pct} % dokončeno`}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 /**
  * ExerciseList - Main exercise library with tabs
@@ -53,7 +130,7 @@ export function ExerciseList({
 }: ExerciseListProps) {
   const [activeTab, setActiveTab] = useState<TabType>('presets');
   const [presetFilter, setPresetFilter] = useState<PresetFilter>('all');
-  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>('all');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { plan } = useMembership();
   const { openExerciseCreator } = useNavigation();
@@ -80,6 +157,7 @@ export function ExerciseList({
   const { data: exercises, isLoading: exercisesLoading } = useExercises();
   const { data: customCount } = useCustomExerciseCount();
   const { data: sessions, isLoading: sessionsLoading } = useExerciseSessions();
+  const { data: audioSessions, isLoading: audioLoading } = useAudioSessions();
   const deleteExercise = useDeleteExercise();
   
   // All presets (protocols + exercises) — filter applied per user selection
@@ -352,112 +430,178 @@ export function ExerciseList({
                 )}
               </p>
             </div>
-            
-            {sessionsLoading ? (
+
+            {/* History filter: Vše / Audio / Protokoly / Cvičení */}
+            <div className="exercise-list__filter" role="group" aria-label="Filtrovat historii">
+              {(['all', 'audio', 'protocols', 'exercises'] as HistoryFilter[]).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  className={`exercise-list__filter-btn${historyFilter === f ? ' exercise-list__filter-btn--active' : ''}`}
+                  onClick={() => setHistoryFilter(f)}
+                >
+                  {f === 'all' ? 'Vše' : f === 'audio' ? 'Audio' : f === 'protocols' ? 'Protokoly' : 'Cvičení'}
+                </button>
+              ))}
+            </div>
+
+            {(sessionsLoading || audioLoading) ? (
               <div className="session-list">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <LoadingSkeleton key={i} variant="card" height="80px" />
                 ))}
               </div>
-            ) : sessions && sessions.length > 0 ? (
-              <div className="session-list">
-                {sessions.map((session) => (
-                  <div key={session.id} className="session-card">
-                    <div className="session-card__header">
-                      <h4 className="session-card__title">
-                        {session.exercise?.name || 'Smazané cvičení'}
-                      </h4>
-                      <span className="session-card__date">
-                        {new Date(session.started_at).toLocaleDateString('cs-CZ', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
-                    
-                    <div className="session-card__meta">
-                      <span className="badge">
-                        <NavIcon name="clock" size={14} />
-                        {session.exercise
-                          ? Math.round(session.exercise.total_duration_seconds / 60)
-                          : '?'}{' '}
-                        min
-                      </span>
-                      
-                      {session.was_completed && (
-                        <span className="badge badge--success">
-                          <NavIcon name="check" size={14} />
-                          Dokončeno
-                        </span>
-                      )}
-                      
-                      {session.mood_after && (
-                        <span className="badge badge--mood">
-                          {(() => {
-                            const Icon = MoodIconComponent[session.mood_after as MoodType];
-                            return Icon ? <Icon size={14} /> : null;
-                          })()}
-                          {moodLabels[session.mood_after as MoodType] || session.mood_after}
-                        </span>
-                      )}
-                      
-                      {/* NEW: Difficulty badge */}
-                      {session.difficulty_rating && (
-                        <span className="badge badge--difficulty">
-                          {difficultyLabels[session.difficulty_rating]}
-                        </span>
-                      )}
-                      
-                      {/* NEW: Custom exercise badge - označení vlastních cvičení */}
-                      {session.exercise?.category === 'custom' && (
-                        <span className="badge badge--custom">
-                          <NavIcon name="edit" size={12} />
-                          Vlastní
-                        </span>
-                      )}
-                      
-                      {/* NEW: Notes badge (clickable with tooltip) */}
-                      {session.notes && (
-                        <button
-                          className="badge badge--notes"
-                          onClick={() => setSelectedNoteId(
-                            selectedNoteId === session.id ? null : session.id
-                          )}
-                          title="Zobrazit poznámku"
-                        >
-                          <NavIcon name="file-text" size={12} />
-                          Poznámka
-                        </button>
-                      )}
-                    </div>
-                    
-                    {/* Tooltip for notes */}
-                    {selectedNoteId === session.id && session.notes && (
-                      <div className="note-tooltip">
-                        <p>{session.notes}</p>
-                        <button 
-                          className="note-tooltip__close"
-                          onClick={() => setSelectedNoteId(null)}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
             ) : (
-              <EmptyState
-                icon={
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" width="40" height="40">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                  </svg>
+              (() => {
+                // Build filtered list
+                const exerciseSessions = sessions ?? [];
+                const audioList = audioSessions ?? [];
+
+                const filteredExercises = exerciseSessions.filter((session) => {
+                  if (historyFilter === 'all') return true;
+                  if (historyFilter === 'audio') return false;
+                  if (historyFilter === 'protocols') return isProtocol(session.exercise);
+                  if (historyFilter === 'exercises') return !isProtocol(session.exercise);
+                  return true;
+                });
+
+                const filteredAudio = historyFilter === 'all' || historyFilter === 'audio'
+                  ? audioList
+                  : [];
+
+                const hasAny = filteredExercises.length > 0 || filteredAudio.length > 0;
+
+                if (!hasAny) {
+                  return (
+                    <EmptyState
+                      icon={
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" width="40" height="40">
+                          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                        </svg>
+                      }
+                      title="Žádná historie"
+                      message="Začni cvičit a tvoje výsledky se zde zobrazí."
+                    />
+                  );
                 }
-                title="Žádná historie"
-                message="Začni cvičit a tvoje výsledky se zde zobrazí."
-              />
+
+                // Merge and sort by date descending
+                type ExerciseItem = { type: 'exercise'; date: string; session: typeof exerciseSessions[0] };
+                type AudioItem = { type: 'audio'; date: string; session: AudioSessionRow };
+                type MergedItem = ExerciseItem | AudioItem;
+
+                const merged: MergedItem[] = [
+                  ...filteredExercises.map((s) => ({
+                    type: 'exercise' as const,
+                    date: s.started_at,
+                    session: s,
+                  })),
+                  ...filteredAudio.map((s) => ({
+                    type: 'audio' as const,
+                    date: s.started_at,
+                    session: s,
+                  })),
+                ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+                return (
+                  <div className="session-list">
+                    {merged.map((item) => {
+                      if (item.type === 'audio') {
+                        return (
+                          <AudioSessionCard
+                            key={`audio-${item.session.session_id}`}
+                            session={item.session}
+                          />
+                        );
+                      }
+
+                      const session = item.session;
+                      return (
+                        <div key={session.id} className="session-card">
+                          <div className="session-card__header">
+                            <h4 className="session-card__title">
+                              {session.exercise?.name || 'Smazané cvičení'}
+                            </h4>
+                            <span className="session-card__date">
+                              {new Date(session.started_at).toLocaleDateString('cs-CZ', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+
+                          <div className="session-card__meta">
+                            <span className="badge">
+                              <NavIcon name="clock" size={14} />
+                              {getExerciseDurationLabel(session.exercise)}
+                            </span>
+
+                            {session.was_completed ? (
+                              <span className="badge badge--success">
+                                <NavIcon name="check" size={14} />
+                                Dokončeno
+                              </span>
+                            ) : (
+                              (() => {
+                                const pct = getCompletionPercent(session);
+                                return (
+                                  <span className="badge badge--abandoned">
+                                    {pct !== null ? `${pct} % dokončeno` : 'Nedokončeno'}
+                                  </span>
+                                );
+                              })()
+                            )}
+
+                            {/* Difficulty badge */}
+                            {session.difficulty_rating && (
+                              <span className="badge badge--difficulty">
+                                {difficultyLabels[session.difficulty_rating]}
+                              </span>
+                            )}
+
+                            {/* Custom exercise badge */}
+                            {session.exercise?.category === 'custom' && (
+                              <span className="badge badge--custom">
+                                <NavIcon name="edit" size={12} />
+                                Vlastní
+                              </span>
+                            )}
+
+                            {/* SMART badge for smart session type */}
+                            {(session as { session_type?: string }).session_type === 'smart' && (
+                              <span className="badge badge--smart">SMART</span>
+                            )}
+
+                            {/* Notes badge with Tooltip component */}
+                            {session.notes && (
+                              <Tooltip content={session.notes} position="top">
+                                <span className="badge badge--notes">
+                                  <NavIcon name="file-text" size={12} />
+                                  Poznámka
+                                </span>
+                              </Tooltip>
+                            )}
+
+                            {/* Pocit po tréninku — vpravo v meta řádku, pevná pozice pod datem */}
+                            {session.mood_after && (
+                              <span className="session-card__mood-inline">
+                                <span className="session-card__mood-label">Pocit po tréninku:</span>
+                                {(() => {
+                                  const Icon = MoodIconComponent[session.mood_after as MoodType];
+                                  return Icon ? <Icon size={11} /> : null;
+                                })()}
+                                <span>{moodLabels[session.mood_after as MoodType] || session.mood_after}</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()
             )}
           </div>
         )}
