@@ -14,6 +14,7 @@
   gap: 2px;
   margin-bottom: 40px;
   position: relative;
+  overflow: visible;
 }
 
 /* ── Label ── */
@@ -22,7 +23,7 @@
   top: 10px;
   left: 2px;
   z-index: 2;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -92,6 +93,7 @@
   padding-left: 0;
   padding-top: 66px;
   position: relative;
+  overflow: visible;
 }
 
 /* ── Velká hodnota + trend ── */
@@ -169,6 +171,7 @@
   width: 100%;
   margin-top: -14px;
   margin-bottom: 12px;
+  overflow: visible;
 }
 
 /* ── Sparkline — navazuje přirozeně pod hero-right ── */
