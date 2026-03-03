@@ -15,11 +15,19 @@ import './ErrorPage.css';
 
 function isChunkLoadError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
-  // Vite/Webpack chunk load failures po novém deployi
+  const msg = error.message;
+  // Vite chunk load failures po novém deployi — různé prohlížeče hlásí různě:
+  // Chrome:  "Failed to fetch dynamically imported module: ..."
+  // Safari:  "'text/html' is not a valid JavaScript MIME type."
+  // Firefox: "error loading dynamically imported module"
+  // Webpack: error.name === 'ChunkLoadError'
   return (
-    error.message.includes('Failed to fetch dynamically imported module') ||
-    error.message.includes('Importing a module script failed') ||
-    error.name === 'ChunkLoadError'
+    error.name === 'ChunkLoadError' ||
+    msg.includes('Failed to fetch dynamically imported module') ||
+    msg.includes('Importing a module script failed') ||
+    msg.includes('is not a valid JavaScript MIME type') ||
+    msg.includes('error loading dynamically imported module') ||
+    msg.includes('Unable to preload CSS for')
   );
 }
 
@@ -36,7 +44,7 @@ export function ErrorPage() {
     const last = sessionStorage.getItem(RELOAD_KEY);
     const now = Date.now();
 
-    if (!last || now - parseInt(last, 10) > 30_000) {
+    if (!last || now - parseInt(last, 10) > 60_000) {
       sessionStorage.setItem(RELOAD_KEY, String(now));
       window.location.reload();
     }
