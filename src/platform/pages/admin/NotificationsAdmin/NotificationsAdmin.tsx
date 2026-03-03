@@ -13,6 +13,7 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { uploadService } from '@/platform/services/upload/uploadService';
+import { renderMessageMarkdown } from '@/utils/renderMessageMarkdown';
 import {
   getNotifications,
   createNotification,
@@ -593,6 +594,17 @@ function ComposeTab() {
           rows={4}
           required
         />
+        <p className="notif-admin__format-hint">
+          Formátování: <code>**tučně**</code> · <code>*kurzíva*</code> · nový řádek = Enter
+        </p>
+        {form.message && (
+          <div className="notif-admin__message-preview">
+            <span className="notif-admin__message-preview-label">Náhled:</span>
+            <p className="notif-admin__message-preview-text">
+              {renderMessageMarkdown(form.message)}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Typ */}

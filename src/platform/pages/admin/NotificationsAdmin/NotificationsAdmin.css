@@ -800,3 +800,56 @@
     transition: none;
   }
 }
+
+/* ── Markdown format hint + preview ──────────────────────── */
+
+.notif-admin__format-hint {
+  font-size: 11px;
+  color: rgb(255 255 255 / 30%);
+  margin: 6px 0 0;
+}
+
+.notif-admin__format-hint code {
+  background: rgb(255 255 255 / 6%);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: monospace;
+  font-size: 11px;
+  color: rgb(255 255 255 / 50%);
+}
+
+.notif-admin__message-preview {
+  margin-top: 10px;
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.notif-admin__message-preview-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgb(255 255 255 / 25%);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.notif-admin__message-preview-text {
+  font-size: 13px;
+  color: rgb(255 255 255 / 70%);
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notif-admin__message-preview-text strong {
+  color: rgb(255 255 255 / 90%);
+  font-weight: 600;
+}
+
+.notif-admin__message-preview-text em {
+  color: rgb(255 255 255 / 75%);
+  font-style: italic;
+}

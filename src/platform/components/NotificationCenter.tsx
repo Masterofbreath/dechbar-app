@@ -16,6 +16,7 @@ import { useNotifications } from '@/platform/api/useNotifications';
 import type { Notification } from '@/platform/api/notificationTypes';
 import { NavIcon } from './NavIcon';
 import { useHaptic } from '@/platform/services/haptic';
+import { renderMessageMarkdown } from '@/utils/renderMessageMarkdown';
 
 // ── Swipe-to-dismiss wrapper ──────────────────────────────────────────────────
 // Swipe LEFT > 100px → item slides out with red delete hint → onDismiss() called.
@@ -165,9 +166,24 @@ export function NotificationCenter() {
     if (!notif.read) markAsRead(notif.id);
     if (!notif.cta_clicked) markCtaClicked(notif.id);
     if (notif.action_url) {
-      if (notif.action_url.startsWith('/')) {
+      // Extrahovat pathname+search z absolutní URL stejné domény (dechbar.cz)
+      // nebo předat rovnou relativní path (/app?tab=pokrok)
+      let internalPath: string | null = null;
+      try {
+        const parsed = new URL(notif.action_url, window.location.origin);
+        if (parsed.origin === window.location.origin) {
+          internalPath = parsed.pathname + parsed.search + parsed.hash;
+        }
+      } catch {
+        // Pokud URL parse selže, fallback na startsWith check
+        if (notif.action_url.startsWith('/')) {
+          internalPath = notif.action_url;
+        }
+      }
+
+      if (internalPath) {
         closeNotifications();
-        navigate(notif.action_url);
+        navigate(internalPath);
       } else {
         window.open(notif.action_url, '_blank', 'noopener,noreferrer');
       }
@@ -239,7 +255,7 @@ export function NotificationCenter() {
                   <p
                     className={`notification-item__message${isExpanded(notif.id) ? ' notification-item__message--expanded' : ''}`}
                   >
-                    {notif.message}
+                    {renderMessageMarkdown(notif.message)}
                   </p>
                   {notif.message.length > EXPAND_THRESHOLD && (
                     <button
