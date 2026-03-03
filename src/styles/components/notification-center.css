@@ -504,3 +504,45 @@
   }
 
 }
+
+/* ── Pinnované sekce ──────────────────────────────────────── */
+
+.notification-center__section-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgb(255 255 255 / 30%);
+  padding: 4px 0 8px;
+}
+
+.notification-center__section-label--pinned {
+  color: #D6A23A;
+}
+
+.notification-center__section-label--pinned svg {
+  color: #D6A23A;
+}
+
+.notification-center__separator {
+  height: 1px;
+  background: rgb(255 255 255 / 7%);
+  margin: 8px 0;
+}
+
+/* Pin ikona v notification item */
+
+.notification-item__pin-icon {
+  color: #D6A23A;
+  flex-shrink: 0;
+}
+
+/* Pinnovaný item — jemný zlatý border */
+
+.notification-item--pinned {
+  border-color: rgb(214 162 58 / 20%);
+}
+

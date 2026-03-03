@@ -16,6 +16,7 @@ export interface Notification {
   read: boolean;
   cta_clicked: boolean;
   created_at: string;
+  is_pinned: boolean;
 }
 
 export interface NotificationAutoTrigger {
@@ -34,6 +35,7 @@ export interface AdminNotification {
   action_url: string | null;
   action_label: string | null;
   image_url: string | null;
+  is_pinned: boolean;
   target_audience: NotificationTargetAudience;
   target_role: string | null;
   target_tier: NotificationTier | null;
@@ -55,6 +57,7 @@ export interface CreateNotificationPayload {
   action_url?: string | null;
   action_label?: string | null;
   image_url?: string | null;
+  is_pinned?: boolean;
   target_audience: NotificationTargetAudience;
   target_role?: string | null;
   target_tier?: NotificationTier | null;

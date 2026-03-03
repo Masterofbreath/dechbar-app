@@ -853,3 +853,92 @@
   color: rgb(255 255 255 / 75%);
   font-style: italic;
 }
+
+/* ── Toggle switch pro is_pinned ──────────────────────────── */
+
+.notif-admin__field--inline {
+  padding: 4px 0;
+}
+
+.notif-admin__toggle-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.notif-admin__toggle-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.notif-admin__toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.notif-admin__pin-toggle {
+  display: flex;
+  align-items: center;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid rgb(255 255 255 / 12%);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.notif-admin__toggle-input:checked ~ .notif-admin__pin-toggle {
+  background: rgb(214 162 58 / 25%);
+  border-color: #D6A23A;
+}
+
+.notif-admin__pin-toggle-knob {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 40%);
+  margin-left: 2px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.notif-admin__toggle-input:checked ~ .notif-admin__pin-toggle .notif-admin__pin-toggle-knob {
+  transform: translateX(18px);
+  background: #D6A23A;
+}
+
+.notif-admin__toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notif-admin__toggle-text strong {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 80%);
+}
+
+.notif-admin__toggle-hint {
+  font-size: 11px;
+  color: rgb(255 255 255 / 35%);
+  line-height: 1.4;
+}
+
+/* ── Pin ikona v tabulce ─────────────────────────────────── */
+
+.notif-admin__table-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.notif-admin__pin-icon {
+  color: #D6A23A;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+

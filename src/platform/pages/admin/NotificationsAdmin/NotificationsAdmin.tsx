@@ -161,7 +161,14 @@ function OverviewTab() {
                 n.target_tier ?? n.target_role ?? '—';
               return (
                 <tr key={n.id} className={isPending ? 'notif-admin__row--pending' : ''}>
-                  <td className="notif-admin__table-title">{n.title}</td>
+                  <td className="notif-admin__table-title">
+                    {n.is_pinned && (
+                      <svg className="notif-admin__pin-icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-label="Pinnováno" title="Pinnováno">
+                        <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
+                      </svg>
+                    )}
+                    {n.title}
+                  </td>
                   <td>
                     <span className={`notif-admin__badge notif-admin__badge--${n.type}`}>
                       {TYPE_OPTIONS.find((t) => t.value === n.type)?.label ?? n.type}
@@ -328,6 +335,7 @@ const EMPTY_FORM: CreateNotificationPayload = {
   action_url: null,
   action_label: null,
   image_url: null,
+  is_pinned: false,
   target_audience: 'all',
   target_role: null,
   target_tier: null,
@@ -620,6 +628,29 @@ function ComposeTab() {
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
         </select>
+      </div>
+
+      {/* Pinnovat */}
+      <div className="notif-admin__field notif-admin__field--inline">
+        <label className="notif-admin__toggle-label">
+          <span className="notif-admin__toggle-wrapper">
+            <input
+              type="checkbox"
+              className="notif-admin__toggle-input"
+              checked={form.is_pinned ?? false}
+              onChange={(e) => setForm({ ...form, is_pinned: e.target.checked })}
+            />
+            <span className="notif-admin__pin-toggle" aria-hidden="true">
+              <span className="notif-admin__pin-toggle-knob" />
+            </span>
+          </span>
+          <span className="notif-admin__toggle-text">
+            <strong>Pinnovat notifikaci</strong>
+            <span className="notif-admin__toggle-hint">
+              Pinnované notifikace se zobrazují vždy nahoře a nikdy se automaticky nemažou
+            </span>
+          </span>
+        </label>
       </div>
 
       {/* Obrázek notifikace (volitelné) */}

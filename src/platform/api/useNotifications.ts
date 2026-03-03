@@ -33,7 +33,8 @@ async function fetchNotifications(userId: string): Promise<Notification[]> {
         message,
         action_url,
         action_label,
-        image_url
+        image_url,
+        is_pinned
       )
     `)
     .eq('user_id', userId)
@@ -42,7 +43,7 @@ async function fetchNotifications(userId: string): Promise<Notification[]> {
 
   if (error) throw error;
 
-  return (data ?? []).map((row: Record<string, unknown>) => {
+  const mapped = (data ?? []).map((row: Record<string, unknown>) => {
     const notif = row.notifications as Record<string, unknown> | null | undefined;
     return {
       id: row.id as string,
@@ -56,8 +57,15 @@ async function fetchNotifications(userId: string): Promise<Notification[]> {
       read: row.read as boolean,
       cta_clicked: (row.cta_clicked as boolean) ?? false,
       created_at: row.created_at as string,
+      is_pinned: (notif?.is_pinned as boolean) ?? false,
     };
   });
+
+  // Pinnované notifikace vždy nahoře, ostatní seřazeny dle created_at DESC
+  return [
+    ...mapped.filter((n) => n.is_pinned),
+    ...mapped.filter((n) => !n.is_pinned),
+  ];
 }
 
 // ============================================================

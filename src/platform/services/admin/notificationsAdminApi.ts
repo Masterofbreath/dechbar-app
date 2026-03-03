@@ -132,6 +132,7 @@ export async function createNotification(payload: CreateNotificationPayload): Pr
       action_url: payload.action_url ?? null,
       action_label: payload.action_label ?? null,
       image_url: payload.image_url ?? null,
+      is_pinned: payload.is_pinned ?? false,
       target_audience: payload.target_audience,
       target_role: payload.target_role ?? null,
       target_tier: payload.target_tier ?? null,
@@ -287,7 +288,7 @@ export async function adminDeleteNotification(id: string): Promise<void> {
 export type UpdateNotificationPayload = Partial<
   Pick<
     AdminNotification,
-    'title' | 'message' | 'action_url' | 'action_label' | 'image_url'
+    'title' | 'message' | 'action_url' | 'action_label' | 'image_url' | 'is_pinned'
   >
 >;
 
