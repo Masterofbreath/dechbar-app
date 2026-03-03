@@ -56,7 +56,10 @@ export function LungProgress({
   animated = true,
   compact = false,
 }: LungProgressProps) {
-  const dims = SIZE_MAP[size];
+  // compact (mobile): zmenšení xl o 10 % — dims musí souhlasit s viewBox
+  const dims = compact && size === 'xl'
+    ? { width: 290, height: 319, svgWidth: 120, svgHeight: 140 }
+    : SIZE_MAP[size];
   const percent = Math.min(100, Math.max(0, (valueSeconds / maxSeconds) * 100));
   const fillY = (1 - percent / 100) * dims.svgHeight;
 
@@ -152,7 +155,7 @@ export function LungProgress({
 
       <svg
         className="lung-progress__svg"
-        viewBox={compact ? `-40 0 230 ${dims.svgHeight}` : `-55 0 230 ${dims.svgHeight}`}
+        viewBox={compact ? `-42 0 204 ${dims.svgHeight}` : `-55 0 230 ${dims.svgHeight}`}
         width={dims.width}
         height={dims.height}
         role="img"
@@ -345,7 +348,11 @@ export function LungProgress({
           const markerY = (1 - m.seconds / maxSeconds) * dims.svgHeight;
           const isReached = valueSeconds >= m.seconds;
           const valSize = size === 'xl' ? 11 : 7;
-          const descSize = size === 'xl' ? 9.5 : 6;
+          // compact (mobile): menší desc font + zkrácené popisky pro lepší fit
+          const descSize = size === 'xl' ? (compact ? 8 : 9.5) : 6;
+          const descLabel = compact
+            ? ({ 'Průměr společnosti': 'Průměr spol.', 'První funkčnost': 'První funkčnost', 'Tvůj cíl': 'Tvůj cíl' }[m.desc] ?? m.desc)
+            : m.desc;
           return (
             <g key={m.seconds}>
               {/* Čára přes plíce */}
@@ -385,44 +392,18 @@ export function LungProgress({
               >
                 {m.seconds}s
               </text>
-              {/* compact: zalomení na dva řádky pro delší popisky */}
-              {compact && (m.desc === 'Průměr společnosti' || m.desc === 'První funkčnost') ? (
-                <text
-                  x="122"
-                  y={markerY + valSize + 2}
-                  fontSize={descSize}
-                  fontWeight={isReached ? '500' : '400'}
-                  fill={isReached ? m.glowColor : m.markerColor}
-                  opacity={isReached ? 0.85 : 0.65}
-                  textAnchor="start"
-                  style={{ pointerEvents: 'none', fontFamily: 'inherit' }}
-                >
-                  {m.desc === 'Průměr společnosti' ? (
-                    <>
-                      <tspan x="122" dy="0">Průměr</tspan>
-                      <tspan x="122" dy={descSize + 1}>společnosti</tspan>
-                    </>
-                  ) : (
-                    <>
-                      <tspan x="122" dy="0">První</tspan>
-                      <tspan x="122" dy={descSize + 1}>funkčnost</tspan>
-                    </>
-                  )}
-                </text>
-              ) : (
-                <text
-                  x="122"
-                  y={markerY + valSize + 2}
-                  fontSize={descSize}
-                  fontWeight={isReached ? '500' : '400'}
-                  fill={isReached ? m.glowColor : m.markerColor}
-                  opacity={isReached ? 0.85 : 0.65}
-                  textAnchor="start"
-                  style={{ pointerEvents: 'none', fontFamily: 'inherit' }}
-                >
-                  {m.desc}
-                </text>
-              )}
+              <text
+                x="122"
+                y={markerY + valSize + 2}
+                fontSize={descSize}
+                fontWeight={isReached ? '500' : '400'}
+                fill={isReached ? m.glowColor : m.markerColor}
+                opacity={isReached ? 0.85 : 0.65}
+                textAnchor="start"
+                style={{ pointerEvents: 'none', fontFamily: 'inherit' }}
+              >
+                {descLabel}
+              </text>
             </g>
           );
         })}

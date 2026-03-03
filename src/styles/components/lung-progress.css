@@ -216,18 +216,8 @@
   }
 }
 
-/* ── Mobile: LungProgress xl zmenšení + teploměr blíže ── */
+/* ── Mobile: LungProgress compact glow přepočet ── */
 @media (width <= 768px) {
-  .lung-progress--xl {
-    width: 290px;
-    height: 319px;
-  }
-
-  .lung-progress--xl .lung-progress__svg {
-    width: 290px;
-    height: 319px;
-  }
-
   .lung-progress--xl .lung-progress__glow {
     width: 232px;
     height: 103px;
