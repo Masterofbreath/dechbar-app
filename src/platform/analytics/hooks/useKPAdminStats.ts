@@ -3,7 +3,7 @@
  *
  * Volá dvě SECURITY DEFINER RPC funkce pro admin KP analýzu:
  *   admin_get_kp_distribution() → histogram bucketů KP hodnot
- *   admin_get_kp_coverage()     → coverage stats + celkový průměr
+ *   admin_get_kp_coverage()     → coverage stats + medián (odolný vůči outlierům)
  *
  * Admin check je na route level (adminLoader) — zde stačí authenticated.
  * staleTime: 10 min — KP data se mění max 1× denně na uživatele.
@@ -30,7 +30,7 @@ export interface KPCoverage {
   not_measured_count: number;
   total_users: number;
   coverage_pct: number;
-  overall_avg_seconds: number;
+  overall_median_seconds: number;
 }
 
 // ── Query keys ────────────────────────────────────────────────

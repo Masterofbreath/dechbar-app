@@ -90,7 +90,7 @@ export function KPDistributionBlock({ distribution, coverage, isLoading }: KPDis
   const measuredCount    = coverage?.measured_count      ?? 0;
   const notMeasuredCount = coverage?.not_measured_count  ?? 0;
   const coveragePct      = coverage?.coverage_pct        ?? 0;
-  const overallAvg       = coverage?.overall_avg_seconds ?? null;
+  const overallMedian    = coverage?.overall_median_seconds ?? null;
 
   // Nejvyšší počet uživatelů v bucketu — pro normalizaci výšky sloupců
   const maxUserCount = distribution.length > 0
@@ -287,24 +287,24 @@ export function KPDistributionBlock({ distribution, coverage, isLoading }: KPDis
             );
           })}
 
-          {/* ── Průměrná čára (solid gold) ── */}
-          {overallAvg !== null && overallAvg > 0 && (
+          {/* ── Mediánová čára (solid gold) ── */}
+          {overallMedian !== null && overallMedian > 0 && (
             <g>
               <line
-                x1={milestoneX(overallAvg)}
+                x1={milestoneX(overallMedian)}
                 y1={CHART_TOP_PAD}
-                x2={milestoneX(overallAvg)}
+                x2={milestoneX(overallMedian)}
                 y2={BAR_AREA_H + CHART_TOP_PAD}
                 stroke="#D6A23A"
                 strokeWidth={1.5}
               />
               <text
-                x={milestoneX(overallAvg) + 4}
+                x={milestoneX(overallMedian) + 4}
                 y={CHART_TOP_PAD + 10}
                 fontSize={9}
                 fill="#D6A23A"
               >
-                Průměr: {overallAvg} s
+                Medián: {overallMedian} s
               </text>
             </g>
           )}
