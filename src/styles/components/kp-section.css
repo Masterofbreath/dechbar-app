@@ -168,6 +168,7 @@
   position: relative;
   width: 100%;
   margin-top: -14px;
+  margin-bottom: 12px;
 }
 
 /* ── Sparkline — navazuje přirozeně pod hero-right ── */
@@ -193,6 +194,7 @@
   color: rgb(255 255 255 / 30%);
   text-align: right;
   margin-top: 4px;
+  margin-bottom: 4px;
   letter-spacing: 0.02em;
   pointer-events: none;
 }
@@ -238,25 +240,25 @@
 /* ── Responsive ── */
 @media (width <= 768px) {
   .kp-section__hero-right {
-    padding-top: 54px;
+    padding-top: 44px;
   }
 
   .kp-section__hero-left {
-    padding: 5px 8px 6px;
-    gap: 3px;
-    border-radius: 13px;
+    padding: 4px 6px 5px;
+    gap: 2px;
+    border-radius: 11px;
   }
 
   .kp-section__value {
-    font-size: 35px;
+    font-size: 26px;
   }
 
   .kp-section__value-unit {
-    font-size: 18px;
+    font-size: 14px;
   }
 
   .kp-section__trend {
-    font-size: 10px;
+    font-size: 8px;
   }
 }
 
