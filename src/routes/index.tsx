@@ -110,6 +110,7 @@ function TabCarousel() {
   }, [currentTab]);
 
   // Deep link: přečti ?module= / ?tab= a nastav správný tab + program
+  // Závisí na searchParams — spustí se při mount I při interní navigaci (CTA notifikace)
   useEffect(() => {
     const moduleId = searchParams.get('module');
     const tab = searchParams.get('tab') as 'dnes' | 'cvicit' | 'akademie' | 'pokrok' | null;
@@ -137,7 +138,7 @@ function TabCarousel() {
       }, { replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Záměrně pouze při mount — čteme URL jednou
+  }, [searchParams]); // Závisí na searchParams — reaguje na interní navigaci i hard refresh
 
   return (
     <div ref={ref} className="tab-carousel">
