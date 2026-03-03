@@ -90,6 +90,7 @@
   justify-content: center;
   width: 100%;
   padding-left: 0;
+  padding-top: 28px;
   position: relative;
 }
 
@@ -166,17 +167,14 @@
 .kp-section__hero-wrap {
   position: relative;
   width: 100%;
-  padding-bottom: 40px;
   margin-top: -14px;
 }
 
-/* ── Sparkline overlay — mírně pod spodním okrajem hero-row ── */
+/* ── Sparkline — navazuje přirozeně pod hero-right ── */
 .kp-section__sparkline-overlay {
-  position: absolute;
-  bottom: 8px;
-  left: 0;
-  right: 0;
+  width: 100%;
   padding: 0 4px;
+  margin-top: 4px;
   pointer-events: none;
   overflow: visible;
 }
@@ -239,12 +237,6 @@
 
 /* ── Responsive ── */
 @media (width <= 768px) {
-  .kp-section__hero-wrap {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-
   .kp-section__hero-left {
     padding: 5px 8px 6px;
     gap: 3px;
