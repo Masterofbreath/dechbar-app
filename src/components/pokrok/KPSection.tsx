@@ -14,6 +14,9 @@ import { LungProgress } from '@/components/kp/LungProgress';
 import { KPSparkline } from '@/components/kp/KPSparkline';
 import type { KPMeasurement } from '@/platform/api';
 
+const isMobileDevice = () =>
+  typeof window !== 'undefined' && window.innerWidth <= 768;
+
 export interface KPSectionProps {
   currentKP: number | null;
   bestKP: number;
@@ -117,7 +120,6 @@ export function KPSection({
 
   return (
     <div className="kp-section">
-      <span className="kp-section__label">Kontrolní pauza</span>
 
       {isLoading && (
         <div className="kp-section__skeleton-wrap">
@@ -149,10 +151,12 @@ export function KPSection({
               <TrendBlock trend={trend} measurements={measurements} />
             </div>
               <div className="kp-section__hero-right">
+                <span className="kp-section__label">Kontrolní pauza</span>
                 <LungProgress
                   valueSeconds={currentKP ?? 0}
                   size="xl"
                   animated
+                  compact={isMobileDevice()}
                 />
               </div>
             </div>

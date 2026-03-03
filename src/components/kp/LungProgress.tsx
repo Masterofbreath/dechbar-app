@@ -18,6 +18,7 @@ export interface LungProgressProps {
   maxSeconds?: number;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   animated?: boolean;
+  compact?: boolean;
 }
 
 const SIZE_MAP = {
@@ -53,6 +54,7 @@ export function LungProgress({
   maxSeconds = 50,
   size = 'md',
   animated = true,
+  compact = false,
 }: LungProgressProps) {
   const dims = SIZE_MAP[size];
   const percent = Math.min(100, Math.max(0, (valueSeconds / maxSeconds) * 100));
@@ -120,8 +122,8 @@ export function LungProgress({
     .join(' ');
 
   // Teploměr: šířka pruhu, x pozice, výška
-  // THERM_X = -26: teploměr blíže k plicím, viewBox symetrizován kolem x=60 (střed plic)
-  const THERM_X = -26;
+  // compact=true (mobile): teploměr blíže k plicím pro úsporu prostoru
+  const THERM_X = compact ? -18 : -26;
   const THERM_W = 4;
   const THERM_H = dims.svgHeight - 16;
   const THERM_Y_TOP = 8;
@@ -150,7 +152,7 @@ export function LungProgress({
 
       <svg
         className="lung-progress__svg"
-        viewBox={`-55 0 230 ${dims.svgHeight}`}
+        viewBox={compact ? `-40 0 230 ${dims.svgHeight}` : `-55 0 230 ${dims.svgHeight}`}
         width={dims.width}
         height={dims.height}
         role="img"
@@ -383,18 +385,44 @@ export function LungProgress({
               >
                 {m.seconds}s
               </text>
-              <text
-                x="122"
-                y={markerY + valSize + 2}
-                fontSize={descSize}
-                fontWeight={isReached ? '500' : '400'}
-                fill={isReached ? m.glowColor : m.markerColor}
-                opacity={isReached ? 0.85 : 0.65}
-                textAnchor="start"
-                style={{ pointerEvents: 'none', fontFamily: 'inherit' }}
-              >
-                {m.desc}
-              </text>
+              {/* compact: zalomení na dva řádky pro delší popisky */}
+              {compact && (m.desc === 'Průměr společnosti' || m.desc === 'První funkčnost') ? (
+                <text
+                  x="122"
+                  y={markerY + valSize + 2}
+                  fontSize={descSize}
+                  fontWeight={isReached ? '500' : '400'}
+                  fill={isReached ? m.glowColor : m.markerColor}
+                  opacity={isReached ? 0.85 : 0.65}
+                  textAnchor="start"
+                  style={{ pointerEvents: 'none', fontFamily: 'inherit' }}
+                >
+                  {m.desc === 'Průměr společnosti' ? (
+                    <>
+                      <tspan x="122" dy="0">Průměr</tspan>
+                      <tspan x="122" dy={descSize + 1}>společnosti</tspan>
+                    </>
+                  ) : (
+                    <>
+                      <tspan x="122" dy="0">První</tspan>
+                      <tspan x="122" dy={descSize + 1}>funkčnost</tspan>
+                    </>
+                  )}
+                </text>
+              ) : (
+                <text
+                  x="122"
+                  y={markerY + valSize + 2}
+                  fontSize={descSize}
+                  fontWeight={isReached ? '500' : '400'}
+                  fill={isReached ? m.glowColor : m.markerColor}
+                  opacity={isReached ? 0.85 : 0.65}
+                  textAnchor="start"
+                  style={{ pointerEvents: 'none', fontFamily: 'inherit' }}
+                >
+                  {m.desc}
+                </text>
+              )}
             </g>
           );
         })}
