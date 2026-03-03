@@ -155,7 +155,7 @@ export function LungProgress({
 
       <svg
         className="lung-progress__svg"
-        viewBox={compact ? `-54 0 228 ${dims.svgHeight}` : `-55 0 230 ${dims.svgHeight}`}
+        viewBox={compact ? `-49 0 218 ${dims.svgHeight}` : `-78 0 276 ${dims.svgHeight}`}
         width={dims.width}
         height={dims.height}
         role="img"
@@ -382,7 +382,7 @@ export function LungProgress({
               )}
               {/* Popisek vpravo — sekundy + název, odsazeno od pravé plíce */}
               <text
-                x={compact ? 134 : 122}
+                x={compact ? 129 : 130}
                 y={markerY + 1}
                 fontSize={valSize}
                 fontWeight="700"
@@ -394,7 +394,7 @@ export function LungProgress({
                 {m.seconds}s
               </text>
               <text
-                x={compact ? 134 : 122}
+                x={compact ? 129 : 130}
                 y={markerY + valSize + 2}
                 fontSize={descSize}
                 fontWeight={isReached ? '500' : '400'}

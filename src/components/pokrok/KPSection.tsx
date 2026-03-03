@@ -142,16 +142,15 @@ export function KPSection({
         <>
           {/* Hero row + sparkline jako overlay přes spodní část hero */}
           <div className="kp-section__hero-wrap">
-            <div className="kp-section__hero-row">
-            <div className="kp-section__hero-left">
-              <span className="kp-section__value">
-                {formatKPValue(currentKP)}
-                <span className="kp-section__value-unit">s</span>
-              </span>
-              <TrendBlock trend={trend} measurements={measurements} />
-            </div>
               <div className="kp-section__hero-right">
                 <span className="kp-section__label">Kontrolní pauza</span>
+                <div className="kp-section__hero-left">
+                  <span className="kp-section__value">
+                    {formatKPValue(currentKP)}
+                    <span className="kp-section__value-unit">s</span>
+                  </span>
+                  <TrendBlock trend={trend} measurements={measurements} />
+                </div>
                 <LungProgress
                   valueSeconds={currentKP ?? 0}
                   size="xl"
@@ -159,7 +158,6 @@ export function KPSection({
                   compact={isMobileDevice()}
                 />
               </div>
-            </div>
 
             {/* Sparkline — překryvná vrstva přes spodní část hero-row */}
             {sparklineData.length >= 2 && (
