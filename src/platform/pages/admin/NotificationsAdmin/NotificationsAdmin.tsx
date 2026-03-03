@@ -778,12 +778,20 @@ function ComposeTab() {
               className="notif-admin__input notif-admin__input--datetime"
               type="datetime-local"
               value={toDatetimeLocal(form.scheduled_at)}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  scheduled_at: e.target.value ? new Date(e.target.value).toISOString() : null,
-                })
-              }
+              onChange={(e) => {
+                // datetime-local vrací "2026-03-03T16:30" bez timezone info.
+                // new Date("2026-03-03T16:30") interpretuje jako UTC — špatně.
+                // Místo toho parsujeme ručně a tvoříme Date z lokálního času.
+                if (!e.target.value) {
+                  setForm({ ...form, scheduled_at: null });
+                  return;
+                }
+                const [datePart, timePart] = e.target.value.split('T');
+                const [year, month, day] = datePart.split('-').map(Number);
+                const [hour, minute] = timePart.split(':').map(Number);
+                const localDate = new Date(year, month - 1, day, hour, minute, 0);
+                setForm({ ...form, scheduled_at: localDate.toISOString() });
+              }}
               min={toDatetimeLocal(new Date().toISOString())}
             />
             {isScheduledFuture && (
