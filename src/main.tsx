@@ -46,6 +46,22 @@ import App from './App.tsx'
 // Validate environment variables before app starts
 validateEnv();
 
+// Auto-reload při zastaralém JS chunku po nové deployment (ChunkLoadError)
+window.addEventListener('error', (event) => {
+  const msg = event.message ?? '';
+  if (
+    msg.includes('text/html') ||
+    msg.includes('Failed to fetch dynamically imported module') ||
+    msg.includes('Importing a module script failed')
+  ) {
+    // Vymazat cache a reloadovat — stačí jednou (flag v sessionStorage)
+    if (!sessionStorage.getItem('chunk_reload')) {
+      sessionStorage.setItem('chunk_reload', '1');
+      window.location.reload();
+    }
+  }
+});
+
 // Create React Query client
 const queryClient = new QueryClient({
   defaultOptions: {
