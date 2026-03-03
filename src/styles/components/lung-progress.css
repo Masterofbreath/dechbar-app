@@ -151,8 +151,8 @@
 }
 
 .lung-progress--xl {
-  width: 322px;
-  height: 354px;
+  width: 386px;
+  height: 424px;
 }
 
 /* ── Glow size variants ── */
@@ -175,8 +175,8 @@
 }
 
 .lung-progress--xl .lung-progress__glow {
-  width: 258px;
-  height: 115px;
+  width: 309px;
+  height: 138px;
   filter: blur(40px);
 }
 

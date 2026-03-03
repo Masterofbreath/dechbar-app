@@ -239,6 +239,32 @@
 }
 
 /* ── Responsive ── */
+@media (width <= 768px) {
+  .kp-section__hero-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .kp-section__hero-left {
+    padding: 5px 8px 6px;
+    gap: 3px;
+    border-radius: 13px;
+  }
+
+  .kp-section__value {
+    font-size: 35px;
+  }
+
+  .kp-section__value-unit {
+    font-size: 18px;
+  }
+
+  .kp-section__trend {
+    font-size: 10px;
+  }
+}
+
 @media (width <= 374px) {
   .kp-section__value {
     font-size: 36px;

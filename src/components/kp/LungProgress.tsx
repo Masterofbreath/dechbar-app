@@ -25,7 +25,7 @@ const SIZE_MAP = {
   sm: { width: 60,  height: 70,  svgWidth: 120, svgHeight: 140 },
   md: { width: 80,  height: 93,  svgWidth: 120, svgHeight: 140 },
   lg: { width: 120, height: 140, svgWidth: 120, svgHeight: 140 },
-  xl: { width: 322, height: 354, svgWidth: 120, svgHeight: 140 },
+  xl: { width: 386, height: 424, svgWidth: 120, svgHeight: 140 },
 };
 
 // Levá plíce — zaoblený tvar, střed vlevo, s výřezem pro tracheus nahoře
