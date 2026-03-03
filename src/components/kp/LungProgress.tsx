@@ -132,13 +132,13 @@ export function LungProgress({
   const THERM_Y_TOP = 8;
   const thermFillH = (percent / 100) * THERM_H;
 
-  // Popisky teploměru — 0%, milníkové %, 100%
+  // Popisky teploměru — 0 %, milníkové %, 100 %
   const THERM_LABELS = [
-    { pct: 0,   label: '0%' },
-    { pct: 26,  label: '26%' },
-    { pct: 50,  label: '50%' },
-    { pct: 80,  label: '80%' },
-    { pct: 100, label: '100%' },
+    { pct: 0,   label: '0 %' },
+    { pct: 26,  label: '26 %' },
+    { pct: 50,  label: '50 %' },
+    { pct: 80,  label: '80 %' },
+    { pct: 100, label: '100 %' },
   ];
 
   return (
@@ -155,7 +155,7 @@ export function LungProgress({
 
       <svg
         className="lung-progress__svg"
-        viewBox={compact ? `-42 0 204 ${dims.svgHeight}` : `-55 0 230 ${dims.svgHeight}`}
+        viewBox={compact ? `-54 0 228 ${dims.svgHeight}` : `-55 0 230 ${dims.svgHeight}`}
         width={dims.width}
         height={dims.height}
         role="img"
@@ -212,8 +212,9 @@ export function LungProgress({
             {THERM_LABELS.map(({ pct, label }) => {
               const labelY = THERM_Y_TOP + THERM_H - (pct / 100) * THERM_H;
               const isCurrentPct = Math.abs(displayPercent - pct) <= 3;
-              const isMilestonePct = [26, 50, 80].includes(pct);
-              const isReachedPct = percent >= pct;
+              // 0% je vždy dosaženo (KP existuje), ostatní milestone pct pokud percent >= pct
+              const isReachedPct = pct === 0 ? true : percent >= pct;
+              const isMilestonePct = [0, 26, 50, 80].includes(pct);
               return (
                 <text
                   key={pct}
@@ -379,9 +380,9 @@ export function LungProgress({
                   style={{ pointerEvents: 'none' }}
                 />
               )}
-              {/* Popisek vpravo — sekundy + název, odsazeno od pravé plíce (x=112) */}
+              {/* Popisek vpravo — sekundy + název, odsazeno od pravé plíce */}
               <text
-                x="122"
+                x={compact ? 134 : 122}
                 y={markerY + 1}
                 fontSize={valSize}
                 fontWeight="700"
@@ -393,7 +394,7 @@ export function LungProgress({
                 {m.seconds}s
               </text>
               <text
-                x="122"
+                x={compact ? 134 : 122}
                 y={markerY + valSize + 2}
                 fontSize={descSize}
                 fontWeight={isReached ? '500' : '400'}
