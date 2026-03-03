@@ -18,10 +18,11 @@
  */
 
 import { useState } from 'react';
-import { useAdminDashboard, useTopContent, useTotalUsers, useAllTimeMinutes, usePrimeTime, useDayOfWeek, useProtocolStats, useChurnRisk, useRetention, useOnboardingFunnel, useAdminLast7DaysKpis } from '@/platform/analytics';
+import { useAdminDashboard, useTopContent, useTotalUsers, useAllTimeMinutes, usePrimeTime, useDayOfWeek, useProtocolStats, useChurnRisk, useRetention, useOnboardingFunnel, useAdminLast7DaysKpis, useKPAdminStats } from '@/platform/analytics';
 import { formatMinutes } from '@/platform/analytics';
 import type { DailyKpis, AdminDashboardData, PrimeTimeSlot, DayOfWeekSlot } from '@/platform/analytics';
 import type { DashboardPeriod } from '@/platform/analytics';
+import { KPDistributionBlock } from './KPDistributionBlock';
 import './AnalyticsAdmin.css';
 
 // ── Helpers ──
@@ -641,6 +642,7 @@ export default function AnalyticsAdmin() {
   const { kpis: last7Kpis } = useAdminLast7DaysKpis();
   const { slots: primeSlots, peakHour, isLoading: primeLoading } = usePrimeTime();
   const { slots: dowSlots, peakDay, peakDayLabel, isLoading: dowLoading } = useDayOfWeek();
+  const { distribution: kpDistribution, coverage: kpCoverage, isLoading: kpLoading } = useKPAdminStats();
 
   const dauL2 = kpis.length > 0
     ? (period === 'today' || period === 'yesterday'
@@ -762,6 +764,13 @@ export default function AnalyticsAdmin() {
 
       {/* Protocol heatmap + Churn risk */}
       <ProtocolStatsSection isLoading={false} period={period} />
+
+      {/* KP Distribuce */}
+      <KPDistributionBlock
+        distribution={kpDistribution}
+        coverage={kpCoverage}
+        isLoading={kpLoading}
+      />
 
       {/* Top Content Table — s period filtrem */}
       <div className="analytics-admin__top-content">

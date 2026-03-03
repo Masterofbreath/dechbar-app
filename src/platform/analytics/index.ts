@@ -24,3 +24,6 @@ export type { AudioSessionContext, UserPokrokStats, AdminDashboardData, Activity
 export { logAppOpen, upsertAudioSession, logAudioEvent, updateStreakOnActivity } from './client';
 export { updateStreak } from './utils/streak';
 export { secondsToMinutes, formatMinutes, getActivityLevel, toIsoDateString } from './utils/time';
+
+export { useKPAdminStats } from './hooks/useKPAdminStats';
+export type { KPBucket, KPCoverage } from './hooks/useKPAdminStats';

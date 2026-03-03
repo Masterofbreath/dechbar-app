@@ -25,18 +25,28 @@ profiles ← memberships (členství: ZDARMA, SMART, AI_COACH)
 
 **Účel:** Základní profil uživatele (rozšíření Supabase Auth)
 
+> ⚠️ **PK sloupec se jmenuje `user_id`** (ne `id`!) — ověřeno na PROD 2026-03-03.
+> Dokumentace byla zastaralá. Vždy používej `p.user_id` v JOINech.
+
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| `id` | UUID | PK, FK → auth.users | ID uživatele |
+| `user_id` | UUID | PK, FK → auth.users | ID uživatele (**ne `id`!**) |
 | `email` | TEXT | NOT NULL, UNIQUE | Email (sync z auth.users) |
 | `full_name` | TEXT | | Celé jméno |
 | `avatar_url` | TEXT | | URL avatara (Supabase Storage) |
+| `nickname` | TEXT | | Přezdívka |
+| `vocative_override` | TEXT | | Override pro vokativ |
+| `role` | TEXT | | Rychlý role lookup (admin/ceo/member...) |
+| `metadata` | JSONB | | Rozšířená metadata |
+| `safety_flags` | JSONB | | Safety/content flags |
+| `nickname_set_at` | TIMESTAMPTZ | | Kdy nastavena přezdívka |
+| `welcome_email_sent_at` | TIMESTAMPTZ | | Kdy odeslán welcome email |
 | `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Vytvořeno |
 | `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Aktualizováno |
 
 **Constraints:**
-- PRIMARY KEY (id)
-- FOREIGN KEY (id) REFERENCES auth.users ON DELETE CASCADE
+- PRIMARY KEY (user_id)
+- FOREIGN KEY (user_id) REFERENCES auth.users ON DELETE CASCADE
 
 **Indexes:**
 - `profiles_email_idx` ON `email`
@@ -78,7 +88,7 @@ profiles ← memberships (členství: ZDARMA, SMART, AI_COACH)
 | ID | Name | Price | Type | Description |
 |----|------|-------|------|-------------|
 | `studio` | DechBar STUDIO | 990 Kč | lifetime | Vytvoř si vlastní dechová cvičení |
-| `challenges` | Výzvy | 490 Kč | lifetime | 21-denní dechové výzvy |
+| `challenges` | Výzvy | 290 Kč | lifetime | 21-denní dechové výzvy (např. Ranní dechová výzva) |
 | `akademie` | Akademie | 1490 Kč | lifetime | Vzdělávací kurzy a lekce |
 
 **Indexes:**

@@ -1,0 +1,171 @@
+/* ============================================================
+   KPDistributionBlock — Admin KP Distribution Chart
+   Apple Premium Style — dark theme, BEM, no Tailwind
+   ============================================================ */
+
+/* ── Karta (identická s .analytics-admin__chart) ── */
+
+.kp-distribution {
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+/* ── Header ── */
+
+.kp-distribution__header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.kp-distribution__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kp-distribution__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 60%);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kp-distribution__badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2CBEC6;
+  background: rgb(44 190 198 / 15%);
+  border: 1px solid rgb(44 190 198 / 25%);
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Milníková legenda ── */
+
+.kp-distribution__legend {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.kp-distribution__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgb(255 255 255 / 40%);
+}
+
+.kp-distribution__legend-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.kp-distribution__legend-item--society .kp-distribution__legend-dot {
+  background: rgb(255 255 255 / 35%);
+}
+
+.kp-distribution__legend-item--functional .kp-distribution__legend-dot {
+  background: #2CBEC6;
+}
+
+.kp-distribution__legend-item--goal .kp-distribution__legend-dot {
+  background: #D6A23A;
+}
+
+/* ── Coverage tiles ── */
+
+.kp-distribution__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.kp-distribution__tile {
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid rgb(255 255 255 / 6%);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kp-distribution__tile-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: rgb(255 255 255 / 85%);
+  line-height: 1;
+}
+
+.kp-distribution__tile-value--teal {
+  color: #2CBEC6;
+}
+
+.kp-distribution__tile-value--gold {
+  color: #D6A23A;
+}
+
+.kp-distribution__tile-label {
+  font-size: 11px;
+  color: rgb(255 255 255 / 40%);
+}
+
+/* ── SVG chart wrapper ── */
+
+.kp-distribution__chart {
+  display: block;
+  width: 100%;
+}
+
+/* ── Loading skeleton ── */
+
+.kp-distribution__chart-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Empty state ── */
+
+.kp-distribution__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  text-align: center;
+  color: rgb(255 255 255 / 30%);
+  font-size: 13px;
+}
+
+.kp-distribution__empty-icon {
+  color: rgb(255 255 255 / 20%);
+}
+
+/* ── Responsive ── */
+
+@media (width <= 768px) {
+  .kp-distribution__tiles {
+    grid-template-columns: 1fr;
+  }
+
+  .kp-distribution__legend {
+    gap: 10px;
+  }
+}
