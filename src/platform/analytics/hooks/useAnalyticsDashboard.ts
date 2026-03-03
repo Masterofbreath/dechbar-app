@@ -874,13 +874,15 @@ export function useRetention(): { stats: RetentionStats | null; isLoading: boole
         supabase.from('profiles').select('user_id').gte('created_at', daysBack(180)).lte('created_at', daysBack(90)),
         supabase.from('profiles').select('user_id').gte('created_at', daysBack(360)).lte('created_at', daysBack(180)),
         // Fetch 180 days of activity — covers all cohort windows
-        supabase.from('user_activity_log').select('user_id, activity_date').gte('activity_date', daysBack(180)),
+        // user_activity_log uses created_at (timestamptz), not activity_date
+        supabase.from('user_activity_log').select('user_id, created_at').gte('created_at', daysBack(180)),
       ]);
 
       const activityByUser = new Map<string, string[]>();
       for (const r of allActivity.data ?? []) {
         const arr = activityByUser.get(r.user_id) ?? [];
-        arr.push(r.activity_date);
+        // Normalize to YYYY-MM-DD for date comparison with daysBack()
+        arr.push((r.created_at as string).slice(0, 10));
         activityByUser.set(r.user_id, arr);
       }
 
