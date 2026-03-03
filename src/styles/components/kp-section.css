@@ -1,0 +1,250 @@
+/* ============================================================
+   KPSection — KP Dashboard Sekce (Pokrok Page)
+   Glass-card, Apple Premium Style
+   ============================================================ */
+
+.kp-section {
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 20px;
+  padding: 8px 20px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 40px;
+}
+
+/* ── Label ── */
+.kp-section__label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary, #2CBEC6);
+  align-self: flex-start;
+  text-shadow: 0 0 12px rgb(44 190 198 / 50%);
+}
+
+/* ── Skeleton ── */
+.kp-section__skeleton-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+/* ── Empty state ── */
+.kp-section__empty {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.kp-section__empty-text {
+  font-size: 14px;
+  color: var(--color-text-secondary, #A0A0A0);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── LungProgress wrapper ── */
+.kp-section__lung-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0 4px;
+}
+
+/* ── Hero row: 40/60 grid — hodnota vlevo, plíce vpravo ── */
+.kp-section__hero-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  align-items: stretch;
+  width: 100%;
+  gap: 0;
+}
+
+.kp-section__hero-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.kp-section__hero-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 0;
+}
+
+/* ── Velká hodnota + trend ── */
+.kp-section__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.kp-section__value {
+  font-size: 72px;
+  font-weight: 700;
+  color: var(--color-accent, #D6A23A);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.kp-section__value-unit {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-accent, #D6A23A);
+  letter-spacing: -0.02em;
+}
+
+.kp-section__trend {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  align-self: center;
+}
+
+.kp-section__trend--positive {
+  color: #30D158;
+}
+
+.kp-section__trend--negative {
+  color: #FF453A;
+}
+
+.kp-section__trend--neutral {
+  color: rgb(255 255 255 / 40%);
+}
+
+/* ── Trend block — trend + kontext sloučeny ── */
+.kp-section__trend-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.kp-section__trend-sub {
+  font-size: 10px;
+  font-weight: 400;
+  color: rgb(255 255 255 / 35%);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-align: center;
+}
+
+.kp-section__last-measured {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 35%);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* ── Hero wrap — relativní kontext pro sparkline overlay ── */
+.kp-section__hero-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 40px;
+  margin-top: -14px;
+}
+
+/* ── Sparkline overlay — mírně pod spodním okrajem hero-row ── */
+.kp-section__sparkline-overlay {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.kp-section__sparkline-overlay .kp-sparkline {
+  opacity: 0.7;
+}
+
+/* ── Sparkline (standalone, fallback) ── */
+.kp-section__sparkline-wrap {
+  width: 100%;
+}
+
+.kp-section__sparkline-meta {
+  font-size: 10px;
+  color: rgb(255 255 255 / 30%);
+  text-align: right;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+/* ── Sub-tiles (3) ── */
+.kp-section__tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.kp-section__tile {
+  background: var(--color-surface, #1E1E1E);
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+
+.kp-section__tile-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary, #A0A0A0);
+  line-height: 1.2;
+}
+
+.kp-section__tile-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #E0E0E0);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ── Responsive ── */
+@media (width <= 374px) {
+  .kp-section__value {
+    font-size: 56px;
+  }
+
+  .kp-section__value-unit {
+    font-size: 28px;
+  }
+
+  .kp-section__tiles {
+    gap: 6px;
+  }
+
+  .kp-section__tile {
+    padding: 8px 4px;
+  }
+
+  .kp-section__tile-value {
+    font-size: 16px;
+  }
+}

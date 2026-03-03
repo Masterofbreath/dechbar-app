@@ -20,6 +20,9 @@ import './styles/components/kp-timer.css' // KP Timer
 import './styles/components/kp-result.css' // KP Result
 import './styles/components/kp-history.css' // KP History
 import './styles/components/kp-measurement-engine.css' // KP Measurement Engine
+import './styles/components/lung-progress.css' // LungProgress — KP lung visualization
+import './styles/components/kp-sparkline.css'  // KPSparkline — KP trend chart
+import './styles/components/kp-section.css'    // KPSection — Pokrok page KP block
 import './styles/components/settings-drawer.css' // Settings Drawer
 import './styles/components/confirm-modal.css' // ConfirmModal component
 import './styles/components/toast.css' // Toast notifications

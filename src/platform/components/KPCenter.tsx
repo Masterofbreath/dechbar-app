@@ -135,6 +135,7 @@ export function KPCenter() {
             previousKP={previousKP}
             trend={trend}
             isSaving={isSaving}
+            measurements={measurements}
             onStartMeasurement={handleStartMeasurement}
             onShowInstructions={() => setViewMode('instructions')}
           />

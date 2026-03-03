@@ -22,6 +22,7 @@ import { useNavigation } from '@/platform/hooks/useNavigation';
 import { useProfile, checkNicknameAvailable } from '@/platform/api/useProfile';
 import { useReferral } from '@/platform/api/useReferral';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
+import { usePersonalRecords, formatMinutes } from '@/platform/analytics';
 import { getDisplayRole, isVIPMember } from '@/utils/profile';
 import { PageLayout } from '@/platform/layouts/PageLayout';
 
@@ -66,6 +67,7 @@ export function ProfilPage() {
   const { profile, isLoading: profileLoading, updateProfile, isUpdating, uploadAvatar } = useProfile();
   const { referralLink, totalReferred, copyCode, shareCode, canShare } = useReferral();
   const { currentKP, bestKP, totalMeasurements } = useKPMeasurements();
+  const { records } = usePersonalRecords(user?.id);
 
   // ── Edit mode state ───────────────────────────────────────
   const [isEditMode, setIsEditMode] = useState(false);
@@ -431,6 +433,30 @@ export function ProfilPage() {
             </svg>
             Změřit KP
           </button>
+
+          {/* Osobní rekordy */}
+          {records && (
+            <div className="profil-records">
+              <div className="profil-records__label">Osobní rekordy</div>
+              <div className="profil-records__grid">
+                <div className="profil-records__tile">
+                  <span className="profil-records__desc">Nejdelší streak</span>
+                  <span className="profil-records__value">
+                    {records.longestStreak}{' '}
+                    <span className="profil-records__unit">dní</span>
+                  </span>
+                </div>
+                <div className="profil-records__tile">
+                  <span className="profil-records__desc">Nejlepší den</span>
+                  <span className="profil-records__value">{formatMinutes(records.bestDayMinutes)}</span>
+                </div>
+                <div className="profil-records__tile">
+                  <span className="profil-records__desc">Nejdelší sezení</span>
+                  <span className="profil-records__value">{formatMinutes(records.bestSessionMinutes)}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── Health questionnaire placeholder ────────────── */}
           {/* TODO: wire up to real questionnaire component when built */}

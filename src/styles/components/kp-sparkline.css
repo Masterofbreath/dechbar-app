@@ -1,0 +1,73 @@
+/* ============================================================
+   KPSparkline — Lightweight SVG Area Chart
+   Apple Premium Style — draw-in animace, dark theme
+   ============================================================ */
+
+.kp-sparkline {
+  display: block;
+  overflow: hidden;
+}
+
+.kp-sparkline__svg {
+  display: block;
+  overflow: visible;
+}
+
+/* ── Linka — draw-in animace (stroke-dashoffset v inline style) ── */
+.kp-sparkline__line {
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.kp-sparkline__line--drawn {
+  /* stroke-dashoffset animován přes inline style → 0 */
+}
+
+/* ── Oblast pod čárou — fade-in po dokončení linky ── */
+.kp-sparkline__area {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.kp-sparkline__area--visible {
+  opacity: 0.12;
+  transition: opacity 0.4s ease 1s;
+}
+
+/* ── Poslední bod ── */
+.kp-sparkline__dot {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.kp-sparkline__dot--visible {
+  opacity: 1;
+  transition: opacity 0.2s ease 1.1s;
+}
+
+/* ── Accessibility: reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .kp-sparkline__line {
+    transition: none;
+    stroke-dashoffset: 0 !important;
+  }
+
+  .kp-sparkline__area {
+    opacity: 0.12;
+    transition: none;
+  }
+
+  .kp-sparkline__area--visible {
+    opacity: 0.12;
+    transition: none;
+  }
+
+  .kp-sparkline__dot {
+    opacity: 1;
+    transition: none;
+  }
+
+  .kp-sparkline__dot--visible {
+    opacity: 1;
+    transition: none;
+  }
+}

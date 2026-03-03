@@ -386,7 +386,10 @@
 
 .profil-kp-label {
   font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-align: center;
   line-height: 1.3;
 }
@@ -607,4 +610,60 @@
     font-size: 12px;
     letter-spacing: 0;
   }
+}
+
+/* ─── Osobní rekordy ───────────────────────────────────── */
+
+.profil-records {
+  margin-top: var(--spacing-5, 20px);
+}
+
+.profil-records__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-3, 12px);
+}
+
+.profil-records__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.profil-records__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--color-surface, #1c1c1c);
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 16px;
+  padding: 16px 12px;
+  min-height: 80px;
+}
+
+.profil-records__desc {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  line-height: 1.2;
+}
+
+.profil-records__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-accent, #D6A23A);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.profil-records__unit {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #a0a0a0);
+  margin-left: 2px;
 }

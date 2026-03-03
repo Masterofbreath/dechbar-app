@@ -152,7 +152,7 @@
    ============================================================ */
 .kp-center__help {
   position: absolute;
-  bottom: 115px;  /* Nad buttonem (40px + 59px + 16px gap) */
+  bottom: 115px;
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -169,8 +169,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;  /* ✅ Circle centrovaný vertikálně */
+  justify-content: center;
   padding: var(--spacing-8) var(--spacing-6);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   History Area — pod measurement, scrollable pokud přeteče
+   ============================================================ */
+.kp-center__history-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: var(--spacing-4, 16px);
+
+  /* Jemné scrollování na iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Circle centrovaný (bez margin) */
@@ -236,6 +249,17 @@
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.kp-center__circle-trend-context {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--color-text-tertiary, #707070);
+  letter-spacing: 0.02em;
 }
 
 .kp-center__circle-trend--positive {
@@ -511,4 +535,73 @@
     min-height: 720px;  /* Zachovat fixní výšku */
     max-height: 720px;  /* Fixní na desktopu */
   }
+}
+
+/* ============================================================
+   KPHistoryList — Compact history in KPCenter ready view
+   ============================================================ */
+
+.kp-history-list {
+  padding: 0 var(--spacing-6, 24px);
+  margin-top: var(--spacing-4, 16px);
+  width: 100%;
+}
+
+.kp-history-list__title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary, #707070);
+  margin-bottom: 8px;
+}
+
+.kp-history-list__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.kp-history-list__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
+}
+
+.kp-history-list__row:last-child {
+  border-bottom: none;
+}
+
+.kp-history-list__date {
+  font-size: 13px;
+  color: var(--color-text-secondary, #A0A0A0);
+}
+
+.kp-history-list__value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary, #E0E0E0);
+  letter-spacing: -0.01em;
+}
+
+.kp-history-list__trend {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 16px;
+  text-align: center;
+}
+
+.kp-history-list__trend--up {
+  color: #30D158;
+}
+
+.kp-history-list__trend--down {
+  color: #FF453A;
+}
+
+.kp-history-list__trend--same {
+  color: var(--color-text-tertiary, #707070);
 }

@@ -41,7 +41,8 @@ export interface KPMeasurement {
  */
 export interface KPStats {
   currentKP: number | null;      // Poslední validní KP
-  firstKP: number | null;         // První KP ever
+  firstKP: number | null;         // První KP ever (zachováno pro zpětnou kompatibilitu)
+  baselineKP: number | null;      // Průměr z prvních 3 dnů měření (odolnější vůči omylu)
   averageKP: number;              // Průměr validních měření
   bestKP: number;                 // Nejvyšší KP
   totalMeasurements: number;      // Celkový počet měření
@@ -107,9 +108,33 @@ function calculateStats(measurements: KPMeasurement[]): KPStats {
   // Ranní měření — pro kontextovou statistiku (nejpřesnější baseline)
   const morningMeasurements = measurements.filter(m => m.is_morning_measurement);
   
-  // First KP
+  // First KP (zpětná kompatibilita)
   const firstMeasurement = measurements.find(m => m.is_first_measurement);
   const firstKP = firstMeasurement?.value_seconds || null;
+
+  // Baseline KP = průměr měření z prvních 3 unikátních dnů
+  // Důvod: snižuje vliv jednoho chybného prvního měření
+  const baselineKP = (() => {
+    if (measurements.length === 0) return null;
+    // Seřadit od nejstaršího
+    const sorted = [...measurements].sort(
+      (a, b) => new Date(a.measured_at).getTime() - new Date(b.measured_at).getTime()
+    );
+    // Sbírat unikátní kalendářní dny (YYYY-MM-DD), max 3
+    const seenDays: string[] = [];
+    for (const m of sorted) {
+      const day = m.measured_at.slice(0, 10);
+      if (!seenDays.includes(day)) seenDays.push(day);
+      if (seenDays.length >= 3) break;
+    }
+    // Všechna měření z těchto dnů
+    const baselineMeasurements = sorted.filter(m => seenDays.includes(m.measured_at.slice(0, 10)));
+    if (baselineMeasurements.length === 0) return null;
+    const avg = Math.round(
+      baselineMeasurements.reduce((s, m) => s + m.value_seconds, 0) / baselineMeasurements.length
+    );
+    return avg;
+  })();
   
   // Previous KP (druhé nejnovější validní měření)
   const previousKP = validMeasurements.length > 1
@@ -129,6 +154,7 @@ function calculateStats(measurements: KPMeasurement[]): KPStats {
   return {
     currentKP,
     firstKP,
+    baselineKP,
     averageKP: calculatePeriodAverage(statsValues),
     bestKP: getBestKP(statsValues),
     totalMeasurements: measurements.length,
@@ -244,6 +270,7 @@ export function useKPMeasurements() {
     // Current state
     currentKP: stats?.currentKP ?? null,
     firstKP: stats?.firstKP ?? null,
+    baselineKP: stats?.baselineKP ?? null,
     bestKP: stats?.bestKP ?? 0,
     totalMeasurements: stats?.totalMeasurements ?? 0,
     
@@ -254,6 +281,7 @@ export function useKPMeasurements() {
     stats: stats ?? {
       currentKP: null,
       firstKP: null,
+      baselineKP: null,
       averageKP: 0,
       bestKP: 0,
       totalMeasurements: 0,

@@ -1,30 +1,27 @@
 /**
- * PokrokPage — User Progress & Statistics
+ * PokrokPage — User Progress & Statistics (redesign 2026-03)
  *
- * Displays personal breathing practice statistics:
- *   - Period selector (D / T / M / R / Celkem)
- *   - Hero row: KP value + Activity streak
- *   - Stats grid: minutes, activities, active days, avg/day
- *   - Activity heatmap (last 84 days — 12 weeks)
- *   - Tier gate for advanced period views (ZDARMA → upgrade CTA)
- *
- * Data: useUserPokrokStats (audio_sessions + exercise_sessions + streaks)
- * KP data: useKPMeasurements (existing hook)
- *
- * Apple Premium Style — dark, minimal, functional.
+ * Nový layout (shora dolů):
+ *   1. KP sekce (LungProgress + sparkline + sub-tiles + CTA)
+ *   2. Tento týden (WeeklyDots + streak inline)
+ *   3. Info row (člen od / celkem nadýcháno)
+ *   4. Stats sekce (2-stavový toggle Tento týden / Celkem + 2 karty)
+ *   5. Activity heatmap
+ *   6. Community milestone
  *
  * @package DechBar_App
  * @subpackage MVP0/Pages
  */
 
 import { useState } from 'react';
-import { useUserPokrokStats, getDaysSinceRegistration, usePersonalRecords, useAllTimeMinutes } from '@/platform/analytics';
+import { useUserPokrokStats, getDaysSinceRegistration, useAllTimeMinutes } from '@/platform/analytics';
 import { formatMinutes, getActivityLevel } from '@/platform/analytics';
 import { usePokrokRealtime } from '@/platform/analytics/hooks/usePokrokRealtime';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useAuthStore } from '@/platform/auth';
 import { useNavigation } from '@/platform/hooks/useNavigation';
 import type { ActivityPeriod, ActivityDayData } from '@/platform/analytics';
+import { KPSection } from '@/components/pokrok/KPSection';
 import '@/styles/pages/pokrok.css';
 
 // ── Prime number milestones (in hours) ──
@@ -32,8 +29,6 @@ const PRIME_MILESTONES_H = [
   2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
   53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
 ];
-
-function getPrimeMilestoneMinutes(h: number) { return h * 60; }
 
 function formatHours(minutes: number): string {
   const h = Math.floor(minutes / 60);
@@ -48,18 +43,14 @@ function CommunityMilestone() {
   const { minutes, isLoading } = useAllTimeMinutes();
   const currentHours = minutes / 60;
 
-  // Last reached milestone index (-1 = none yet)
   const reachedIdx = PRIME_MILESTONES_H.filter((h) => h <= currentHours).length - 1;
   const nextMilestoneH = PRIME_MILESTONES_H[reachedIdx + 1] ?? PRIME_MILESTONES_H[reachedIdx] ?? 2;
   const minutesToNext = Math.max(0, Math.round(nextMilestoneH * 60 - minutes));
 
-  // Milestones to display: last 2 reached + next 4
   const displayStart = Math.max(0, reachedIdx - 1);
   const displayEnd = Math.min(PRIME_MILESTONES_H.length - 1, reachedIdx + 4);
   const visibleMilestones = PRIME_MILESTONES_H.slice(displayStart, displayEnd + 1);
 
-  // Position everything proportionally by ACTUAL hour value within the visible range.
-  // This ensures the fill line and the dots share the same coordinate system.
   const minH = visibleMilestones[0] ?? 0;
   const maxH = visibleMilestones[visibleMilestones.length - 1] ?? 1;
   const rangeH = maxH - minH;
@@ -78,7 +69,6 @@ function CommunityMilestone() {
         <span className="pokrok-page__community-badge">komunita</span>
       </div>
 
-      {/* Big number */}
       <div className="pokrok-page__community-total">
         {isLoading
           ? <div className="pokrok-page__skeleton pokrok-page__skeleton--lg" />
@@ -87,7 +77,6 @@ function CommunityMilestone() {
         <span className="pokrok-page__community-sublabel">oddýcháno celkem členy DechBaru</span>
       </div>
 
-      {/* Timeline — dots and fill share proportional coordinates */}
       <div className="pokrok-page__milestone-timeline">
         <div className="pokrok-page__milestone-track">
           <div
@@ -106,7 +95,7 @@ function CommunityMilestone() {
                   isNext ? 'pokrok-page__milestone-dot--next' : '',
                 ].filter(Boolean).join(' ')}
                 style={{ left: `${dotLeftPct(h)}%` }}
-                title={`${h}h = ${getPrimeMilestoneMinutes(h)} min`}
+                title={`${h}h`}
               >
                 <span className="pokrok-page__milestone-label">{h}h</span>
               </div>
@@ -115,7 +104,6 @@ function CommunityMilestone() {
         </div>
       </div>
 
-      {/* Next milestone info */}
       {!isLoading && minutesToNext > 0 && (
         <div className="pokrok-page__milestone-next">
           Dalších <strong>{formatHours(minutesToNext)}</strong> do milníku{' '}
@@ -124,25 +112,16 @@ function CommunityMilestone() {
       )}
       {!isLoading && minutesToNext === 0 && (
         <div className="pokrok-page__milestone-next pokrok-page__milestone-next--reached">
-          Milník {nextMilestoneH}h dosažen! 🎉
+          Milník {nextMilestoneH}h dosažen!
         </div>
       )}
-
     </div>
   );
 }
 
 // ── Helpers ──
 
-function formatKP(seconds: number | null): string {
-  if (seconds === null) return '—';
-  return `${seconds}s`;
-}
-
-// ── Activity Heatmap ──
-
 function buildWeeks(days: ActivityDayData[]): ActivityDayData[][] {
-  // Group days into columns of 7 (Mon–Sun)
   const weeks: ActivityDayData[][] = [];
   for (let i = 0; i < days.length; i += 7) {
     weeks.push(days.slice(i, i + 7));
@@ -203,9 +182,8 @@ function ActivityHeatmap({ days, isLoading }: HeatmapProps) {
   );
 }
 
-// ── Weekly Dots — current week habit tracker ──
+// ── Weekly Dots ──
 
-/** Returns LOCAL date string YYYY-MM-DD (avoids timezone-bucketing issues for CET/UTC+ users). */
 function toLocalDateStr(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -216,8 +194,7 @@ function toLocalDateStr(d: Date): string {
 function WeeklyDots({ days }: { days: ActivityDayData[] }) {
   const DOW_SHORT = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
   const today = new Date();
-  const todayStr = toLocalDateStr(today); // LOCAL today — matches graph keys
-  // Find this Monday
+  const todayStr = toLocalDateStr(today);
   const dow = today.getDay();
   const mondayOffset = dow === 0 ? -6 : 1 - dow;
   const thisMonday = new Date(today);
@@ -226,7 +203,7 @@ function WeeklyDots({ days }: { days: ActivityDayData[] }) {
   const week = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(thisMonday);
     d.setDate(d.getDate() + i);
-    const dateStr = toLocalDateStr(d); // LOCAL date — consistent with graph
+    const dateStr = toLocalDateStr(d);
     const graphDay = days.find((g) => g.date === dateStr);
     const isToday = dateStr === todayStr;
     const isFuture = d > today;
@@ -256,23 +233,19 @@ function WeeklyDots({ days }: { days: ActivityDayData[] }) {
 
 // ── Main Component ──
 
-type PeriodTab = { key: ActivityPeriod; label: string; requiresPremium?: boolean };
-
-const PERIOD_TABS: PeriodTab[] = [
-  { key: 'day', label: 'D', requiresPremium: true },
-  { key: 'week', label: 'T', requiresPremium: true },
-  { key: 'month', label: 'M', requiresPremium: true },
-  { key: 'year', label: 'R', requiresPremium: true },
-  { key: 'all', label: 'Celkem' },
+const SIMPLE_TABS: { key: ActivityPeriod; label: string }[] = [
+  { key: 'day',   label: 'Dnes' },
+  { key: 'week',  label: 'Týden' },
+  { key: 'month', label: 'Měsíc' },
 ];
 
 export function PokrokPage() {
   const [period, setPeriod] = useState<ActivityPeriod>('day');
   const userId = useAuthStore((s) => s.user?.id);
   const { currentTab } = useNavigation();
+  const { openKPDetail } = useNavigation();
 
-  // Reset period na 'day' pokaždé, když uživatel přejde na tab "pokrok".
-  // Officiální React pattern: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  // Reset period na 'week' pokaždé, když uživatel přejde na tab "pokrok"
   const [prevTab, setPrevTab] = useState(currentTab);
   if (prevTab !== currentTab) {
     setPrevTab(currentTab);
@@ -281,32 +254,34 @@ export function PokrokPage() {
     }
   }
 
-  // Real-time invalidace při změně audio/exercise session (bez refreshe stránky)
+  // Real-time invalidace při změně session
   usePokrokRealtime(userId);
 
-  // Prefetch všech period dopředu — eliminuje skeleton při přepínání tabů
+  // Prefetch všech tří period
   useUserPokrokStats(userId, 'day');
   useUserPokrokStats(userId, 'week');
   useUserPokrokStats(userId, 'month');
-  useUserPokrokStats(userId, 'year');
 
-  const { totalMinutes, totalActivities, activeDays, averageMinutesPerDay, registeredAt,
-          prevTotalMinutes, prevTotalActivities, prevActiveDays, prevAverageMinutesPerDay,
+  const { totalMinutes, totalActivities, registeredAt,
+          prevTotalMinutes, prevTotalActivities,
+          averageMinutesPerDay, prevAverageMinutesPerDay,
           streak, activityGraph, isLoading, error } =
     useUserPokrokStats(userId, period);
 
-  // All-time personal total — always visible regardless of selected period
-  const { totalMinutes: allTimeTotalMinutes, isLoading: allTimeLoading } =
+  const { totalMinutes: allTimeTotalMinutes, totalActivities: allTimeTotalActivities, isLoading: allTimeLoading } =
     useUserPokrokStats(userId, 'all');
 
   const memberDays = getDaysSinceRegistration(registeredAt ?? undefined);
 
-  // Delta with period context — "↑ +32 min · min. týden"
+  // KP data
+  const { currentKP, bestKP, baselineKP, totalMeasurements, measurements, stats: kpStats, isLoading: kpLoading } =
+    useKPMeasurements();
+
+  // Delta
   const deltaPeriodSuffix: Record<string, string> = {
-    day: 'min. den',
-    week: 'min. týden',
+    day:   'min. den',
+    week:  'min. týden',
     month: 'min. měsíc',
-    year: 'min. rok',
   };
 
   function renderDelta(current: number, prev: number | null, unit: 'min' | 'count') {
@@ -314,7 +289,7 @@ export function PokrokPage() {
     const diff = Math.round((current - prev) * 10) / 10;
     const suffix = deltaPeriodSuffix[period] ?? '';
     if (diff === 0) return (
-      <div className="pokrok-page__delta pokrok-page__delta--neutral">— stejně · {suffix}</div>
+      <div className="pokrok-page__delta pokrok-page__delta--neutral">— stejně{suffix ? ` · ${suffix}` : ''}</div>
     );
     const arrow = diff > 0 ? '↑' : '↓';
     const absDiff = Math.abs(diff);
@@ -327,228 +302,145 @@ export function PokrokPage() {
     );
   }
 
-  const { currentKP, stats: kpStats } = useKPMeasurements();
-  const { records, isLoading: recordsLoading } = usePersonalRecords(userId);
-
-  // Tier check: assume all users can see 'all' + 'week' for now
-  // (Full tier gate will be implemented with membership system)
-  const isFreeTier = false; // Placeholder — hook into membership check later
-
-  const isPeriodLocked = isFreeTier && period !== 'all';
-
-  const handlePeriodClick = (p: ActivityPeriod, requiresPremium?: boolean) => {
-    if (isFreeTier && requiresPremium) return;
-    setPeriod(p);
-  };
-
   return (
     <>
-      {/* Page header — mimo scrollable pokrok-page, stejně jako .akademie-page-header */}
+      {/* Page header */}
       <div className="pokrok-page__page-header">
         <h1 className="pokrok-page__page-title">Pokrok</h1>
       </div>
 
-    <div className="pokrok-page">
-      {/* Period Selector — samostatný blok pod titulkem */}
-      <div className="pokrok-page__header">
-        <div className="pokrok-page__period-tabs" role="tablist" aria-label="Časové období">
-          {PERIOD_TABS.map((tab) => {
-            const locked = isFreeTier && tab.requiresPremium;
-            return (
+      <div className="pokrok-page">
+
+        {/* 1. KP Sekce */}
+        <KPSection
+          currentKP={currentKP}
+          bestKP={bestKP}
+          baselineKP={baselineKP}
+          totalMeasurements={totalMeasurements}
+          measurements={measurements}
+          trend={kpStats?.trend ?? 0}
+          isLoading={kpLoading}
+          registeredAt={registeredAt}
+          onOpenKPCenter={openKPDetail}
+        />
+
+        {/* 2. Tento týden — WeeklyDots + streak inline */}
+        <div className="pokrok-page__week-section pokrok-page__section-gap">
+          <div className="pokrok-page__week-section-header">
+            <span className="pokrok-page__week-section-title">Tento týden</span>
+          </div>
+          <WeeklyDots days={activityGraph} />
+          {streak && streak.currentStreakDays > 0 && (
+            <div className="pokrok-page__streak-inline">
+              <span className="pokrok-page__streak-dot" />
+              {streak.currentStreakDays} dní v řadě
+            </div>
+          )}
+        </div>
+
+        {/* 3. Info row — 3 statsy v jednom řádku */}
+        <div className="pokrok-page__info-row pokrok-page__info-row--3col pokrok-page__section-gap">
+          <div className="pokrok-page__info-tile">
+            <div className="pokrok-page__info-tile-value pokrok-page__info-tile-value--gold">
+              {memberDays}
+            </div>
+            <div className="pokrok-page__info-tile-label">
+              {memberDays === 1 ? 'den' : memberDays < 5 ? 'dny' : 'dní'} s DechBarem
+            </div>
+          </div>
+          <div className="pokrok-page__info-tile pokrok-page__info-tile--border">
+            {allTimeLoading
+              ? <div className="pokrok-page__skeleton" />
+              : <div className="pokrok-page__info-tile-value">{formatHours(allTimeTotalMinutes)}</div>
+            }
+            <div className="pokrok-page__info-tile-label">Celkem nadýcháno</div>
+          </div>
+          <div className="pokrok-page__info-tile pokrok-page__info-tile--border">
+            {allTimeLoading
+              ? <div className="pokrok-page__skeleton" />
+              : <div className="pokrok-page__info-tile-value">{allTimeTotalActivities}</div>
+            }
+            <div className="pokrok-page__info-tile-label">Aktivit celkem</div>
+          </div>
+        </div>
+
+        {/* 4. Stats sekce — 2-stavový toggle + 2 karty */}
+        <div className="pokrok-page__stats-section pokrok-page__section-gap">
+          {/* 2-stavový toggle */}
+          <div className="pokrok-page__simple-toggle" role="tablist" aria-label="Časové období">
+            {SIMPLE_TABS.map((tab) => (
               <button
                 key={tab.key}
-                className={`pokrok-page__period-tab${period === tab.key ? ' pokrok-page__period-tab--active' : ''}`}
-                onClick={() => handlePeriodClick(tab.key, tab.requiresPremium)}
+                className={`pokrok-page__simple-tab${period === tab.key ? ' pokrok-page__simple-tab--active' : ''}`}
+                onClick={() => setPeriod(tab.key)}
                 role="tab"
                 aria-selected={period === tab.key}
-                aria-disabled={locked}
                 type="button"
-                style={locked ? { opacity: 0.35 } : undefined}
-                title={locked ? 'Dostupné ve SMART plánu' : undefined}
               >
                 {tab.label}
               </button>
-            );
-          })}
-        </div>
-      </div>
+            ))}
+          </div>
 
-      {/* Weekly Dots — tento týden, hned pod period tabs */}
-      <div className="pokrok-page__week-section">
-        <div className="pokrok-page__week-section-header">
-          <span className="pokrok-page__week-section-title">Tento týden</span>
-        </div>
-        <WeeklyDots days={activityGraph} />
-      </div>
+          {/* Error */}
+          {error && !isLoading && (
+            <div className="pokrok-page__error">Nepodařilo se načíst statistiky.</div>
+          )}
 
-      {/* Osobní rekordy — pod weekly dots, always all-time */}
-      {(records || recordsLoading) && (
-        <div className="pokrok-page__records">
-          <div className="pokrok-page__records-title">Tvoje osobní rekordy</div>
-          <div className="pokrok-page__records-grid">
-            <div className="pokrok-page__record-card">
-              <div className="pokrok-page__record-label">Nejdelší streak</div>
-              {recordsLoading
-                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
-                : <div className="pokrok-page__record-value">
-                    {records?.longestStreak ?? 0}
-                    <span className="pokrok-page__record-unit">dní</span>
-                  </div>
+          {/* 4 stat karty */}
+          <div className="pokrok-page__stats-grid pokrok-page__stats-grid--2col">
+            <div className="pokrok-page__stat-card">
+              <div className="pokrok-page__stat-label">Nadýcháno</div>
+              {isLoading
+                ? <div className="pokrok-page__skeleton" />
+                : <div className="pokrok-page__stat-value">{formatMinutes(totalMinutes)}</div>
               }
+              {renderDelta(totalMinutes, prevTotalMinutes, 'min')}
             </div>
-            <div className="pokrok-page__record-card">
-              <div className="pokrok-page__record-label">Nejlepší den</div>
-              {recordsLoading
-                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
-                : <div className="pokrok-page__record-value">
-                    {formatMinutes(records?.bestDayMinutes ?? 0)}
-                  </div>
+
+            <div className="pokrok-page__stat-card">
+              <div className="pokrok-page__stat-label">Počet aktivit</div>
+              {isLoading
+                ? <div className="pokrok-page__skeleton" />
+                : <div className="pokrok-page__stat-value">{totalActivities}</div>
               }
+              {renderDelta(totalActivities, prevTotalActivities, 'count')}
             </div>
-            <div className="pokrok-page__record-card">
-              <div className="pokrok-page__record-label">Nejdelší sezení</div>
-              {recordsLoading
-                ? <div className="pokrok-page__skeleton pokrok-page__skeleton--sm" />
-                : <div className="pokrok-page__record-value">
-                    {formatMinutes(records?.bestSessionMinutes ?? 0)}
+
+            <div className="pokrok-page__stat-card">
+              <div className="pokrok-page__stat-label">Denní průměr</div>
+              {isLoading
+                ? <div className="pokrok-page__skeleton" />
+                : <div className="pokrok-page__stat-value">{formatMinutes(Math.round(averageMinutesPerDay))}</div>
+              }
+              {renderDelta(averageMinutesPerDay, prevAverageMinutesPerDay, 'min')}
+            </div>
+
+            <div className="pokrok-page__stat-card">
+              <div className="pokrok-page__stat-label">Aktivní streak</div>
+              {isLoading
+                ? <div className="pokrok-page__skeleton" />
+                : <div className="pokrok-page__stat-value">
+                    {streak?.currentStreakDays ?? 0}
+                    <span className="pokrok-page__stat-unit">dní</span>
                   </div>
               }
+              {streak && streak.longestStreakDays > 0 && (
+                <div className="pokrok-page__delta pokrok-page__delta--neutral">
+                  max {streak.longestStreakDays} dní
+                </div>
+              )}
             </div>
           </div>
         </div>
-      )}
 
-      {/* Info Row — member since + all-time total (always visible, period-independent) */}
-      <div className="pokrok-page__info-row">
-        <div className="pokrok-page__info-card">
-          <div className="pokrok-page__info-value pokrok-page__info-value--gold">
-            {memberDays} {memberDays === 1 ? 'den' : memberDays < 5 ? 'dny' : 'dní'}
-          </div>
-          <div className="pokrok-page__info-label">s DechBarem</div>
-          {registeredAt && (
-            <div className="pokrok-page__info-sub">
-              člen od {new Date(registeredAt).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </div>
-          )}
-        </div>
-        <div className="pokrok-page__info-card">
-          <div className="pokrok-page__info-label">Celkem nadýcháno</div>
-          {allTimeLoading
-            ? <div className="pokrok-page__skeleton" />
-            : <div className="pokrok-page__info-value">
-                {formatHours(allTimeTotalMinutes)}
-              </div>
-          }
-          <div className="pokrok-page__info-sub">za celou dobu</div>
-        </div>
+        {/* 5. Activity Heatmap */}
+        <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
+
+        {/* 6. Community Milestone — úplně dole */}
+        <CommunityMilestone />
+
       </div>
-
-      {/* Tier gate for locked periods */}
-      {isPeriodLocked && (
-        <div className="pokrok-page__tier-gate">
-          <p className="pokrok-page__tier-gate-text">
-            Detailní statistiky jsou dostupné ve SMART plánu.
-          </p>
-          <button className="pokrok-page__tier-gate-cta" type="button">
-            Zjistit více o SMART
-          </button>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && !isLoading && (
-        <div className="pokrok-page__error">Nepodařilo se načíst statistiky.</div>
-      )}
-
-      {/* Hero Row: KP + Streak */}
-      <div className="pokrok-page__hero-row">
-        {/* KP Card */}
-        <div className="pokrok-page__hero-card">
-          <div className="pokrok-page__hero-label">Aktuální KP</div>
-          {isLoading ? (
-            <div className="pokrok-page__skeleton" />
-          ) : (
-            <div className="pokrok-page__hero-value pokrok-page__hero-value--gold">
-              {formatKP(currentKP)}
-            </div>
-          )}
-          {kpStats && kpStats.trend !== 0 && !isLoading && (
-            <div className="pokrok-page__hero-sub">
-              {kpStats.trend > 0 ? `+${kpStats.trend}s` : `${kpStats.trend}s`} od minulého
-            </div>
-          )}
-        </div>
-
-        {/* Streak Card */}
-        <div className="pokrok-page__hero-card">
-          <div className="pokrok-page__hero-label">Aktivitní streak</div>
-          {isLoading ? (
-            <div className="pokrok-page__skeleton" />
-          ) : (
-            <div className="pokrok-page__hero-value">
-              {streak ? streak.currentStreakDays : 0}
-            </div>
-          )}
-          <div className="pokrok-page__hero-sub">
-            {streak ? (
-              <>
-                dní v řadě
-                {streak.graceDayUsed && (
-                  <span title="Grace day využit"> · grace ✓</span>
-                )}
-              </>
-            ) : (
-              'dní v řadě'
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Grid (2×2) */}
-      <div className="pokrok-page__stats-grid">
-        <div className="pokrok-page__stat-card">
-          <div className="pokrok-page__stat-label">Minuty prodýchány</div>
-          {isLoading
-            ? <div className="pokrok-page__skeleton" />
-            : <div className="pokrok-page__stat-value">{formatMinutes(totalMinutes)}</div>
-          }
-          {renderDelta(totalMinutes, prevTotalMinutes, 'min')}
-        </div>
-
-        <div className="pokrok-page__stat-card">
-          <div className="pokrok-page__stat-label">Počet aktivit</div>
-          {isLoading
-            ? <div className="pokrok-page__skeleton" />
-            : <div className="pokrok-page__stat-value">{totalActivities}</div>
-          }
-          {renderDelta(totalActivities, prevTotalActivities, 'count')}
-        </div>
-
-        <div className="pokrok-page__stat-card">
-          <div className="pokrok-page__stat-label">Aktivní dny</div>
-          {isLoading
-            ? <div className="pokrok-page__skeleton" />
-            : <div className="pokrok-page__stat-value">{activeDays}</div>
-          }
-          {renderDelta(activeDays, prevActiveDays, 'count')}
-        </div>
-
-        <div className="pokrok-page__stat-card">
-          <div className="pokrok-page__stat-label">Průměr min/den</div>
-          {isLoading
-            ? <div className="pokrok-page__skeleton" />
-            : <div className="pokrok-page__stat-value">{formatMinutes(averageMinutesPerDay)}</div>
-          }
-          {renderDelta(averageMinutesPerDay, prevAverageMinutesPerDay, 'min')}
-        </div>
-      </div>
-
-      {/* Community Milestone */}
-      <CommunityMilestone />
-
-      {/* Activity Heatmap (last 24 weeks) — úplně dole */}
-      <ActivityHeatmap days={activityGraph} isLoading={isLoading} />
-    </div>
     </>
   );
 }

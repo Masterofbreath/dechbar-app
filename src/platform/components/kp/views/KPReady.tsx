@@ -10,21 +10,21 @@
 
 import { BreathingCircle } from '@/components/shared/BreathingCircle';
 import { Button, TextLink } from '@/platform/components';
-import { formatSeconds, formatTrend } from '@/utils/kp';
+import { formatSeconds } from '@/utils/kp';
+import type { KPMeasurement } from '@/platform/api';
 
 export interface KPReadyProps {
   currentKP: number | null;
   previousKP: number | null;
   trend: number;
   isSaving: boolean;
+  measurements: KPMeasurement[];
   onStartMeasurement: () => void;
   onShowInstructions: () => void;
 }
 
 export function KPReady({
   currentKP,
-  previousKP,
-  trend,
   isSaving,
   onStartMeasurement,
   onShowInstructions,
@@ -42,14 +42,7 @@ export function KPReady({
       <div className="kp-center__measurement-area">
         <BreathingCircle variant="static" size={280}>
           {currentKP !== null ? (
-            <>
-              <div className="kp-center__circle-value">{formatSeconds(currentKP)}</div>
-              {previousKP !== null && (
-                <div className={`kp-center__circle-trend kp-center__circle-trend--${trend >= 0 ? 'positive' : 'negative'}`}>
-                  {formatTrend(trend)}
-                </div>
-              )}
-            </>
+            <div className="kp-center__circle-value">{formatSeconds(currentKP)}</div>
           ) : (
             <div className="kp-center__circle-empty">--</div>
           )}
