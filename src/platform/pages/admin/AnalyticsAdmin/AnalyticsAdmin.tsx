@@ -649,7 +649,7 @@ export default function AnalyticsAdmin() {
   const { count: uniqueActiveCount, prevCount: prevUniqueActiveCount, isLoading: uniqueActiveLoading } = useUniqueActiveUsers(period);
   // Avg minutes per user on days when they actually trained (period-aware)
    
-  const { avgMinutes: avgMinPerActiveDay, isLoading: avgMinLoading } = useAvgMinutesPerActiveUserDay(period);
+  const { avgMinutes: avgMinPerActiveDay, prevAvgMinutes: prevAvgMinPerActiveDay, isLoading: avgMinLoading } = useAvgMinutesPerActiveUserDay(period);
 
   const minutes = sumKpi(kpis, 'totalMinutesBeathed');
   const newUsers = sumKpi(kpis, 'newRegistrations');
@@ -742,6 +742,7 @@ export default function AnalyticsAdmin() {
           label="Průměr / aktivní den"
           value={avgMinLoading ? '—' : `${avgMinPerActiveDay} min`}
           sublabel="min/uživatel v aktivní den"
+          delta={getDelta(avgMinPerActiveDay, prevAvgMinPerActiveDay, 'count', prevPeriodShortLabel[period])}
           isLoading={avgMinLoading}
         />
         <KpiCard

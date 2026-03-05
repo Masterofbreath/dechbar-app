@@ -469,7 +469,7 @@ export function useUniqueActiveUsers(
 
 export function useAvgMinutesPerActiveUserDay(
   period: DashboardPeriod,
-): { avgMinutes: number; isLoading: boolean } {
+): { avgMinutes: number; prevAvgMinutes: number; isLoading: boolean } {
   const now = new Date();
 
   const { fromISO, toISO } = (() => {
@@ -487,6 +487,10 @@ export function useAvgMinutesPerActiveUserDay(
     return { fromISO: `${periodStart}T00:00:00.000Z`, toISO: todayEnd };
   })();
 
+  const prevRange = getAdminPrevPeriodRange(period);
+  const prevFromISO = prevRange ? `${prevRange.from}T00:00:00.000Z` : null;
+  const prevToISO   = prevRange ? `${prevRange.to}T23:59:59.999Z`   : null;
+
   const { data, isLoading } = useQuery({
     queryKey: ['analytics', 'avgMinPerActiveDay', period, fromISO] as const,
     queryFn: async () => {
@@ -501,7 +505,22 @@ export function useAvgMinutesPerActiveUserDay(
     refetchInterval: period === 'today' ? 2 * 60 * 1000 : undefined,
   });
 
-  return { avgMinutes: data ?? 0, isLoading };
+  const { data: prevData } = useQuery({
+    queryKey: ['analytics', 'avgMinPerActiveDay', period, 'prev', prevFromISO] as const,
+    enabled: !!prevFromISO,
+    queryFn: async () => {
+      if (!prevFromISO || !prevToISO) return 0;
+      const { data, error } = await supabase.rpc('get_avg_minutes_per_active_user_day', {
+        from_ts: prevFromISO,
+        to_ts: prevToISO,
+      });
+      if (error) throw new Error(error.message);
+      return Number(data) || 0;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return { avgMinutes: data ?? 0, prevAvgMinutes: prevData ?? 0, isLoading };
 }
 
 // ============================================================
