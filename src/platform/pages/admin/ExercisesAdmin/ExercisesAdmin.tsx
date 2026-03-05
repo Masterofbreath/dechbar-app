@@ -34,19 +34,19 @@ export default function ExercisesAdmin() {
 
         <div className="exercises-admin__tabs">
           <button
-            className={`exercises-admin__tab ${activeTab === 'background' ? 'active' : ''}`}
+            className={`exercises-admin__tab ${activeTab === 'background' ? 'aktive' : ''}`}
             onClick={() => setActiveTab('background')}
           >
             Hudba na pozadí
           </button>
           <button
-            className={`exercises-admin__tab ${activeTab === 'cues' ? 'active' : ''}`}
+            className={`exercises-admin__tab ${activeTab === 'cues' ? 'aktive' : ''}`}
             onClick={() => setActiveTab('cues')}
           >
             Dechové cues
           </button>
           <button
-            className={`exercises-admin__tab ${activeTab === 'voices' ? 'active' : ''}`}
+            className={`exercises-admin__tab ${activeTab === 'voices' ? 'aktive' : ''}`}
             onClick={() => setActiveTab('voices')}
           >
             Hlasové průvodce

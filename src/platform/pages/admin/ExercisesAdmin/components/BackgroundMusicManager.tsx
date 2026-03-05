@@ -2,7 +2,9 @@
  * BackgroundMusicManager
  *
  * Admin component for managing background_tracks table.
- * Lists existing tracks, allows adding new ones (with CDN upload), toggling active state, deleting.
+ * Lists existing tracks, allows adding new ones (with CDN upload),
+ * inline editing (name, slug, category, tier, sort_order, active),
+ * toggling active state, and deleting.
  *
  * @package DechBar_App
  * @subpackage Platform/Pages/Admin/ExercisesAdmin
@@ -43,6 +45,15 @@ interface FormState {
   file: File | null;
 }
 
+interface EditState {
+  name: string;
+  slug: string;
+  category: string;
+  required_tier: string;
+  sort_order: string;
+  is_active: boolean;
+}
+
 const EMPTY_FORM: FormState = {
   name: '',
   slug: '',
@@ -63,6 +74,11 @@ export function BackgroundMusicManager() {
   const [showForm, setShowForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Edit modal state
+  const [editingTrack, setEditingTrack] = useState<BackgroundTrack | null>(null);
+  const [editState, setEditState] = useState<EditState | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
   const fetchTracks = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -81,11 +97,7 @@ export function BackgroundMusicManager() {
   }, [fetchTracks]);
 
   const handleNameChange = (name: string) => {
-    setForm(prev => ({
-      ...prev,
-      name,
-      slug: slugify(name),
-    }));
+    setForm(prev => ({ ...prev, name, slug: slugify(name) }));
   };
 
   const handleToggleActive = async (track: BackgroundTrack) => {
@@ -109,17 +121,12 @@ export function BackgroundMusicManager() {
     }
   };
 
+  // ── Add form submit ───────────────────────────────────────────────────────
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!form.file) {
-      setError('Vyberte audio soubor');
-      return;
-    }
-    if (!form.slug) {
-      setError('Název nesmí být prázdný');
-      return;
-    }
+    if (!form.file) { setError('Vyberte audio soubor'); return; }
+    if (!form.slug)  { setError('Název nesmí být prázdný'); return; }
 
     try {
       setIsUploading(true);
@@ -153,6 +160,61 @@ export function BackgroundMusicManager() {
       setIsUploading(false);
     }
   };
+
+  // ── Edit modal ────────────────────────────────────────────────────────────
+
+  const openEdit = (track: BackgroundTrack) => {
+    setEditingTrack(track);
+    setEditState({
+      name: track.name,
+      slug: track.slug,
+      category: track.category,
+      required_tier: track.required_tier,
+      sort_order: String(track.sort_order ?? 0),
+      is_active: track.is_active,
+    });
+  };
+
+  const closeEdit = () => {
+    setEditingTrack(null);
+    setEditState(null);
+    setIsSavingEdit(false);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingTrack || !editState) return;
+    try {
+      setIsSavingEdit(true);
+      await adminApi.backgroundMusic.update(editingTrack.id, {
+        name: editState.name,
+        slug: editState.slug,
+        category: editState.category as BackgroundTrack['category'],
+        required_tier: editState.required_tier as BackgroundTrack['required_tier'],
+        sort_order: parseInt(editState.sort_order, 10) || 0,
+        is_active: editState.is_active,
+      });
+      setTracks(prev => prev.map(t =>
+        t.id === editingTrack.id
+          ? {
+              ...t,
+              name: editState.name,
+              slug: editState.slug,
+              category: editState.category as BackgroundTrack['category'],
+              required_tier: editState.required_tier as BackgroundTrack['required_tier'],
+              sort_order: parseInt(editState.sort_order, 10) || 0,
+              is_active: editState.is_active,
+            }
+          : t
+      ));
+      closeEdit();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Chyba při ukládání');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="exercises-manager">
@@ -320,6 +382,12 @@ export function BackgroundMusicManager() {
                     <div className="exercises-manager__actions">
                       <button
                         className="exercises-manager__btn"
+                        onClick={() => openEdit(track)}
+                      >
+                        Upravit
+                      </button>
+                      <button
+                        className="exercises-manager__btn"
                         onClick={() => handleToggleActive(track)}
                       >
                         {track.is_active ? 'Deaktivovat' : 'Aktivovat'}
@@ -338,6 +406,116 @@ export function BackgroundMusicManager() {
           </table>
         )}
       </div>
+
+      {/* Edit modal — stejný styl jako aa-modal v AkademieAdmin */}
+      {editingTrack && editState && (
+        <div className="aa-modal-overlay" onClick={e => { if (e.target === e.currentTarget) closeEdit(); }}>
+          <div className="aa-modal">
+            <div className="aa-modal__header">
+              <span className="aa-modal__title">Upravit track</span>
+              <button className="aa-btn aa-btn--icon" onClick={closeEdit} aria-label="Zavřít">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="aa-modal__body">
+              <div className="aa-form">
+                <div className="aa-form-row">
+                  <div className="aa-field">
+                    <label className="aa-field__label aa-field__label--required">Název</label>
+                    <input
+                      className="aa-input"
+                      type="text"
+                      value={editState.name}
+                      onChange={e => setEditState(prev => prev ? {
+                        ...prev,
+                        name: e.target.value,
+                        slug: slugify(e.target.value),
+                      } : prev)}
+                    />
+                  </div>
+                  <div className="aa-field">
+                    <label className="aa-field__label">Slug</label>
+                    <input
+                      className="aa-input aa-input--slug"
+                      type="text"
+                      value={editState.slug}
+                      onChange={e => setEditState(prev => prev ? { ...prev, slug: e.target.value } : prev)}
+                    />
+                  </div>
+                </div>
+
+                <div className="aa-form-row">
+                  <div className="aa-field">
+                    <label className="aa-field__label">Kategorie</label>
+                    <select
+                      className="aa-input"
+                      value={editState.category}
+                      onChange={e => setEditState(prev => prev ? { ...prev, category: e.target.value } : prev)}
+                    >
+                      {CATEGORY_OPTIONS.map(o => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="aa-field">
+                    <label className="aa-field__label">Tier</label>
+                    <select
+                      className="aa-input"
+                      value={editState.required_tier}
+                      onChange={e => setEditState(prev => prev ? { ...prev, required_tier: e.target.value } : prev)}
+                    >
+                      {TIER_OPTIONS.map(o => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="aa-form-row">
+                  <div className="aa-field">
+                    <label className="aa-field__label">Sort order</label>
+                    <input
+                      className="aa-input"
+                      type="number"
+                      min="0"
+                      value={editState.sort_order}
+                      onChange={e => setEditState(prev => prev ? { ...prev, sort_order: e.target.value } : prev)}
+                    />
+                  </div>
+                  <div className="aa-field" style={{ justifyContent: 'flex-end' }}>
+                    <label className="aa-checkbox-row" style={{ marginTop: '1.5rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={editState.is_active}
+                        onChange={e => setEditState(prev => prev ? { ...prev, is_active: e.target.checked } : prev)}
+                      />
+                      <span>Aktivní</span>
+                    </label>
+                  </div>
+                </div>
+
+                <p className="aa-field__hint">
+                  CDN URL se při úpravě nemění. Pro nový soubor smaž a vytvoř znovu.
+                </p>
+              </div>
+            </div>
+            <div className="aa-modal__footer">
+              <button className="aa-btn aa-btn--ghost" onClick={closeEdit} disabled={isSavingEdit}>
+                Zrušit
+              </button>
+              <button
+                className="aa-btn aa-btn--primary"
+                onClick={handleEditSave}
+                disabled={isSavingEdit}
+              >
+                {isSavingEdit ? 'Ukládám...' : 'Uložit změny'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

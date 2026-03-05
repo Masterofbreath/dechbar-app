@@ -34,33 +34,44 @@
 
 .exercises-admin__tabs {
   display: flex;
-  gap: 0.5rem;
-  background: #1e1e1e;
-  padding: 0.25rem;
-  border-radius: 0.5rem;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border, #2a2a2a);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.exercises-admin__tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .exercises-admin__tab {
-  padding: 0.5rem 1.25rem;
-  background: transparent;
-  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: none;
   border: none;
-  border-radius: 0.375rem;
-  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary);
   font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
   white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 44px;
 }
 
-.exercises-admin__tab:hover {
+.exercises-admin__tab.aktive {
   color: var(--color-text-primary);
-  background: rgb(255 255 255 / 5%);
+  border-bottom-color: var(--dechbar-gold, #f8ca00);
+  font-weight: 600;
 }
 
-.exercises-admin__tab.active {
-  background: var(--color-accent);
-  color: #121212;
+.exercises-admin__tab:hover:not(.aktive) {
+  color: var(--color-text-primary);
 }
 
 /* ── Shared manager styles ── */
@@ -288,6 +299,192 @@
   white-space: nowrap;
 }
 
+/* ── Edit modal (shared aa-modal styles from AkademieAdmin) ── */
+
+.aa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 75%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.aa-modal {
+  background: var(--color-surface, #1a1a1a);
+  border: 1px solid var(--color-border, #2a2a2a);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.aa-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border, #2a2a2a);
+  position: sticky;
+  top: 0;
+  background: inherit;
+  z-index: 1;
+}
+
+.aa-modal__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.aa-modal__body {
+  padding: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.aa-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-border, #2a2a2a);
+}
+
+.aa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.aa-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.aa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aa-field__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.aa-field__label--required::after {
+  content: ' *';
+  color: var(--dechbar-gold, #f8ca00);
+}
+
+.aa-field__hint {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary, #666);
+}
+
+.aa-input {
+  background: #111;
+  border: 1px solid var(--color-border, #2a2a2a);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  padding: 0.625rem 0.75rem;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.aa-input:focus {
+  outline: none;
+  border-color: rgb(248 202 0 / 40%);
+}
+
+.aa-input--slug {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.8125rem;
+  color: var(--dechbar-teal, #2cbec6);
+}
+
+.aa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.aa-btn--primary {
+  background: var(--dechbar-gold, #f8ca00);
+  color: #0a0a0a;
+}
+
+.aa-btn--primary:hover { opacity: 0.88; }
+
+.aa-btn--ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border, #2a2a2a);
+}
+
+.aa-btn--ghost:hover {
+  background: var(--color-surface-elevated, #2a2a2a);
+  color: var(--color-text-primary);
+}
+
+.aa-btn--icon {
+  padding: 0.3rem 0.5rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.1s, color 0.1s;
+  line-height: 1;
+}
+
+.aa-btn--icon:hover {
+  background: var(--color-surface-elevated, #2a2a2a);
+  color: var(--color-text-primary);
+}
+
+.aa-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.aa-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.aa-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--dechbar-gold, #f8ca00);
+}
+
+.aa-checkbox-row span {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  user-select: none;
+}
+
 /* Mobile */
 @media (width <= 767px) {
   .exercises-admin__header {
@@ -297,12 +494,6 @@
 
   .exercises-admin__tabs {
     width: 100%;
-  }
-
-  .exercises-admin__tab {
-    flex: 1;
-    padding: 0.5rem;
-    font-size: 0.8125rem;
   }
 
   .exercises-admin__title {
