@@ -36,7 +36,6 @@ function sumKpi(kpis: DailyKpis[], key: keyof DailyKpis): number {
   return kpis.reduce((sum, k) => sum + Number(k[key] ?? 0), 0);
 }
 
-/** Returns delta string "+5" / "-3" / "" and direction 'up'|'down'|'same' */
 /** Format a minutes value as human-readable diff: +1h 20 min, −45 min, etc. */
 function formatMinutesDelta(absDiff: number): string {
   const h = Math.floor(absDiff / 60);
@@ -44,6 +43,16 @@ function formatMinutesDelta(absDiff: number): string {
   if (h === 0) return `${m} min`;
   if (m === 0) return `${h}h`;
   return `${h}h ${m} min`;
+}
+
+/** Format a decimal-minutes diff for avg-per-day card: "1 min 6 s", "45 s" */
+function formatAvgMinutesDelta(absDiff: number): string {
+  const totalSec = Math.round(absDiff * 60);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  if (m === 0) return `${s} s`;
+  if (s === 0) return `${m} min`;
+  return `${m} min ${s} s`;
 }
 
 /**
@@ -57,16 +66,19 @@ function formatMinutesDelta(absDiff: number): string {
 function getDelta(
   current: number,
   prev: number,
-  type: 'count' | 'minutes' = 'count',
+  type: 'count' | 'minutes' | 'avg-minutes' = 'count',
   periodLabel = 'předchozí',
 ): { label: string; dir: 'up' | 'down' | 'same' } {
   if (prev === 0 && current === 0) return { label: '', dir: 'same' };
   const diff = current - prev;
   if (diff === 0) return { label: `= stejně vs. ${periodLabel}`, dir: 'same' };
   const absDiff = Math.abs(diff);
-  const formatted = type === 'minutes' ? formatMinutesDelta(absDiff) : formatNumber(absDiff);
+  const formatted = type === 'minutes'
+    ? formatMinutesDelta(absDiff)
+    : type === 'avg-minutes'
+      ? formatAvgMinutesDelta(absDiff)
+      : formatNumber(absDiff);
   const sign = diff > 0 ? '+' : '−';
-  // % change displayed at the end for readability
   const pct = prev > 0 ? Math.round(Math.abs(diff / prev) * 100) : null;
   const pctStr = pct != null ? ` (${sign}${pct}%)` : '';
   return {
@@ -742,7 +754,7 @@ export default function AnalyticsAdmin() {
           label="Průměr / aktivní den"
           value={avgMinLoading ? '—' : `${avgMinPerActiveDay} min`}
           sublabel="min/uživatel v aktivní den"
-          delta={getDelta(avgMinPerActiveDay, prevAvgMinPerActiveDay, 'count', prevPeriodShortLabel[period])}
+          delta={getDelta(avgMinPerActiveDay, prevAvgMinPerActiveDay, 'avg-minutes', prevPeriodShortLabel[period])}
           isLoading={avgMinLoading}
         />
         <KpiCard

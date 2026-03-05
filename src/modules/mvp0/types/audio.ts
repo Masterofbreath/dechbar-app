@@ -56,7 +56,7 @@ export interface BackgroundTrack {
   id: string;
   name: string;
   slug: string;
-  category: 'nature' | 'binaural' | 'tibetan' | 'yogic';
+  category: string; // slug z background_categories (dynamické)
   description: string | null;
   duration_seconds: number;
   cdn_url: string;
@@ -108,6 +108,7 @@ export interface SessionSettings {
   // Background Music
   backgroundMusicEnabled: boolean;
   selectedTrackSlug: string | null; // 'nature-forest', 'tibetan-bowls', etc.
+  backgroundMusicRandomEnabled: boolean; // Náhodný výběr z aktivních tracků
   backgroundMusicVolume: number; // 0-1
   
   // Bells (Start/End)
@@ -139,6 +140,7 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   
   backgroundMusicEnabled: false,
   selectedTrackSlug: null,
+  backgroundMusicRandomEnabled: false,
   backgroundMusicVolume: 0.5,
   
   bellsEnabled: true,

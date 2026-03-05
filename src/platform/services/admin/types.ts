@@ -211,7 +211,7 @@ export interface AkademieProgramCreateResult {
 export interface BackgroundTrackInput {
   name: string;
   slug: string;
-  category: 'nature' | 'binaural' | 'tibetan' | 'yogic';
+  category: string; // slug z background_categories
   description?: string | null;
   cdn_url: string;
   duration_seconds?: number;
@@ -219,6 +219,23 @@ export interface BackgroundTrackInput {
   required_tier: 'ZDARMA' | 'SMART' | 'AI_COACH';
   is_active?: boolean;
   sort_order?: number;
+}
+
+export interface BackgroundCategory {
+  id: string;
+  slug: string;
+  name: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BackgroundCategoryInput {
+  slug: string;
+  name: string;
+  sort_order?: number;
+  is_active?: boolean;
 }
 
 export interface BreathingCueUpdate {

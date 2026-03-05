@@ -299,6 +299,154 @@
   white-space: nowrap;
 }
 
+/* ── Cue Groups (Dechové signály / Zvonky) ── */
+
+.cue-group {
+  background: #1a1a1a;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.cue-group__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  background: rgb(255 255 255 / 2%);
+}
+
+.cue-group__icon {
+  display: flex;
+  align-items: center;
+  color: var(--dechbar-gold, #f8ca00);
+}
+
+.cue-group__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.cue-group__count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.cue-group__cards {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Cue Card ── */
+
+.cue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+}
+
+.cue-card:last-child {
+  border-bottom: none;
+}
+
+.cue-card:hover {
+  background: rgb(255 255 255 / 2%);
+}
+
+.cue-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cue-card__phase {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+}
+
+.cue-card__hint {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.cue-card__source {
+  padding: 0.5rem 0.75rem;
+  background: rgb(255 255 255 / 3%);
+  border-radius: 6px;
+}
+
+.cue-card__source-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cue-card__source-url {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.cue-card__source-fallback {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.cue-card__replace {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Inner manager tabs (Tracky / Kategorie v BackgroundMusicManager) ── */
+
+.bg-manager__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border, #2a2a2a);
+  margin-bottom: 1.5rem;
+}
+
+.bg-manager__tab {
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  min-height: 40px;
+}
+
+.bg-manager__tab.aktive {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--dechbar-gold, #f8ca00);
+  font-weight: 600;
+}
+
+.bg-manager__tab:hover:not(.aktive) {
+  color: var(--color-text-primary);
+}
+
 /* ── Edit modal (shared aa-modal styles from AkademieAdmin) ── */
 
 .aa-modal-overlay {

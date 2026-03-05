@@ -951,6 +951,49 @@ export const adminApi = {
     },
   },
 
+  // ── Background Categories (background_categories table) ───────────────────
+  backgroundCategories: {
+    async getAll(): Promise<import('./types').BackgroundCategory[]> {
+      const { data, error } = await supabase
+        .from('background_categories')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      if (error) throw new Error(`Failed to fetch background categories: ${error.message}`);
+      return data ?? [];
+    },
+
+    async create(input: import('./types').BackgroundCategoryInput): Promise<{ id: string }> {
+      const { data, error } = await supabase
+        .from('background_categories')
+        .insert({
+          slug: input.slug,
+          name: input.name,
+          sort_order: input.sort_order ?? 0,
+          is_active: input.is_active ?? true,
+        })
+        .select('id')
+        .single();
+      if (error) throw new Error(`Failed to create background category: ${error.message}`);
+      return data as { id: string };
+    },
+
+    async update(id: string, input: Partial<import('./types').BackgroundCategoryInput>): Promise<void> {
+      const { error } = await supabase
+        .from('background_categories')
+        .update({ ...input, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw new Error(`Failed to update background category: ${error.message}`);
+    },
+
+    async delete(id: string): Promise<void> {
+      const { error } = await supabase
+        .from('background_categories')
+        .delete()
+        .eq('id', id);
+      if (error) throw new Error(`Failed to delete background category: ${error.message}`);
+    },
+  },
+
   // ── Breathing Cues (breathing_cues table) ─────────────────────────────────
   breathingCues: {
     async getAll(): Promise<import('./types').BreathingCueRecord[]> {

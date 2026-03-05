@@ -181,10 +181,12 @@ export function SettingsPage() {
                 <TrackSelector
                   tracks={backgroundMusic.tracks}
                   selectedSlug={settings.selectedTrackSlug}
+                  randomEnabled={settings.backgroundMusicRandomEnabled}
                   onChange={(slug) => {
                     settings.setSelectedTrack(slug);
                     if (slug) backgroundMusic.setTrack(slug);
                   }}
+                  onRandomChange={settings.setBackgroundMusicRandomEnabled}
                   userTier={userTier}
                   onFetchTracks={backgroundMusic.fetchTracks}
                 />

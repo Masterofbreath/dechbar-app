@@ -26,6 +26,7 @@ interface SessionSettingsStore extends SessionSettings {
   // Actions - Background Music
   setBackgroundMusicEnabled: (enabled: boolean) => void;
   setSelectedTrack: (slug: string | null) => void;
+  setBackgroundMusicRandomEnabled: (enabled: boolean) => void;
   setBackgroundMusicVolume: (volume: number) => void;
   
   // Actions - Bells
@@ -63,6 +64,7 @@ export const useSessionSettings = create<SessionSettingsStore>()(
       // Background Music
       setBackgroundMusicEnabled: (enabled) => set({ backgroundMusicEnabled: enabled }),
       setSelectedTrack: (slug) => set({ selectedTrackSlug: slug }),
+      setBackgroundMusicRandomEnabled: (enabled) => set({ backgroundMusicRandomEnabled: enabled }),
       setBackgroundMusicVolume: (volume) => set({ backgroundMusicVolume: Math.max(0, Math.min(1, volume)) }),
       
       // Bells
