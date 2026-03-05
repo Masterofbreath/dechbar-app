@@ -21,7 +21,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
-import { onAudioUnlock } from '../utils/sharedAudioContext';
+import { onAudioUnlock, acquirePlayback, releasePlayback } from '../utils/sharedAudioContext';
 import type { BackgroundTrack, MusicPlaybackState } from '../types/audio';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -338,6 +338,13 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     }
 
     try {
+      // Singleton guard — only one instance plays at a time across all mounted hooks
+      if (!acquirePlayback()) {
+        console.log('[BackgroundMusic] Another instance is already playing — skipping');
+        setStateAndRef('idle');
+        return;
+      }
+
       setStateAndRef('playing');
       clearRamps();
       fadeOutStartedRef.current   = false;
@@ -349,8 +356,18 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
       rampVolume(primary, backgroundMusicVolume, FADE_IN_DURATION_MS, fadeInRampRef);
       scheduleCrossfade(primary);
 
+      // Resume automatically when OS pauses audio due to device switch
+      // (e.g. headphones connected/disconnected). Without this, music stops silently.
+      const handleExternalPause = () => {
+        if (stateRef.current === 'playing' && crossfadeEnabledRef.current) {
+          primary.play().catch(() => null);
+        }
+      };
+      primary.addEventListener('pause', handleExternalPause);
+
       console.log('[BackgroundMusic] Playing with fade IN');
     } catch (err) {
+      releasePlayback();
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
         // Safari autoplay blocked — wait for next user gesture unlock then retry once
         console.warn('[BackgroundMusic] Autoplay blocked — will retry on next gesture');
@@ -417,6 +434,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     Promise.all(promises).then(() => {
       primary.pause();
       secondary?.pause();
+      releasePlayback();
       setStateAndRef('paused');
       console.log('[BackgroundMusic] Paused');
     });
@@ -437,6 +455,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
       primary.pause();
       primary.currentTime = 0;
       if (secondary) { secondary.pause(); secondary.currentTime = 0; secondary.volume = 0; }
+      releasePlayback();
       setStateAndRef('idle');
     };
 
@@ -555,6 +574,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
       if (syncRamp.current) window.clearInterval(syncRamp.current);
       if (ramp2.current)    window.clearInterval(ramp2.current);
       if (crossfadeTimerRef.current) window.clearTimeout(crossfadeTimerRef.current);
+      if (stateRef.current === 'playing') releasePlayback();
       primaryRef.current?.pause();
       secondaryRef.current?.pause();
       if (trackUrlRef.current?.startsWith('blob:')) URL.revokeObjectURL(trackUrlRef.current);

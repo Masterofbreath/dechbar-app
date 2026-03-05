@@ -17,6 +17,21 @@ type WebKitWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
 let _ctx: AudioContext | null = null;
 
+// Module-level playback guard — only ONE useBackgroundMusic instance may play at a time.
+// Set to true when any instance starts playing, false when it stops.
+// Prevents duplicate audio when SessionEngineModal is mounted in multiple page tabs.
+let _isAnyInstancePlaying = false;
+
+export function acquirePlayback(): boolean {
+  if (_isAnyInstancePlaying) return false;
+  _isAnyInstancePlaying = true;
+  return true;
+}
+
+export function releasePlayback(): void {
+  _isAnyInstancePlaying = false;
+}
+
 // Listeners notified after each successful unlock — used by useBackgroundMusic
 // to retry play() when it was blocked by Safari autoplay policy.
 const _unlockListeners = new Set<() => void>();
