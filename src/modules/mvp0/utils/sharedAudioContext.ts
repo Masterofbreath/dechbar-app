@@ -17,6 +17,16 @@ type WebKitWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
 let _ctx: AudioContext | null = null;
 
+// Listeners notified after each successful unlock — used by useBackgroundMusic
+// to retry play() when it was blocked by Safari autoplay policy.
+const _unlockListeners = new Set<() => void>();
+
+/** Subscribe to unlock events. Returns unsubscribe function. */
+export function onAudioUnlock(cb: () => void): () => void {
+  _unlockListeners.add(cb);
+  return () => _unlockListeners.delete(cb);
+}
+
 /**
  * Returns the shared AudioContext, creating it if needed.
  * Safe to call anywhere — but `resume()` must be called from a user gesture.
@@ -60,6 +70,9 @@ export function unlockSharedAudioContext(): void {
     source.buffer = buffer;
     source.connect(ctx.destination);
     source.start(0);
+
+    // Notify subscribers (e.g. useBackgroundMusic retry) after unlock
+    _unlockListeners.forEach(cb => { try { cb(); } catch { /* ignore */ } });
   } catch {
     // Best-effort — never throw from gesture handlers
   }

@@ -21,6 +21,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
+import { onAudioUnlock } from '../utils/sharedAudioContext';
 import type { BackgroundTrack, MusicPlaybackState } from '../types/audio';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -168,14 +169,16 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
         return URL.createObjectURL(cached.blob);
       }
       console.log('[BackgroundMusic] Downloading from CDN...');
-      const response = await fetch(url);
+      const response = await fetch(url, { mode: 'cors' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob();
       await cacheAudioFile(url, blob);
       return URL.createObjectURL(blob);
     } catch (err) {
-      console.error('[BackgroundMusic] Load error:', err);
-      return url; // stream fallback
+      console.warn('[BackgroundMusic] Fetch failed, using direct stream:', err);
+      // Direct stream fallback — Safari can play cross-origin URLs directly
+      // as long as the CDN has proper CORS headers (Access-Control-Allow-Origin: *)
+      return url;
     }
   }, []);
 
@@ -285,6 +288,9 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
         URL.revokeObjectURL(primary.src);
       }
 
+      // crossOrigin='anonymous' required for Safari to play cross-origin URLs
+      // without triggering CORS errors on HTMLAudioElement
+      primary.crossOrigin = 'anonymous';
       primary.src    = audioUrl;
       primary.volume = 0;
       primary.loop   = false;
@@ -292,6 +298,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
 
       if (!secondaryRef.current) {
         secondaryRef.current = new Audio();
+        secondaryRef.current.crossOrigin = 'anonymous';
         secondaryRef.current.volume = 0;
       }
 
@@ -333,7 +340,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     try {
       setStateAndRef('playing');
       clearRamps();
-      fadeOutStartedRef.current  = false;
+      fadeOutStartedRef.current   = false;
       crossfadeEnabledRef.current = true;
       primary.volume = 0;
 
@@ -345,8 +352,10 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
       console.log('[BackgroundMusic] Playing with fade IN');
     } catch (err) {
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        console.warn('[BackgroundMusic] Autoplay blocked — will retry on next interaction');
+        // Safari autoplay blocked — wait for next user gesture unlock then retry once
+        console.warn('[BackgroundMusic] Autoplay blocked — will retry on next gesture');
         setStateAndRef('idle');
+        pendingPlayRef.current = true;
       } else if (err instanceof DOMException && err.name === 'NotSupportedError') {
         console.warn('[BackgroundMusic] Source not supported');
         setStateAndRef('idle');
@@ -498,6 +507,21 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     if (fadeInRampRef.current !== null) return;
     rampVolume(primary, backgroundMusicVolume, 300, volumeSyncRampRef);
   }, [backgroundMusicVolume, rampVolume]);
+
+  // ─── Auto-play retry on Safari unlock ────────────────────────────────────
+  // When play() is blocked by autoplay policy (NotAllowedError), pendingPlayRef
+  // is set. On next user gesture, unlockSharedAudioContext() fires all listeners
+  // — we retry playInternal() here once the audio pipeline is unblocked.
+
+  useEffect(() => {
+    const unsub = onAudioUnlock(() => {
+      if (pendingPlayRef.current && stateRef.current === 'idle') {
+        pendingPlayRef.current = false;
+        void playInternal();
+      }
+    });
+    return unsub;
+  }, [playInternal]);
 
   // ─── Auto-load on track selection ────────────────────────────────────────
 
