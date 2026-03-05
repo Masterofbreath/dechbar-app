@@ -27,6 +27,7 @@ import { useIntensityControl } from './hooks/useIntensityControl';
 import { useWakeLock } from '../../hooks/useWakeLock';
 import { useHaptics } from '../../hooks/useHaptics';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
+import { unlockSharedAudioContext } from '../../utils/sharedAudioContext';
 import { useBackgroundMusic } from '../../hooks/useBackgroundMusic';
 import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
@@ -93,23 +94,15 @@ export function SessionEngineModal({
   const backgroundMusic = useBackgroundMusic();
 
   /**
-   * Unlock Web Audio API on first user gesture.
-   * Browsers (Safari, Chrome) block audio.play() unless triggered directly
-   * from a user interaction. Call this in every button handler that leads to audio.
+   * Unlock audio pipeline on user gesture — must be called synchronously in every
+   * button handler that leads to audio playback.
+   *
+   * Handles both Web Audio API (Safari AudioContext suspended state) and
+   * HTMLAudioElement autoplay policy (plays a silent 0-volume audio element).
+   * After this call, all subsequent async audio.play() calls will succeed on Safari/iOS.
    */
   const unlockAudio = useCallback(() => {
-    try {
-      // Resume AudioContext if suspended (Safari requires this)
-      if (typeof AudioContext !== 'undefined' || typeof (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext !== 'undefined') {
-        const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-        if (AudioCtx) {
-          const ctx = new AudioCtx();
-          ctx.resume().then(() => ctx.close()).catch(() => null);
-        }
-      }
-    } catch {
-      // Silently ignore — unlock is best-effort
-    }
+    unlockSharedAudioContext();
   }, []);
   const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume } = useSessionSettings();
 

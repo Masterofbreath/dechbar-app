@@ -28,6 +28,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
+import { playSharedTone } from '../utils/sharedAudioContext';
 import type { BreathingPhaseAudio } from '../types/audio';
 
 interface BreathingCueData {
@@ -69,44 +70,6 @@ const CYCLE_RAMP_STEPS = [0.25, 0.50, 0.75, 1.0];
  * cyclesRemaining: 3→75%, 2→50%, 1→25%, 0→silent (bell takes over)
  */
 const END_RAMP_SCALES = [0, 0.25, 0.50, 0.75]; // index = cyclesRemaining
-
-/**
- * Generate a Solfeggio sine wave tone via Web Audio API.
- * Includes fade IN (attack) and fade OUT (decay) for smooth feel.
- * isBell = true → longer decay (natural bell resonance feel).
- * Used as fallback when cdn_url is NULL or unavailable.
- */
-function playGeneratedTone(hz: number, durationSeconds: number, volume: number, isBell = false): void {
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.frequency.value = hz;
-    // Bells: triangle wave = rounder, more resonant than sine
-    osc.type = isBell ? 'triangle' : 'sine';
-
-    if (isBell) {
-      // Bell: instant attack → long exponential decay (like a struck bowl)
-      gain.gain.setValueAtTime(volume, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSeconds);
-    } else {
-      // Cue: soft attack (60ms) → full volume → natural exponential decay
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.06);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSeconds);
-    }
-
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + durationSeconds);
-    osc.addEventListener('ended', () => ctx.close().catch(() => null));
-  } catch {
-    // Web Audio not supported — silent skip
-  }
-}
 
 export function useBreathingCues(): BreathingCuesAPI {
   const { audioCuesEnabled, audioCueVolume, bellsEnabled } = useSessionSettings();
@@ -259,12 +222,12 @@ export function useBreathingCues(): BreathingCuesAPI {
         audio.currentTime = 0;
         await audio.play();
       } else if (cue.generate_hz) {
-        playGeneratedTone(cue.generate_hz, 1.5, effectiveVolume);
+        playSharedTone(cue.generate_hz, 1.5, effectiveVolume);
       }
     } catch (error) {
-      // NotSupportedError / NotAllowedError → fallback to Web Audio (no interaction lock needed)
+      // NotSupportedError / NotAllowedError → fallback to shared Web Audio
       if (cue.generate_hz) {
-        playGeneratedTone(cue.generate_hz, 1.5, effectiveVolume);
+        playSharedTone(cue.generate_hz, 1.5, effectiveVolume);
       } else {
         console.error(`[BreathingCues] Play error (${phase}):`, error);
       }
@@ -297,15 +260,20 @@ export function useBreathingCues(): BreathingCuesAPI {
         audio.currentTime = 0;
         await audio.play();
       } else if (cue?.generate_hz) {
-        // Bell duration: start = 2.5s (resonant opening), end = 3.5s (long doznění)
         const bellDuration = type === 'start' ? 2.5 : 3.5;
-        playGeneratedTone(cue.generate_hz, bellDuration, volume, true);
+        playSharedTone(cue.generate_hz, bellDuration, volume, true);
       } else {
         console.warn(`[BreathingCues] Bell (${type}) has no audio source configured`);
       }
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'NotSupportedError') {
-        console.warn(`[BreathingCues] Bell (${type}) not ready yet — skipping`);
+      if (error instanceof DOMException && (error.name === 'NotSupportedError' || error.name === 'NotAllowedError')) {
+        // HTMLAudioElement blocked by autoplay policy → fallback to shared Web Audio
+        if (cue?.generate_hz) {
+          const bellDuration = type === 'start' ? 2.5 : 3.5;
+          playSharedTone(cue.generate_hz, bellDuration, volume, true);
+        } else {
+          console.warn(`[BreathingCues] Bell (${type}) blocked and no fallback hz`);
+        }
       } else {
         console.error(`[BreathingCues] Bell error (${type}):`, error);
       }
