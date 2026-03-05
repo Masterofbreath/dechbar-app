@@ -648,8 +648,8 @@ export default function AnalyticsAdmin() {
   // where the same user counted multiple times across days.
   const { count: uniqueActiveCount, prevCount: prevUniqueActiveCount, isLoading: uniqueActiveLoading } = useUniqueActiveUsers(period);
   // Avg minutes per user on days when they actually trained (period-aware)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { avgMinutes: _avgMinPerActiveDay, isLoading: _avgMinLoading } = useAvgMinutesPerActiveUserDay(period);
+   
+  const { avgMinutes: avgMinPerActiveDay, isLoading: avgMinLoading } = useAvgMinutesPerActiveUserDay(period);
 
   const minutes = sumKpi(kpis, 'totalMinutesBeathed');
   const newUsers = sumKpi(kpis, 'newRegistrations');
