@@ -91,6 +91,26 @@ export function SessionEngineModal({
   const haptics = useHaptics();
   const breathingCues = useBreathingCues();
   const backgroundMusic = useBackgroundMusic();
+
+  /**
+   * Unlock Web Audio API on first user gesture.
+   * Browsers (Safari, Chrome) block audio.play() unless triggered directly
+   * from a user interaction. Call this in every button handler that leads to audio.
+   */
+  const unlockAudio = useCallback(() => {
+    try {
+      // Resume AudioContext if suspended (Safari requires this)
+      if (typeof AudioContext !== 'undefined' || typeof (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext !== 'undefined') {
+        const AudioCtx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          ctx.resume().then(() => ctx.close()).catch(() => null);
+        }
+      }
+    } catch {
+      // Silently ignore — unlock is best-effort
+    }
+  }, []);
   const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume } = useSessionSettings();
 
   // NEW: Vocal Intelligence System
@@ -135,9 +155,12 @@ export function SessionEngineModal({
     };
   }, [isOpen]);
   
-  // Auto-start countdown for direct protocol start (skipFlow)
+  // Auto-start countdown for direct protocol start (skipFlow).
+  // Note: skipFlow sessions are initiated by a user tap in the parent component,
+  // so audio is typically already unlocked. We call unlockAudio() here as safety net.
   useEffect(() => {
     if (skipFlow && sessionState === 'idle') {
+      unlockAudio();
       startCountdown();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,26 +175,29 @@ export function SessionEngineModal({
     }
   }, [sessionState, keepScreenOn]); // FIXED: Removed wakeLock from deps
   
-  // ✅ NEW: Preload audio during countdown
+  // Preload breathing cues + vocal snippets immediately on mount.
+  // Previously conditioned on sessionState === 'idle' but that delayed bells
+  // when skipFlow=true (modal opens directly in countdown).
+  // Running once on mount ensures cueDataRef is populated before any bell plays.
   useEffect(() => {
-    if (sessionState === 'countdown') {
-      breathingCues.preloadAll();
-      vocalGuidance.preloadSnippets();
-    }
-  }, [sessionState]); // FIXED: Removed breathingCues from deps
-  
-  // ✅ NEW: Background music lifecycle
+    breathingCues.preloadAll();
+    vocalGuidance.preloadSnippets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentional empty deps — run once on mount only
+
+  // Background music lifecycle:
+  // ONLY react to 'active' — don't pause on 'countdown' or 'idle' (music isn't playing yet anyway).
+  // pause() now guards itself (only acts when state='playing'), so this is safe.
+  // stop() is called explicitly in completeExercise().
   useEffect(() => {
-    if (!backgroundMusicEnabled) {
-      // Music is disabled - don't call pause/play (prevents mounting loop)
-      return;
-    }
-    
+    if (!backgroundMusicEnabled) return;
+
     if (sessionState === 'active') {
       backgroundMusic.play();
-    } else {
-      backgroundMusic.pause();
     }
+    // Note: NO else/pause here — pause() is called explicitly on manual close (confirmClose),
+    // and stop() is called in completeExercise(). This avoids triggering 9s fade OUT
+    // unnecessarily on countdown/idle state where music isn't playing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState, backgroundMusicEnabled]); // backgroundMusic deliberately excluded
   
@@ -195,40 +221,41 @@ export function SessionEngineModal({
   
   // Start session (idle → countdown for exercises with embedded mood)
   const startSession = useCallback((mood: MoodType | null = null) => {
+    unlockAudio(); // Unlock Web Audio API on user gesture
     setMoodBefore(mood);
-    startCountdown(); // Skip mood-before state (merged into idle)
-  }, []);
+    startCountdown();
+  }, [unlockAudio]); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Start countdown after mood selection (or skip)
   const startCountdown = useCallback(() => {
-    
+    unlockAudio();
+
     setSessionState('countdown');
     setCountdownNumber(5);
-    
-    
-    // Play start bell (use new breathingCues or fallback to legacy)
-    breathingCues.playBell('start').catch(() => {
-      playBell();
-    });
-    
+
     let count = 5;
-    
+
     const countdownInterval = window.setInterval(() => {
       count--;
       setCountdownNumber(count);
-      
-      if (count > 0) {
-        breathingCues.playBell('start').catch(() => playBell());
-      } else {
+
+      if (count === 2) {
+        // First bell at 33% — gentle warning
+        breathingCues.playBell('start', 0.33).catch(() => null);
+      } else if (count === 1) {
+        // Second bell at 66% — building up
+        breathingCues.playBell('start', 0.66).catch(() => null);
+      } else if (count === 0) {
+        // Session starts — NO bell here, first inhale cue takes over immediately
         window.clearInterval(countdownInterval);
+        setSessionProgress(0); // explicit reset — prevents stale progress from previous session
         setSessionState('active');
         setSessionStartTime(new Date());
         setCurrentPhaseIndex(0);
         intensityControl.notifySessionStart();
-        breathingCues.playBell('start').catch(() => playBell());
       }
     }, 1000);
-  }, [breathingCues, playBell]);
+  }, [breathingCues, playBell, unlockAudio]); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Complete exercise
   const completeExercise = useCallback(() => {
@@ -264,9 +291,74 @@ export function SessionEngineModal({
     }
   }, [sessionState, currentPhaseIndex, phaseTimeRemaining, currentPhase, exercise]);
 
+  // Notify breathingCues when session is ending — progressive fade out based on progress.
+  // Thresholds: 85% → 3 cycles remaining, 90% → 2, 95% → 1, 100% → 0 (silent)
+  // Each threshold fires ONCE (guard: only call notifySessionEnding with decreasing values).
+  const endingPhaseRef = useRef<number>(99); // tracks last notified remaining value (99 = not started)
+  useEffect(() => {
+    if (sessionState !== 'active') {
+      endingPhaseRef.current = 99; // reset for next session
+      return;
+    }
+
+    let cyclesRemaining: number | null = null;
+    if (sessionProgress >= 95)      cyclesRemaining = 1;
+    else if (sessionProgress >= 90) cyclesRemaining = 2;
+    else if (sessionProgress >= 85) cyclesRemaining = 3;
+
+    // Only notify if we have a new, lower value (never go back up)
+    if (cyclesRemaining !== null && cyclesRemaining < endingPhaseRef.current) {
+      endingPhaseRef.current = cyclesRemaining;
+      breathingCues.notifySessionEnding(cyclesRemaining);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState, sessionProgress]);
+
+  // Trigger background music fade OUT exactly 9s before session ends.
+  // Uses a real-time interval based on sessionStartTime + totalDuration — not sessionProgress
+  // (sessionProgress is derived from phase rendering and can be unreliable at session boundaries).
+  const bgFadeOutStartedRef = useRef(false);
+  const bgFadeOutTimerRef   = useRef<number | null>(null);
+  useEffect(() => {
+    // Clear any previous timer when session state changes
+    if (bgFadeOutTimerRef.current) {
+      window.clearTimeout(bgFadeOutTimerRef.current);
+      bgFadeOutTimerRef.current = null;
+    }
+
+    if (sessionState !== 'active' || !backgroundMusicEnabled || !sessionStartTime) return;
+
+    // Reset flag for new session
+    bgFadeOutStartedRef.current = false;
+
+    const totalDuration = exercise.breathing_pattern.phases.reduce(
+      (sum, phase) => sum + phase.duration_seconds,
+      0
+    );
+
+    // Calculate exact ms until fade OUT should start (9s before end)
+    const sessionEndMs  = sessionStartTime.getTime() + totalDuration * 1000;
+    const fadeOutAtMs   = sessionEndMs - 9000;
+    const delayMs       = Math.max(0, fadeOutAtMs - Date.now());
+
+    bgFadeOutTimerRef.current = window.setTimeout(() => {
+      if (!bgFadeOutStartedRef.current) {
+        bgFadeOutStartedRef.current = true;
+        backgroundMusic.startFadeOut();
+      }
+    }, delayMs);
+
+    return () => {
+      if (bgFadeOutTimerRef.current) {
+        window.clearTimeout(bgFadeOutTimerRef.current);
+        bgFadeOutTimerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState, backgroundMusicEnabled, sessionStartTime]);
+
   // Run current phase
   useEffect(() => {
-    
     if (sessionState !== 'active' || !currentPhase) {
       return;
     }
@@ -489,15 +581,16 @@ export function SessionEngineModal({
   const confirmClose = useCallback(() => {
     cleanupAnimation();
     if (timerRef.current) window.clearInterval(timerRef.current);
-    
+
+    backgroundMusic.pause(); // fade OUT on manual close
     setSessionState('idle');
     setCurrentPhaseIndex(0);
     setMoodBefore(null);
     setMoodAfter(null);
-    intensityControl.reset(); // Discards pending events for abandoned session
-    
+    intensityControl.reset();
+
     onClose();
-  }, [onClose, cleanupAnimation, intensityControl]);
+  }, [onClose, cleanupAnimation, intensityControl, backgroundMusic]);
   
   // Share completed exercise - ODSTRANĚNO (přidáme později s visual presets)
   // TODO: Implementovat share feature s custom vizuálním presetem

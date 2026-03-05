@@ -4,6 +4,12 @@
  * Manages playback of solfeggio frequency audio cues and bells.
  * Data is fetched from the `breathing_cues` Supabase table.
  *
+ * Volume ramp strategy:
+ *   - Start: breathing cycle 0 → 25%, cycle 1 → 50%, cycle 2 → 75%, cycle 3+ → 100%
+ *   - End:   set via notifySessionEnding(n) → n=3→75%, n=2→50%, n=1→25%, n=0→silent
+ *   - Bells: always at full audioCueVolume (not ramped — intentionally loud)
+ *   - "Cycle" = 1 complete inhale trigger (not each individual phase call)
+ *
  * Fallback chain (per cue):
  *   1. cdn_url → fetch, cache in IndexedDB, play via HTMLAudioElement
  *   2. cdn_url = null + generate_hz → generate sine wave via Web Audio API
@@ -24,9 +30,6 @@ import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
 import type { BreathingPhaseAudio } from '../types/audio';
 
-// Fallback bell sound (bundled — works offline)
-const FALLBACK_BELL = '/sounds/bell.mp3';
-
 interface BreathingCueData {
   id: string;
   phase: string;
@@ -38,16 +41,42 @@ interface BreathingCueData {
 
 interface BreathingCuesAPI {
   playCue: (phase: BreathingPhaseAudio) => Promise<void>;
-  playBell: (type: 'start' | 'end') => Promise<void>;
+  /**
+   * Play a bell sound.
+   * @param type 'start' | 'end'
+   * @param volumeScale Optional multiplier [0..1] applied on top of audioCueVolume.
+   *   start bells use 0.33 / 0.66 / 1.0 for countdown ramp.
+   *   end bell defaults to 0.5 (calm finish).
+   *   Omit for 100% of audioCueVolume.
+   */
+  playBell: (type: 'start' | 'end', volumeScale?: number) => Promise<void>;
   preloadAll: () => Promise<void>;
+  /** Call each time the INHALE phase triggers (= 1 new breathing cycle) */
+  notifyCuePlayed: () => void;
+  /** Call when session is entering last N cycles — triggers fade out */
+  notifySessionEnding: (cyclesRemaining: number) => void;
   isReady: boolean;
 }
 
 /**
+ * Volume scale per breathing cycle index (0-based, triggered by 'inhale' phase).
+ * cycle 0 → 25%, cycle 1 → 50%, cycle 2 → 75%, cycle 3+ → 100%
+ */
+const CYCLE_RAMP_STEPS = [0.25, 0.50, 0.75, 1.0];
+
+/**
+ * Volume scale for end-of-session fade out.
+ * cyclesRemaining: 3→75%, 2→50%, 1→25%, 0→silent (bell takes over)
+ */
+const END_RAMP_SCALES = [0, 0.25, 0.50, 0.75]; // index = cyclesRemaining
+
+/**
  * Generate a Solfeggio sine wave tone via Web Audio API.
+ * Includes fade IN (attack) and fade OUT (decay) for smooth feel.
+ * isBell = true → longer decay (natural bell resonance feel).
  * Used as fallback when cdn_url is NULL or unavailable.
  */
-function playGeneratedTone(hz: number, durationSeconds: number, volume: number): void {
+function playGeneratedTone(hz: number, durationSeconds: number, volume: number, isBell = false): void {
   try {
     const ctx = new AudioContext();
     const osc = ctx.createOscillator();
@@ -57,17 +86,23 @@ function playGeneratedTone(hz: number, durationSeconds: number, volume: number):
     gain.connect(ctx.destination);
 
     osc.frequency.value = hz;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(volume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSeconds);
+    // Bells: triangle wave = rounder, more resonant than sine
+    osc.type = isBell ? 'triangle' : 'sine';
+
+    if (isBell) {
+      // Bell: instant attack → long exponential decay (like a struck bowl)
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSeconds);
+    } else {
+      // Cue: soft attack (60ms) → full volume → natural exponential decay
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSeconds);
+    }
 
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + durationSeconds);
-
-    // Cleanup AudioContext after tone ends
-    osc.addEventListener('ended', () => {
-      ctx.close().catch(() => null);
-    });
+    osc.addEventListener('ended', () => ctx.close().catch(() => null));
   } catch {
     // Web Audio not supported — silent skip
   }
@@ -83,6 +118,37 @@ export function useBreathingCues(): BreathingCuesAPI {
   // Loaded audio elements (keyed by cdn_url)
   const audioRefs = useRef<Map<string, HTMLAudioElement>>(new Map());
 
+  /**
+   * Breathing CYCLE counter.
+   * Incremented only when 'inhale' phase plays (= 1 full cycle begins).
+   * cycle 0 = first inhale ever → 25% volume.
+   */
+  const cycleCountRef = useRef(0);
+
+  /**
+   * Cycles remaining until session end.
+   * null = not in ending phase (use cycleCountRef for start ramp instead).
+   */
+  const cyclesRemainingRef = useRef<number | null>(null);
+
+  // ─── Volume calculation ────────────────────────────────────────────────────
+
+  /**
+   * Returns volume scale [0..1] for the current cue based on session position.
+   * End ramp takes priority over start ramp.
+   */
+  const getVolumeScale = useCallback((): number => {
+    const remaining = cyclesRemainingRef.current;
+    if (remaining !== null) {
+      const idx = Math.max(0, Math.min(3, remaining));
+      return END_RAMP_SCALES[idx];
+    }
+    const idx = Math.min(cycleCountRef.current, CYCLE_RAMP_STEPS.length - 1);
+    return CYCLE_RAMP_STEPS[idx];
+  }, []);
+
+  // ─── Audio element management ──────────────────────────────────────────────
+
   const getAudioElement = useCallback((url: string): HTMLAudioElement => {
     let audio = audioRefs.current.get(url);
     if (!audio) {
@@ -96,9 +162,7 @@ export function useBreathingCues(): BreathingCuesAPI {
   const loadAudio = useCallback(async (url: string): Promise<string> => {
     try {
       const cached = await getCachedAudioFile(url);
-      if (cached) {
-        return URL.createObjectURL(cached.blob);
-      }
+      if (cached) return URL.createObjectURL(cached.blob);
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob();
@@ -106,15 +170,16 @@ export function useBreathingCues(): BreathingCuesAPI {
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error(`[BreathingCues] Failed to load ${url}:`, error);
-      return url;
+      return url; // stream fallback
     }
   }, []);
+
+  // ─── Preload ──────────────────────────────────────────────────────────────
 
   const preloadAll = useCallback(async () => {
     try {
       console.log('[BreathingCues] Fetching cues from DB...');
 
-      // Fetch active cues from database
       const { data, error } = await supabase
         .from('breathing_cues')
         .select('id, phase, cdn_url, generate_hz, playback_rate, duration_ms')
@@ -124,20 +189,23 @@ export function useBreathingCues(): BreathingCuesAPI {
 
       const cues = (data ?? []) as BreathingCueData[];
 
-      // Build phase → data map
+      // Reset counters for new session
       cueDataRef.current.clear();
+      cycleCountRef.current = 0;
+      cyclesRemainingRef.current = null;
+
       for (const cue of cues) {
         cueDataRef.current.set(cue.phase, cue);
       }
 
-      // Preload only cues that have cdn_url
+      // Preload CDN audio files
       const loadPromises = cues
         .filter(cue => cue.cdn_url !== null)
         .map(async (cue) => {
           const audioUrl = await loadAudio(cue.cdn_url!);
           const audio = getAudioElement(cue.cdn_url!);
           audio.src = audioUrl;
-          audio.volume = audioCueVolume;
+          audio.volume = audioCueVolume * CYCLE_RAMP_STEPS[0]; // pre-set to 25% = first cue volume
           audio.playbackRate = cue.playback_rate;
 
           return new Promise<void>((resolve) => {
@@ -156,45 +224,66 @@ export function useBreathingCues(): BreathingCuesAPI {
       console.log('[BreathingCues] Preload complete', cueDataRef.current.size, 'cues');
     } catch (error) {
       console.error('[BreathingCues] Preload error:', error);
-      // Still set ready — Web Audio fallback will handle missing cues
       setIsReady(true);
     }
   }, [loadAudio, getAudioElement, audioCueVolume]);
+
+  // ─── playCue ──────────────────────────────────────────────────────────────
 
   const playCue = useCallback(async (phase: BreathingPhaseAudio) => {
     if (!audioCuesEnabled) return;
 
     const cue = cueDataRef.current.get(phase);
-
-    // No DB data yet — silent skip (preloadAll not called or failed)
     if (!cue) {
       console.warn(`[BreathingCues] No cue data for phase: ${phase}`);
       return;
     }
 
+    // Increment cycle counter when inhale starts — this is the start of a new breathing cycle
+    if (phase === 'inhale') {
+      cycleCountRef.current++;
+    }
+
+    const scale = getVolumeScale();
+    const effectiveVolume = audioCueVolume * scale;
+
+    // Silent — skip playback (end of session or scale=0)
+    if (effectiveVolume < 0.01) return;
+
     try {
       if (cue.cdn_url) {
-        // Play from CDN/cache
         const audio = getAudioElement(cue.cdn_url);
-        audio.volume = audioCueVolume;
+        if (!audio.src || audio.src === window.location.href) return;
+        audio.volume = effectiveVolume;
         audio.playbackRate = cue.playback_rate;
         audio.currentTime = 0;
         await audio.play();
       } else if (cue.generate_hz) {
-        // Web Audio API fallback
-        playGeneratedTone(cue.generate_hz, 1.5, audioCueVolume);
+        playGeneratedTone(cue.generate_hz, 1.5, effectiveVolume);
       }
     } catch (error) {
-      console.error(`[BreathingCues] Play error (${phase}):`, error);
-      // Last resort: try Web Audio if we have hz
+      // NotSupportedError / NotAllowedError → fallback to Web Audio (no interaction lock needed)
       if (cue.generate_hz) {
-        playGeneratedTone(cue.generate_hz, 1.5, audioCueVolume);
+        playGeneratedTone(cue.generate_hz, 1.5, effectiveVolume);
+      } else {
+        console.error(`[BreathingCues] Play error (${phase}):`, error);
       }
     }
-  }, [audioCuesEnabled, audioCueVolume, getAudioElement]);
+  }, [audioCuesEnabled, audioCueVolume, getAudioElement, getVolumeScale]);
 
-  const playBell = useCallback(async (type: 'start' | 'end') => {
+  // ─── playBell ─────────────────────────────────────────────────────────────
+
+  /**
+   * Bells play relative to audioCueVolume × volumeScale.
+   * start_bell: caller passes 0.33 / 0.66 / 1.0 for the countdown ramp.
+   * end_bell: defaults to 0.5 × audioCueVolume (calm, not startling).
+   */
+  const playBell = useCallback(async (type: 'start' | 'end', volumeScale?: number) => {
     if (!bellsEnabled) return;
+
+    // Default scale: end bell is 50% (calm finish), start bell is full unless caller specifies
+    const scale = volumeScale ?? (type === 'end' ? 0.5 : 1.0);
+    const volume = audioCueVolume * scale;
 
     const phase = type === 'start' ? 'start_bell' : 'end_bell';
     const cue = cueDataRef.current.get(phase);
@@ -202,51 +291,77 @@ export function useBreathingCues(): BreathingCuesAPI {
     try {
       if (cue?.cdn_url) {
         const audio = getAudioElement(cue.cdn_url);
-        audio.volume = audioCueVolume;
+        if (!audio.src || audio.src === window.location.href) return;
+        audio.volume = volume;
         audio.playbackRate = cue.playback_rate;
         audio.currentTime = 0;
         await audio.play();
+      } else if (cue?.generate_hz) {
+        // Bell duration: start = 2.5s (resonant opening), end = 3.5s (long doznění)
+        const bellDuration = type === 'start' ? 2.5 : 3.5;
+        playGeneratedTone(cue.generate_hz, bellDuration, volume, true);
       } else {
-        // Fallback to bundled bell
-        const audio = getAudioElement(FALLBACK_BELL);
-        if (!audio.src) audio.src = FALLBACK_BELL;
-        audio.volume = audioCueVolume;
-        if (type === 'end') audio.playbackRate = 0.9;
-        audio.currentTime = 0;
-        await audio.play();
+        console.warn(`[BreathingCues] Bell (${type}) has no audio source configured`);
       }
     } catch (error) {
-      console.error(`[BreathingCues] Bell error (${type}):`, error);
+      if (error instanceof DOMException && error.name === 'NotSupportedError') {
+        console.warn(`[BreathingCues] Bell (${type}) not ready yet — skipping`);
+      } else {
+        console.error(`[BreathingCues] Bell error (${type}):`, error);
+      }
     }
   }, [bellsEnabled, audioCueVolume, getAudioElement]);
 
-  // Update volume and playback rate on settings change
+  // ─── Session lifecycle callbacks ───────────────────────────────────────────
+
+  /**
+   * Notify that a new breathing cycle (inhale) has just started.
+   * Decrements cyclesRemaining if in ending phase.
+   * (Informational — playCue handles cycle increment internally.)
+   */
+  const notifyCuePlayed = useCallback(() => {
+    if (cyclesRemainingRef.current !== null && cyclesRemainingRef.current > 0) {
+      cyclesRemainingRef.current--;
+    }
+  }, []);
+
+  /**
+   * Notify that the session is ending.
+   * cyclesRemaining: how many complete inhale cycles remain before session end.
+   *   3 → 75% volume, 2 → 50%, 1 → 25%, 0 → silent (end bell plays instead)
+   * Call this only ONCE per threshold to avoid re-triggering.
+   */
+  const notifySessionEnding = useCallback((cyclesRemaining: number) => {
+    // Only decrease — never increase remaining (prevents re-triggering issues)
+    if (cyclesRemainingRef.current === null || cyclesRemaining < cyclesRemainingRef.current) {
+      cyclesRemainingRef.current = cyclesRemaining;
+    }
+  }, []);
+
+  // ─── Volume sync (settings change) ────────────────────────────────────────
+
   useEffect(() => {
-    audioRefs.current.forEach((audio, url) => {
-      audio.volume = audioCueVolume;
-      // Re-apply playback_rate from cue data
-      for (const cue of cueDataRef.current.values()) {
-        if (cue.cdn_url === url) {
-          audio.playbackRate = cue.playback_rate;
-          break;
-        }
+    audioRefs.current.forEach((audio) => {
+      // Only update volume on actively playing elements — idle ones will get
+      // correct volume set in playCue() / playBell() on next trigger.
+      if (!audio.paused) {
+        audio.volume = audioCueVolume;
       }
     });
   }, [audioCueVolume]);
 
-  // Cleanup on unmount
+  // ─── Cleanup ──────────────────────────────────────────────────────────────
+
   useEffect(() => {
     const refs = audioRefs.current;
     return () => {
       refs.forEach((audio) => {
         audio.pause();
-        if (audio.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audio.src);
-        }
+        if (audio.src.startsWith('blob:')) URL.revokeObjectURL(audio.src);
       });
       refs.clear();
     };
   }, []);
 
-  return { playCue, playBell, preloadAll, isReady };
+  return { playCue, playBell, preloadAll, notifyCuePlayed, notifySessionEnding, isReady };
 }
