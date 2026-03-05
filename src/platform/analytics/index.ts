@@ -12,6 +12,7 @@ export {
   useTotalUsers, useAllTimeMinutes, useAdminLast7DaysKpis,
   usePrimeTime, useDayOfWeek, useProtocolStats, useChurnRisk,
   usePersonalRecords, useRetention, useOnboardingFunnel,
+  useUniqueActiveUsers,
   getDaysSinceRegistration, analyticsKeys,
 } from './hooks/useAnalyticsDashboard';
 export type {

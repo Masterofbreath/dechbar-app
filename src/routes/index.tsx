@@ -83,6 +83,7 @@ const NotificationsAdmin = lazy(() => import('@/platform/pages/admin/Notificatio
 const DailyProgramAdmin = lazy(() => import('@/platform/pages/admin/DailyProgramAdmin/DailyProgramAdmin'));
 const AnalyticsAdmin = lazy(() => import('@/platform/pages/admin/AnalyticsAdmin/AnalyticsAdmin'));
 const FeedbackAdmin  = lazy(() => import('@/platform/pages/admin/FeedbackAdmin/FeedbackAdmin'));
+const ExercisesAdmin = lazy(() => import('@/platform/pages/admin/ExercisesAdmin/ExercisesAdmin'));
 
 /**
  * TabCarousel - Apple-style carousel tab switcher
@@ -451,6 +452,10 @@ export const router = createBrowserRouter([
               {
                 path: 'analytics',
                 element: <AnalyticsAdmin />,
+              },
+              {
+                path: 'exercises',
+                element: <ExercisesAdmin />,
               },
               {
                 path: 'gamification',

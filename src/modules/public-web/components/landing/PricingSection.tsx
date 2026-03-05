@@ -20,18 +20,8 @@ import { trackMetaEvent, trackPurchase, parsePriceString } from '@/platform/util
 import { EmailInputModal } from '@/platform';
 import { PaymentModal } from '@/platform/payments';
 import { useLandingPricingCheckout } from './useLandingPricingCheckout';
-
-// Stripe Price IDs (from Stripe Dashboard — account acct_1S3eJ5K0OYr7u1q9)
-const PRICE_IDS = {
-  smart: {
-    monthly: 'price_1T2S3eK0OYr7u1q9W5ZW042C',
-    annual:  'price_1T2S3dK0OYr7u1q9bwA0cNS8',
-  },
-  aiCoach: {
-    monthly: 'price_1SraCSK7en1dcW6HFkmAbdIL',
-    annual:  'price_1SraIaK7en1dcW6HsYyN0Aj9',
-  },
-} as const;
+import { CheckoutThankYouModal } from './CheckoutThankYouModal';
+import { PRICE_IDS, SMART_FEATURES } from './pricingConstants';
 
 // Pricing data with monthly/annual variants
 const PRICING_DATA = {
@@ -58,13 +48,7 @@ const PRICING_DATA = {
     title: 'SMART',
     subtitle: 'Inteligentní doporučení',
     badge: 'OBLÍBENÉ',
-    features: [
-      'SMART cvičení přesně pro tebe',
-      'Neomezená vlastní cvičení',
-      'Přístup k dechovým výzvám',
-      'Přístup k 150+ audio lekcím',
-      'Záznamy z pravidelných Online Session',
-    ] as string[],
+    features: [...SMART_FEATURES],
     ctaText: 'Začít →',
     ctaVariant: 'primary' as const,
     highlighted: true,
@@ -130,6 +114,8 @@ export function PricingSection() {
     paymentOpen,
     clientSecret,
     loadingEmail,
+    thankYouModalOpen,
+    closeThankYouModal,
     openCheckout,
     handleEmailSubmit,
     handlePaymentClose,
@@ -316,6 +302,15 @@ export function PricingSection() {
           handlePaymentComplete();
         }}
         clientSecret={clientSecret}
+      />
+
+      {/* Host po platbě: poděkování + info o emailu s magic linkem (přesměrování na /) */}
+      <CheckoutThankYouModal
+        isOpen={thankYouModalOpen}
+        onClose={() => {
+          closeThankYouModal();
+          window.location.href = '/';
+        }}
       />
     </>
   );

@@ -9,7 +9,9 @@
  * 2. Přihlášený → okamžitě otevře PaymentModal (spinner) + volá edge function
  * 3. Host → otevře EmailInputModal → po zadání emailu → PaymentModal (spinner)
  * 4. Edge function vrátí clientSecret → spinner přepne na Stripe formulář
- * 5. Platba proběhne → handlePaymentComplete() → redirect na app
+ * 5. Platba proběhne → handlePaymentComplete():
+ *    - Přihlášený: přesměrování na dechbar.cz/app
+ *    - Host: modal s poděkováním (email s potvrzením + magic link už odeslán webhookem)
  *
  * @package DechBar_App
  * @subpackage Modules/PublicWeb/Landing
@@ -18,6 +20,8 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import type { BillingInterval } from './BillingToggle';
+
+const APP_URL = 'https://app.dechbar.cz';
 
 export interface CheckoutTarget {
   priceId: string;
@@ -30,19 +34,21 @@ export interface CheckoutTarget {
 export function useLandingPricingCheckout() {
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [thankYouModalOpen, setThankYouModalOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [error, setError] = useState('');
 
-  // Uložíme target (priceId + context) pro případ, kdy uživatel prochází email modalem
   const pendingTarget = useRef<CheckoutTarget | null>(null);
+  /** Platbu zahájil host (bez přihlášení) → po dokončení zobrazíme poděkování, ne redirect */
+  const isGuestCheckoutRef = useRef(false);
 
-  // Klik na CTA paid tier — otevře email modal pro hosta nebo rovnou checkout
   const openCheckout = useCallback(async (target: CheckoutTarget) => {
     setError('');
     pendingTarget.current = target;
 
     const { data: { user } } = await supabase.auth.getUser();
+    isGuestCheckoutRef.current = !user;
     if (user?.email) {
       await createSession(user.email, target);
     } else {
@@ -51,7 +57,6 @@ export function useLandingPricingCheckout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Uživatel potvrdil email v modalu
   const handleEmailSubmit = useCallback(async (email: string) => {
     const target = pendingTarget.current;
     if (!target) return;
@@ -71,17 +76,23 @@ export function useLandingPricingCheckout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Zavření payment modalu — resetuje clientSecret pro čisté odmontování Stripe provideru
   const handlePaymentClose = useCallback(() => {
     setPaymentOpen(false);
     setClientSecret(null);
   }, []);
 
-  // Platba proběhla úspěšně → redirect na app
   const handlePaymentComplete = useCallback(() => {
     setPaymentOpen(false);
     setClientSecret(null);
-    window.location.href = 'https://app.dechbar.cz';
+    if (isGuestCheckoutRef.current) {
+      setThankYouModalOpen(true);
+    } else {
+      window.location.href = `${APP_URL}/app`;
+    }
+  }, []);
+
+  const closeThankYouModal = useCallback(() => {
+    setThankYouModalOpen(false);
   }, []);
 
   async function createSession(email: string, target: CheckoutTarget) {
@@ -158,6 +169,8 @@ export function useLandingPricingCheckout() {
     clientSecret,
     loadingEmail,
     error,
+    thankYouModalOpen,
+    closeThankYouModal,
     openCheckout,
     handleEmailSubmit,
     handlePaymentClose,

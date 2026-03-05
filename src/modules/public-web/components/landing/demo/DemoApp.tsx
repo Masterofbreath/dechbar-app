@@ -13,6 +13,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/platform/auth';
 import { DemoDnesView } from './views/DemoDnesView';
 import { DemoCvicitView } from './views/DemoCvicitView';
 import { DemoTopNav } from './components/DemoTopNav';
@@ -46,6 +47,7 @@ export function DemoApp() {
   });
   
   const { track } = useDemoAnalytics();
+  const user = useAuthStore(state => state.user);
   const { sendLink, loading: sendingMagicLink, success: magicLinkSent, error: magicLinkError, reset } = useChallengeMagicLink();
 
   // Separate registration state for homepage (uses signInWithOtp, not challenge API)
@@ -103,6 +105,12 @@ export function DemoApp() {
     // Prevent scroll jump on mobile
     event?.preventDefault();
     event?.stopPropagation();
+
+    // Přihlášený uživatel → rovnou do appky (bez registračního modalu)
+    if (user) {
+      window.location.href = '/app';
+      return;
+    }
     
     // Reset success state before opening new modal (defensive)
     reset();
@@ -179,7 +187,7 @@ export function DemoApp() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: 'https://app.dechbar.cz',
+          emailRedirectTo: `${window.location.origin}/app`,
           shouldCreateUser: true,
         },
       });

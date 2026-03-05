@@ -307,6 +307,7 @@ async function ecomailSendTransactional(params: {
   productAccess: string;
   accessExpiry?: string;
   isNewUser: boolean;
+  isTrial?: boolean; // true = uvítací email při startu trialu, false = potvrzení platby
 }): Promise<void> {
   const apiKey = Deno.env.get('ECOMAIL_API_KEY');
   if (!apiKey) {
@@ -314,15 +315,22 @@ async function ecomailSendTransactional(params: {
     return;
   }
 
-  const { email, recipientName, productName, productSubtitle, productBodyText, priceCzk, magicLinkUrl, productAccess, accessExpiry, isNewUser } = params;
+  const { email, recipientName, productName, productSubtitle, productBodyText, priceCzk, magicLinkUrl, productAccess, accessExpiry, isNewUser, isTrial } = params;
   const firstName = recipientName ? recipientName.trim().split(/\s+/)[0] : null;
   // Vocative lookup — pokud jméno není v tabulce, fallback bez oslovení jménem
   const vocative = firstName ? getVocative(firstName) : null;
 
-  // Pozdrav + poděkování — krátce, bez em dash
-  const greeting = vocative
-    ? `Ahoj ${vocative}! Děkujeme za důvěru. Platba proběhla úspěšně a přístup k programu máš aktivní.`
-    : 'Ahoj! Děkujeme za důvěru. Platba proběhla úspěšně a přístup k programu máš aktivní.';
+  // Pozdrav podle kontextu: trial start vs reálná platba
+  const greeting = isTrial
+    ? (vocative
+      ? `Ahoj ${vocative}! Zkušební přístup je aktivní. Máš 3 dny zdarma.`
+      : 'Ahoj! Zkušební přístup je aktivní. Máš 3 dny zdarma.')
+    : (vocative
+      ? `Ahoj ${vocative}! Děkujeme za důvěru. Platba proběhla úspěšně a přístup máš aktivní.`
+      : 'Ahoj! Děkujeme za důvěru. Platba proběhla úspěšně a přístup máš aktivní.');
+
+  // Subject emailu
+  const emailSubject = isTrial ? 'Tvůj zkušební přístup do DechBar je aktivní' : 'Potvrzujeme tvoji platbu';
 
   // Login hint nad CTA — různý text pro nového vs stávajícího uživatele
   const loginHint = isNewUser
@@ -369,7 +377,7 @@ async function ecomailSendTransactional(params: {
     headers: { 'key': apiKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       message: {
-        subject: 'Potvrzujeme tvoji platbu',
+        subject: emailSubject,
         from_name: 'Jakub z DechBaru',
         from_email: 'info@dechbar.cz',
         reply_to: 'info@dechbar.cz',
@@ -437,7 +445,8 @@ function getProductConfig(moduleId: string): {
   paymentType: 'one_time' | 'monthly' | 'annual';
   deepLinkPath: string;
 } {
-  return PRODUCT_CONFIG[moduleId] ?? {
+  const key = moduleId === 'smart' ? 'membership-smart' : moduleId;
+  return PRODUCT_CONFIG[key] ?? PRODUCT_CONFIG[moduleId] ?? {
     name: moduleId,
     subtitle: 'DechBar program',
     bodyText: 'Tvoje platba proběhla úspěšně. Vše na tebe čeká v DechBaru.',
@@ -806,6 +815,7 @@ serve(async (req) => {
             magicLinkUrl,
             productAccess: guestProductConfig.access,
             isNewUser: isNew,
+            isTrial: !isOneTime,
           }).catch((err: any) => console.error('⚠️ Transakční email selhal (non-critical):', err.message));
 
           // guest_done krok slouží jako idempotency token — zabraňuje duplicitnímu zpracování
@@ -889,6 +899,7 @@ serve(async (req) => {
             magicLinkUrl: authMagicLinkUrl,
             productAccess: authProductConfig.access,
             isNewUser: false,
+            isTrial: !isOneTime,
           }).catch((err: any) => console.error('⚠️ Transakční email selhal (non-critical):', err.message));
 
           // auth_email_sent krok slouží jako idempotency token
@@ -912,10 +923,21 @@ serve(async (req) => {
         });
       }
 
-      const userId = subscription.metadata.user_id;
-      if (!userId) {
-        console.error('❌ No user_id in subscription metadata');
-        return new Response('No user_id', { status: 400 });
+      let userId: string | null = subscription.metadata?.user_id ?? null;
+      if (userId === 'guest' || !userId) {
+        const customer = await stripe.customers.retrieve(subscription.customer as string);
+        const email = (customer as Stripe.Customer).email;
+        if (!email) {
+          console.error('❌ Guest subscription: no email on Stripe customer');
+          return new Response('No email for guest', { status: 400 });
+        }
+        const { data: profile } = await supabase.from('profiles').select('id').eq('email', email).maybeSingle();
+        userId = profile?.id ?? null;
+        if (!userId) {
+          console.warn(`⚠️ Guest subscription: no Supabase user for ${email} (checkout.session.completed may run later)`);
+          return new Response(JSON.stringify({ received: true }), { headers: { 'Content-Type': 'application/json' }, status: 200 });
+        }
+        console.log(`✅ Guest subscription: resolved user ${userId} by email ${email}`);
       }
 
       await supabase
@@ -1008,6 +1030,62 @@ serve(async (req) => {
           .eq('stripe_subscription_id', subscriptionId);
 
         console.log(`✅ Invoice paid: ${subscriptionId}`);
+
+        // ── Potvrzovací email po první reálné platbě (po trialu) ────────────
+        // billing_reason === 'subscription_cycle' = automatická obnova/první platba po trialu
+        // billing_reason === 'subscription_create' = první faktura při startu (trial = $0, přeskočit)
+        const billingReason = invoice.billing_reason;
+        const isTrialConversion = billingReason === 'subscription_cycle';
+
+        if (isTrialConversion) {
+          try {
+            const customer = await stripe.customers.retrieve(subscription.customer as string);
+            const email = (customer as Stripe.Customer).email;
+            const recipientName = (customer as Stripe.Customer).name;
+
+            if (email) {
+              const priceId = subscription.items.data[0].price.id;
+              const moduleInfo = await getModuleFromPriceId(supabase, priceId);
+              const productConfig = getProductConfig(moduleInfo?.id ?? 'smart');
+
+              const appBaseUrl = Deno.env.get('APP_BASE_URL') || 'https://www.dechbar.cz';
+              const deepLinkTarget = `${appBaseUrl}${productConfig.deepLinkPath}`;
+              let magicLinkUrl: string | null = null;
+              const { data: magicData, error: magicErr } = await supabase.auth.admin.generateLink({
+                type: 'magiclink',
+                email,
+                options: { redirectTo: deepLinkTarget },
+              });
+              if (magicErr) {
+                console.warn(`⚠️ Magic link failed for invoice email: ${magicErr.message}`);
+              } else {
+                magicLinkUrl = magicData?.properties?.action_link ?? null;
+              }
+
+              const priceCzk = invoice.amount_paid ? invoice.amount_paid / 100 : 249;
+              const nextPeriodEnd = new Date(subscription.current_period_end * 1000)
+                .toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' });
+
+              await ecomailSendTransactional({
+                email,
+                recipientName,
+                productName: productConfig.name,
+                productSubtitle: productConfig.subtitle,
+                productBodyText: productConfig.bodyText,
+                priceCzk,
+                magicLinkUrl,
+                productAccess: productConfig.access,
+                accessExpiry: nextPeriodEnd,
+                isNewUser: false,
+              });
+
+              console.log(`📧 Potvrzovací email po trialu odeslán: ${email}`);
+            }
+          } catch (emailErr: any) {
+            // Non-critical — platba proběhla, email je bonus
+            console.warn(`⚠️ Invoice email selhal (non-critical): ${emailErr.message}`);
+          }
+        }
       }
     }
 

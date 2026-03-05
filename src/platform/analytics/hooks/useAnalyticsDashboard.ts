@@ -391,6 +391,120 @@ export function useAdminDashboard(
 }
 
 // ============================================================
+// useUniqueActiveUsers — DISTINCT users with ≥1 session in a period
+//
+// Fixes the "dauL2 summing" bug: for multi-day periods (week/month/year)
+// sumKpi(kpis, 'dauL2') sums per-day values which double-counts the same
+// user across multiple days. This hook calls get_unique_active_users_in_range
+// RPC which returns COUNT(DISTINCT user_id) across both audio + exercise
+// sessions for the entire range — always a correct unique count.
+// ============================================================
+
+export function useUniqueActiveUsers(
+  period: DashboardPeriod,
+): { count: number; prevCount: number; isLoading: boolean } {
+  const now = new Date();
+
+  // Compute [fromISO, toISO] for current period
+  const { fromISO, toISO } = (() => {
+    const todayEnd = now.toISOString();
+    if (period === 'today') {
+      const start = new Date(now); start.setHours(0, 0, 0, 0);
+      return { fromISO: start.toISOString(), toISO: todayEnd };
+    }
+    if (period === 'yesterday') {
+      const s = new Date(now); s.setDate(s.getDate() - 1); s.setHours(0, 0, 0, 0);
+      const e = new Date(now); e.setDate(e.getDate() - 1); e.setHours(23, 59, 59, 999);
+      return { fromISO: s.toISOString(), toISO: e.toISOString() };
+    }
+    const periodStart = getAdminPeriodStart(period);
+    return { fromISO: `${periodStart}T00:00:00.000Z`, toISO: todayEnd };
+  })();
+
+  // Compute [prevFromISO, prevToISO] for comparison delta
+  const prevRange = getAdminPrevPeriodRange(period);
+  const prevFromISO = prevRange ? `${prevRange.from}T00:00:00.000Z` : null;
+  const prevToISO   = prevRange ? `${prevRange.to}T23:59:59.999Z`   : null;
+
+  const { data: count, isLoading } = useQuery({
+    queryKey: ['analytics', 'uniqueActive', period, fromISO] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_unique_active_users_in_range', {
+        from_ts: fromISO,
+        to_ts: toISO,
+      });
+      if (error) throw new Error(error.message);
+      return (data as number) ?? 0;
+    },
+    staleTime: period === 'today' ? 60 * 1000 : 2 * 60 * 1000,
+    refetchInterval: period === 'today' ? 2 * 60 * 1000 : undefined,
+  });
+
+  const { data: prevCount } = useQuery({
+    queryKey: ['analytics', 'uniqueActive', period, 'prev', prevFromISO] as const,
+    enabled: !!prevFromISO,
+    queryFn: async () => {
+      if (!prevFromISO || !prevToISO) return 0;
+      const { data, error } = await supabase.rpc('get_unique_active_users_in_range', {
+        from_ts: prevFromISO,
+        to_ts: prevToISO,
+      });
+      if (error) throw new Error(error.message);
+      return (data as number) ?? 0;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return { count: count ?? 0, prevCount: prevCount ?? 0, isLoading };
+}
+
+// ============================================================
+// useAvgMinutesPerActiveUserDay — avg min/user on active days
+//
+// "On days when a user trains, how many minutes do they spend on average?"
+// Uses get_avg_minutes_per_active_user_day RPC which calculates:
+//   AVG of (sum of minutes per user per calendar day) across all user-day pairs.
+// Respects the selected dashboard period (today/week/month/year).
+// ============================================================
+
+export function useAvgMinutesPerActiveUserDay(
+  period: DashboardPeriod,
+): { avgMinutes: number; isLoading: boolean } {
+  const now = new Date();
+
+  const { fromISO, toISO } = (() => {
+    const todayEnd = now.toISOString();
+    if (period === 'today') {
+      const start = new Date(now); start.setHours(0, 0, 0, 0);
+      return { fromISO: start.toISOString(), toISO: todayEnd };
+    }
+    if (period === 'yesterday') {
+      const s = new Date(now); s.setDate(s.getDate() - 1); s.setHours(0, 0, 0, 0);
+      const e = new Date(now); e.setDate(e.getDate() - 1); e.setHours(23, 59, 59, 999);
+      return { fromISO: s.toISOString(), toISO: e.toISOString() };
+    }
+    const periodStart = getAdminPeriodStart(period);
+    return { fromISO: `${periodStart}T00:00:00.000Z`, toISO: todayEnd };
+  })();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['analytics', 'avgMinPerActiveDay', period, fromISO] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_avg_minutes_per_active_user_day', {
+        from_ts: fromISO,
+        to_ts: toISO,
+      });
+      if (error) throw new Error(error.message);
+      return Number(data) || 0;
+    },
+    staleTime: period === 'today' ? 60 * 1000 : 5 * 60 * 1000,
+    refetchInterval: period === 'today' ? 2 * 60 * 1000 : undefined,
+  });
+
+  return { avgMinutes: data ?? 0, isLoading };
+}
+
+// ============================================================
 // useTotalUsers — Total registered users (all time)
 // ============================================================
 

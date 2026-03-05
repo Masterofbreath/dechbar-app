@@ -71,6 +71,24 @@ export interface BackgroundTrack {
  */
 export type MusicPlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
+// ==================== VOICE PACKS ====================
+
+/**
+ * Voice pack from database (vocal guidance)
+ */
+export interface VoicePack {
+  id: string;
+  name: string;
+  author: string | null;
+  language: string;
+  voice_type: 'human' | 'ai';
+  description: string | null;
+  preview_url: string | null;
+  required_tier: 'ZDARMA' | 'SMART' | 'AI_COACH';
+  is_active: boolean;
+  sort_order: number;
+}
+
 // ==================== SETTINGS ====================
 
 /**
@@ -100,6 +118,11 @@ export interface SessionSettings {
 
   // Wake Lock
   keepScreenOn: boolean;
+
+  // Vocal Guidance
+  vocalGuidanceEnabled: boolean;
+  selectedVoicePackId: string | null;
+  vocalVolume: number; // 0-1
 }
 
 /**
@@ -123,6 +146,10 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   walkingModeEnabled: false,
 
   keepScreenOn: true,
+
+  vocalGuidanceEnabled: true,
+  selectedVoicePackId: null,
+  vocalVolume: 0.7,
 };
 
 // ==================== CACHE ====================

@@ -20,14 +20,15 @@ import { NavIcon, Logo } from '@/platform/components';
 import './AdminSidebar.css';
 
 const ADMIN_MENU_ITEMS = [
-  { path: '/app/admin/akademie',     icon: 'graduation-cap', label: 'Akademie'     },
-  { path: '/app/admin/daily-program',icon: 'clock',          label: 'Denní program'},
-  { path: '/app/admin/notifications',icon: 'bell',           label: 'Notifikace'   },
-  { path: '/app/admin/feedback',     icon: 'message-square', label: 'Feedback'     },
-  { path: '/app/admin/analytics',    icon: 'chart',          label: 'Analytika'    },
-  { path: '/app/admin/gamification', icon: 'trophy',         label: 'Gamifikace'   },
-  { path: '/app/admin/users',        icon: 'users',          label: 'Uživatelé'    },
-  { path: '/app/admin/system',       icon: 'settings',       label: 'Systém'       },
+  { path: '/app/admin/akademie',     icon: 'graduation-cap', label: 'Akademie'            },
+  { path: '/app/admin/daily-program',icon: 'clock',          label: 'Denní program'        },
+  { path: '/app/admin/exercises',    icon: 'wind',           label: 'Cvičení & Protokoly'  },
+  { path: '/app/admin/notifications',icon: 'bell',           label: 'Notifikace'           },
+  { path: '/app/admin/feedback',     icon: 'message-square', label: 'Feedback'             },
+  { path: '/app/admin/analytics',    icon: 'chart',          label: 'Analytika'            },
+  { path: '/app/admin/gamification', icon: 'trophy',         label: 'Gamifikace'           },
+  { path: '/app/admin/users',        icon: 'users',          label: 'Uživatelé'            },
+  { path: '/app/admin/system',       icon: 'settings',       label: 'Systém'               },
 ];
 
 interface AdminSidebarProps {

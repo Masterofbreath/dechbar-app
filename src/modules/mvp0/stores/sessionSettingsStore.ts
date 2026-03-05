@@ -37,6 +37,11 @@ interface SessionSettingsStore extends SessionSettings {
   // Actions - Wake Lock
   setKeepScreenOn: (enabled: boolean) => void;
 
+  // Actions - Vocal Guidance
+  setVocalGuidanceEnabled: (enabled: boolean) => void;
+  setSelectedVoicePack: (id: string | null) => void;
+  setVocalVolume: (volume: number) => void;
+
   // Reset to defaults
   reset: () => void;
 }
@@ -68,6 +73,11 @@ export const useSessionSettings = create<SessionSettingsStore>()(
 
       // Wake Lock
       setKeepScreenOn: (enabled) => set({ keepScreenOn: enabled }),
+
+      // Vocal Guidance
+      setVocalGuidanceEnabled: (enabled) => set({ vocalGuidanceEnabled: enabled }),
+      setSelectedVoicePack: (id) => set({ selectedVoicePackId: id }),
+      setVocalVolume: (volume) => set({ vocalVolume: Math.max(0, Math.min(1, volume)) }),
 
       // Reset
       reset: () => set(DEFAULT_SESSION_SETTINGS),

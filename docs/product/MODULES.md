@@ -62,7 +62,7 @@ Pricing shown below is REFERENCE ONLY - check database for current values.
 #### 4. Výzvy (Challenges)
 - **ID:** `challenges`
 - **Type:** Lifetime purchase
-- **Reference Price:** 490 Kč
+- **Reference Price:** 290 Kč (např. Ranní dechová výzva; v DB ověř aktuální hodnotu)
 - **Description:** 21-day breathing challenges
 
 #### 5. Akademie

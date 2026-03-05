@@ -15,12 +15,14 @@ import { Button } from '@/platform/components';
 import { CloseButton } from '@/components/shared/CloseButton';
 import { useChallengeMagicLink } from '@/hooks/useChallenge';
 import { MESSAGES } from '@/config/messages';
+import { canStillRegister } from '@/platform/api/onboarding';
 
 export function ChallengeFinalCTA() {
   const [email, setEmail] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const { sendLink, loading } = useChallengeMagicLink();
+  const registrationOpen = canStillRegister();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -47,6 +49,7 @@ export function ChallengeFinalCTA() {
         </h2>
 
         {/* Email Form */}
+        {registrationOpen ? (
         <form className="challenge-final-cta__form" onSubmit={handleSubmit}>
           <div className="challenge-final-cta__input-wrapper">
             <input
@@ -82,6 +85,20 @@ export function ChallengeFinalCTA() {
             .
           </p>
         </form>
+        ) : (
+        <div>
+          <p style={{ color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+            Výzva pro nové členy skončila 7. března.
+          </p>
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={() => { window.location.href = '/'; }}
+          >
+            Přejít na dechbar.cz →
+          </Button>
+        </div>
+        )}
 
         {/* Success/Error Messages */}
         {errorMessage && (

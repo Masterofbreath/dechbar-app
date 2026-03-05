@@ -23,6 +23,7 @@ import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useSwipeBack } from '@/platform/hooks/useSwipeBack';
 import { useWakeLock } from '../hooks/useWakeLock';
+import { useMembership } from '@/platform/membership/useMembership';
 import { PageLayout } from '@/platform/layouts/PageLayout';
 import {
   SettingsCard,
@@ -30,6 +31,7 @@ import {
   VolumeSlider,
   IntensitySelector,
   TrackSelector,
+  VoicePackSelector,
 } from '../components/settings';
 
 /* ---- Inline SVG Icons (24×24, outline, 2px stroke, currentColor) ---- */
@@ -88,15 +90,26 @@ function SlidersIcon() {
   );
 }
 
+function MicIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+      <line x1="12" y1="19" x2="12" y2="23" />
+      <line x1="8" y1="23" x2="16" y2="23" />
+    </svg>
+  );
+}
+
 export function SettingsPage() {
   const navigate = useNavigate();
   const swipeRef = useSwipeBack<HTMLDivElement>();
   const settings = useSessionSettings();
   const backgroundMusic = useBackgroundMusic();
   const { isSupported: wakeLockSupported } = useWakeLock();
-
-  // TODO: Get user tier from auth context (for now: ZDARMA)
-  const userTier = 'ZDARMA';
+  const { plan: userTier } = useMembership();
 
   useEffect(() => {
     document.title = 'Základní nastavení | DechBar';
@@ -224,6 +237,43 @@ export function SettingsPage() {
                 ? 'Obrazovka zůstane zapnutá po celou dobu cvičení'
                 : 'Tato funkce není v tomto prohlížeči dostupná'}
             </p>
+          </SettingsCard>
+
+          {/* Card 5: Vocal Guidance */}
+          <SettingsCard title="Hlasový průvodce" icon={<MicIcon />}>
+            <Toggle
+              label="Zapnout hlasového průvodce"
+              checked={settings.vocalGuidanceEnabled}
+              onChange={settings.setVocalGuidanceEnabled}
+            />
+
+            {settings.vocalGuidanceEnabled && (
+              <>
+                <p className="settings-card__info">
+                  Hlasový průvodce přehrává krátké instrukce během cvičení v závislosti na tvém pokroku.
+                </p>
+
+                <VoicePackSelector
+                  selectedId={settings.selectedVoicePackId}
+                  onChange={settings.setSelectedVoicePack}
+                  userTier={userTier}
+                />
+
+                {settings.selectedVoicePackId && (
+                  <VolumeSlider
+                    label="Hlasitost průvodce"
+                    value={settings.vocalVolume}
+                    onChange={settings.setVocalVolume}
+                  />
+                )}
+
+                {userTier === 'ZDARMA' && (
+                  <p className="settings-card__info settings-card__info--premium">
+                    Hlasové průvodce dostupné s tarifem SMART
+                  </p>
+                )}
+              </>
+            )}
           </SettingsCard>
 
         </div>

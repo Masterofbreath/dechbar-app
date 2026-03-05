@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Documentation
+### Added
+- **Pokrok Page Redesign — KP sekce s animovanými plícemi (2026-03-02)**
+  - `LungProgress` komponenta: SVG plíce s 3-fázovou animací (draw-in obrys → spring fill → hover breathe), ambient glow, prefers-reduced-motion podpora
+  - `KPSparkline` komponenta: SVG area chart, draw-in animace zleva doprava, responsive, zlatá tečka na posledním bodě
+  - `KPSection` orchestrátor: glass-card sekce s plícemi, velkou KP hodnotou (72px), trendem, sparkline a 3 sub-tiles (Nejlepší / Začátek / Měření); empty state pro nové uživatele
+  - `KPHistoryList` view: kompaktní seznam posledních 5 měření s datem, hodnotou a šipkou trendu v KPCenter ready view
+
+### Changed
+- **PokrokPage redesign** — nový layout, snížena kognitivní zátěž:
+  - KP sekce přesunuta nahoru jako primární hero obsah
+  - Period selector zjednodušen na 2 stavy: Tento týden / Celkem
+  - Stats grid zredukován ze 4 karet na 2 (Minuty prodýchány + Počet aktivit)
+  - Streak zobrazen inline pod WeeklyDots (teal tečka, 1 řádek)
+  - Community milestone přesunut pod Activity heatmap
+- **KPReady view** — přidána sekce historii posledních měření (KPHistoryList)
+
+### Removed
+- Records grid (Nejdelší streak / Nejlepší den / Nejdelší sezení) odstraněn z PokrokPage → TODO: přidat do ProfilPage
+- Hero row (KP + streak jako 2 karty) nahrazen novou KPSection
+- 5-stavový period selector nahrazen 2-stavovým togglem
+
+
 - 🧹 **Major Documentation Cleanup (4.2.2026)**
   - Reduced ROOT .md files from 70 to 10 (86% reduction)
   - Deleted 60 version logs & historical summaries (preserved in git)

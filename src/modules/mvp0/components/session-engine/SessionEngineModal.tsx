@@ -17,6 +17,7 @@ import { createPortal } from 'react-dom';
 import { useScrollLock } from '@/platform/hooks';
 import { useAuth } from '@/platform/auth';
 import { Button } from '@/platform/components';
+import { useMembership } from '@/platform/membership/useMembership';
 import { ConfirmModal, FullscreenModal } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
@@ -27,6 +28,7 @@ import { useWakeLock } from '../../hooks/useWakeLock';
 import { useHaptics } from '../../hooks/useHaptics';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
 import { useBackgroundMusic } from '../../hooks/useBackgroundMusic';
+import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
 import { isProtocol } from '@/utils/exerciseHelpers';
 import {
@@ -78,6 +80,7 @@ export function SessionEngineModal({
   const { data: safetyFlags } = useSafetyFlags();
   const completeSession = useCompleteSession();
   const intensityControl = useIntensityControl({ userId: user?.id });
+  const { plan: userTier } = useMembership();
   
   // Custom hooks
   const { playBell } = useAudioCues(); // Legacy bell sound (fallback)
@@ -88,7 +91,26 @@ export function SessionEngineModal({
   const haptics = useHaptics();
   const breathingCues = useBreathingCues();
   const backgroundMusic = useBackgroundMusic();
-  const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn } = useSessionSettings();
+  const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume } = useSessionSettings();
+
+  // NEW: Vocal Intelligence System
+  const vocalGuidance = useVocalGuidance({
+    exercise,
+    currentPhaseIndex,
+    totalPhases: exercise.breathing_pattern.phases.length,
+    phaseTimeRemaining,
+    sessionProgress,
+    currentInstruction,
+    elapsedSessionSeconds: sessionStartTime ? Math.floor((Date.now() - sessionStartTime.getTime()) / 1000) : 0,
+    intensityStep: intensityControl.intensityStep,
+    multiplier: intensityControl.multiplier,
+    currentKP: null,
+    baselineKP: null,
+    userTier,
+    selectedVoicePackId,
+    vocalVolume,
+    vocalGuidanceEnabled,
+  });
   
   useScrollLock(isOpen);
   
@@ -134,6 +156,7 @@ export function SessionEngineModal({
   useEffect(() => {
     if (sessionState === 'countdown') {
       breathingCues.preloadAll();
+      vocalGuidance.preloadSnippets();
     }
   }, [sessionState]); // FIXED: Removed breathingCues from deps
   
@@ -302,6 +325,7 @@ export function SessionEngineModal({
             const nextIndex = currentPhaseRef.current + 1;
             if (nextIndex < totalPhases) {
               setCurrentPhaseIndex(nextIndex);
+              vocalGuidance.triggerPhaseStart(nextIndex);
               playBell();
             } else {
               completeExercise();
@@ -647,8 +671,14 @@ export function SessionEngineModal({
                   intensityStep: intensityControl.intensityStep,
                   canIncrease: intensityControl.canIncrease,
                   canDecrease: intensityControl.canDecrease,
-                  onIncrease: intensityControl.handleIncrease,
-                  onDecrease: intensityControl.handleDecrease,
+                  onIncrease: () => {
+                    intensityControl.handleIncrease();
+                    vocalGuidance.triggerIntensityChange('up');
+                  },
+                  onDecrease: () => {
+                    intensityControl.handleDecrease();
+                    vocalGuidance.triggerIntensityChange('down');
+                  },
                 })}
               />
               

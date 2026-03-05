@@ -106,17 +106,27 @@ stripe prices create \
 # Výstup obsahuje: "id": "price_XXXXX"
 ```
 
+**Předplatné (recurring):** místo jednorázové ceny přidej parametr:
+```bash
+-d "recurring[interval]=month"   # měsíční
+# nebo
+-d "recurring[interval]=year"    # roční
+```
+Příklad: SMART 249 Kč/měsíc → `--unit-amount 24900` + `-d "recurring[interval]=month"`.
+
+Podrobný přehled modulů, cen a nastavení Stripe (subscription, Výzvy 290 Kč, Akademie): **[STRIPE_MODULES_NASTAVENI.md](./STRIPE_MODULES_NASTAVENI.md)**.
+
 Po vytvoření:
 1. Ulož Price ID do `.env.local` (TEST) nebo `.env.production` (LIVE)
-2. Přidej do `supabase/migrations/` — aktualizuj `stripe_price_id` v `modules` tabulce
+2. V DB `modules` nastav `stripe_price_id` (sloupec podle skutečné schématu; u nás je identifikátor `id`, ne `slug`)
 
 ### Jak aktualizovat cenu produktu v DB
 
 ```sql
--- V nové migraci:
+-- V nové migraci (modules se identifikují sloupcem id):
 UPDATE public.modules
 SET stripe_price_id = 'price_NEW_ID_HERE'
-WHERE slug = 'digitalni-ticho';
+WHERE id = 'digitalni-ticho';
 ```
 
 ---

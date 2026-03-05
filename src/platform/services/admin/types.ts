@@ -204,6 +204,44 @@ export interface AkademieProgramCreateResult {
   ecmailError?: string | null;
 }
 
+// ============================================================
+// EXERCISES & PROTOCOLS ADMIN TYPES
+// ============================================================
+
+export interface BackgroundTrackInput {
+  name: string;
+  slug: string;
+  category: 'nature' | 'binaural' | 'tibetan' | 'yogic';
+  description?: string | null;
+  cdn_url: string;
+  duration_seconds?: number;
+  file_size_bytes?: number | null;
+  required_tier: 'ZDARMA' | 'SMART' | 'AI_COACH';
+  is_active?: boolean;
+  sort_order?: number;
+}
+
+export interface BreathingCueUpdate {
+  cdn_url?: string | null;
+  generate_hz?: number | null;
+  playback_rate?: number;
+  duration_ms?: number | null;
+  is_active?: boolean;
+}
+
+export interface BreathingCueRecord {
+  id: string;
+  phase: 'inhale' | 'hold' | 'exhale' | 'start_bell' | 'end_bell';
+  name: string;
+  cdn_url: string | null;
+  generate_hz: number | null;
+  playback_rate: number;
+  duration_ms: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SeriesInput {
   id?: string;
   name: string;

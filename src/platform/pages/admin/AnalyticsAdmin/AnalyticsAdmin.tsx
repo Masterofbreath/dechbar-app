@@ -18,7 +18,7 @@
  */
 
 import { useState } from 'react';
-import { useAdminDashboard, useTopContent, useTotalUsers, useAllTimeMinutes, usePrimeTime, useDayOfWeek, useProtocolStats, useChurnRisk, useRetention, useOnboardingFunnel, useAdminLast7DaysKpis, useKPAdminStats } from '@/platform/analytics';
+import { useAdminDashboard, useTopContent, useTotalUsers, useAllTimeMinutes, usePrimeTime, useDayOfWeek, useProtocolStats, useChurnRisk, useRetention, useOnboardingFunnel, useAdminLast7DaysKpis, useKPAdminStats, useUniqueActiveUsers, useAvgMinutesPerActiveUserDay } from '@/platform/analytics';
 import { formatMinutes } from '@/platform/analytics';
 import type { DailyKpis, AdminDashboardData, PrimeTimeSlot, DayOfWeekSlot } from '@/platform/analytics';
 import type { DashboardPeriod } from '@/platform/analytics';
@@ -644,18 +644,15 @@ export default function AnalyticsAdmin() {
   const { slots: dowSlots, peakDay, peakDayLabel, isLoading: dowLoading } = useDayOfWeek();
   const { distribution: kpDistribution, coverage: kpCoverage, isLoading: kpLoading } = useKPAdminStats();
 
-  const dauL2 = kpis.length > 0
-    ? (period === 'today' || period === 'yesterday'
-        ? kpis[0]?.dauL2 ?? 0
-        : sumKpi(kpis, 'dauL2'))
-    : 0;
+  // Unique active users — uses DISTINCT user_id via RPC to avoid the "sum dauL2 per day" bug
+  // where the same user counted multiple times across days.
+  const { count: uniqueActiveCount, prevCount: prevUniqueActiveCount, isLoading: uniqueActiveLoading } = useUniqueActiveUsers(period);
+  // Avg minutes per user on days when they actually trained (period-aware)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { avgMinutes: _avgMinPerActiveDay, isLoading: _avgMinLoading } = useAvgMinutesPerActiveUserDay(period);
+
   const minutes = sumKpi(kpis, 'totalMinutesBeathed');
   const newUsers = sumKpi(kpis, 'newRegistrations');
-
-  // Previous period values for deltas
-  const prevDauL2 = prevKpis.length > 0
-    ? (period === 'today' ? prevKpis[0]?.dauL2 ?? 0 : sumKpi(prevKpis, 'dauL2'))
-    : 0;
   const prevMinutes = sumKpi(prevKpis, 'totalMinutesBeathed');
   const prevNewUsers = sumKpi(prevKpis, 'newRegistrations');
 
@@ -725,13 +722,13 @@ export default function AnalyticsAdmin() {
 
       {/* KPI Grid — řada 2: period stats */}
       <div className="analytics-admin__section-label">{periodLabel[period].charAt(0).toUpperCase() + periodLabel[period].slice(1)}</div>
-      <div className="analytics-admin__kpi-grid analytics-admin__kpi-grid--3">
+      <div className="analytics-admin__kpi-grid analytics-admin__kpi-grid--4">
         <KpiCard
           label="Aktivní uživatelé"
-          value={isLoading ? '—' : formatNumber(dauL2)}
+          value={uniqueActiveLoading ? '—' : formatNumber(uniqueActiveCount)}
           sublabel="spustili alespoň 1 aktivitu"
-          delta={prevKpis.length > 0 ? getDelta(dauL2, prevDauL2, 'count', prevPeriodShortLabel[period]) : undefined}
-          isLoading={isLoading}
+          delta={getDelta(uniqueActiveCount, prevUniqueActiveCount, 'count', prevPeriodShortLabel[period])}
+          isLoading={uniqueActiveLoading}
         />
         <KpiCard
           label="Minuty prodýchány"
@@ -740,6 +737,12 @@ export default function AnalyticsAdmin() {
           delta={prevKpis.length > 0 ? getDelta(minutes, prevMinutes, 'minutes', prevPeriodShortLabel[period]) : undefined}
           isLoading={isLoading}
           gold
+        />
+        <KpiCard
+          label="Průměr / aktivní den"
+          value={avgMinLoading ? '—' : `${avgMinPerActiveDay} min`}
+          sublabel="min/uživatel v aktivní den"
+          isLoading={avgMinLoading}
         />
         <KpiCard
           label="Noví uživatelé"

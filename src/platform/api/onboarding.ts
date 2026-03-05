@@ -31,7 +31,7 @@ export interface CompleteChallengeOnboardingResponse {
 // =====================================================
 
 const CHALLENGE_ID = 'challenge-2026-03';
-const REGISTRATION_DEADLINE = new Date('2026-02-28T23:59:59+01:00');
+const REGISTRATION_DEADLINE = new Date('2026-03-07T23:59:59+01:00');
 const SMART_TRIAL_EXPIRES_AT = new Date('2026-03-21T23:59:59+01:00');
 
 // =====================================================
@@ -103,7 +103,7 @@ export async function completeChallengeOnboarding(
     // 5. Update existing challenge registration (created during magic link) or create new
     const { data: existingReg } = await supabase
       .from('challenge_registrations')
-      .select('id')
+      .select('id, metadata')
       .eq('email', user.email)
       .maybeSingle();
     
@@ -116,7 +116,7 @@ export async function completeChallengeOnboarding(
           magic_link_clicked_at: clickedAt.toISOString(),
           onboarding_completed_at: clickedAt.toISOString(),
           metadata: {
-            ...(existingReg as any).metadata, // Preserve existing metadata
+            ...(existingReg.metadata as Record<string, unknown>), // Preserve existing metadata
             name: data.name,
             motivations: data.motivations
           }
