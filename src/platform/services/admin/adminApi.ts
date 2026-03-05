@@ -943,11 +943,13 @@ export const adminApi = {
     },
 
     async delete(id: string): Promise<void> {
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('background_tracks')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', id);
       if (error) throw new Error(`Failed to delete background track: ${error.message}`);
+      // RLS silently blocks delete (count=0) — surface it as an error
+      if (count === 0) throw new Error('Nemáš oprávnění smazat tento track (RLS). Zkontroluj svou roli v databázi.');
     },
   },
 
@@ -986,11 +988,12 @@ export const adminApi = {
     },
 
     async delete(id: string): Promise<void> {
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('background_categories')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', id);
       if (error) throw new Error(`Failed to delete background category: ${error.message}`);
+      if (count === 0) throw new Error('Nemáš oprávnění smazat tuto kategorii (RLS).');
     },
   },
 

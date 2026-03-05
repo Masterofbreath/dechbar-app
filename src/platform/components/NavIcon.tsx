@@ -20,7 +20,8 @@ export interface NavIconProps {
         'close' | 'user' | 'credit-card' | 'info' | 'logout' | 'lock' | 'shield' |
         'clock' | 'edit' | 'trash' | 'x' | 'wind' | 'layers' | 'bar-chart' | 'target' | 
         'zap' | 'circle' | 'check' | 'file-text' | 'chevron-up' | 'chevron-down' |
-        'square' | 'meditation' | 'heart' | 'message-square';
+        'square' | 'meditation' | 'heart' | 'message-square' |
+        'trophy' | 'users' | 'trending-up' | 'dollar';
   
   /**
    * Size in pixels
@@ -312,6 +313,38 @@ export function NavIcon({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    ),
+
+    // Admin-specific icons
+    'trophy': (
+      <>
+        <path d="M6 9H4a2 2 0 0 1-2-2V5h4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M18 9h2a2 2 0 0 0 2-2V5h-4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6 5h12v8a6 6 0 0 1-12 0V5z" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9 21h6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 17v4" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'users': (
+      <>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'trending-up': (
+      <>
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="17 6 23 6 23 12" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+    'dollar': (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 6v2m0 8v2" strokeLinecap="round" />
+        <path d="M9 9.5a3 3 0 0 1 6 0c0 1.5-1 2.5-3 3s-3 1.5-3 3a3 3 0 0 0 6 0" strokeLinecap="round" strokeLinejoin="round" />
+      </>
     ),
   };
   

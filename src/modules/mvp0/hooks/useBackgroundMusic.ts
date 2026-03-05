@@ -369,13 +369,9 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
   // ─── Play (public) ───────────────────────────────────────────────────────
 
   const play = useCallback(async () => {
-    if (!backgroundMusicEnabled) {
-      console.log('[BackgroundMusic] play() skipped — music disabled in settings');
-      return;
-    }
+    if (!backgroundMusicEnabled) return;
 
     const currentState = stateRef.current;
-    console.log('[BackgroundMusic] play() called, state:', currentState, 'slug:', selectedTrackSlug);
 
     // Already playing — nothing to do
     if (currentState === 'playing') return;
@@ -395,7 +391,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     }
 
     await playInternal();
-  }, [backgroundMusicEnabled, selectedTrackSlug, playInternal]);
+  }, [backgroundMusicEnabled, playInternal]);
 
   // ─── Pause ───────────────────────────────────────────────────────────────
 
@@ -530,7 +526,6 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
   // ─── Auto-load on track selection ────────────────────────────────────────
 
   useEffect(() => {
-    console.log('[BackgroundMusic] Auto-load effect: slug=', selectedTrackSlug, 'current=', currentTrack?.slug);
     if (selectedTrackSlug) {
       const currentSlug = currentTrack?.slug;
       if (currentSlug !== selectedTrackSlug) {

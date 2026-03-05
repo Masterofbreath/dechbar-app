@@ -1,17 +1,19 @@
 /**
  * AdminSidebar Component
  *
- * Levá navigační sidebar admin panelu.
+ * Levá navigační sidebar admin panelu — skupinové menu.
  *
  * Desktop/Tablet: Fixní sidebar (240px / 200px)
  * Mobile (<768px): Slide-in overlay
  *   - isOpen  → .admin-sidebar--open (transform: translateX(0))
  *   - onClose → zavře při kliknutí na položku nebo × tlačítko
  *
+ * Skupiny: OBSAH | KOMUNITA | PŘEHLED | SYSTÉM
+ *
  * @package DechBar_App
  * @subpackage Platform/Components/Admin
  * @since 2.44.0
- * @updated 2.47.0 - Mobile overlay props
+ * @updated 2.48.0 - Skupinové menu
  */
 
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -19,16 +21,49 @@ import { useAuth } from '@/platform/auth';
 import { NavIcon, Logo } from '@/platform/components';
 import './AdminSidebar.css';
 
-const ADMIN_MENU_ITEMS = [
-  { path: '/app/admin/akademie',     icon: 'graduation-cap', label: 'Akademie'            },
-  { path: '/app/admin/daily-program',icon: 'clock',          label: 'Denní program'        },
-  { path: '/app/admin/exercises',    icon: 'wind',           label: 'Cvičení & Protokoly'  },
-  { path: '/app/admin/notifications',icon: 'bell',           label: 'Notifikace'           },
-  { path: '/app/admin/feedback',     icon: 'message-square', label: 'Feedback'             },
-  { path: '/app/admin/analytics',    icon: 'chart',          label: 'Analytika'            },
-  { path: '/app/admin/gamification', icon: 'trophy',         label: 'Gamifikace'           },
-  { path: '/app/admin/users',        icon: 'users',          label: 'Uživatelé'            },
-  { path: '/app/admin/system',       icon: 'settings',       label: 'Systém'               },
+interface MenuItem {
+  path: string;
+  icon: string;
+  label: string;
+}
+
+interface MenuGroup {
+  label: string;
+  items: MenuItem[];
+}
+
+const ADMIN_MENU_GROUPS: MenuGroup[] = [
+  {
+    label: 'Obsah',
+    items: [
+      { path: '/app/admin/akademie',      icon: 'graduation-cap', label: 'Akademie'           },
+      { path: '/app/admin/daily-program', icon: 'clock',          label: 'Denní program'       },
+      { path: '/app/admin/exercises',     icon: 'wind',           label: 'Cvičení & Protokoly' },
+      { path: '/app/admin/gamification',  icon: 'trophy',         label: 'Gamifikace'          },
+    ],
+  },
+  {
+    label: 'Komunita',
+    items: [
+      { path: '/app/admin/notifications', icon: 'bell',           label: 'Notifikace'          },
+      { path: '/app/admin/feedback',      icon: 'message-square', label: 'Feedback'            },
+      { path: '/app/admin/users',         icon: 'users',          label: 'Uživatelé'           },
+    ],
+  },
+  {
+    label: 'Přehled',
+    items: [
+      { path: '/app/admin/analytics',     icon: 'chart-line',     label: 'Analytika'           },
+      { path: '/app/admin/business',      icon: 'trending-up',    label: 'Business'            },
+      { path: '/app/admin/economics',     icon: 'dollar',         label: 'Ekonomika'           },
+    ],
+  },
+  {
+    label: 'Systém',
+    items: [
+      { path: '/app/admin/system',        icon: 'settings',       label: 'Systém'              },
+    ],
+  },
 ];
 
 interface AdminSidebarProps {
@@ -88,19 +123,25 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation — skupinové menu */}
       <nav className="admin-sidebar__nav">
-        {ADMIN_MENU_ITEMS.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `admin-sidebar__item ${isActive ? 'admin-sidebar__item--active' : ''}`
-            }
-          >
-            <NavIcon name={item.icon} size={20} />
-            <span>{item.label}</span>
-          </NavLink>
+        {ADMIN_MENU_GROUPS.map((group) => (
+          <div key={group.label} className="admin-sidebar__group">
+            <span className="admin-sidebar__group-label">{group.label}</span>
+            {group.items.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `admin-sidebar__item ${isActive ? 'admin-sidebar__item--active' : ''}`
+                }
+                onClick={onClose}
+              >
+                <NavIcon name={item.icon as Parameters<typeof NavIcon>[0]['name']} size={20} />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 

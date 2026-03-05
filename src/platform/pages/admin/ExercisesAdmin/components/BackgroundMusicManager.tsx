@@ -177,12 +177,24 @@ function TracksTab({ categories }: TracksTabProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Opravdu smazat tento track?')) return;
+    if (!confirm('Opravdu smazat tento track? Soubor bude odstraněn i z CDN.')) return;
+    const track = tracks.find(t => t.id === id);
     try {
+      setError(null);
+      // 1. Smazat z DB
       await adminApi.backgroundMusic.delete(id);
+      // 2. Smazat soubor z CDN (best-effort — DB je důležitější)
+      if (track?.cdn_url) {
+        uploadService.deleteFile(track.cdn_url).catch((cdnErr) => {
+          console.warn('[BackgroundMusicManager] CDN delete failed (DB already deleted):', cdnErr);
+        });
+      }
       setTracks(prev => prev.filter(t => t.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Chyba při mazání');
+      const msg = err instanceof Error ? err.message : 'Chyba při mazání';
+      setError(`Mazání selhalo: ${msg}`);
+      // Refresh to sync UI with actual DB state
+      await fetchTracks();
     }
   };
 
