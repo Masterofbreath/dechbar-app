@@ -104,7 +104,7 @@ export function SessionEngineModal({
   const unlockAudio = useCallback(() => {
     unlockSharedAudioContext();
   }, []);
-  const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume } = useSessionSettings();
+  const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume, backgroundMusicRandomEnabled } = useSessionSettings();
 
   // NEW: Vocal Intelligence System
   const vocalGuidance = useVocalGuidance({
@@ -186,11 +186,21 @@ export function SessionEngineModal({
     if (!backgroundMusicEnabled) return;
 
     if (sessionState === 'active') {
+      // If random mode is on, pick a random accessible track before playing
+      if (backgroundMusicRandomEnabled && backgroundMusic.tracks.length > 0) {
+        const TIER_LEVEL: Record<string, number> = { ZDARMA: 0, SMART: 1, AI_COACH: 2 };
+        const userLevel = TIER_LEVEL[userTier] ?? 0;
+        const accessible = backgroundMusic.tracks.filter(
+          t => (TIER_LEVEL[t.required_tier] ?? 0) <= userLevel
+        );
+        if (accessible.length > 0) {
+          const random = accessible[Math.floor(Math.random() * accessible.length)];
+          void backgroundMusic.setTrack(random.slug).then(() => backgroundMusic.play());
+          return;
+        }
+      }
       backgroundMusic.play();
     }
-    // Note: NO else/pause here — pause() is called explicitly on manual close (confirmClose),
-    // and stop() is called in completeExercise(). This avoids triggering 9s fade OUT
-    // unnecessarily on countdown/idle state where music isn't playing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState, backgroundMusicEnabled]); // backgroundMusic deliberately excluded
   

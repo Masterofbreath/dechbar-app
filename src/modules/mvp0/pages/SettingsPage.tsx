@@ -24,6 +24,7 @@ import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useSwipeBack } from '@/platform/hooks/useSwipeBack';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { useMembership } from '@/platform/membership/useMembership';
+import { isNativeApp } from '@/platform/utils/environment';
 import { PageLayout } from '@/platform/layouts/PageLayout';
 import {
   SettingsCard,
@@ -32,6 +33,7 @@ import {
   IntensitySelector,
   TrackSelector,
   VoicePackSelector,
+  CueSoundSelector,
 } from '../components/settings';
 
 /* ---- Inline SVG Icons (24×24, outline, 2px stroke, currentColor) ---- */
@@ -110,6 +112,7 @@ export function SettingsPage() {
   const backgroundMusic = useBackgroundMusic();
   const { isSupported: wakeLockSupported } = useWakeLock();
   const { plan: userTier } = useMembership();
+  const nativeApp = isNativeApp();
 
   useEffect(() => {
     document.title = 'Základní nastavení | DechBar';
@@ -130,19 +133,27 @@ export function SettingsPage() {
 
             {settings.audioCuesEnabled && (
               <>
-                <p className="settings-card__info">
-                  Solfeggio frekvence (963 / 639 / 396 Hz)
-                </p>
+                <CueSoundSelector
+                  selectedPack={settings.selectedCueSoundPack}
+                  onChange={settings.setSelectedCueSoundPack}
+                  userTier={userTier}
+                />
                 <VolumeSlider
                   label="Hlasitost"
                   value={settings.audioCueVolume}
                   onChange={settings.setAudioCueVolume}
                 />
+                {userTier === 'ZDARMA' && (
+                  <p className="settings-card__info settings-card__info--premium">
+                    Více sad zvuků dostupných s tarifem SMART
+                  </p>
+                )}
               </>
             )}
           </SettingsCard>
 
-          {/* Card 2: Haptics */}
+          {/* Card 2: Haptics — zobrazit pouze v native iOS/Android app, vibrace nefungují v browseru */}
+          {nativeApp && (
           <SettingsCard title="Vibrace" icon={<VibrateIcon />}>
             <Toggle
               label="Zapnout vibrace"
@@ -167,6 +178,7 @@ export function SettingsPage() {
               </>
             )}
           </SettingsCard>
+          )}
 
           {/* Card 3: Background Music */}
           <SettingsCard title="Hudba na pozadí" icon={<MusicIcon />}>

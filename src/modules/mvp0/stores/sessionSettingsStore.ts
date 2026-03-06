@@ -17,6 +17,7 @@ interface SessionSettingsStore extends SessionSettings {
   // Actions - Audio Cues
   setAudioCuesEnabled: (enabled: boolean) => void;
   setAudioCueVolume: (volume: number) => void;
+  setSelectedCueSoundPack: (pack: string) => void;
   
   // Actions - Haptics
   setHapticsEnabled: (enabled: boolean) => void;
@@ -55,6 +56,7 @@ export const useSessionSettings = create<SessionSettingsStore>()(
       // Audio Cues
       setAudioCuesEnabled: (enabled) => set({ audioCuesEnabled: enabled }),
       setAudioCueVolume: (volume) => set({ audioCueVolume: Math.max(0, Math.min(1, volume)) }),
+      setSelectedCueSoundPack: (pack) => set({ selectedCueSoundPack: pack }),
       
       // Haptics
       setHapticsEnabled: (enabled) => set({ hapticsEnabled: enabled }),

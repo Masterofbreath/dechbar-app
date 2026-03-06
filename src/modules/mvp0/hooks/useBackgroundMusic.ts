@@ -536,6 +536,8 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     const unsub = onAudioUnlock(() => {
       if (pendingPlayRef.current && stateRef.current === 'idle') {
         pendingPlayRef.current = false;
+        // Ensure volume is reset to 0 before retry so fade IN always starts from silence
+        if (primaryRef.current) primaryRef.current.volume = 0;
         void playInternal();
       }
     });

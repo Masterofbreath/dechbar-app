@@ -98,6 +98,7 @@ export interface SessionSettings {
   // Audio Cues
   audioCuesEnabled: boolean;
   audioCueSound: 'solfeggio-963-639-396'; // Future: add more sound packs
+  selectedCueSoundPack: string; // 'solfeggio' | 'tibetan-bowls' | 'birds' | ...
   audioCueVolume: number; // 0-1
   
   // Haptics
@@ -132,6 +133,7 @@ export interface SessionSettings {
 export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   audioCuesEnabled: true,
   audioCueSound: 'solfeggio-963-639-396',
+  selectedCueSoundPack: 'solfeggio',
   audioCueVolume: 0.6,
   
   hapticsEnabled: true,

@@ -107,7 +107,7 @@ export const TrackSelector: React.FC<TrackSelectorProps> = ({
 
   return (
     <div className="track-selector" ref={dropdownRef}>
-      <span className="track-selector__label">Track na pozadí</span>
+      <span className="track-selector__label">Skladba na pozadí</span>
 
       {/* Collapsed trigger */}
       <button
