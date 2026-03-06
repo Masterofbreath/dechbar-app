@@ -12,6 +12,7 @@
 
 import { FunnelSection } from './sections/FunnelSection';
 import { ChurnSection } from './sections/ChurnSection';
+import { StickinessSection } from './sections/StickinessSection';
 import { ComingSoonSection } from './sections/ComingSoonSection';
 import './BusinessAdmin.css';
 
@@ -30,6 +31,9 @@ export default function BusinessAdmin() {
 
       {/* Onboarding funnel + Retence */}
       <FunnelSection />
+
+      {/* DAU/MAU Stickiness */}
+      <StickinessSection />
 
       {/* Protokoly + Churn risk */}
       <ChurnSection />

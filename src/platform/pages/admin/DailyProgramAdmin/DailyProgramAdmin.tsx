@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/platform/api/supabase';
 import { akademieKeys } from '@/modules/akademie/api/keys';
+import { uploadService } from '@/platform/services/upload/uploadService';
 import type { DailyOverrideData } from '@/modules/mvp0/hooks/usePlatformDailyOverride';
 import './DailyProgramAdmin.css';
 
@@ -153,8 +154,68 @@ interface OverrideFormProps {
 function OverrideForm({ initial, onSave, onCancel, isSaving }: OverrideFormProps) {
   const [form, setForm] = useState<FormState>(initial);
 
+  // Upload state — audio
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioProgress, setAudioProgress] = useState<number | null>(null);
+  const [audioUploading, setAudioUploading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
+
+  // Upload state — cover
+  const [_coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverProgress, setCoverProgress] = useState<number | null>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(initial.cover_image_url || null);
+
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm(prev => ({ ...prev, [key]: value }));
+  }
+
+  async function handleAudioSelect(file: File) {
+    setAudioFile(file);
+    setAudioError(null);
+    setAudioProgress(0);
+    setAudioUploading(true);
+    try {
+      const result = await uploadService.uploadDailyProgramAudio(file, (p) => {
+        setAudioProgress(p.percent);
+      });
+      setForm(prev => ({
+        ...prev,
+        audio_url: result.url,
+        duration_seconds: result.durationSeconds,
+      }));
+    } catch (err) {
+      setAudioError(err instanceof Error ? err.message : 'Upload selhal');
+      setAudioFile(null);
+    } finally {
+      setAudioUploading(false);
+      setAudioProgress(null);
+    }
+  }
+
+  async function handleCoverSelect(file: File) {
+    setCoverFile(file);
+    setCoverError(null);
+    setCoverProgress(0);
+    setCoverUploading(true);
+    // Okamžitý lokální preview
+    const localUrl = URL.createObjectURL(file);
+    setCoverPreviewUrl(localUrl);
+    try {
+      const url = await uploadService.uploadDailyProgramCover(file, (p) => {
+        setCoverProgress(p.percent);
+      });
+      setForm(prev => ({ ...prev, cover_image_url: url }));
+      setCoverPreviewUrl(url);
+    } catch (err) {
+      setCoverError(err instanceof Error ? err.message : 'Upload selhal');
+      setCoverFile(null);
+      setCoverPreviewUrl(form.cover_image_url || null);
+    } finally {
+      setCoverUploading(false);
+      setCoverProgress(null);
+    }
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -178,6 +239,8 @@ function OverrideForm({ initial, onSave, onCancel, isSaving }: OverrideFormProps
   const durationMin = form.duration_seconds > 0
     ? `${Math.floor(form.duration_seconds / 60)}:${String(form.duration_seconds % 60).padStart(2, '0')} min`
     : '';
+
+  const isUploading = audioUploading || coverUploading;
 
   return (
     <form className="daily-admin__form" onSubmit={handleSubmit}>
@@ -214,21 +277,60 @@ function OverrideForm({ initial, onSave, onCancel, isSaving }: OverrideFormProps
           <span className="daily-admin__hint">Zobrazí se pod názvem, např. "Dechpresso · 7 min"</span>
         </div>
 
-        {/* Audio URL */}
+        {/* Audio upload */}
         <div className="daily-admin__field daily-admin__field--full">
-          <label className="daily-admin__label">Audio URL</label>
+          <label className="daily-admin__label">Audio soubor</label>
+          <div
+            className={`daily-admin__upload-area${audioUploading ? ' daily-admin__upload-area--uploading' : ''}${form.audio_url ? ' daily-admin__upload-area--done' : ''}`}
+            onClick={() => !audioUploading && document.getElementById('daily-audio-input')?.click()}
+          >
+            {audioUploading ? (
+              <div className="daily-admin__upload-status">
+                <span className="daily-admin__upload-label">Nahrávám… {audioProgress ?? 0} %</span>
+                <div className="daily-admin__progress-bar">
+                  <div className="daily-admin__progress-fill" style={{ width: `${audioProgress ?? 0}%` }} />
+                </div>
+              </div>
+            ) : form.audio_url ? (
+              <div className="daily-admin__upload-status">
+                <svg className="daily-admin__upload-icon daily-admin__upload-icon--ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span className="daily-admin__upload-label daily-admin__upload-label--ok">
+                  {audioFile ? audioFile.name : 'Soubor nahrán'}
+                </span>
+                <span className="daily-admin__upload-replace">Klikni pro nahrazení</span>
+              </div>
+            ) : (
+              <div className="daily-admin__upload-status">
+                <svg className="daily-admin__upload-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span className="daily-admin__upload-label">Vybrat MP3 soubor</span>
+              </div>
+            )}
+          </div>
           <input
-            className="daily-admin__input"
-            type="url"
-            value={form.audio_url}
-            onChange={e => set('audio_url', e.target.value)}
-            placeholder="https://dechbar-cdn.b-cdn.net/audio/tracks/..."
-            required
+            id="daily-audio-input"
+            type="file"
+            accept="audio/mpeg,audio/mp4,audio/wav,audio/aac"
+            style={{ display: 'none' }}
+            onChange={e => {
+              const f = e.target.files?.[0];
+              if (f) void handleAudioSelect(f);
+              e.target.value = '';
+            }}
           />
-          <span className="daily-admin__hint">Přímý odkaz na MP3 soubor (Bunny CDN nebo jiný)</span>
+          {audioError && <span className="daily-admin__hint daily-admin__hint--error">{audioError}</span>}
+          {!audioError && durationMin && (
+            <span className="daily-admin__hint daily-admin__hint--ok">Délka: {durationMin}</span>
+          )}
+          {!audioError && !form.audio_url && (
+            <span className="daily-admin__hint">MP3, M4A nebo WAV · Bunny CDN: audio/daily/</span>
+          )}
         </div>
 
-        {/* Duration */}
+        {/* Duration — read-only (vyplňuje se automaticky z audio metadat) */}
         <div className="daily-admin__field">
           <label className="daily-admin__label">Délka (sekundy)</label>
           <input
@@ -240,21 +342,58 @@ function OverrideForm({ initial, onSave, onCancel, isSaving }: OverrideFormProps
             required
           />
           {durationMin && (
-            <span className="daily-admin__hint daily-admin__hint--ok">= {durationMin}</span>
+            <span className="daily-admin__hint daily-admin__hint--ok">= {durationMin} · vyplněno automaticky</span>
+          )}
+          {!durationMin && (
+            <span className="daily-admin__hint">Vyplní se automaticky po uploadu audio</span>
           )}
         </div>
 
-        {/* Cover image URL */}
+        {/* Cover upload */}
         <div className="daily-admin__field">
-          <label className="daily-admin__label">Cover obrázek URL (volitelné)</label>
+          <label className="daily-admin__label">Cover obrázek (volitelné)</label>
+          <div
+            className={`daily-admin__upload-area daily-admin__upload-area--cover${coverUploading ? ' daily-admin__upload-area--uploading' : ''}${form.cover_image_url ? ' daily-admin__upload-area--done' : ''}`}
+            onClick={() => !coverUploading && document.getElementById('daily-cover-input')?.click()}
+          >
+            {coverPreviewUrl ? (
+              <div className="daily-admin__cover-preview">
+                <img src={coverPreviewUrl} alt="Cover preview" className="daily-admin__cover-img" />
+                {coverUploading && (
+                  <div className="daily-admin__cover-overlay">
+                    <div className="daily-admin__progress-bar">
+                      <div className="daily-admin__progress-fill" style={{ width: `${coverProgress ?? 0}%` }} />
+                    </div>
+                  </div>
+                )}
+                {!coverUploading && (
+                  <span className="daily-admin__cover-replace">Klikni pro změnu</span>
+                )}
+              </div>
+            ) : (
+              <div className="daily-admin__upload-status">
+                <svg className="daily-admin__upload-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+                </svg>
+                <span className="daily-admin__upload-label">Vybrat obrázek</span>
+              </div>
+            )}
+          </div>
           <input
-            className="daily-admin__input"
-            type="url"
-            value={form.cover_image_url}
-            onChange={e => set('cover_image_url', e.target.value)}
-            placeholder="https://dechbar-cdn.b-cdn.net/images/covers/..."
+            id="daily-cover-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            style={{ display: 'none' }}
+            onChange={e => {
+              const f = e.target.files?.[0];
+              if (f) void handleCoverSelect(f);
+              e.target.value = '';
+            }}
           />
-          <span className="daily-admin__hint">Thumbnail na kartě; bez obrázku zobrazí play ikonu</span>
+          {coverError && <span className="daily-admin__hint daily-admin__hint--error">{coverError}</span>}
+          {!coverError && !form.cover_image_url && (
+            <span className="daily-admin__hint">JPG, PNG nebo WebP · Bunny CDN: images/daily/</span>
+          )}
         </div>
 
         {/* Active from */}
@@ -326,7 +465,7 @@ function OverrideForm({ initial, onSave, onCancel, isSaving }: OverrideFormProps
         </div>
       </div>
 
-      {/* Preview */}
+      {/* Audio preview */}
       {form.audio_url && (
         <div className="daily-admin__preview">
           <span className="daily-admin__preview-label">Náhled audia:</span>
@@ -338,8 +477,12 @@ function OverrideForm({ initial, onSave, onCancel, isSaving }: OverrideFormProps
         <button type="button" className="daily-admin__btn daily-admin__btn--secondary" onClick={onCancel}>
           Zrušit
         </button>
-        <button type="submit" className="daily-admin__btn daily-admin__btn--primary" disabled={isSaving}>
-          {isSaving ? 'Ukládám...' : (form.id ? 'Uložit změny' : 'Vytvořit')}
+        <button
+          type="submit"
+          className="daily-admin__btn daily-admin__btn--primary"
+          disabled={isSaving || isUploading || !form.audio_url}
+        >
+          {isSaving ? 'Ukládám…' : isUploading ? 'Čekám na upload…' : (form.id ? 'Uložit změny' : 'Vytvořit')}
         </button>
       </div>
     </form>

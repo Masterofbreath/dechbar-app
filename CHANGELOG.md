@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Akademie Lesson Techniques — přejmenování českých labelů (2026-03-06)**
+  - Břišní dýchání → Aktivace bránice, Zadržení dechu → Zádrže dechu, Přidušené rty → Přidušení, Energizující → Hyperventilace, Ostatní → Funkční
+  - DB hodnoty (snake_case) beze změny — jen UI labely v `LESSON_TECHNIQUE_LABELS` a `TECHNIQUE_OPTIONS`
+
+- **Denní program — upload audio + cover místo URL (2026-03-06)**
+  - `uploadService.uploadDailyProgramAudio()`: upload na `audio/daily/{uuid}.mp3`, vrací URL + automaticky detekovanou délku
+  - `uploadService.uploadDailyProgramCover()`: upload na `images/daily/{uuid}.{ext}`, s XHR progress tracking
+  - `OverrideForm`: URL inputy nahrazeny klikacími upload oblastmi (konzistentní s Akademie LessonManager)
+  - Audio: progress bar, automatické vyplnění `duration_seconds` z metadat souboru, nahrazení existujícího souboru
+  - Cover: okamžitý lokální preview před dokončením uploadu, hover efekt "Klikni pro změnu"
+  - Submit button blokován dokud probíhá upload nebo chybí audio_url
+  - DB migrace `20260306120000_add_lesson_techniques.sql`: sloupce `primary_technique` a `secondary_technique` do `public.akademie_lessons`
+  - `primary_technique`: CHECK constraint (povolené hodnoty: humming, box_breathing, extended_exhale, belly_breathing, retention, visualization, pursed_lip, energizing, other), index pro JOIN výkon
+  - `secondary_technique`: bez CHECK constraintu — rozšiřitelné pro budoucí techniky bez nové migrace
+  - `LessonTechnique` type + `LESSON_TECHNIQUE_LABELS` mapa (české názvy) v `src/modules/akademie/types.ts`
+  - Rozšíření `AkademieLesson` + `AkademieLessonInput` v `src/platform/services/admin/types.ts`
+  - Admin UI: inline edit formulář v `LessonManager` rozšířen o dva selectory (Primární technika / Sekundární technika)
+
+### Added
 - **Pokrok Page Redesign — KP sekce s animovanými plícemi (2026-03-02)**
   - `LungProgress` komponenta: SVG plíce s 3-fázovou animací (draw-in obrys → spring fill → hover breathe), ambient glow, prefers-reduced-motion podpora
   - `KPSparkline` komponenta: SVG area chart, draw-in animace zleva doprava, responsive, zlatá tečka na posledním bodě

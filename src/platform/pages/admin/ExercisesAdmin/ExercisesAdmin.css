@@ -64,13 +64,13 @@
   min-height: 44px;
 }
 
-.exercises-admin__tab.aktive {
+.exercises-admin__tab--active {
   color: var(--color-text-primary);
   border-bottom-color: var(--dechbar-gold, #f8ca00);
   font-weight: 600;
 }
 
-.exercises-admin__tab:hover:not(.aktive) {
+.exercises-admin__tab:hover:not(.exercises-admin__tab--active) {
   color: var(--color-text-primary);
 }
 
@@ -437,13 +437,13 @@
   min-height: 40px;
 }
 
-.bg-manager__tab.aktive {
+.bg-manager__tab--active {
   color: var(--color-text-primary);
   border-bottom-color: var(--dechbar-gold, #f8ca00);
   font-weight: 600;
 }
 
-.bg-manager__tab:hover:not(.aktive) {
+.bg-manager__tab:hover:not(.bg-manager__tab--active) {
   color: var(--color-text-primary);
 }
 

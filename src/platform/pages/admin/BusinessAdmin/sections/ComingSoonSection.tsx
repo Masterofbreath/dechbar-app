@@ -18,11 +18,6 @@ const COMING_SOON_CARDS: ComingSoonCard[] = [
     icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
   },
   {
-    title: 'DAU/MAU Stickiness',
-    description: 'Poměr denně aktivních k měsíčně aktivním. Cíl: >20% (top apps mají 50%+).',
-    icon: 'M22 12h-4l-3 9L9 3l-3 9H2',
-  },
-  {
     title: 'Kohortová retence grid',
     description: 'Tabulka: každý týden registrací × procento aktivních v D7/D14/D30/D60.',
     icon: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',

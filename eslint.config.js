@@ -25,6 +25,12 @@ export default defineConfig([
         allowConstantExport: true,
         allowExportNames: ['loader', 'action', 'meta', 'links', 'headers']
       }],
+      // Allow underscore-prefixed vars/args to be unused (intentional)
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      }],
     },
   },
 ])

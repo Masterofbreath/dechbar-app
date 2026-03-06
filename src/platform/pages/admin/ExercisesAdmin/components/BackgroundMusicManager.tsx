@@ -106,6 +106,7 @@ interface TrackFormState {
   required_tier: string;
   sort_order: string;
   is_active: boolean;
+  smart_only: boolean;
   file: File | null;
 }
 
@@ -116,6 +117,7 @@ interface TrackEditState {
   required_tier: string;
   sort_order: string;
   is_active: boolean;
+  smart_only: boolean;
   replaceFile: File | null;
 }
 
@@ -126,6 +128,7 @@ const EMPTY_TRACK_FORM: TrackFormState = {
   required_tier: 'ZDARMA',
   sort_order: '0',
   is_active: true,
+  smart_only: false,
   file: null,
 };
 
@@ -219,6 +222,7 @@ function TracksTab({ categories }: TracksTabProps) {
         cdn_url: cdnUrl,
         required_tier: form.required_tier as BackgroundTrack['required_tier'],
         is_active: form.is_active,
+        smart_only: form.smart_only,
         sort_order: parseInt(form.sort_order, 10) || 0,
       });
 
@@ -242,6 +246,7 @@ function TracksTab({ categories }: TracksTabProps) {
       required_tier: track.required_tier,
       sort_order: String(track.sort_order ?? 0),
       is_active: track.is_active,
+      smart_only: track.smart_only ?? false,
       replaceFile: null,
     });
   };
@@ -276,10 +281,11 @@ function TracksTab({ categories }: TracksTabProps) {
         required_tier: editState.required_tier as BackgroundTrack['required_tier'],
         sort_order: parseInt(editState.sort_order, 10) || 0,
         is_active: editState.is_active,
+        smart_only: editState.smart_only,
         ...(newCdnUrl ? { cdn_url: newCdnUrl } : {}),
       });
 
-      setTracks(prev => prev.map(t =>
+              setTracks(prev => prev.map(t =>
         t.id === editingTrack.id
           ? {
               ...t,
@@ -289,6 +295,7 @@ function TracksTab({ categories }: TracksTabProps) {
               required_tier: editState.required_tier as BackgroundTrack['required_tier'],
               sort_order: parseInt(editState.sort_order, 10) || 0,
               is_active: editState.is_active,
+              smart_only: editState.smart_only,
               ...(newCdnUrl ? { cdn_url: newCdnUrl } : {}),
             }
           : t
@@ -374,11 +381,18 @@ function TracksTab({ categories }: TracksTabProps) {
                   onChange={e => setForm(prev => ({ ...prev, sort_order: e.target.value }))} />
               </div>
               <div className="aa-field" style={{ justifyContent: 'flex-end' }}>
-                <label className="aa-checkbox-row" style={{ marginTop: '1.5rem' }}>
-                  <input type="checkbox" checked={form.is_active}
-                    onChange={e => setForm(prev => ({ ...prev, is_active: e.target.checked }))} />
-                  <span>Aktivní</span>
-                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <label className="aa-checkbox-row">
+                    <input type="checkbox" checked={form.is_active}
+                      onChange={e => setForm(prev => ({ ...prev, is_active: e.target.checked }))} />
+                    <span>Aktivní</span>
+                  </label>
+                  <label className="aa-checkbox-row" title="Track se zobrazí pouze v nastavení SMART CVIČENÍ, ne v obecném výběru hudby">
+                    <input type="checkbox" checked={form.smart_only}
+                      onChange={e => setForm(prev => ({ ...prev, smart_only: e.target.checked }))} />
+                    <span>Jen pro SMART</span>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -440,6 +454,11 @@ function TracksTab({ categories }: TracksTabProps) {
                       <span className={`exercises-manager__badge exercises-manager__badge--${track.is_active ? 'active' : 'inactive'}`}>
                         {track.is_active ? 'Aktivní' : 'Neaktivní'}
                       </span>
+                      {track.smart_only && (
+                        <span className="exercises-manager__badge exercises-manager__badge--smart" style={{ marginLeft: '4px' }}>
+                          SMART only
+                        </span>
+                      )}
                     </td>
                     <td>
                       <div className="exercises-manager__actions">
@@ -505,11 +524,18 @@ function TracksTab({ categories }: TracksTabProps) {
                       onChange={e => setEditState(prev => prev ? { ...prev, sort_order: e.target.value } : prev)} />
                   </div>
                   <div className="aa-field" style={{ justifyContent: 'flex-end' }}>
-                    <label className="aa-checkbox-row" style={{ marginTop: '1.5rem' }}>
-                      <input type="checkbox" checked={editState.is_active}
-                        onChange={e => setEditState(prev => prev ? { ...prev, is_active: e.target.checked } : prev)} />
-                      <span>Aktivní</span>
-                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1.5rem' }}>
+                      <label className="aa-checkbox-row">
+                        <input type="checkbox" checked={editState.is_active}
+                          onChange={e => setEditState(prev => prev ? { ...prev, is_active: e.target.checked } : prev)} />
+                        <span>Aktivní</span>
+                      </label>
+                      <label className="aa-checkbox-row" title="Track se zobrazí pouze v nastavení SMART CVIČENÍ, ne v obecném výběru hudby">
+                        <input type="checkbox" checked={editState.smart_only}
+                          onChange={e => setEditState(prev => prev ? { ...prev, smart_only: e.target.checked } : prev)} />
+                        <span>Jen pro SMART</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -777,13 +803,13 @@ export function BackgroundMusicManager() {
       {/* Inner tab row */}
       <div className="bg-manager__tabs">
         <button
-          className={`bg-manager__tab ${activeTab === 'tracks' ? 'aktive' : ''}`}
+          className={`bg-manager__tab ${activeTab === 'tracks' ? 'bg-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('tracks')}
         >
           Tracky
         </button>
         <button
-          className={`bg-manager__tab ${activeTab === 'categories' ? 'aktive' : ''}`}
+          className={`bg-manager__tab ${activeTab === 'categories' ? 'bg-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('categories')}
         >
           Kategorie

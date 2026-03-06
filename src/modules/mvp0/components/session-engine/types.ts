@@ -7,4 +7,4 @@
  * @subpackage MVP0/Components/SessionEngine
  */
 
-export type SessionState = 'idle' | 'mood-before' | 'countdown' | 'active' | 'completed' | 'abandoned';
+export type SessionState = 'idle' | 'smart-prep' | 'mood-before' | 'countdown' | 'active' | 'completed' | 'abandoned';

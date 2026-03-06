@@ -51,8 +51,11 @@ interface BackgroundMusicAPI {
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
-export function useBackgroundMusic(): BackgroundMusicAPI {
+export function useBackgroundMusic(options?: { volumeOverride?: number }): BackgroundMusicAPI {
   const { backgroundMusicEnabled, backgroundMusicVolume, selectedTrackSlug } = useSessionSettings();
+
+  // Allow caller to override volume (e.g. SMART session uses smartMusicVolume)
+  const effectiveVolume = options?.volumeOverride ?? backgroundMusicVolume;
 
   const [state, setState] = useState<MusicPlaybackState>('idle');
   // stateRef mirrors React state — always current inside callbacks (no stale closure)
@@ -217,7 +220,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
             return;
           }
 
-          rampVolume(secondary, backgroundMusicVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+          rampVolume(secondary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
 
           window.setTimeout(() => {
             // Final guard before swap — stop() may have been called during the 10s overlap
@@ -248,7 +251,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     } else {
       schedule();
     }
-  }, [backgroundMusicVolume, rampVolume]);
+  }, [effectiveVolume, rampVolume]);
 
   // ─── Set track ───────────────────────────────────────────────────────────
 
@@ -353,7 +356,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
 
       await primary.play();
 
-      rampVolume(primary, backgroundMusicVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+      rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
       scheduleCrossfade(primary);
 
       // Resume automatically when OS pauses audio due to device switch
@@ -381,7 +384,7 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
         setStateAndRef('error');
       }
     }
-  }, [backgroundMusicVolume, clearRamps, rampVolume, scheduleCrossfade, setStateAndRef]);
+  }, [effectiveVolume, clearRamps, rampVolume, scheduleCrossfade, setStateAndRef]);
 
   // ─── Play (public) ───────────────────────────────────────────────────────
 
@@ -524,8 +527,8 @@ export function useBackgroundMusic(): BackgroundMusicAPI {
     if (!primary) return;
     // Never interrupt a running 9s fade IN
     if (fadeInRampRef.current !== null) return;
-    rampVolume(primary, backgroundMusicVolume, 300, volumeSyncRampRef);
-  }, [backgroundMusicVolume, rampVolume]);
+    rampVolume(primary, effectiveVolume, 300, volumeSyncRampRef);
+  }, [effectiveVolume, rampVolume]);
 
   // ─── Auto-play retry on Safari unlock ────────────────────────────────────
   // When play() is blocked by autoplay policy (NotAllowedError), pendingPlayRef

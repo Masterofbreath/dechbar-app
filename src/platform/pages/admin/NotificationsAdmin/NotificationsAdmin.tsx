@@ -990,7 +990,7 @@ export default function NotificationsAdmin() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`notif-admin__tab ${activeTab === tab.id ? 'aktive' : ''}`}
+              className={`notif-admin__tab ${activeTab === tab.id ? 'notif-admin__tab--active' : ''}`}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}

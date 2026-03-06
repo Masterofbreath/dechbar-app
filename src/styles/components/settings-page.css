@@ -412,6 +412,13 @@
   color: var(--color-text-secondary);
 }
 
+.track-selector__option-badge--smart-only {
+  background: rgb(0 212 180 / 15%);
+  color: var(--color-smart-teal, #00d4b4);
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+}
+
 /* Category group header */
 .track-selector__group {
   border-top: 1px solid var(--color-border);
@@ -618,4 +625,131 @@
     margin: 0 auto;
     padding: 0 var(--spacing-8) var(--spacing-8);
   }
+}
+
+/* ============================================================
+   SettingsCard — locked state
+   ============================================================ */
+
+.settings-card--locked {
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.settings-card--locked:hover {
+  opacity: 0.85;
+}
+
+.settings-card__lock {
+  margin-left: auto;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  display: flex;
+  align-items: center;
+}
+
+.settings-card__locked-content {
+  padding: var(--spacing-3) 0 var(--spacing-1);
+}
+
+.settings-card__locked-tooltip {
+  font-size: 0.8rem;
+  color: var(--color-gold, #D6A23A);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.settings-card__locked-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  margin: 0;
+}
+
+/* ============================================================
+   SMART Duration Selector (in SettingsPage Card 6)
+   ============================================================ */
+
+.smart-duration-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.smart-duration-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #fff);
+  cursor: pointer;
+}
+
+.smart-duration-option input[type="radio"] {
+  accent-color: var(--color-teal, #2CBEC6);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.smart-duration-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 4px 26px;
+}
+
+.smart-duration-slider {
+  flex: 1;
+  accent-color: var(--color-teal, #2CBEC6);
+  height: 4px;
+  cursor: pointer;
+}
+
+.smart-duration-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-teal, #2CBEC6);
+  min-width: 40px;
+  text-align: right;
+}
+
+.smart-duration-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 26px;
+}
+
+.smart-duration-preset {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 70%));
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: background 0.1s ease;
+}
+
+.smart-duration-preset input[type="radio"] {
+  accent-color: var(--color-teal, #2CBEC6);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.smart-duration-preset--active {
+  color: var(--color-text-primary, #fff);
+  background: rgb(44 190 198 / 8%);
+}
+
+.settings-card__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+  margin-bottom: 4px;
 }

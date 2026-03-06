@@ -7,6 +7,8 @@
  * @subpackage MVP0/Types
  */
 
+import type { SmartDurationMode } from '../types/exercises';
+
 // ==================== AUDIO CUES ====================
 
 /**
@@ -64,6 +66,8 @@ export interface BackgroundTrack {
   required_tier: 'ZDARMA' | 'SMART' | 'AI_COACH';
   is_active: boolean;
   sort_order: number;
+  /** If true, track is exclusive to SMART CVIČENÍ — hidden from standard protocol settings */
+  smart_only: boolean;
 }
 
 /**
@@ -125,6 +129,24 @@ export interface SessionSettings {
   vocalGuidanceEnabled: boolean;
   selectedVoicePackId: string | null;
   vocalVolume: number; // 0-1
+
+  // SMART CVIČENÍ
+  smartDurationMode: SmartDurationMode;
+  smartAudioPack: string | null;
+  smartMusicEnabled: boolean;
+  smartMusicSlug: string | null;
+  smartMusicRandomEnabled: boolean;
+  smartMusicVolume: number;
+  smartBellsEnabled: boolean;
+  smartCuesEnabled: boolean;
+  smartCueVolume: number;
+  /** Separate CueSound pack for SMART sessions (independent from protocol cue settings) */
+  smartCueSoundSlug: string;
+  smartCueSoundVariant: string | null;
+
+  // Cue sound slug/variant (shared state used by non-SMART settings card)
+  cueSoundSlug: string;
+  cueSoundVariant: string | null;
 }
 
 /**
@@ -154,6 +176,20 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   vocalGuidanceEnabled: true,
   selectedVoicePackId: null,
   vocalVolume: 0.7,
+
+  smartDurationMode: { type: 'range', preset: 'medium' },
+  smartAudioPack: null,
+  smartMusicEnabled: false,
+  smartMusicSlug: null,
+  smartMusicRandomEnabled: false,
+  smartMusicVolume: 0.5,
+  smartBellsEnabled: true,
+  smartCuesEnabled: true,
+  smartCueVolume: 0.6,
+  smartCueSoundSlug: 'solfeggio',
+  smartCueSoundVariant: null,
+  cueSoundSlug: 'solfeggio',
+  cueSoundVariant: null,
 };
 
 // ==================== CACHE ====================

@@ -4,7 +4,6 @@
    ============================================================ */
 
 .analytics-admin {
-  padding: 24px;
   max-width: 1200px;
   color: #f0f0f0;
 }
@@ -20,7 +19,7 @@
 }
 
 .analytics-admin__title {
-  font-size: 24px;
+  font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.5px;
   color: #fff;
@@ -843,7 +842,6 @@
 /* ── Mobile ── */
 @media (width <= 767px) {
   .analytics-admin {
-    padding: 16px;
     max-width: 100%;
   }
 

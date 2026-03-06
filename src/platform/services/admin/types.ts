@@ -163,6 +163,10 @@ export interface AkademieLessonInput {
   day_number: number;
   sort_order: number;
   is_published?: boolean;
+  /** Primární dechová technika — čte SMART CVIČENÍ algoritmus */
+  primary_technique?: string | null;
+  /** Sekundární dechová technika (volitelná, bez CHECK constraintu) */
+  secondary_technique?: string | null;
 }
 
 export interface AkademieLesson {
@@ -175,6 +179,10 @@ export interface AkademieLesson {
   day_number: number;
   sort_order: number;
   is_published: boolean;
+  /** Primární dechová technika — čte SMART CVIČENÍ algoritmus */
+  primary_technique: string | null;
+  /** Sekundární dechová technika (volitelná, rozšiřitelná) */
+  secondary_technique: string | null;
   created_at: string;
   updated_at: string;
 }

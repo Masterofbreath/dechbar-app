@@ -71,8 +71,23 @@ const CYCLE_RAMP_STEPS = [0.25, 0.50, 0.75, 1.0];
  */
 const END_RAMP_SCALES = [0, 0.25, 0.50, 0.75]; // index = cyclesRemaining
 
-export function useBreathingCues(): BreathingCuesAPI {
-  const { audioCuesEnabled, audioCueVolume, bellsEnabled } = useSessionSettings();
+export function useBreathingCues(options?: { isSmartSession?: boolean }): BreathingCuesAPI {
+  const isSmartSession = options?.isSmartSession ?? false;
+
+  const {
+    audioCuesEnabled,
+    audioCueVolume,
+    bellsEnabled,
+    smartCuesEnabled,
+    smartCueVolume,
+    smartBellsEnabled,
+  } = useSessionSettings();
+
+  // Effective settings — SMART sessions use their own toggles/volume
+  const effectiveCuesEnabled = isSmartSession ? smartCuesEnabled : audioCuesEnabled;
+  const effectiveCueVolume   = isSmartSession ? smartCueVolume   : audioCueVolume;
+  const effectiveBellsEnabled = isSmartSession ? smartBellsEnabled : bellsEnabled;
+
   const [isReady, setIsReady] = useState(false);
 
   // Cue data fetched from DB (keyed by phase)
@@ -168,7 +183,7 @@ export function useBreathingCues(): BreathingCuesAPI {
           const audioUrl = await loadAudio(cue.cdn_url!);
           const audio = getAudioElement(cue.cdn_url!);
           audio.src = audioUrl;
-          audio.volume = audioCueVolume * CYCLE_RAMP_STEPS[0]; // pre-set to 25% = first cue volume
+          audio.volume = effectiveCueVolume * CYCLE_RAMP_STEPS[0]; // pre-set to 25% = first cue volume
           audio.playbackRate = cue.playback_rate;
 
           return new Promise<void>((resolve) => {
@@ -189,12 +204,12 @@ export function useBreathingCues(): BreathingCuesAPI {
       console.error('[BreathingCues] Preload error:', error);
       setIsReady(true);
     }
-  }, [loadAudio, getAudioElement, audioCueVolume]);
+  }, [loadAudio, getAudioElement, effectiveCueVolume]);
 
   // ─── playCue ──────────────────────────────────────────────────────────────
 
   const playCue = useCallback(async (phase: BreathingPhaseAudio) => {
-    if (!audioCuesEnabled) return;
+    if (!effectiveCuesEnabled) return;
 
     const cue = cueDataRef.current.get(phase);
     if (!cue) {
@@ -208,7 +223,7 @@ export function useBreathingCues(): BreathingCuesAPI {
     }
 
     const scale = getVolumeScale();
-    const effectiveVolume = audioCueVolume * scale;
+    const effectiveVolume = effectiveCueVolume * scale;
 
     // Silent — skip playback (end of session or scale=0)
     if (effectiveVolume < 0.01) return;
@@ -232,7 +247,7 @@ export function useBreathingCues(): BreathingCuesAPI {
         console.error(`[BreathingCues] Play error (${phase}):`, error);
       }
     }
-  }, [audioCuesEnabled, audioCueVolume, getAudioElement, getVolumeScale]);
+  }, [effectiveCuesEnabled, effectiveCueVolume, getAudioElement, getVolumeScale]);
 
   // ─── playBell ─────────────────────────────────────────────────────────────
 
@@ -242,11 +257,11 @@ export function useBreathingCues(): BreathingCuesAPI {
    * end_bell: defaults to 0.5 × audioCueVolume (calm, not startling).
    */
   const playBell = useCallback(async (type: 'start' | 'end', volumeScale?: number) => {
-    if (!bellsEnabled) return;
+    if (!effectiveBellsEnabled) return;
 
     // Default scale: end bell is 50% (calm finish), start bell is full unless caller specifies
     const scale = volumeScale ?? (type === 'end' ? 0.5 : 1.0);
-    const volume = audioCueVolume * scale;
+    const volume = effectiveCueVolume * scale;
 
     const phase = type === 'start' ? 'start_bell' : 'end_bell';
     const cue = cueDataRef.current.get(phase);
@@ -278,7 +293,7 @@ export function useBreathingCues(): BreathingCuesAPI {
         console.error(`[BreathingCues] Bell error (${type}):`, error);
       }
     }
-  }, [bellsEnabled, audioCueVolume, getAudioElement]);
+  }, [effectiveBellsEnabled, effectiveCueVolume, getAudioElement]);
 
   // ─── Session lifecycle callbacks ───────────────────────────────────────────
 
@@ -313,10 +328,10 @@ export function useBreathingCues(): BreathingCuesAPI {
       // Only update volume on actively playing elements — idle ones will get
       // correct volume set in playCue() / playBell() on next trigger.
       if (!audio.paused) {
-        audio.volume = audioCueVolume;
+        audio.volume = effectiveCueVolume;
       }
     });
-  }, [audioCueVolume]);
+  }, [effectiveCueVolume]);
 
   // ─── Cleanup ──────────────────────────────────────────────────────────────
 

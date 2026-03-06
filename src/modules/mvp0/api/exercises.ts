@@ -357,6 +357,8 @@ export function useCompleteSession() {
           quality_rating: payload.quality_rating || null,
           notes: payload.notes || null,
           final_intensity_multiplier: payload.final_intensity_multiplier ?? 1.0,
+          session_type: payload.session_type ?? 'preset',
+          smart_context: payload.smart_context ?? null,
         })
         .select()
         .single();
@@ -432,6 +434,50 @@ export function useUpdateSafetyFlags() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: exerciseKeys.safetyFlags(user?.id || '') });
+    },
+  });
+}
+
+// =====================================================
+// HOOKS: SMART Recommendation
+// =====================================================
+
+/**
+ * Increment session_count_smart after each completed SMART session.
+ * Called by SessionEngineModal after saveSession() succeeds.
+ */
+export function useIncrementSmartSessionCount() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (wasCompleted: boolean) => {
+      if (!user || !wasCompleted) return;
+
+      // Use upsert: if row exists, increment; if not, create with count=1
+      const { data: existing } = await supabase
+        .from('smart_exercise_recommendations')
+        .select('session_count_smart')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const newCount = (existing?.session_count_smart ?? 0) + 1;
+      const recalculateAfter = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+      await supabase
+        .from('smart_exercise_recommendations')
+        .upsert(
+          {
+            user_id: user.id,
+            session_count_smart: newCount,
+            recalculate_after: recalculateAfter,
+          },
+          { onConflict: 'user_id' },
+        );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['smart-recommendation', user?.id ?? ''] });
+      queryClient.invalidateQueries({ queryKey: ['smart-history', user?.id ?? ''] });
     },
   });
 }

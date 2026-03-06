@@ -1,0 +1,390 @@
+/* ============================================================
+   smart-exercise.css
+   Styles for SmartPrepState, SmartSection widget (PokrokPage),
+   and SMART-related UI elements.
+   Prefix: .smart-prep__*, .smart-widget__*
+   ============================================================ */
+
+/* ============================================================
+   SmartPrepState — Full-screen SMART preparation screen
+   ============================================================ */
+
+.smart-prep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 40px 24px 32px;
+  min-height: 100%;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+/* Close button */
+.smart-prep__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.smart-prep__close:hover {
+  color: var(--color-text-primary, #fff);
+  background: rgb(255 255 255 / 8%);
+}
+
+/* Header */
+.smart-prep__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.smart-prep__icon {
+  color: var(--color-teal, #2CBEC6);
+  opacity: 0.85;
+}
+
+.smart-prep__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-teal, #2CBEC6);
+  margin: 0;
+}
+
+/* Recommendation card */
+.smart-prep__card {
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 320px;
+  backdrop-filter: blur(12px);
+}
+
+.smart-prep__rhythm-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+}
+
+.smart-prep__rhythm {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #fff);
+  letter-spacing: 0.04em;
+  font-feature-settings: 'tnum';
+}
+
+/* Duration row */
+.smart-prep__duration-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.smart-prep__duration {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #fff);
+  min-width: 60px;
+  text-align: center;
+}
+
+.smart-prep__duration-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary, rgb(255 255 255 / 60%));
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.smart-prep__duration-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.smart-prep__duration-btn:hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 30%);
+  color: var(--color-text-primary, #fff);
+  background: rgb(255 255 255 / 6%);
+}
+
+/* Calibration */
+.smart-prep__calibration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 300px;
+  text-align: center;
+}
+
+.smart-prep__calibration-text {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 60%));
+  margin: 0;
+  line-height: 1.4;
+}
+
+.smart-prep__dots {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.smart-prep__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 15%);
+  transition: background 0.2s ease;
+}
+
+.smart-prep__dot--filled {
+  background: var(--color-teal, #2CBEC6);
+}
+
+/* No KP hint */
+.smart-prep__kp-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-gold, #D6A23A);
+  opacity: 0.85;
+}
+
+/* Auto-start hint */
+.smart-prep__hint {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  text-align: center;
+  line-height: 1.5;
+}
+
+.smart-prep__hint-count {
+  color: var(--color-text-primary, #fff);
+  font-weight: 600;
+}
+
+.smart-prep__hint-sub {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+/* ============================================================
+   SmartSection Widget — PokrokPage
+   Matches KPSection glass-card visual language
+   ============================================================ */
+
+.smart-widget {
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.smart-widget__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.smart-widget__icon {
+  color: var(--color-teal, #2CBEC6);
+  flex-shrink: 0;
+}
+
+.smart-widget__title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+  margin: 0;
+}
+
+/* Rhythm display */
+.smart-widget__rhythm {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #fff);
+  letter-spacing: 0.04em;
+  font-feature-settings: 'tnum';
+}
+
+/* Level section */
+.smart-widget__level-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.smart-widget__level-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.smart-widget__level-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+}
+
+.smart-widget__level-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #fff);
+}
+
+/* Level bar (21 segments) */
+.smart-widget__level-bar {
+  display: flex;
+  gap: 2px;
+}
+
+.smart-widget__level-segment {
+  flex: 1;
+  height: 6px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 10%);
+  transition: background 0.3s ease;
+}
+
+.smart-widget__level-segment--filled {
+  background: var(--color-teal, #2CBEC6);
+}
+
+/* Sparkline */
+.smart-widget__sparkline {
+  display: block;
+  width: 100%;
+  height: 36px;
+  overflow: visible;
+}
+
+/* Info row */
+.smart-widget__info-row {
+  display: flex;
+  gap: 16px;
+}
+
+.smart-widget__info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.smart-widget__info-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+}
+
+.smart-widget__info-value {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #fff);
+}
+
+/* CTA button */
+.smart-widget__cta {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-teal, #2CBEC6);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-teal, #2CBEC6);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: center;
+}
+
+.smart-widget__cta:hover {
+  background: rgb(44 190 198 / 10%);
+}
+
+/* Empty state */
+.smart-widget__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.smart-widget__empty-text {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+  line-height: 1.4;
+}
+
+/* Skeleton loading */
+.smart-widget__skeleton {
+  height: 16px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 8%);
+  animation: smart-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.smart-widget__skeleton--wide { width: 100%; }
+.smart-widget__skeleton--mid  { width: 60%; }
+.smart-widget__skeleton--short { width: 40%; }
+
+@keyframes smart-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-prep__dot,
+  .smart-widget__level-segment,
+  .smart-widget__skeleton {
+    transition: none;
+    animation: none;
+  }
+}

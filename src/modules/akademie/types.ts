@@ -3,6 +3,50 @@
 // =====================================================
 
 // --------------------------------------------------
+// Lesson technique types (for SMART CVIČENÍ algorithm)
+// --------------------------------------------------
+
+/**
+ * Dechová technika lekce.
+ * Primární signál pro SMART CVIČENÍ algoritmus — čte user_lesson_favorites
+ * + user_lesson_progress s JOIN na akademie_lessons.primary_technique.
+ *
+ * České názvy pro AI agenty a admin UI:
+ *   humming           → Bzučení
+ *   box_breathing     → Box Breathing
+ *   extended_exhale   → Prodloužený výdech
+ *   belly_breathing   → Břišní dýchání
+ *   retention         → Zadržení dechu
+ *   visualization     → Vizualizace
+ *   pursed_lip        → Přidušené rty
+ *   energizing        → Energizující
+ *   other             → Ostatní
+ */
+export type LessonTechnique =
+  | 'humming'
+  | 'box_breathing'
+  | 'extended_exhale'
+  | 'belly_breathing'
+  | 'retention'
+  | 'visualization'
+  | 'pursed_lip'
+  | 'energizing'
+  | 'other';
+
+/** Czech labels for LessonTechnique — used in admin UI and future AI context */
+export const LESSON_TECHNIQUE_LABELS: Record<LessonTechnique, string> = {
+  humming: 'Bzučení',
+  box_breathing: 'Box Breathing',
+  extended_exhale: 'Prodloužený výdech',
+  belly_breathing: 'Aktivace bránice',
+  retention: 'Zádrže dechu',
+  visualization: 'Vizualizace',
+  pursed_lip: 'Přidušení',
+  energizing: 'Hyperventilace',
+  other: 'Funkční',
+};
+
+// --------------------------------------------------
 // DB entity types (mirror Supabase schema)
 // --------------------------------------------------
 
@@ -68,6 +112,10 @@ export interface AkademieLesson {
   duration_seconds: number
   day_number: number
   sort_order: number
+  /** Primární dechová technika — čte SMART CVIČENÍ algoritmus */
+  primary_technique: LessonTechnique | null
+  /** Sekundární dechová technika (volitelná, rozšiřitelná) */
+  secondary_technique: LessonTechnique | string | null
 }
 
 export interface UserLessonProgress {

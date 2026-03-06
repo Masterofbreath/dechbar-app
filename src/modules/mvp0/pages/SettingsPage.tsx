@@ -26,6 +26,7 @@ import { useWakeLock } from '../hooks/useWakeLock';
 import { useMembership } from '@/platform/membership/useMembership';
 import { isNativeApp } from '@/platform/utils/environment';
 import { PageLayout } from '@/platform/layouts/PageLayout';
+import '@/styles/components/smart-exercise.css';
 import {
   SettingsCard,
   Toggle,
@@ -105,6 +106,16 @@ function MicIcon() {
   );
 }
 
+function SmartWaveIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <path d="M2 16 C4 8, 8 8, 10 16 C12 24, 16 24, 18 16 C20 8, 24 8, 26 16 C28 24, 30 24, 30 16" />
+    </svg>
+  );
+}
+
 export function SettingsPage() {
   const navigate = useNavigate();
   const swipeRef = useSwipeBack<HTMLDivElement>();
@@ -180,14 +191,13 @@ export function SettingsPage() {
           </SettingsCard>
           )}
 
-          {/* Card 3: Background Music */}
-          <SettingsCard title="Hudba na pozadí" icon={<MusicIcon />}>
+          {/* Card 3: Background Music — Cvičení & protokoly */}
+          <SettingsCard title="Cvičení & protokoly" icon={<MusicIcon />}>
             <Toggle
               label="Zapnout hudbu na pozadí"
               checked={settings.backgroundMusicEnabled}
               onChange={settings.setBackgroundMusicEnabled}
             />
-
             {settings.backgroundMusicEnabled && (
               <>
                 <TrackSelector
@@ -201,6 +211,7 @@ export function SettingsPage() {
                   onRandomChange={settings.setBackgroundMusicRandomEnabled}
                   userTier={userTier}
                   onFetchTracks={backgroundMusic.fetchTracks}
+                  smartMode={false}
                 />
                 <VolumeSlider
                   label="Hlasitost hudby"
@@ -285,6 +296,147 @@ export function SettingsPage() {
                   <p className="settings-card__info settings-card__info--premium">
                     Hlasové průvodce dostupné s tarifem SMART
                   </p>
+                )}
+              </>
+            )}
+          </SettingsCard>
+
+          {/* Card 6: SMART CVIČENÍ — kompletní audio profil */}
+          <SettingsCard
+            title="SMART CVIČENÍ"
+            icon={<SmartWaveIcon />}
+            locked={userTier === 'ZDARMA'}
+            lockedTooltip="Prémiová funkce dostupná s tarifem SMART"
+          >
+            {userTier !== 'ZDARMA' && (
+              <>
+                {/* Duration mode */}
+                <div className="settings-card__label">Preferovaná délka cvičení</div>
+
+                <div className="smart-duration-selector">
+                  <label className="smart-duration-option">
+                    <input
+                      type="radio"
+                      name="smartDurationType"
+                      value="fixed"
+                      checked={settings.smartDurationMode.type === 'fixed'}
+                      onChange={() => settings.setSmartDurationMode({ type: 'fixed', seconds: 420 })}
+                    />
+                    <span>Pevný čas</span>
+                  </label>
+
+                  {settings.smartDurationMode.type === 'fixed' && (
+                    <div className="smart-duration-slider-wrap">
+                      <input
+                        type="range"
+                        min={300}
+                        max={900}
+                        step={60}
+                        value={settings.smartDurationMode.seconds}
+                        onChange={(e) =>
+                          settings.setSmartDurationMode({ type: 'fixed', seconds: Number(e.target.value) })
+                        }
+                        className="smart-duration-slider"
+                        aria-label="Délka cvičení v minutách"
+                      />
+                      <span className="smart-duration-value">
+                        {Math.round(settings.smartDurationMode.seconds / 60)} min
+                      </span>
+                    </div>
+                  )}
+
+                  <label className="smart-duration-option">
+                    <input
+                      type="radio"
+                      name="smartDurationType"
+                      value="range"
+                      checked={settings.smartDurationMode.type === 'range'}
+                      onChange={() => settings.setSmartDurationMode({ type: 'range', preset: 'medium' })}
+                    />
+                    <span>Smart Time</span>
+                  </label>
+
+                  {settings.smartDurationMode.type === 'range' && (
+                    <div className="smart-duration-presets">
+                      {(['short', 'medium', 'long'] as const).map((preset) => {
+                        const labels = { short: 'Krátké 5–8 min', medium: 'Střední 7–10 min', long: 'Delší 10–15 min' };
+                        const isCurrent =
+                          settings.smartDurationMode.type === 'range' &&
+                          settings.smartDurationMode.preset === preset;
+                        return (
+                          <label key={preset} className={`smart-duration-preset${isCurrent ? ' smart-duration-preset--active' : ''}`}>
+                            <input
+                              type="radio"
+                              name="smartDurationPreset"
+                              value={preset}
+                              checked={isCurrent}
+                              onChange={() => settings.setSmartDurationMode({ type: 'range', preset })}
+                            />
+                            <span>{labels[preset]}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="settings-card__divider" />
+
+                {/* SMART Audio — Bells & Cues */}
+                <Toggle
+                  label="Signální tóny (start & end bell)"
+                  checked={settings.smartBellsEnabled}
+                  onChange={settings.setSmartBellsEnabled}
+                />
+                <Toggle
+                  label="Zvukové signály rytmu"
+                  checked={settings.smartCuesEnabled}
+                  onChange={settings.setSmartCuesEnabled}
+                />
+                {settings.smartCuesEnabled && (
+                  <>
+                    <CueSoundSelector
+                      selectedPack={settings.smartCueSoundSlug}
+                      onChange={settings.setSmartCueSoundSlug}
+                      userTier={userTier}
+                    />
+                    <VolumeSlider
+                      label="Hlasitost signálů"
+                      value={settings.smartCueVolume}
+                      onChange={settings.setSmartCueVolume}
+                    />
+                  </>
+                )}
+
+                <div className="settings-card__divider" />
+
+                {/* SMART Audio — Hudba na pozadí */}
+                <Toggle
+                  label="Hudba na pozadí (SMART)"
+                  checked={settings.smartMusicEnabled}
+                  onChange={settings.setSmartMusicEnabled}
+                />
+                {settings.smartMusicEnabled && (
+                  <>
+                    <TrackSelector
+                      tracks={backgroundMusic.tracks}
+                      selectedSlug={settings.smartMusicSlug}
+                      randomEnabled={settings.smartMusicRandomEnabled}
+                      onChange={settings.setSmartMusicSlug}
+                      onRandomChange={settings.setSmartMusicRandomEnabled}
+                      userTier={userTier}
+                      onFetchTracks={backgroundMusic.fetchTracks}
+                      smartMode={true}
+                    />
+                    <VolumeSlider
+                      label="Hlasitost hudby"
+                      value={settings.smartMusicVolume}
+                      onChange={settings.setSmartMusicVolume}
+                    />
+                    <p className="settings-card__info settings-card__info--indent">
+                      Exkluzivní SMART tracky jsou dostupné jen zde
+                    </p>
+                  </>
                 )}
               </>
             )}

@@ -11,7 +11,6 @@
 /* ── Base ──────────────────────────────────────────────────── */
 
 .business-admin {
-  padding: 1.5rem;
   max-width: 1200px;
 }
 
@@ -27,7 +26,7 @@
 }
 
 .business-admin__title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
@@ -380,15 +379,123 @@
 /* ── Responsive ────────────────────────────────────────────── */
 
 @media (width <= 767px) {
-  .business-admin {
-    padding: 1rem;
-  }
-
   .business-admin__row-2col {
     grid-template-columns: 1fr;
   }
 
   .business-admin__coming-soon-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ── DAU/MAU Stickiness ────────────────────────────────────── */
+
+.business-admin__stickiness {
+  background: var(--color-surface-elevated);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  margin-bottom: 1rem;
+}
+
+.business-admin__stickiness-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.business-admin__stickiness-value {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.business-admin__stickiness-rating {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.business-admin__stickiness-bar-wrap {
+  margin-bottom: 1.25rem;
+}
+
+.business-admin__stickiness-bar-bg {
+  position: relative;
+  height: 8px;
+  background: rgb(255 255 255 / 8%);
+  border-radius: 4px;
+  overflow: visible;
+  margin-bottom: 0.4rem;
+}
+
+.business-admin__stickiness-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Cílový marker na 40% šířky (= 20% stickiness na 0–50% škále) */
+.business-admin__stickiness-goal-marker {
+  position: absolute;
+  top: -4px;
+  left: 40%;
+  width: 2px;
+  height: 16px;
+  background: rgb(255 255 255 / 35%);
+  border-radius: 1px;
+}
+
+.business-admin__stickiness-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+}
+
+.business-admin__stickiness-goal-label {
+  color: rgb(255 255 255 / 45%);
+}
+
+.business-admin__stickiness-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.business-admin__stickiness-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.business-admin__stickiness-stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.business-admin__stickiness-stat-label {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.business-admin__stickiness-note {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  opacity: 0.45;
+  line-height: 1.5;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+@media (width <= 767px) {
+  .business-admin__stickiness-stats {
+    grid-template-columns: repeat(3, 1fr);
   }
 }

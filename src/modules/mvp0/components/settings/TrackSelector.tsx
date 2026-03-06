@@ -21,18 +21,21 @@ export interface TrackSelectorProps {
   userTier: 'ZDARMA' | 'SMART' | 'AI_COACH';
   onFetchTracks: () => Promise<BackgroundTrack[]>;
   disabled?: boolean;
+  /** If true, show only smart_only tracks. If false (default), show only non-smart_only tracks. */
+  smartMode?: boolean;
 }
 
 const TIER_LEVEL: Record<string, number> = { ZDARMA: 0, SMART: 1, AI_COACH: 2 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  nature:   'Příroda',
-  binaural: 'Binaurální',
-  tibetan:  'Tibetské',
-  yogic:    'Jógické',
+  nature:         'Příroda',
+  binaural:       'Binaurální',
+  tibetan:        'Tibetské',
+  yogic:          'Jógické',
+  'smart-session': 'SMART Exkluzivní',
 };
 
-const CATEGORY_ORDER = ['nature', 'binaural', 'tibetan', 'yogic'];
+const CATEGORY_ORDER = ['smart-session', 'nature', 'binaural', 'tibetan', 'yogic'];
 
 /**
  * TrackSelector — collapsed dropdown s kategoriemi + náhodný výběr
@@ -46,10 +49,18 @@ export const TrackSelector: React.FC<TrackSelectorProps> = ({
   userTier,
   onFetchTracks,
   disabled = false,
+  smartMode = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const fetchCalledRef = useRef(false);
+
+  // Filter tracks by smart_only flag:
+  // - smartMode=false: show only tracks where smart_only=false (standard exercises)
+  // - smartMode=true:  show ALL tracks (smart_only=false + smart_only=true as premium extras)
+  const filteredTracks = smartMode
+    ? tracks // all tracks visible in SMART — non-smart at top, smart-only as premium extras
+    : tracks.filter(t => !(t.smart_only ?? false));
 
   // Fetch on mount if empty
   useEffect(() => {
@@ -77,7 +88,7 @@ export const TrackSelector: React.FC<TrackSelectorProps> = ({
   [userTier]);
 
   // Selected track label for collapsed state
-  const selectedTrack = tracks.find(t => t.slug === selectedSlug);
+  const selectedTrack = filteredTracks.find(t => t.slug === selectedSlug);
   const collapsedLabel = randomEnabled
     ? 'Náhodný výběr'
     : selectedTrack
@@ -89,7 +100,7 @@ export const TrackSelector: React.FC<TrackSelectorProps> = ({
     .map(cat => ({
       category: cat,
       label: CATEGORY_LABELS[cat] ?? cat,
-      tracks: tracks.filter(t => t.category === cat),
+      tracks: filteredTracks.filter(t => t.category === cat),
     }))
     .filter(g => g.tracks.length > 0);
 
@@ -193,6 +204,11 @@ export const TrackSelector: React.FC<TrackSelectorProps> = ({
                     {tierLabel && (
                       <span className={`track-selector__option-badge ${!accessible ? 'track-selector__option-badge--locked' : ''}`}>
                         {tierLabel}
+                      </span>
+                    )}
+                    {track.smart_only && smartMode && (
+                      <span className="track-selector__option-badge track-selector__option-badge--smart-only">
+                        ✦
                       </span>
                     )}
                   </button>

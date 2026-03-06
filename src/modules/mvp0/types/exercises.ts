@@ -169,7 +169,7 @@ export interface CreateExercisePayload {
  * Complete session payload
  */
 export interface CompleteSessionPayload {
-  exercise_id: string;
+  exercise_id: string | null; // null for smart ephemeral exercises (no DB row)
   started_at: Date;
   completed_at: Date;
   was_completed: boolean;
@@ -179,6 +179,8 @@ export interface CompleteSessionPayload {
   quality_rating?: number; // 1-5
   notes?: string;
   final_intensity_multiplier?: number; // 0.50–1.50, default 1.0 (intensity control)
+  session_type?: 'preset' | 'custom' | 'smart';
+  smart_context?: SmartContextSnapshot;
 }
 
 /**
@@ -189,6 +191,86 @@ export interface SafetyQuestionnaireAnswers {
   pregnancy: boolean;
   cardiovascular: boolean;
   asthma: boolean;
+}
+
+// =====================================================
+// SMART CVIČENÍ TYPES
+// =====================================================
+
+/**
+ * Duration mode preference stored in sessionSettingsStore.
+ * fixed: exact seconds (300–900)
+ * range: algorithmic selection within short/medium/long preset ranges
+ */
+export type SmartDurationMode =
+  | { type: 'fixed'; seconds: number }
+  | { type: 'range'; preset: 'short' | 'medium' | 'long' };
+
+/**
+ * Time context derived from device clock (new Date().getHours())
+ */
+export type SmartTimeContext = 'morning' | 'day' | 'evening' | 'night';
+
+/**
+ * Multi-phase profile for SMART session
+ */
+export type SmartPhaseProfile = 'standard' | 'dynamic_day' | 'evening_humming';
+
+/**
+ * Complete SMART session configuration — output of BIE computeSmartSession().
+ * Passed from SmartExerciseButton → DnesPage → SessionEngineModal as smartConfig prop.
+ */
+export interface SmartSessionConfig {
+  /** Level index 1–21 into BREATH_LEVELS scale */
+  level: number;
+  /** Base breathing pattern (holdInhale is always 0) */
+  basePattern: {
+    inhale_seconds: number;
+    hold_after_inhale_seconds: 0;
+    exhale_seconds: number;
+    hold_after_exhale_seconds: number;
+  };
+  /** Total resolved duration in seconds */
+  totalDurationSeconds: number;
+  /** Multi-phase profile used */
+  phaseProfile: SmartPhaseProfile;
+  /** Time context at computation time */
+  timeContext: SmartTimeContext;
+  /** Number of completed SMART sessions (for calibration UI) */
+  sessionCountSmart: number;
+  /** Confidence score 0.0–1.0 */
+  confidenceScore: number;
+  /** True if sessionCountSmart < 10 */
+  isCalibrating: boolean;
+  /** True if loaded from cache (recalculate_after > now) */
+  cacheValid: boolean;
+}
+
+/**
+ * SMART context snapshot saved into exercise_sessions.smart_context JSONB.
+ * Provides full audit trail for future AI COACH analysis.
+ */
+export interface SmartContextSnapshot {
+  level: number;
+  base_rhythm: {
+    inhale: number;
+    hold_inhale: 0;
+    exhale: number;
+    hold_exhale: number;
+  };
+  phase_profile: SmartPhaseProfile;
+  time_context: SmartTimeContext;
+  /** KP value in seconds at session start (null if no measurement) */
+  kp_at_session: number | null;
+  total_duration_seconds: number;
+  confidence_score_at_start: number;
+  session_count_at_start: number;
+  phase_breakdown: Array<{
+    order: number;
+    duration_seconds: number;
+    multiplier: number;
+    type?: 'silence';
+  }>;
 }
 
 // =====================================================

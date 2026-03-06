@@ -68,13 +68,13 @@
   min-height: 44px;
 }
 
-.akademie-admin__tab.aktive {
+.akademie-admin__tab--active {
   color: var(--color-text-primary);
   border-bottom-color: var(--dechbar-gold, #f8ca00);
   font-weight: 600;
 }
 
-.akademie-admin__tab:hover:not(.aktive) {
+.akademie-admin__tab:hover:not(.akademie-admin__tab--active) {
   color: var(--color-text-primary);
 }
 
