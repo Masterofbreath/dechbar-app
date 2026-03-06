@@ -68,17 +68,41 @@ export function AppLayout({
   // Synchronizace přehrávače mezi záložkami ve stejném browseru (BroadcastChannel)
   usePlayerBroadcast();
 
-  // iOS PWA fix: force layout recalculation after first render.
-  // In standalone PWA mode, iOS sometimes computes position:fixed coordinates
-  // before viewport-fit=cover is fully applied → BottomNav appears with a gap
-  // on initial load. Single rAF fires too early; double-rAF waits for the
-  // second paint cycle when iOS has finalized the safe-area metrics.
-  // Timeout fallback covers edge cases where rAF still fires too early.
+  // iOS PWA fix: force recompositing of position:fixed layers after first render.
+  //
+  // Root cause: iOS WebKit initializes the compositing layer for position:fixed
+  // elements against the "large viewport" (before safe-area insets are applied).
+  // This causes BottomNav to render with a gap above the home indicator.
+  // After the first scroll event iOS recomposes → gap disappears.
+  //
+  // Fix: window.scrollTo(0,1) + scrollTo(0,0) is the only reliable way to trigger
+  // a full compositing layer recalculation in iOS WebKit (unlike getBoundingClientRect
+  // which only forces a layout reflow, not a compositing update).
+  //
+  // visualViewport resize listener catches the case where the viewport finalizes
+  // its dimensions asynchronously (e.g. slow iOS devices, heavy JS bundle).
   useEffect(() => {
-    const fix = () => void document.documentElement.getBoundingClientRect();
-    requestAnimationFrame(() => requestAnimationFrame(fix));
-    const t = setTimeout(fix, 300);
-    return () => clearTimeout(t);
+    const forceRecomposite = () => {
+      window.scrollTo(0, 1);
+      window.scrollTo(0, 0);
+    };
+
+    // Double-rAF: waits for 2nd paint cycle when iOS has finalized safe-area metrics
+    requestAnimationFrame(() => requestAnimationFrame(forceRecomposite));
+
+    // Fallback timeout for slower devices / deferred safe-area calculation
+    const t1 = setTimeout(forceRecomposite, 300);
+    const t2 = setTimeout(forceRecomposite, 600);
+
+    // visualViewport fires when iOS finalizes viewport dimensions asynchronously
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', forceRecomposite, { once: true });
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      vv?.removeEventListener('resize', forceRecomposite);
+    };
   }, []);
 
   return (

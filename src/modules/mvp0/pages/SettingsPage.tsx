@@ -6,11 +6,12 @@
  * Layout: PageLayout (iOS sticky header — same as ProfilPage, UcetPage)
  * Design: Dark-first, CSS tokens, custom SVG icons (no emoji)
  *
- * Card structure (5 → 4 cards):
- *   1. Zvuk při změně rytmu  — toggle + volume (conditional)
- *   2. Vibrace               — toggle + intensity + adaptive (conditional)
- *   3. Hudba na pozadí       — toggle + track + volume (conditional)
- *   4. Doplňky               — walking toggle + bells toggle (merged, compact)
+ * Card structure:
+ *   1. Cvičení & protokoly  — bells + hudba (conditional) + cue zvuky (conditional)
+ *   2. Vibrace               — toggle + intensity + adaptive (conditional, native only)
+ *   3. Doplňky               — walking toggle + keep screen on
+ *   4. Hlasový průvodce      — toggle + voice pack + volume (conditional)
+ *   5. SMART CVIČENÍ         — duration + bells + cues + hudba (locked for ZDARMA)
  *
  * @package DechBar_App
  * @subpackage MVP0/Pages
@@ -38,18 +39,6 @@ import {
 } from '../components/settings';
 
 /* ---- Inline SVG Icons (24×24, outline, 2px stroke, currentColor) ---- */
-
-function SoundIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-      aria-hidden="true">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-    </svg>
-  );
-}
 
 function VibrateIcon() {
   return (
@@ -134,14 +123,62 @@ export function SettingsPage() {
       <div className="settings-page" ref={swipeRef}>
         <div className="settings-page__content">
 
-          {/* Card 1: Audio Cues */}
-          <SettingsCard title="Zvuk při změně rytmu" icon={<SoundIcon />}>
+          {/* Card 1: Cvičení & protokoly — bells + hudba + zvukové signály */}
+          <SettingsCard title="Cvičení & protokoly" icon={<MusicIcon />}>
+            {/* Bells toggle */}
             <Toggle
-              label="Zapnout zvukové signály"
+              label="Zvuk při startu a ukončení"
+              checked={settings.bellsEnabled}
+              onChange={settings.setBellsEnabled}
+            />
+            <p className="settings-card__info settings-card__info--indent">
+              Tibetská mísa při startu cvičení a ukončení
+            </p>
+
+            <div className="settings-card__divider" />
+
+            {/* Hudba na pozadí */}
+            <Toggle
+              label="Zapnout hudbu na pozadí"
+              checked={settings.backgroundMusicEnabled}
+              onChange={settings.setBackgroundMusicEnabled}
+            />
+            {settings.backgroundMusicEnabled && (
+              <>
+                <TrackSelector
+                  tracks={backgroundMusic.tracks}
+                  selectedSlug={settings.selectedTrackSlug}
+                  randomEnabled={settings.backgroundMusicRandomEnabled}
+                  onChange={(slug) => {
+                    settings.setSelectedTrack(slug);
+                    if (slug) backgroundMusic.setTrack(slug);
+                  }}
+                  onRandomChange={settings.setBackgroundMusicRandomEnabled}
+                  userTier={userTier}
+                  onFetchTracks={backgroundMusic.fetchTracks}
+                  smartMode={false}
+                />
+                <VolumeSlider
+                  label="Hlasitost hudby"
+                  value={settings.backgroundMusicVolume}
+                  onChange={settings.setBackgroundMusicVolume}
+                />
+                {userTier === 'ZDARMA' && (
+                  <p className="settings-card__info settings-card__info--premium">
+                    Více tracků dostupných s tarifem SMART
+                  </p>
+                )}
+              </>
+            )}
+
+            <div className="settings-card__divider" />
+
+            {/* Zvukové signály rytmu */}
+            <Toggle
+              label="Zapnout zvukové signály rytmu"
               checked={settings.audioCuesEnabled}
               onChange={settings.setAudioCuesEnabled}
             />
-
             {settings.audioCuesEnabled && (
               <>
                 <CueSoundSelector
@@ -191,55 +228,8 @@ export function SettingsPage() {
           </SettingsCard>
           )}
 
-          {/* Card 3: Background Music — Cvičení & protokoly */}
-          <SettingsCard title="Cvičení & protokoly" icon={<MusicIcon />}>
-            <Toggle
-              label="Zapnout hudbu na pozadí"
-              checked={settings.backgroundMusicEnabled}
-              onChange={settings.setBackgroundMusicEnabled}
-            />
-            {settings.backgroundMusicEnabled && (
-              <>
-                <TrackSelector
-                  tracks={backgroundMusic.tracks}
-                  selectedSlug={settings.selectedTrackSlug}
-                  randomEnabled={settings.backgroundMusicRandomEnabled}
-                  onChange={(slug) => {
-                    settings.setSelectedTrack(slug);
-                    if (slug) backgroundMusic.setTrack(slug);
-                  }}
-                  onRandomChange={settings.setBackgroundMusicRandomEnabled}
-                  userTier={userTier}
-                  onFetchTracks={backgroundMusic.fetchTracks}
-                  smartMode={false}
-                />
-                <VolumeSlider
-                  label="Hlasitost hudby"
-                  value={settings.backgroundMusicVolume}
-                  onChange={settings.setBackgroundMusicVolume}
-                />
-                {userTier === 'ZDARMA' && (
-                  <p className="settings-card__info settings-card__info--premium">
-                    Více tracků dostupných s tarifem SMART
-                  </p>
-                )}
-              </>
-            )}
-          </SettingsCard>
-
-          {/* Card 4: Doplňky — walking + bells merged (both are toggle-only) */}
+          {/* Card 3: Doplňky — walking + keep screen on (bells moved to Cvičení & protokoly) */}
           <SettingsCard title="Doplňky" icon={<SlidersIcon />}>
-            <Toggle
-              label="Zvuk při startu a ukončení"
-              checked={settings.bellsEnabled}
-              onChange={settings.setBellsEnabled}
-            />
-            <p className="settings-card__info settings-card__info--indent">
-              Tibetská mísa při startu cvičení a ukončení
-            </p>
-
-            <div className="settings-card__divider" />
-
             <Toggle
               label="Režim při chůzi"
               checked={settings.walkingModeEnabled}

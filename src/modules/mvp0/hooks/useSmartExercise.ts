@@ -17,6 +17,7 @@ import { useAuth } from '@/platform/auth';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useSafetyFlags } from '../api/exercises';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
+import { getBreathLevel } from '../config/breathLevels';
 import {
   computeSmartSession,
   buildSmartExercise,
@@ -42,6 +43,7 @@ export interface SmartRecommendationRow {
   context_snapshot: Record<string, unknown> | null;
   recalculate_after: string | null;
   last_calculated_at: string | null;
+  last_level_change_at: string | null;
   current_level: number;
   session_count_smart: number;
   preferred_duration_seconds: number;
@@ -117,6 +119,22 @@ export function useSmartExercise(): UseSmartExerciseReturn {
     enabled: !!user,
   });
 
+  // Fetch current streak — needed for Tier 5 Progression Gate (daily users get 2-day gate, others 7)
+  const { data: currentStreak } = useQuery({
+    queryKey: ['smart-streak', user?.id ?? ''],
+    queryFn: async () => {
+      if (!user) return 0;
+      const { data } = await supabase
+        .from('user_activity_streaks')
+        .select('current_streak_days')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return data?.current_streak_days ?? 0;
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const isLoading = recLoading || historyLoading;
   const error = recError ?? historyError ?? null;
 
@@ -147,14 +165,15 @@ export function useSmartExercise(): UseSmartExerciseReturn {
       config = reconstructConfigFromCache(cachedRec, smartDurationMode);
     } else {
       // Compute fresh
+      const prevLevel = cachedRec?.current_level ?? 3;
       const input: BIEInput = {
         safetyFlags: safetyFlags ?? null,
         latestKP: currentKP ?? null,
         smartHistory: smartHistory ?? [],
         sessionCountSmart: cachedRec?.session_count_smart ?? 0,
-        currentLevel: cachedRec?.current_level ?? 3,
-        lastLevelChangeAt: null,
-        streak: 0,
+        currentLevel: prevLevel,
+        lastLevelChangeAt: cachedRec?.last_level_change_at ?? null,
+        streak: currentStreak ?? 0,
         smartDurationMode,
       };
 
@@ -163,12 +182,18 @@ export function useSmartExercise(): UseSmartExerciseReturn {
       // Persist computed config to cache (upsert)
       try {
         const level = config.level;
+        // Track when level actually changed — used by Tier 5 Progression Gate
+        const levelChanged = level !== prevLevel;
+        // Always persist base rhythm from BREATH_LEVELS — not the session/night-overridden pattern.
+        // Session-specific rhythm (e.g. night override) lives only in smart_context JSONB.
+        const baseLevelData = getBreathLevel(level);
+
         await supabase.from('smart_exercise_recommendations').upsert({
           user_id: user.id,
-          recommended_inhale_s: config.basePattern.inhale_seconds,
+          recommended_inhale_s: baseLevelData.inhale,
           recommended_hold_after_inhale_s: 0,
-          recommended_exhale_s: config.basePattern.exhale_seconds,
-          recommended_hold_after_exhale_s: config.basePattern.hold_after_exhale_seconds,
+          recommended_exhale_s: baseLevelData.exhale,
+          recommended_hold_after_exhale_s: baseLevelData.holdExhale,
           confidence_score: config.confidenceScore,
           data_points_count: config.sessionCountSmart,
           is_ready: config.confidenceScore >= 0.7,
@@ -179,6 +204,7 @@ export function useSmartExercise(): UseSmartExerciseReturn {
           preferred_duration_seconds: config.totalDurationSeconds,
           time_context: config.timeContext,
           phase_profile: config.phaseProfile,
+          ...(levelChanged ? { last_level_change_at: now } : {}),
         }, { onConflict: 'user_id' });
 
         // Invalidate cache queries to reflect new data
@@ -192,7 +218,7 @@ export function useSmartExercise(): UseSmartExerciseReturn {
 
     const exercise = buildSmartExercise(config);
     return { config, exercise };
-  }, [user, cachedRec, safetyFlags, currentKP, smartHistory, smartDurationMode, queryClient]);
+  }, [user, cachedRec, safetyFlags, currentKP, smartHistory, currentStreak, smartDurationMode, queryClient]);
 
   return {
     computeAndBuild,

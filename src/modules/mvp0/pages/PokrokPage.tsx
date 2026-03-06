@@ -367,7 +367,11 @@ export function PokrokPage() {
 
         {/* 1b. SMART Sekce */}
         <div className="pokrok-page__section-gap">
-          <SmartSection userId={userId} />
+          <SmartSection
+            userId={userId}
+            latestKP={currentKP}
+            onMeasureKP={openKPDetail}
+          />
         </div>
 
         {/* 2. Tento týden — WeeklyDots + streak inline */}

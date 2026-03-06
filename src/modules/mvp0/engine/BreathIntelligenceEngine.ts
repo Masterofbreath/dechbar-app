@@ -20,7 +20,7 @@
  * @subpackage MVP0/Engine
  */
 
-import { BREATH_LEVELS, getBreathLevel } from '../config/breathLevels';
+import { getBreathLevel } from '../config/breathLevels';
 import type {
   SmartSessionConfig,
   SmartContextSnapshot,
@@ -59,7 +59,14 @@ export interface BIEInput {
 // INTERNAL CONSTANTS
 // =====================================================
 
-const COLD_START_LEVEL = 3;
+// Cold start level depends on KP — faster entry for experienced breathers.
+// Safety: KP Cap (Tier 2) will still enforce the hard ceiling regardless.
+function resolveColdStartLevel(kp: number | null): number {
+  if (kp === null || kp < 20) return 3; // unknown or weak KP → safe entry
+  if (kp < 30) return 5;               // solid KP (20–29s) → skip basics
+  return 7;                             // KP 30s+ → start at Střední+
+}
+
 // COLD_START_DURATION is reserved for future adaptive warm-up logic
 const _COLD_START_DURATION = 420; // 7 min
 const MIN_DURATION = 300; // 5 min
@@ -192,16 +199,11 @@ function applyTier3TimeContext(
     };
   }
 
-  if (context === 'evening') {
-    return { targetLevelAdjust: -1 };
-  }
-
-  if (context === 'morning') {
-    // Upper bound of current level (slight nudge up)
-    return { targetLevelAdjust: 0 };
-  }
-
-  // Day: full freedom
+  // Evening, morning, day: no level adjustment.
+  // Level is controlled exclusively by Tier 4 (session performance).
+  // Evening used to have -1 penalty but that caused progressive level drops
+  // for users who train in the evening — phaseProfile (evening_humming) already
+  // handles the calming effect without needing to reduce the pattern difficulty.
   return { targetLevelAdjust: 0 };
 }
 
@@ -310,12 +312,13 @@ export function computeSmartSession(input: BIEInput): SmartSessionConfig {
   }
 }
 
-function getColdStartConfig(durationMode: SmartDurationMode): SmartSessionConfig {
-  const level = getBreathLevel(COLD_START_LEVEL);
+function getColdStartConfig(durationMode: SmartDurationMode, kp: number | null = null): SmartSessionConfig {
+  const coldLevel = resolveColdStartLevel(kp);
+  const level = getBreathLevel(coldLevel);
   const timeContext = getTimeContext();
   const totalDurationSeconds = resolveDuration(durationMode, timeContext, 0);
   return {
-    level: COLD_START_LEVEL,
+    level: coldLevel,
     basePattern: {
       inhale_seconds: level.inhale,
       hold_after_inhale_seconds: 0,
@@ -346,7 +349,7 @@ function computeSmartSessionUnsafe(input: BIEInput): SmartSessionConfig {
 
   // Cold start
   if (sessionCountSmart === 0 || currentLevel === 0) {
-    return getColdStartConfig(smartDurationMode);
+    return getColdStartConfig(smartDurationMode, latestKP);
   }
 
   const timeContext = getTimeContext();
@@ -382,7 +385,7 @@ function computeSmartSessionUnsafe(input: BIEInput): SmartSessionConfig {
   const gatedDelta = applyTier5ProgressionGate(t4.levelDelta, lastLevelChangeAt, streak);
 
   // Compute target level
-  let targetLevel = clampLevel(currentLevel + gatedDelta + t3.targetLevelAdjust, 1, tierMaxLevel);
+  const targetLevel = clampLevel(currentLevel + gatedDelta + t3.targetLevelAdjust, 1, tierMaxLevel);
 
   // TIER 6 — Behavioral Preference
   const phaseProfile = applyTier6Behavioral(timeContext, smartHistory);
@@ -391,20 +394,24 @@ function computeSmartSessionUnsafe(input: BIEInput): SmartSessionConfig {
   let finalPattern: SmartSessionConfig['basePattern'];
 
   if (tierForceNightRhythm) {
-    // Night: find max rhythm for this KP, no holds
+    // Night: find max rhythm for this KP, no holds —
+    // BUT never exceed the user's current base level rhythm.
     const nightRow = NIGHT_KP_RHYTHMS.find((r) => (latestKP ?? 0) < r.maxKP)
       ?? NIGHT_KP_RHYTHMS[NIGHT_KP_RHYTHMS.length - 1]!;
+
+    const baseData = getBreathLevel(targetLevel);
+
+    // Cap night rhythm to user's base level — never jump above their current zone
+    const nightInhale = Math.min(nightRow.inhale, baseData.inhale);
+    const nightExhale = Math.min(nightRow.exhale, baseData.exhale);
+
     finalPattern = {
-      inhale_seconds: nightRow.inhale,
+      inhale_seconds: nightInhale,
       hold_after_inhale_seconds: 0,
-      exhale_seconds: nightRow.exhale,
-      hold_after_exhale_seconds: 0,
+      exhale_seconds: nightExhale,
+      hold_after_exhale_seconds: 0, // no holds at night
     };
-    // Clamp level to match night pattern level
-    const matchingLevel = BREATH_LEVELS.findIndex(
-      (l) => l.inhale === nightRow.inhale && l.exhale === nightRow.exhale && l.holdExhale === 0,
-    );
-    if (matchingLevel >= 0) targetLevel = clampLevel(matchingLevel + 1, 1, tierMaxLevel);
+    // Level stays at targetLevel — rhythm is softened, not level-jumped
   } else {
     const levelData = getBreathLevel(targetLevel);
     const holdExhale = tierNoHolds ? 0 : levelData.holdExhale;

@@ -19,7 +19,7 @@ import type { SmartSessionConfig } from '../../types/exercises';
 // =====================================================
 
 export interface SmartPrepStateProps {
-  smartConfig: SmartSessionConfig;
+  smartConfig: SmartSessionConfig | null;
   onStart: () => void;
   onAdjustDuration: (deltaSeconds: number) => void;
   onClose: () => void;
@@ -28,6 +28,20 @@ export interface SmartPrepStateProps {
   /** Play a start bell at a given volume — called at countdown 2s and 1s */
   onPlayBell?: (volume: number) => void;
 }
+
+// Fallback cold-start config used when BIE fails and config is null
+const FALLBACK_CONFIG: SmartSessionConfig = {
+  level: 3,
+  totalDurationSeconds: 420,
+  basePattern: {
+    inhale_seconds: 4,
+    hold_after_inhale_seconds: 0,
+    exhale_seconds: 6,
+    hold_after_exhale_seconds: 0,
+  },
+  isCalibrating: true,
+  sessionCountSmart: 0,
+};
 
 // =====================================================
 // HELPERS
@@ -91,13 +105,16 @@ const MAX_DURATION_SECONDS = 900;
 const DURATION_STEP = 60;
 
 export function SmartPrepState({
-  smartConfig,
+  smartConfig: smartConfigProp,
   onStart,
   onAdjustDuration,
   onClose,
   hasNoKP = false,
   onPlayBell,
 }: SmartPrepStateProps) {
+  // Tiché použití fallback konfigurace pokud BIE selže
+  const smartConfig = smartConfigProp ?? FALLBACK_CONFIG;
+  const isFallback = smartConfigProp === null;
   const [countdown, setCountdown] = useState(AUTO_START_SECONDS);
   const [started, setStarted] = useState(false);
   const timerRef = useRef<number | null>(null);
@@ -265,6 +282,16 @@ export function SmartPrepState({
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
           Změř si KP pro přesnější doporučení
+        </div>
+      )}
+
+      {/* Fallback notice — shown when BIE computation failed */}
+      {isFallback && (
+        <div className="smart-prep__kp-hint" role="status">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Použijeme výchozí nastavení pro dnešní cvičení.
         </div>
       )}
 

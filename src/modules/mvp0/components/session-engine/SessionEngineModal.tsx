@@ -750,9 +750,9 @@ export function SessionEngineModal({
         }`}
       >
         {/* SMART-PREP: Smart exercise preparation screen (replaces idle/start for SMART sessions) */}
-        {sessionState === 'smart-prep' && smartConfigAdjusted && (
+        {sessionState === 'smart-prep' && (
           <SmartPrepState
-            smartConfig={smartConfigAdjusted}
+            smartConfig={smartConfigAdjusted ?? null}
             hasNoKP={hasNoKP}
             onStart={() => {
               startSmartSession();
@@ -848,10 +848,11 @@ export function SessionEngineModal({
         {sessionState === 'active' && currentPhase && (
           <>
             <FullscreenModal.TopBar>
+              {/* Exercise/protocol name stays in title, phase counter in badge */}
               <FullscreenModal.Title>{exercise.name}</FullscreenModal.Title>
               {totalPhases > 1 && (
                 <FullscreenModal.Badge>
-                  FÁZE {currentPhaseIndex + 1}/{totalPhases}
+                  {currentPhaseIndex + 1}/{totalPhases}
                 </FullscreenModal.Badge>
               )}
               <FullscreenModal.CloseButton onClick={handleClose} />

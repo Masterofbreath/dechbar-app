@@ -38,11 +38,13 @@ export function SmartExerciseButton({ onSmartStart }: SmartExerciseButtonProps) 
   const { plan } = useMembership(user?.id);
   const [showModal, setShowModal] = useState(false);
   const [isComputing, setIsComputing] = useState(false);
-  const { computeAndBuild } = useSmartExercise();
+  const [computeError, setComputeError] = useState<string | null>(null);
+  const { computeAndBuild, isLoading: isDataLoading } = useSmartExercise();
   
   // User has SMART or AI COACH tier - becomes PRIMARY CTA
   const isPremium = plan === 'SMART' || plan === 'AI_COACH';
   const locked = !isPremium;
+  const isBusy = isComputing || isDataLoading;
   
   async function handleClick(event: React.MouseEvent) {
     event.preventDefault();
@@ -56,15 +58,12 @@ export function SmartExerciseButton({ onSmartStart }: SmartExerciseButtonProps) 
     if (isComputing) return;
 
     setIsComputing(true);
+    setComputeError(null);
     try {
       const { config, exercise } = await computeAndBuild();
       onSmartStart?.(config, exercise);
     } catch {
-      // Fallback: still open modal with cold start config
-      const { config, exercise } = await computeAndBuild().catch(() => {
-        throw new Error('SMART computation failed');
-      });
-      onSmartStart?.(config, exercise);
+      setComputeError('Nepodařilo se načíst doporučení, zkouším znovu...');
     } finally {
       setIsComputing(false);
     }
@@ -73,23 +72,31 @@ export function SmartExerciseButton({ onSmartStart }: SmartExerciseButtonProps) 
   return (
     <>
       <button
-        className={`smart-exercise-button${isComputing ? ' smart-exercise-button--loading' : ''}`}
+        className={`smart-exercise-button${isBusy ? ' smart-exercise-button--loading' : ''}`}
         onClick={handleClick}
         type="button"
-        disabled={isComputing}
-        aria-busy={isComputing}
+        disabled={isBusy}
+        aria-busy={isBusy}
       >
         <div className="smart-exercise-button__title">
           {locked && (
             <NavIcon name="lock" size={18} className="smart-exercise-button__lock" />
           )}
-          {isComputing ? (
+          {isDataLoading ? (
+            <span>Načítám...</span>
+          ) : isComputing ? (
             <span>Připravuji cvičení...</span>
           ) : (
             <span>SMART CVIČENÍ</span>
           )}
         </div>
       </button>
+
+      {computeError && (
+        <p className="smart-exercise-button__error" role="alert">
+          {computeError}
+        </p>
+      )}
       
       {locked && (
         <LockedFeatureModal

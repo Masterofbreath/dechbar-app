@@ -206,47 +206,87 @@
 
 /* ============================================================
    SmartSection Widget — PokrokPage
-   Matches KPSection glass-card visual language
+   Matches KPSection glass-card visual language exactly.
+   Label: teal + text-shadow (same as .kp-section__label)
+   Sparkline: KPSparkline component (teal, identical to KPSection)
+   Milestones: same tick + label pattern as LungProgress milestones
    ============================================================ */
 
 .smart-widget {
   background: rgb(255 255 255 / 4%);
   border: 1px solid rgb(255 255 255 / 8%);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 16px 20px 10px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   backdrop-filter: blur(8px);
+  position: relative;
+  overflow: visible;
 }
 
-.smart-widget__header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.smart-widget__icon {
-  color: var(--color-teal, #2CBEC6);
-  flex-shrink: 0;
-}
-
-.smart-widget__title {
-  font-size: 0.7rem;
+/* Label — exact copy of .kp-section__label */
+.smart-widget__label {
+  position: absolute;
+  top: 10px;
+  left: 2px;
+  z-index: 2;
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
-  margin: 0;
+  color: var(--color-primary, #2CBEC6);
+  text-shadow: 0 0 12px rgb(44 190 198 / 50%);
+  pointer-events: none;
 }
 
-/* Rhythm display */
+/* KP limit badge — teal pill top-right */
+.smart-widget__kp-badge {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  z-index: 3;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-teal, #2CBEC6);
+  background: rgb(44 190 198 / 10%);
+  border: 1px solid rgb(44 190 198 / 28%);
+  border-radius: 20px;
+  padding: 4px 10px;
+  opacity: 0.9;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.smart-widget__kp-badge:hover {
+  background: rgb(44 190 198 / 18%);
+  opacity: 1;
+}
+
+/* Rhythm — padded top to clear label */
+.smart-widget__rhythm-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 24px;
+}
+
 .smart-widget__rhythm {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-text-primary, #fff);
   letter-spacing: 0.04em;
   font-feature-settings: 'tnum';
+  line-height: 1.1;
+}
+
+.smart-widget__rhythm-sublabel {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
 }
 
 /* Level section */
@@ -273,6 +313,12 @@
   color: var(--color-text-primary, #fff);
 }
 
+/* Level bar wrapper — relative context for milestone markers */
+.smart-widget__level-bar-wrap {
+  position: relative;
+  padding-bottom: 18px; /* space for milestone labels below bar */
+}
+
 /* Level bar (21 segments) */
 .smart-widget__level-bar {
   display: flex;
@@ -291,12 +337,64 @@
   background: var(--color-teal, #2CBEC6);
 }
 
-/* Sparkline */
-.smart-widget__sparkline {
-  display: block;
+/* Milestone markers — tick above bar edge + label below */
+.smart-widget__milestone {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  pointer-events: none;
+}
+
+.smart-widget__milestone-tick {
+  width: 1px;
+  height: 10px;
+  background: rgb(255 255 255 / 25%);
+  border-radius: 1px;
+  margin-top: -4px; /* stick up above bar */
+  transition: background 0.3s ease;
+}
+
+.smart-widget__milestone--reached .smart-widget__milestone-tick {
+  background: var(--color-accent, #D6A23A);
+}
+
+.smart-widget__milestone-label {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(255 255 255 / 35%);
+  white-space: nowrap;
+  margin-top: 6px; /* push label below bar */
+  transition: color 0.3s ease;
+}
+
+.smart-widget__milestone--reached .smart-widget__milestone-label {
+  color: var(--color-accent, #D6A23A);
+}
+
+/* Sparkline — identical spacing to KPSection sparkline overlay */
+.smart-widget__sparkline-wrap {
   width: 100%;
-  height: 36px;
+  margin-top: -4px;
+  pointer-events: none;
   overflow: visible;
+}
+
+.smart-widget__sparkline-wrap .kp-sparkline {
+  opacity: 0.75;
+}
+
+.smart-widget__sparkline-meta {
+  font-size: 10px;
+  color: rgb(255 255 255 / 30%);
+  text-align: right;
+  margin-top: 2px;
+  letter-spacing: 0.02em;
 }
 
 /* Info row */
@@ -349,7 +447,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 8px 0;
+  padding: 24px 0 8px;
   text-align: center;
 }
 
@@ -377,13 +475,34 @@
 }
 
 /* ============================================================
+   SmartExerciseButton — error state
+   ============================================================ */
+
+.smart-exercise-button__error {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 6px;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+/* ============================================================
    Reduced motion
    ============================================================ */
 
 @media (prefers-reduced-motion: reduce) {
   .smart-prep__dot,
   .smart-widget__level-segment,
-  .smart-widget__skeleton {
+  .smart-widget__milestone-tick,
+  .smart-widget__milestone-label,
+  .smart-widget__skeleton,
+  .smart-exercise-button,
+  .smart-exercise-button--loading,
+  .smart-duration-option,
+  .smart-duration-preset,
+  .smart-duration-slider,
+  .smart-widget__kp-badge {
     transition: none;
     animation: none;
   }

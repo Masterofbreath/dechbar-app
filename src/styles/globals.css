@@ -170,12 +170,22 @@ body {
 
 /* Scrollbar gutter - prevents layout shift */
 html {
-  scrollbar-gutter: stable; /* Modern CSS - reserves space even when no scroll */
+  /* scrollbar-gutter: stable záměrně pouze na desktopu.
+     Na mobilech (iOS PWA, Capacitor) scrollbar nikdy není vidět a "stable" způsobuje
+     width discrepancy mezi layout-width a visual-width, kterou iOS WebKit zahrnuje
+     do výpočtu souřadnic position:fixed prvků → drobný gap pod BottomNav. */
+  scrollbar-gutter: stable;
 
   /* overflow-y: scroll odstraněno — způsobovalo problémy v iOS PWA/Capacitor:
      při useScrollLock (body: overflow:hidden) se scroll přesouvá na html,
      a html scroll offset pak posouvá position:fixed prvky v iOS WebKit. */
   overflow-y: auto;
+}
+
+@media (width <= 768px) {
+  html {
+    scrollbar-gutter: auto;
+  }
 }
 
 /* Body - Dark background by default (Brand Book 2.0) */
