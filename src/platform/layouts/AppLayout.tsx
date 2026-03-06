@@ -101,6 +101,43 @@ export function AppLayout({
     };
   }, []);
 
+  // 🔍 DIAGNOSTIKA BottomNav gap — aktivní, zachytí hodnoty v konzoli Safari DevTools.
+  // Postup: iPhone → Safari → Develop → [tvůj iPhone] → dechbar.cz → Console
+  // Smaž tento useEffect až bug vyřešíme.
+  useEffect(() => {
+    const log = (label: string) => {
+      const nav = document.querySelector<HTMLElement>('.bottom-nav');
+      const navRect = nav?.getBoundingClientRect();
+      const vv = window.visualViewport;
+      const css = nav ? getComputedStyle(nav) : null;
+      console.group(`[BottomNav diag] ${label}`);
+      console.log('window.innerHeight       :', window.innerHeight);
+      console.log('screen.height            :', screen.height);
+      console.log('visualViewport.height    :', vv?.height);
+      console.log('visualViewport.offsetTop :', vv?.offsetTop);
+      console.log('nav.getBoundingClientRect:', navRect);
+      console.log('nav computed bottom      :', css?.bottom);
+      console.log('nav computed transform   :', css?.transform);
+      console.log('safe-area-inset-bottom   :', getComputedStyle(document.documentElement).getPropertyValue('--sab') || '(add --sab to :root)');
+      console.log('display-mode standalone  :', window.matchMedia('(display-mode: standalone)').matches);
+      console.groupEnd();
+    };
+
+    // T=0: ihned po renderu
+    log('T=0 (immediate)');
+    // T=rAF: po prvním paint
+    requestAnimationFrame(() => log('T=rAF'));
+    // T=500ms: po dispatch scroll eventu
+    const t1 = setTimeout(() => log('T=500ms'), 500);
+    // T=2000ms: po stabilizaci (po případném ručním scrollu to bude ok)
+    const t2 = setTimeout(() => log('T=2000ms'), 2000);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
+
   return (
     <div className={`app-layout${hasPlayer ? ' app-layout--has-player' : ''}`}>
       <TopNav transparent={transparentTopNav} />

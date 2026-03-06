@@ -16,9 +16,8 @@
   justify-content: center;
   gap: 28px;
 
-  /* padding-top rezervuje místo pro absolutně pozicovaný close button.
-     calc: 10px (top offset buttonu) + env(safe-area-inset-top) + 40px (výška buttonu) + 8px mezera */
-  padding: calc(58px + env(safe-area-inset-top, 0px)) 24px 32px;
+  /* Desktop: základní padding — button má top:10px, stačí 58px rezerva */
+  padding: 58px 24px 32px;
   min-height: 100%;
   cursor: pointer;
   user-select: none;
@@ -28,15 +27,23 @@
 
 /* Close button — pozicování s safe area (vizuální styl = globální .close-button) */
 .smart-prep__close {
-  /* position:absolute relativně k .smart-prep (position:relative).
-     Nevyužívá position:fixed — na desktopu je .smart-prep centrovaný modal
-     (left≠0) a fixed by button umístil mimo kontejner vpravo mimo viditelný box.
-     Safe-area: .smart-prep leží uvnitř session-engine-modal__content (fixed, inset:0)
-     → top:absolute je relativní k tomu containeru → přičteme safe-area-inset-top. */
   position: absolute;
-  top: calc(10px + env(safe-area-inset-top, 0px));
+
+  /* Desktop: .smart-prep je centrovaný modal (top≠0), safe-area-inset-top nepřičítáme */
+  top: 10px;
   right: 16px;
   z-index: var(--fullscreen-modal-close-z, 20);
+}
+
+/* Mobile PWA: container je fullscreen (inset:0) → přičteme safe-area-inset-top */
+@media (width <= 768px) {
+  .smart-prep__close {
+    top: calc(10px + env(safe-area-inset-top, 0px));
+  }
+
+  .smart-prep {
+    padding-top: calc(58px + env(safe-area-inset-top, 0px));
+  }
 }
 
 /* Header */
@@ -255,14 +262,15 @@
   line-height: 1.2;
 }
 
-/* Rhythm hero value — velké číslo jako currentKP v KPSection, zarovnáno vpravo */
+/* Rhythm hero value — warm gold accent jako .kp-section__value */
 .smart-widget__rhythm {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-text-primary, #fff);
+  color: var(--color-accent, #D6A23A);
   letter-spacing: 0.04em;
   font-feature-settings: 'tnum';
   line-height: 1.1;
+  text-shadow: 0 0 20px rgb(214 162 58 / 40%);
 }
 
 .smart-widget__rhythm-sublabel {
@@ -358,14 +366,9 @@
 .smart-widget__milestone-tick {
   width: 1px;
   height: 10px;
-  background: rgb(255 255 255 / 25%);
   border-radius: 1px;
   margin-top: -4px; /* stick up above bar */
   transition: background 0.3s ease;
-}
-
-.smart-widget__milestone--reached .smart-widget__milestone-tick {
-  background: var(--color-accent, #D6A23A);
 }
 
 .smart-widget__milestone-label {
@@ -373,14 +376,9 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgb(255 255 255 / 35%);
   white-space: nowrap;
   margin-top: 6px; /* push label below bar */
   transition: color 0.3s ease;
-}
-
-.smart-widget__milestone--reached .smart-widget__milestone-label {
-  color: var(--color-accent, #D6A23A);
 }
 
 /* Sparkline — identical spacing to KPSection sparkline overlay */
