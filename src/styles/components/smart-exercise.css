@@ -26,8 +26,12 @@
 /* Close button */
 .smart-prep__close {
   position: absolute;
-  top: 16px;
-  right: 16px;
+
+  /* Vertikálně zarovnáno s FullscreenModal.CloseButton:
+     top = env(safe-area-inset-top) + (60px content-zone - 40px button) / 2
+     = env() + 10px → střed buttonu sedí ve středu 60px safe zóny pod status barem. */
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 16px));
   width: 40px;
   height: 40px;
   border: none;

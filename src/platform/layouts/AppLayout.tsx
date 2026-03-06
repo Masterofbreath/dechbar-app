@@ -75,24 +75,32 @@ export function AppLayout({
   // This causes BottomNav to render with a gap above the home indicator.
   // After the first scroll event iOS recomposes → gap disappears.
   //
-  // Fix: window.scrollTo(0,1) + scrollTo(0,0) is the only reliable way to trigger
-  // a full compositing layer recalculation in iOS WebKit (unlike getBoundingClientRect
-  // which only forces a layout reflow, not a compositing update).
+  // Why window.scrollTo doesn't work here: our app scrolls .app-layout__content,
+  // not body/html. iOS WebKit ignores scrollTo() on a non-scrollable root element.
   //
-  // visualViewport resize listener catches the case where the viewport finalizes
-  // its dimensions asynchronously (e.g. slow iOS devices, heavy JS bundle).
+  // Fix: Force a style mutation on the fixed element itself — toggling a no-op CSS
+  // property (translateZ(0) → translateZ(0.001px) → back) forces iOS WebKit to
+  // invalidate and recompose the fixed-position layer with correct viewport metrics.
+  //
+  // visualViewport resize listener catches the async case (slow devices / heavy bundle).
   useEffect(() => {
     const forceRecomposite = () => {
-      window.scrollTo(0, 1);
-      window.scrollTo(0, 0);
+      // Query the BottomNav directly (rendered via portal into body)
+      const nav = document.querySelector<HTMLElement>('.bottom-nav');
+      if (!nav) return;
+      // Toggling will-change forces a compositing layer refresh in iOS WebKit
+      nav.style.willChange = 'transform';
+      requestAnimationFrame(() => {
+        nav.style.willChange = '';
+      });
     };
 
     // Double-rAF: waits for 2nd paint cycle when iOS has finalized safe-area metrics
     requestAnimationFrame(() => requestAnimationFrame(forceRecomposite));
 
-    // Fallback timeout for slower devices / deferred safe-area calculation
-    const t1 = setTimeout(forceRecomposite, 300);
-    const t2 = setTimeout(forceRecomposite, 600);
+    // Fallback timeouts for slower devices / deferred safe-area calculation
+    const t1 = setTimeout(forceRecomposite, 200);
+    const t2 = setTimeout(forceRecomposite, 500);
 
     // visualViewport fires when iOS finalizes viewport dimensions asynchronously
     const vv = window.visualViewport;
