@@ -33,7 +33,14 @@
   height: 40px;
   
   /* Visual */
+
+  /* iOS Safari reset: bez těchto dvou vlastností Safari aplikuje systémový
+     button styl (-apple-system-button) → bílé pozadí místo průhledného.
+     -webkit-appearance: none odstraní nativní styling, background pak funguje. */
+  appearance: none;
+  appearance: none;
   background: transparent;
+  background-color: transparent;
   border: none;
   border-radius: 8px;
   color: var(--color-text-secondary);
