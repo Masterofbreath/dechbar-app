@@ -23,31 +23,16 @@
   position: relative;
 }
 
-/* Close button */
+/* Close button — pozicování s safe area (vizuální styl = globální .close-button) */
 .smart-prep__close {
-  position: absolute;
-
-  /* Vertikálně zarovnáno s FullscreenModal.CloseButton:
-     top = env(safe-area-inset-top) + (60px content-zone - 40px button) / 2
-     = env() + 10px → střed buttonu sedí ve středu 60px safe zóny pod status barem. */
+  /* position:fixed = vždy relativně k viewportu, stejně jako FullscreenModal.CloseButton.
+     position:absolute bylo relativní k .smart-prep flex containeru → nepředvídatelný
+     offset na PWA kde session-engine-modal__content má jiný flex/padding kontext.
+     top výpočet shodný s .fullscreen-modal__top-bar .close-button v _mobile.css. */
+  position: fixed;
   top: calc(10px + env(safe-area-inset-top, 0px));
   right: max(16px, env(safe-area-inset-right, 16px));
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  transition: color 0.15s ease, background 0.15s ease;
-}
-
-.smart-prep__close:hover {
-  color: var(--color-text-primary, #fff);
-  background: rgb(255 255 255 / 8%);
+  z-index: var(--fullscreen-modal-close-z, 20);
 }
 
 /* Header */

@@ -18,6 +18,14 @@
   width: 100%;
   z-index: 1000;
 
+  /* iOS PWA fix: transform: translateZ(0) vytváří compositing layer IHNED při
+     prvním renderu — iOS WebKit musí přečíst finalizované viewport metriky
+     (včetně env(safe-area-inset-bottom)) před vykreslením layeru.
+     Bez toho WebKit občas pozicuje fixed element před tím, než jsou safe-area
+     insets k dispozici → BottomNav visí s mezerou nad home indicatorem. */
+  transform: translateZ(0);
+  transform: translateZ(0);
+
   /* height = 72px (obsah) + env(safe-area-inset-bottom) (home indicator).
      padding-bottom = env(...) → flex items centrované v 72px content boxu,
      spodní padding plynule vyplňuje home indicator zónu barvou navu. */

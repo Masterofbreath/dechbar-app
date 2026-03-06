@@ -68,47 +68,26 @@ export function AppLayout({
   // Synchronizace přehrávače mezi záložkami ve stejném browseru (BroadcastChannel)
   usePlayerBroadcast();
 
-  // iOS PWA fix: force recompositing of position:fixed layers after first render.
-  //
-  // Root cause: iOS WebKit initializes the compositing layer for position:fixed
-  // elements against the "large viewport" (before safe-area insets are applied).
-  // This causes BottomNav to render with a gap above the home indicator.
-  // After the first scroll event iOS recomposes → gap disappears.
-  //
-  // Why window.scrollTo doesn't work here: our app scrolls .app-layout__content,
-  // not body/html. iOS WebKit ignores scrollTo() on a non-scrollable root element.
-  //
-  // Fix: Force a style mutation on the fixed element itself — toggling a no-op CSS
-  // property (translateZ(0) → translateZ(0.001px) → back) forces iOS WebKit to
-  // invalidate and recompose the fixed-position layer with correct viewport metrics.
-  //
-  // visualViewport resize listener catches the async case (slow devices / heavy bundle).
+  // iOS PWA fix: visualViewport resize listener jako pojistka pro případ,
+  // kdy iOS finalizuje safe-area metriky asynchronně po prvním renderu.
+  // Primární fix je CSS transform:translateZ(0) na .bottom-nav (bottom-nav.css).
   useEffect(() => {
     const forceRecomposite = () => {
-      // Query the BottomNav directly (rendered via portal into body)
       const nav = document.querySelector<HTMLElement>('.bottom-nav');
       if (!nav) return;
-      // Toggling will-change forces a compositing layer refresh in iOS WebKit
       nav.style.willChange = 'transform';
-      requestAnimationFrame(() => {
-        nav.style.willChange = '';
-      });
+      requestAnimationFrame(() => { nav.style.willChange = ''; });
     };
-
-    // Double-rAF: waits for 2nd paint cycle when iOS has finalized safe-area metrics
-    requestAnimationFrame(() => requestAnimationFrame(forceRecomposite));
-
-    // Fallback timeouts for slower devices / deferred safe-area calculation
-    const t1 = setTimeout(forceRecomposite, 200);
-    const t2 = setTimeout(forceRecomposite, 500);
 
     // visualViewport fires when iOS finalizes viewport dimensions asynchronously
     const vv = window.visualViewport;
     vv?.addEventListener('resize', forceRecomposite, { once: true });
 
+    // Single timeout fallback — pomalá zařízení / heavy bundle
+    const t = setTimeout(forceRecomposite, 300);
+
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
+      clearTimeout(t);
       vv?.removeEventListener('resize', forceRecomposite);
     };
   }, []);
