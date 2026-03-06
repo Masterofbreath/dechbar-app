@@ -68,27 +68,43 @@ export function AppLayout({
   // Synchronizace přehrávače mezi záložkami ve stejném browseru (BroadcastChannel)
   usePlayerBroadcast();
 
-  // iOS PWA fix: visualViewport resize listener jako pojistka pro případ,
-  // kdy iOS finalizuje safe-area metriky asynchronně po prvním renderu.
-  // Primární fix je CSS transform:translateZ(0) na .bottom-nav (bottom-nav.css).
+  // iOS PWA fix: BottomNav gap při prvním spuštění PWA.
+  //
+  // Root cause: iOS WebKit pozicuje position:fixed elementy vůči "large viewport"
+  // (před finalizací safe-area insets). Gap zmizí AŽ po prvním scroll eventu —
+  // scroll event triggeruje rekomposici fixed-position layerů se správnými metrikami.
+  //
+  // Proč CSS transform:translateZ(0) nestačí: vytváří compositing layer, ale
+  // neaktualizuje souřadnice fixed elementu — to se děje pouze po scroll eventu
+  // na scrollovatelném kontejneru nebo po visualViewport resize.
+  //
+  // Fix: dispatchovat nativní scroll event přímo na .app-layout__content
+  // (ten skutečný scrollovatelný element v naší app, ne body/html).
+  // scrollTop = 1 → 0 simuluje přesně to, co udělá uživatel → iOS rekomponuje.
   useEffect(() => {
-    const forceRecomposite = () => {
-      const nav = document.querySelector<HTMLElement>('.bottom-nav');
-      if (!nav) return;
-      nav.style.willChange = 'transform';
-      requestAnimationFrame(() => { nav.style.willChange = ''; });
+    const fixBottomNav = () => {
+      const content = document.querySelector<HTMLElement>('.app-layout__content');
+      if (!content) return;
+      const prev = content.scrollTop;
+      content.scrollTop = prev + 1;
+      requestAnimationFrame(() => {
+        content.scrollTop = prev;
+      });
     };
 
-    // visualViewport fires when iOS finalizes viewport dimensions asynchronously
-    const vv = window.visualViewport;
-    vv?.addEventListener('resize', forceRecomposite, { once: true });
+    // Double-rAF: 2. paint cycle kdy iOS finalizuje safe-area metriky
+    requestAnimationFrame(() => requestAnimationFrame(fixBottomNav));
 
-    // Single timeout fallback — pomalá zařízení / heavy bundle
-    const t = setTimeout(forceRecomposite, 300);
+    // Pojistka: visualViewport resize = iOS finalizuje viewport asynchronně
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', fixBottomNav, { once: true });
+
+    // Timeout fallback pro pomalá zařízení
+    const t = setTimeout(fixBottomNav, 300);
 
     return () => {
       clearTimeout(t);
-      vv?.removeEventListener('resize', forceRecomposite);
+      vv?.removeEventListener('resize', fixBottomNav);
     };
   }, []);
 

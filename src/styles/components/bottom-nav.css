@@ -24,7 +24,6 @@
      Bez toho WebKit občas pozicuje fixed element před tím, než jsou safe-area
      insets k dispozici → BottomNav visí s mezerou nad home indicatorem. */
   transform: translateZ(0);
-  transform: translateZ(0);
 
   /* height = 72px (obsah) + env(safe-area-inset-bottom) (home indicator).
      padding-bottom = env(...) → flex items centrované v 72px content boxu,

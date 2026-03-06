@@ -15,7 +15,10 @@
   align-items: center;
   justify-content: center;
   gap: 28px;
-  padding: 40px 24px 32px;
+
+  /* padding-top rezervuje místo pro absolutně pozicovaný close button.
+     calc: 10px (top offset buttonu) + env(safe-area-inset-top) + 40px (výška buttonu) + 8px mezera */
+  padding: calc(58px + env(safe-area-inset-top, 0px)) 24px 32px;
   min-height: 100%;
   cursor: pointer;
   user-select: none;
@@ -25,13 +28,14 @@
 
 /* Close button — pozicování s safe area (vizuální styl = globální .close-button) */
 .smart-prep__close {
-  /* position:fixed = vždy relativně k viewportu, stejně jako FullscreenModal.CloseButton.
-     position:absolute bylo relativní k .smart-prep flex containeru → nepředvídatelný
-     offset na PWA kde session-engine-modal__content má jiný flex/padding kontext.
-     top výpočet shodný s .fullscreen-modal__top-bar .close-button v _mobile.css. */
-  position: fixed;
+  /* position:absolute relativně k .smart-prep (position:relative).
+     Nevyužívá position:fixed — na desktopu je .smart-prep centrovaný modal
+     (left≠0) a fixed by button umístil mimo kontejner vpravo mimo viditelný box.
+     Safe-area: .smart-prep leží uvnitř session-engine-modal__content (fixed, inset:0)
+     → top:absolute je relativní k tomu containeru → přičteme safe-area-inset-top. */
+  position: absolute;
   top: calc(10px + env(safe-area-inset-top, 0px));
-  right: max(16px, env(safe-area-inset-right, 16px));
+  right: 16px;
   z-index: var(--fullscreen-modal-close-z, 20);
 }
 
@@ -60,7 +64,7 @@
 /* Recommendation card */
 .smart-prep__card {
   background: rgb(255 255 255 / 5%);
-  border: 1px solid rgb(255 255 255 / 10%);
+  border: 1px solid rgb(248 202 0 / 18%);
   border-radius: 16px;
   padding: 24px 28px;
   display: flex;
@@ -70,6 +74,7 @@
   width: 100%;
   max-width: 320px;
   backdrop-filter: blur(12px);
+  box-shadow: 0 0 24px rgb(248 202 0 / 6%);
 }
 
 .smart-prep__rhythm-label {
@@ -83,9 +88,10 @@
 .smart-prep__rhythm {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-text-primary, #fff);
+  color: var(--color-accent, #F8CA00);
   letter-spacing: 0.04em;
   font-feature-settings: 'tnum';
+  text-shadow: 0 0 16px rgb(248 202 0 / 35%);
 }
 
 /* Duration row */
@@ -98,7 +104,7 @@
 .smart-prep__duration {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-text-primary, #fff);
+  color: var(--color-accent, #F8CA00);
   min-width: 60px;
   text-align: center;
 }
@@ -124,9 +130,9 @@
 }
 
 .smart-prep__duration-btn:hover:not(:disabled) {
-  border-color: rgb(255 255 255 / 30%);
-  color: var(--color-text-primary, #fff);
-  background: rgb(255 255 255 / 6%);
+  border-color: rgb(248 202 0 / 30%);
+  color: var(--color-accent, #F8CA00);
+  background: rgb(248 202 0 / 5%);
 }
 
 /* Calibration */
@@ -184,7 +190,7 @@
 }
 
 .smart-prep__hint-count {
-  color: var(--color-text-primary, #fff);
+  color: var(--color-accent, #F8CA00);
   font-weight: 600;
 }
 
@@ -205,7 +211,7 @@
   background: rgb(255 255 255 / 4%);
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 20px;
-  padding: 16px 20px 10px;
+  padding: 16px 20px 14px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -214,27 +220,63 @@
   overflow: visible;
 }
 
-/* Label — exact copy of .kp-section__label */
+/* Hero wrap — label vlevo, rhythm vpravo (identická struktura jako .kp-section__hero-wrap) */
+.smart-widget__hero-wrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Hero left: label + volitelný KP badge */
+.smart-widget__hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Hero right: rhythm + sublabel — vpravo, jako .kp-section__value blok */
+.smart-widget__hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Label — stejný styl jako .kp-section__label */
 .smart-widget__label {
-  position: absolute;
-  top: 10px;
-  left: 2px;
-  z-index: 2;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-primary, #2CBEC6);
   text-shadow: 0 0 12px rgb(44 190 198 / 50%);
-  pointer-events: none;
+  line-height: 1.2;
 }
 
-/* KP limit badge — teal pill top-right */
+/* Rhythm hero value — velké číslo jako currentKP v KPSection, zarovnáno vpravo */
+.smart-widget__rhythm {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #fff);
+  letter-spacing: 0.04em;
+  font-feature-settings: 'tnum';
+  line-height: 1.1;
+}
+
+.smart-widget__rhythm-sublabel {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  text-align: right;
+}
+
+/* KP limit badge — teal pill pod labelem vlevo */
 .smart-widget__kp-badge {
-  position: absolute;
-  top: 10px;
-  right: 0;
-  z-index: 3;
+  align-self: flex-start;
   font-size: 11px;
   font-weight: 500;
   color: var(--color-teal, #2CBEC6);
@@ -251,31 +293,6 @@
 .smart-widget__kp-badge:hover {
   background: rgb(44 190 198 / 18%);
   opacity: 1;
-}
-
-/* Rhythm — padded top to clear label */
-.smart-widget__rhythm-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 24px;
-}
-
-.smart-widget__rhythm {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-text-primary, #fff);
-  letter-spacing: 0.04em;
-  font-feature-settings: 'tnum';
-  line-height: 1.1;
-}
-
-.smart-widget__rhythm-sublabel {
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
 }
 
 /* Level section */
