@@ -696,6 +696,8 @@ export function SessionEngineModal({
             haptics.trigger('inhale');
           } catch { /* ignore */ }
           cueFiredForInstruction = 'NÁDECH-pre';
+
+          return; // Skip rendering this tick — fresh cycle starts on next tick
         }
 
         let newInstruction = '';
@@ -830,6 +832,9 @@ export function SessionEngineModal({
     
     cleanupAnimation();
     if (timerRef.current) window.clearInterval(timerRef.current);
+
+    // Stop music if modal is closed from prep/countdown/idle — session never started
+    backgroundMusic.stop();
     
     setSessionState('idle');
     setCurrentPhaseIndex(0);
@@ -838,7 +843,7 @@ export function SessionEngineModal({
     intensityControl.reset();
     
     onClose();
-  }, [sessionState, onClose, cleanupAnimation, intensityControl]);
+  }, [sessionState, onClose, cleanupAnimation, intensityControl, backgroundMusic]);
   
   // Confirm close during active session (abandoned session — discard intensity events)
   const confirmClose = useCallback(() => {
