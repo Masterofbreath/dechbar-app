@@ -36,6 +36,15 @@ serve(async (req) => {
   }
 
   try {
+    const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecret) {
+      console.error('❌ STRIPE_SECRET_KEY is not set');
+      return new Response(
+        JSON.stringify({ error: 'Server misconfiguration: STRIPE_SECRET_KEY missing' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     // ── Auth (optional — guest checkout supported) ──────────────
     const authHeader = req.headers.get('Authorization');
     let userId: string | null = null;
@@ -56,10 +65,11 @@ serve(async (req) => {
     // ── Parse body ────────────────────────────────────────────────
     // Přijímáme camelCase (z frontendu) i snake_case (pro zpětnou kompatibilitu)
     const body = await req.json();
+    console.log('📥 Request body:', JSON.stringify(body));
     const priceId: string | undefined = body.priceId ?? body.price_id;
     const moduleId: string | undefined = body.moduleId ?? body.module_id;
     const emailFromBody: string | undefined = body.email;
-    const uiMode: string | undefined = body.uiMode ?? body.ui_mode;
+    const uiMode: string | undefined = body.uiMode ?? body.ui_mode ?? body.uimode;
     const successUrl: string | undefined = body.successUrl ?? body.success_url;
     const cancelUrl: string | undefined = body.cancelUrl ?? body.cancel_url;
 
@@ -82,13 +92,31 @@ serve(async (req) => {
     let customerId: string | undefined;
 
     if (userId && userEmail) {
-      const { data: membership } = await supabase
+      const { data: membership, error: membershipError } = await supabase
         .from('memberships')
         .select('stripe_customer_id')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      customerId = membership?.stripe_customer_id;
+      if (membershipError) {
+        console.error('❌ memberships select error:', membershipError);
+        throw new Error(`Memberships lookup failed: ${membershipError.message}`);
+      }
+
+      customerId = membership?.stripe_customer_id ?? undefined;
+
+      // Ochrana proti live/test mode nesouladu:
+      // live customers (bez '_test_') nefungují s test klíčem a naopak.
+      // Stripe test customers mají formát cus_xxx ale v test mode odpovídají jen test objekty.
+      // Jednodušší řešení: pokud customer neexistuje v aktuálním mode, vytvoříme nového.
+      if (customerId) {
+        try {
+          await stripe.customers.retrieve(customerId);
+        } catch {
+          console.warn(`⚠️ Customer ${customerId} neexistuje v aktuálním Stripe mode — vytváříme nového`);
+          customerId = undefined;
+        }
+      }
 
       if (!customerId) {
         const customer = await stripe.customers.create({
@@ -96,10 +124,9 @@ serve(async (req) => {
           metadata: { supabase_user_id: userId },
         });
         customerId = customer.id;
-
         await supabase
           .from('memberships')
-          .update({ stripe_customer_id: customerId })
+          .update({ stripe_customer_id: customerId, updated_at: new Date().toISOString() })
           .eq('user_id', userId);
       }
     }
@@ -116,13 +143,13 @@ serve(async (req) => {
 
     // ── Session config ────────────────────────────────────────────
     const sessionConfig: Record<string, unknown> = {
-      payment_method_types: ['card'],  // Apple Pay & Google Pay se zobrazí automaticky v embedded checkoutu (domain registration)
+      payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: paymentMode,
       metadata: {
-        user_id: userId ?? 'guest',
-        module_id: moduleId,
-        email: userEmail ?? '',
+        user_id: String(userId ?? 'guest'),
+        module_id: String(moduleId),
+        email: String(userEmail ?? ''),
         is_guest: userId ? 'false' : 'true',
       },
     };
@@ -143,13 +170,14 @@ serve(async (req) => {
       sessionConfig.customer_email = userEmail;
     }
 
-    // Subscription-specific data
+    // Subscription-specific data (3-day free trial, then first charge)
     if (paymentMode === 'subscription') {
       sessionConfig.subscription_data = {
+        trial_period_days: 3,
         metadata: {
-          user_id: userId ?? 'guest',
-          module_id: moduleId,
-          email: userEmail,
+          user_id: String(userId ?? 'guest'),
+          module_id: String(moduleId),
+          email: String(userEmail ?? ''),
           is_guest: userId ? 'false' : 'true',
         },
       };
@@ -224,9 +252,12 @@ serve(async (req) => {
     }
 
   } catch (error: unknown) {
-    console.error('❌ Checkout session error:', error);
+    const errMsg = (error as Error).message || 'Failed to create checkout session';
+    const errStack = (error as Error).stack || '';
+    console.error('❌ Checkout session error:', errMsg);
+    console.error('❌ Stack:', errStack);
     return new Response(
-      JSON.stringify({ error: (error as Error).message || 'Failed to create checkout session' }),
+      JSON.stringify({ error: errMsg, stack: errStack }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }

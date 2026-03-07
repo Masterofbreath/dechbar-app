@@ -269,7 +269,7 @@ export const MESSAGES = {
     
     // Email sent messages (Apple "Méně je více" - ultra minimal)
     emailSentTitle: "E-mail poslán",
-    emailSentInstruction: "Dýchej s námi.",
+    emailSentInstruction: "Klikni na odkaz v e-mailu a jsi uvnitř.",
     
     // OAuth divider (imperativ per Tone of Voice)
     oauthDivider: "nebo pokračuj s",

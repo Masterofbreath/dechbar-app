@@ -22,12 +22,14 @@ import { CloseButton } from '@/components/shared/CloseButton';
 import { useChallengeMagicLink } from '@/hooks/useChallenge';
 import { MESSAGES } from '@/config/messages';
 import { HeroMockup } from '@/modules/public-web/components/landing/HeroMockup';
+import { canStillRegister } from '@/platform/api/onboarding';
 
 export function ChallengeHero() {
   const [email, setEmail] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const { sendLink, loading } = useChallengeMagicLink();
+  const registrationOpen = canStillRegister();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -62,6 +64,7 @@ export function ChallengeHero() {
           </p>
 
           {/* Email Form */}
+          {registrationOpen ? (
           <form className="challenge-hero__form" onSubmit={handleSubmit}>
             <div className="challenge-hero__input-wrapper">
               <input
@@ -98,6 +101,20 @@ export function ChallengeHero() {
               .
             </p>
           </form>
+          ) : (
+          <div className="challenge-hero__form">
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+              Výzva pro nové členy skončila 7. března.
+            </p>
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => { window.location.href = '/'; }}
+            >
+              Přejít na dechbar.cz →
+            </Button>
+          </div>
+          )}
 
           {/* Success/Error Messages */}
           {errorMessage && (

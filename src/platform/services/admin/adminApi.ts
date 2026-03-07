@@ -901,4 +901,119 @@ export const adminApi = {
       },
     },
   },
+
+  // ── Background Music (background_tracks table) ────────────────────────────
+  backgroundMusic: {
+    async getAll(): Promise<import('./types').BackgroundTrackInput & { id: string; created_at: string; updated_at: string }[]> {
+      const { data, error } = await supabase
+        .from('background_tracks')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      if (error) throw new Error(`Failed to fetch background tracks: ${error.message}`);
+      return data ?? [];
+    },
+
+    async create(input: import('./types').BackgroundTrackInput): Promise<{ id: string }> {
+      const { data, error } = await supabase
+        .from('background_tracks')
+        .insert({
+          name: input.name,
+          slug: input.slug,
+          category: input.category,
+          description: input.description ?? null,
+          cdn_url: input.cdn_url,
+          duration_seconds: input.duration_seconds ?? 0,
+          file_size_bytes: input.file_size_bytes ?? null,
+          required_tier: input.required_tier,
+          is_active: input.is_active ?? true,
+          sort_order: input.sort_order ?? 0,
+        })
+        .select('id')
+        .single();
+      if (error) throw new Error(`Failed to create background track: ${error.message}`);
+      return data as { id: string };
+    },
+
+    async update(id: string, input: Partial<import('./types').BackgroundTrackInput>): Promise<void> {
+      const { error } = await supabase
+        .from('background_tracks')
+        .update(input)
+        .eq('id', id);
+      if (error) throw new Error(`Failed to update background track: ${error.message}`);
+    },
+
+    async delete(id: string): Promise<void> {
+      const { error, count } = await supabase
+        .from('background_tracks')
+        .delete({ count: 'exact' })
+        .eq('id', id);
+      if (error) throw new Error(`Failed to delete background track: ${error.message}`);
+      // RLS silently blocks delete (count=0) — surface it as an error
+      if (count === 0) throw new Error('Nemáš oprávnění smazat tento track (RLS). Zkontroluj svou roli v databázi.');
+    },
+  },
+
+  // ── Background Categories (background_categories table) ───────────────────
+  backgroundCategories: {
+    async getAll(): Promise<import('./types').BackgroundCategory[]> {
+      const { data, error } = await supabase
+        .from('background_categories')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      if (error) throw new Error(`Failed to fetch background categories: ${error.message}`);
+      return data ?? [];
+    },
+
+    async create(input: import('./types').BackgroundCategoryInput): Promise<{ id: string }> {
+      const { data, error } = await supabase
+        .from('background_categories')
+        .insert({
+          slug: input.slug,
+          name: input.name,
+          sort_order: input.sort_order ?? 0,
+          is_active: input.is_active ?? true,
+        })
+        .select('id')
+        .single();
+      if (error) throw new Error(`Failed to create background category: ${error.message}`);
+      return data as { id: string };
+    },
+
+    async update(id: string, input: Partial<import('./types').BackgroundCategoryInput>): Promise<void> {
+      const { error } = await supabase
+        .from('background_categories')
+        .update({ ...input, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw new Error(`Failed to update background category: ${error.message}`);
+    },
+
+    async delete(id: string): Promise<void> {
+      const { error, count } = await supabase
+        .from('background_categories')
+        .delete({ count: 'exact' })
+        .eq('id', id);
+      if (error) throw new Error(`Failed to delete background category: ${error.message}`);
+      if (count === 0) throw new Error('Nemáš oprávnění smazat tuto kategorii (RLS).');
+    },
+  },
+
+  // ── Breathing Cues (breathing_cues table) ─────────────────────────────────
+  breathingCues: {
+    async getAll(): Promise<import('./types').BreathingCueRecord[]> {
+      const { data, error } = await supabase
+        .from('breathing_cues')
+        .select('*')
+        .order('phase', { ascending: true });
+      if (error) throw new Error(`Failed to fetch breathing cues: ${error.message}`);
+      return data ?? [];
+    },
+
+    async update(id: string, input: import('./types').BreathingCueUpdate): Promise<void> {
+      const { error } = await supabase
+        .from('breathing_cues')
+        .update({ ...input, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw new Error(`Failed to update breathing cue: ${error.message}`);
+    },
+  },
 };

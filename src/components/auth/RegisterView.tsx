@@ -172,6 +172,9 @@ export function RegisterView({ onSwitchToLogin, onSuccess, onSuccessStateChange 
           <p className="success-instruction">
             {MESSAGES.auth.emailSentInstruction}
           </p>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '8px' }}>
+            Pokud u nás už účet máš, pošleme ti přihlašovací odkaz.
+          </p>
         </div>
 
         <div className="space-y-3 mt-6">

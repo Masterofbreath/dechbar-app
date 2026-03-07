@@ -13,7 +13,9 @@
 
 import { useState } from 'react';
 import { ExerciseList, SessionEngineModal } from '../components';
+import type { TabType } from '../components/ExerciseList';
 import { useNavigation } from '@/platform/hooks';
+import { useCustomExerciseCount } from '../api/exercises';
 import type { Exercise } from '../types/exercises';
 
 /**
@@ -22,9 +24,10 @@ import type { Exercise } from '../types/exercises';
 export function CvicitPage() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isSessionOpen, setIsSessionOpen] = useState(false);
-  
-  // Use global navigation for Exercise Creator
+  const [activeTab, setActiveTab] = useState<TabType>('presets');
+
   const { openExerciseCreator } = useNavigation();
+  const { data: customCount } = useCustomExerciseCount();
   
   function handleStartExercise(exercise: Exercise) {
     setSelectedExercise(exercise);
@@ -32,12 +35,10 @@ export function CvicitPage() {
   }
   
   function handleCreateCustom() {
-    // Open Exercise Creator via global state
     openExerciseCreator();
   }
   
   function handleEditExercise(exercise: Exercise) {
-    // Open Exercise Creator in edit mode
     openExerciseCreator({ 
       mode: 'edit', 
       exerciseId: exercise.id 
@@ -46,15 +47,53 @@ export function CvicitPage() {
   
   return (
     <div className="cvicit-page">
+      {/* Page header */}
       <div className="cvicit-page__header">
         <h1 className="cvicit-page__title">Cvičit</h1>
       </div>
 
+      {/* Tab bar — mimo content, jako samostatný prvek (stejný pattern jako PokrokPage) */}
+      <div className="exercise-list__tabs" role="tablist">
+        <button
+          className={`tab ${activeTab === 'presets' ? 'tab--active' : ''}`}
+          onClick={(e) => { setActiveTab('presets'); e.currentTarget.blur(); }}
+          role="tab"
+          aria-selected={activeTab === 'presets'}
+          type="button"
+        >
+          Doporučené
+        </button>
+        <button
+          className={`tab ${activeTab === 'custom' ? 'tab--active' : ''}`}
+          onClick={(e) => { setActiveTab('custom'); e.currentTarget.blur(); }}
+          role="tab"
+          aria-selected={activeTab === 'custom'}
+          type="button"
+        >
+          Vlastní
+          {customCount !== undefined && customCount > 0 && (
+            <span className="tab__badge">{customCount}</span>
+          )}
+        </button>
+        <button
+          className={`tab ${activeTab === 'history' ? 'tab--active' : ''}`}
+          onClick={(e) => { setActiveTab('history'); e.currentTarget.blur(); }}
+          role="tab"
+          aria-selected={activeTab === 'history'}
+          type="button"
+        >
+          Historie
+        </button>
+      </div>
+
+      {/* Content — tabs jsou controlled, ExerciseList tabs bar se nezobrazuje */}
       <div className="cvicit-page__content">
         <ExerciseList
           onStartExercise={handleStartExercise}
           onCreateCustom={handleCreateCustom}
           onEditExercise={handleEditExercise}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
       </div>
       

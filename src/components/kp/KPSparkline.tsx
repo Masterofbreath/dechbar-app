@@ -183,12 +183,12 @@ export function KPSparkline({
             />
             {drawn && endLabel && (
               <text
-                x={Math.min(lastX, svgWidth - 16)}
-                y={Math.max(lastY - 14, -LABEL_H + 2)}
+                x={Math.min(lastX + 2, svgWidth - 4)}
+                y={Math.max(lastY - 9, -LABEL_H + 4)}
                 fontSize="9"
                 fontWeight="600"
                 fill="rgba(248,202,0,0.9)"
-                textAnchor="middle"
+                textAnchor="end"
                 style={{ fontFamily: 'inherit' }}
               >
                 {endLabel}

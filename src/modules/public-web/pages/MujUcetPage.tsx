@@ -34,23 +34,13 @@ import { Footer } from '../components/landing/Footer';
 import { BillingToggle } from '../components/landing/BillingToggle';
 import { PricingCard } from '../components/landing/PricingCard';
 import { AiCoachWaitlistModal } from '../components/landing/AiCoachWaitlistModal';
+import { EmailInputModal } from '@/platform';
+import { PaymentModal } from '@/platform/payments';
+import { useLandingPricingCheckout } from '../components/landing/useLandingPricingCheckout';
+import { CheckoutThankYouModal } from '../components/landing/CheckoutThankYouModal';
+import { PRICE_IDS, SMART_FEATURES } from '../components/landing/pricingConstants';
 import type { BillingInterval } from '../components/landing/BillingToggle';
 import './MujUcetPage.css';
-
-// ============================================================
-// Stripe Price IDs (mirrored from PricingSection.tsx)
-// ============================================================
-
-const PRICE_IDS = {
-  smart: {
-    monthly: 'price_1Sra65K7en1dcW6HC63iM7bf',
-    annual: 'price_1SraHbK7en1dcW6HjYNfiXau',
-  },
-  aiCoach: {
-    monthly: 'price_1SraCSK7en1dcW6HFkmAbdIL',
-    annual: 'price_1SraIaK7en1dcW6HsYyN0Aj9',
-  },
-} as const;
 
 // ============================================================
 // Types
@@ -196,6 +186,21 @@ export function MujUcetPage() {
   const [passwordState, setPasswordState] = useState<PasswordState>('idle');
   const [deleteState, setDeleteState] = useState<DeleteState>('idle');
   const [cancelSubState, setCancelSubState] = useState<CancelSubState>('idle');
+
+  // Sdílený checkout pro SMART (stejný flow jako na landing; uživatel je vždy přihlášen → bez email modalu)
+  const {
+    emailModalOpen,
+    setEmailModalOpen,
+    paymentOpen,
+    clientSecret,
+    loadingEmail,
+    thankYouModalOpen,
+    closeThankYouModal,
+    openCheckout,
+    handleEmailSubmit,
+    handlePaymentClose,
+    handlePaymentComplete,
+  } = useLandingPricingCheckout();
 
   // Sync name input when profile loads
   useEffect(() => {
@@ -646,14 +651,13 @@ export function MujUcetPage() {
                     period="měsíc"
                     priceAnnual={billingInterval === 'annual' ? '125 Kč/měsíc' : undefined}
                     savingsBadge={billingInterval === 'annual' ? 'Ušetříš 1 494 Kč ročně' : undefined}
-                    features={[
-                      'Trénink na míru',
-                      'Sledování výsledků v čase',
-                      'Neomezené vlastní cvičení',
-                    ]}
+                    features={[...SMART_FEATURES]}
                     ctaText="Aktivovat →"
                     ctaVariant="primary"
                     highlighted
+                    onPaidCTAClick={(priceId, interval, moduleId, title, price) =>
+                      openCheckout({ priceId, billingInterval: interval, moduleId, title, price })
+                    }
                   />
                   <PricingCard
                     moduleId="ai-coach"
@@ -743,16 +747,13 @@ export function MujUcetPage() {
                         period="měsíc"
                         priceAnnual={billingInterval === 'annual' ? '125 Kč/měsíc' : undefined}
                         savingsBadge={billingInterval === 'annual' ? 'Ušetříš 1 494 Kč ročně' : undefined}
-                        features={[
-                          'SMART cvičení přesně pro tebe',
-                          'Neomezená vlastní cvičení',
-                          'Přístup k dechovým výzvám',
-                          'Přístup k 150+ audio lekcím',
-                          'Záznamy z pravidelných Online Session',
-                        ]}
+                        features={[...SMART_FEATURES]}
                         ctaText="Zachovat přístup →"
                         ctaVariant="primary"
                         highlighted
+                        onPaidCTAClick={(priceId, interval, moduleId, title, price) =>
+                          openCheckout({ priceId, billingInterval: interval, moduleId, title, price })
+                        }
                       />
                       <PricingCard
                         moduleId="ai-coach"
@@ -1052,6 +1053,28 @@ export function MujUcetPage() {
       {showWaitlistModal && (
         <AiCoachWaitlistModal onClose={() => setShowWaitlistModal(false)} />
       )}
+
+      {/* SMART checkout (sdílený flow jako na landing; uživatel je přihlášen → email modal se nezobrazí) */}
+      <EmailInputModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSubmit={handleEmailSubmit}
+        isLoading={loadingEmail}
+      />
+      <PaymentModal
+        isOpen={paymentOpen}
+        onClose={handlePaymentClose}
+        onPaymentComplete={handlePaymentComplete}
+        clientSecret={clientSecret}
+      />
+
+      <CheckoutThankYouModal
+        isOpen={thankYouModalOpen}
+        onClose={() => {
+          closeThankYouModal();
+          navigate('/');
+        }}
+      />
     </div>
   );
 }

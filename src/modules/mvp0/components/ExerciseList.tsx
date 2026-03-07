@@ -11,6 +11,8 @@
  */
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/platform/api/supabase';
 import { ExerciseCard } from './ExerciseCard';
 import { LockedFeatureModal } from './LockedFeatureModal';
 import { Button, LoadingSkeleton, EmptyState, NavIcon, Tooltip, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
@@ -36,15 +38,20 @@ const difficultyLabels: Record<number, string> = {
   1: 'Náročné',
 };
 
+export type TabType = 'presets' | 'custom' | 'history';
+
 export interface ExerciseListProps {
   onStartExercise: (exercise: Exercise) => void;
   onCreateCustom: () => void;
   onEditExercise?: (exercise: Exercise) => void;
+  /** Controlled: aktivní tab řídí rodič (CvicitPage) */
+  activeTab?: TabType;
+  /** Controlled: callback pro změnu tabu */
+  onTabChange?: (tab: TabType) => void;
 }
 
-type TabType = 'presets' | 'custom' | 'history';
 type PresetFilter = 'all' | 'protocols' | 'exercises';
-type HistoryFilter = 'all' | 'audio' | 'protocols' | 'exercises';
+type HistoryFilter = 'all' | 'audio' | 'exercises_and_protocols' | 'smart';
 
 /**
  * Vrátí délku cvičení v minutách (z nastavení cvičení).
@@ -53,6 +60,17 @@ type HistoryFilter = 'all' | 'audio' | 'protocols' | 'exercises';
 function getExerciseDurationLabel(exercise?: { total_duration_seconds: number } | null): string {
   if (!exercise?.total_duration_seconds) return '? min';
   const mins = Math.round(exercise.total_duration_seconds / 60);
+  return `${mins} min`;
+}
+
+/**
+ * Vypočítá skutečnou délku sezení z timestamps (started_at → completed_at).
+ */
+function getSessionActualDuration(startedAt: string, completedAt?: string | null): string {
+  if (!completedAt) return '? min';
+  const diffMs = new Date(completedAt).getTime() - new Date(startedAt).getTime();
+  if (diffMs <= 0) return '? min';
+  const mins = Math.max(1, Math.round(diffMs / 60000));
   return `${mins} min`;
 }
 
@@ -127,14 +145,22 @@ export function ExerciseList({
   onStartExercise,
   onCreateCustom,
   onEditExercise,
+  activeTab: controlledTab,
+  onTabChange,
 }: ExerciseListProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('presets');
+  const [internalTab, setInternalTab] = useState<TabType>('presets');
+  const activeTab = controlledTab ?? internalTab;
+  const setActiveTab = (tab: TabType) => {
+    setInternalTab(tab);
+    onTabChange?.(tab);
+  };
   const [presetFilter, setPresetFilter] = useState<PresetFilter>('all');
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>('all');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { plan } = useMembership();
   const { openExerciseCreator } = useNavigation();
   const userCreatedAt = useAuthStore((s) => s.user?.created_at);
+  const userId = useAuthStore((s) => s.user?.id);
   
   // Mood labels Czech mapping
   const moodLabels: Record<MoodType, string> = {
@@ -159,6 +185,23 @@ export function ExerciseList({
   const { data: sessions, isLoading: sessionsLoading } = useExerciseSessions();
   const { data: audioSessions, isLoading: audioLoading } = useAudioSessions();
   const deleteExercise = useDeleteExercise();
+
+  // Fetch reset_at to badge pre-reset SMART sessions in history
+  const { data: smartRec } = useQuery({
+    queryKey: ['smart-recommendation', userId ?? ''],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data } = await supabase
+        .from('smart_exercise_recommendations')
+        .select('reset_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+  });
+  const smartResetAt = smartRec?.reset_at ?? null;
   
   // All presets (protocols + exercises) — filter applied per user selection
   const allPresets = exercises?.filter((ex) => ex.category === 'preset') ?? [];
@@ -179,8 +222,8 @@ export function ExerciseList({
   const maxCustom = customLimits[plan as keyof typeof customLimits] || 3;
   const canCreateMore = (customCount || 0) < maxCustom;
   
-  // History tier limits
-  const historyDaysLimit = plan === 'ZDARMA' ? 7 : plan === 'SMART' ? 90 : null;
+  // History tier limits — reserved for future history filtering UI
+  const _historyDaysLimit = plan === 'ZDARMA' ? 7 : plan === 'SMART' ? 90 : null;
 
   // Zobraz upsell pouze uživatelům registrovaným déle než 7 dní (mají potenciálně skrytá data)
   const hasHiddenHistory =
@@ -211,50 +254,52 @@ export function ExerciseList({
   
   return (
     <div className="exercise-list">
-      {/* Tabs */}
-      <div className="exercise-list__tabs" role="tablist">
-        <button
-          className={`tab ${activeTab === 'presets' ? 'tab--active' : ''}`}
-          onClick={(e) => {
-            setActiveTab('presets');
-            e.currentTarget.blur(); // Force remove :active state on mobile
-          }}
-          role="tab"
-          aria-selected={activeTab === 'presets'}
-          type="button"
-        >
-          Doporučené
-        </button>
-        
-        <button
-          className={`tab ${activeTab === 'custom' ? 'tab--active' : ''}`}
-          onClick={(e) => {
-            setActiveTab('custom');
-            e.currentTarget.blur();
-          }}
-          role="tab"
-          aria-selected={activeTab === 'custom'}
-          type="button"
-        >
-          Vlastní
-          {customCount !== undefined && (
-            <span className="tab__badge">{customCount}</span>
-          )}
-        </button>
-        
-        <button
-          className={`tab ${activeTab === 'history' ? 'tab--active' : ''}`}
-          onClick={(e) => {
-            setActiveTab('history');
-            e.currentTarget.blur(); // Force remove :active state on mobile
-          }}
-          role="tab"
-          aria-selected={activeTab === 'history'}
-          type="button"
-        >
-          Historie
-        </button>
-      </div>
+      {/* Tabs — renderují se jen když není controlled (bez rodičovského tab baru) */}
+      {!controlledTab && (
+        <div className="exercise-list__tabs" role="tablist">
+          <button
+            className={`tab ${activeTab === 'presets' ? 'tab--active' : ''}`}
+            onClick={(e) => {
+              setActiveTab('presets');
+              e.currentTarget.blur(); // Force remove :active state on mobile
+            }}
+            role="tab"
+            aria-selected={activeTab === 'presets'}
+            type="button"
+          >
+            Doporučené
+          </button>
+          
+          <button
+            className={`tab ${activeTab === 'custom' ? 'tab--active' : ''}`}
+            onClick={(e) => {
+              setActiveTab('custom');
+              e.currentTarget.blur();
+            }}
+            role="tab"
+            aria-selected={activeTab === 'custom'}
+            type="button"
+          >
+            Vlastní
+            {customCount !== undefined && (
+              <span className="tab__badge">{customCount}</span>
+            )}
+          </button>
+          
+          <button
+            className={`tab ${activeTab === 'history' ? 'tab--active' : ''}`}
+            onClick={(e) => {
+              setActiveTab('history');
+              e.currentTarget.blur(); // Force remove :active state on mobile
+            }}
+            role="tab"
+            aria-selected={activeTab === 'history'}
+            type="button"
+          >
+            Historie
+          </button>
+        </div>
+      )}
       
       {/* Tab Content */}
       <div className="exercise-list__content">
@@ -419,28 +464,25 @@ export function ExerciseList({
         {/* HISTORY TAB */}
         {activeTab === 'history' && (
           <div className="tab-content" role="tabpanel">
-            {/* Tier info */}
-            <div className="tier-info">
-              <p className="tier-info__text">
-                {historyDaysLimit
-                  ? `Zobrazuji posledních ${historyDaysLimit} dní.`
-                  : 'Zobrazuji celou historii.'}
-                {hasHiddenHistory && (
-                  <> Celá historie se ti zobrazí s tarifem SMART.</>
-                )}
-              </p>
-            </div>
+            {/* Tier info — jen pro ZDARMA s daty staršími než 7 dní */}
+            {plan === 'ZDARMA' && hasHiddenHistory && (
+              <div className="tier-info">
+                <p className="tier-info__text">
+                  Ukládáme posledních 7 dní. Celá historie se ti zobrazí s tarifem SMART.
+                </p>
+              </div>
+            )}
 
-            {/* History filter: Vše / Audio / Protokoly / Cvičení */}
+            {/* History filter: Vše / Audio / Cvičení & Protokoly / SMART */}
             <div className="exercise-list__filter" role="group" aria-label="Filtrovat historii">
-              {(['all', 'audio', 'protocols', 'exercises'] as HistoryFilter[]).map((f) => (
+              {(['all', 'audio', 'exercises_and_protocols', 'smart'] as HistoryFilter[]).map((f) => (
                 <button
                   key={f}
                   type="button"
                   className={`exercise-list__filter-btn${historyFilter === f ? ' exercise-list__filter-btn--active' : ''}`}
                   onClick={() => setHistoryFilter(f)}
                 >
-                  {f === 'all' ? 'Vše' : f === 'audio' ? 'Audio' : f === 'protocols' ? 'Protokoly' : 'Cvičení'}
+                  {f === 'all' ? 'Vše' : f === 'audio' ? 'Audio' : f === 'exercises_and_protocols' ? 'Cvičení & Protokoly' : 'SMART'}
                 </button>
               ))}
             </div>
@@ -460,8 +502,12 @@ export function ExerciseList({
                 const filteredExercises = exerciseSessions.filter((session) => {
                   if (historyFilter === 'all') return true;
                   if (historyFilter === 'audio') return false;
-                  if (historyFilter === 'protocols') return isProtocol(session.exercise);
-                  if (historyFilter === 'exercises') return !isProtocol(session.exercise);
+                  if (historyFilter === 'smart') return (session as { session_type?: string }).session_type === 'smart';
+                  if (historyFilter === 'exercises_and_protocols') {
+                    // Zahrnout protokoly i cvičení, ale ne SMART
+                    if ((session as { session_type?: string }).session_type === 'smart') return false;
+                    return !!session.exercise;
+                  }
                   return true;
                 });
 
@@ -516,11 +562,41 @@ export function ExerciseList({
                       }
 
                       const session = item.session;
+                      const sessionType = (session as { session_type?: string }).session_type;
+                      const isSmartSession = sessionType === 'smart';
+                      const sessionTitle = isSmartSession
+                        ? 'SMART CVIČENÍ'
+                        : session.exercise?.name || 'Cvičení';
+
+                      // Mark SMART sessions from before the last reset as previous epoch
+                      const isPreResetSmart = isSmartSession &&
+                        smartResetAt !== null &&
+                        session.started_at < smartResetAt;
+
+                      // Duration: SMART uses actual elapsed time (no exercise row)
+                      const durationLabel = isSmartSession
+                        ? getSessionActualDuration(session.started_at, (session as { completed_at?: string }).completed_at)
+                        : getExerciseDurationLabel(session.exercise);
+
+                      // Type badge
+                      const typeBadge = isSmartSession ? null : session.exercise
+                        ? isProtocol(session.exercise)
+                          ? <span className="badge badge--protocol">Protokol</span>
+                          : session.exercise.category === 'custom'
+                            ? null // already shown as 'Vlastní'
+                            : <span className="badge badge--exercise">Cvičení</span>
+                        : null;
+
                       return (
-                        <div key={session.id} className="session-card">
+                        <div key={session.id} className={`session-card${isPreResetSmart ? ' session-card--pre-reset' : ''}`}>
                           <div className="session-card__header">
                             <h4 className="session-card__title">
-                              {session.exercise?.name || 'Smazané cvičení'}
+                              {sessionTitle}
+                              {isPreResetSmart && (
+                                <span className="badge badge--muted" style={{ marginLeft: 6, fontSize: '0.65rem', verticalAlign: 'middle' }}>
+                                  Nepočítá se
+                                </span>
+                              )}
                             </h4>
                             <span className="session-card__date">
                               {new Date(session.started_at).toLocaleDateString('cs-CZ', {
@@ -535,7 +611,7 @@ export function ExerciseList({
                           <div className="session-card__meta">
                             <span className="badge">
                               <NavIcon name="clock" size={14} />
-                              {getExerciseDurationLabel(session.exercise)}
+                              {durationLabel}
                             </span>
 
                             {session.was_completed ? (
@@ -554,6 +630,12 @@ export function ExerciseList({
                               })()
                             )}
 
+                            {/* Type badge — protocol / exercise / smart */}
+                            {isSmartSession
+                              ? <span className="badge badge--smart">SMART</span>
+                              : typeBadge
+                            }
+
                             {/* Difficulty badge */}
                             {session.difficulty_rating && (
                               <span className="badge badge--difficulty">
@@ -567,11 +649,6 @@ export function ExerciseList({
                                 <NavIcon name="edit" size={12} />
                                 Vlastní
                               </span>
-                            )}
-
-                            {/* SMART badge for smart session type */}
-                            {(session as { session_type?: string }).session_type === 'smart' && (
-                              <span className="badge badge--smart">SMART</span>
                             )}
 
                             {/* Notes badge with Tooltip component */}

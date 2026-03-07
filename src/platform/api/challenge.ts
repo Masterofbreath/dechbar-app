@@ -33,7 +33,7 @@ export interface ChallengeAccessStatus {
 // =====================================================
 
 const CHALLENGE_ID = 'challenge-2026-03';
-const REGISTRATION_DEADLINE = new Date('2026-02-28T23:59:59+01:00');
+const REGISTRATION_DEADLINE = new Date('2026-03-07T23:59:59+01:00');
 const CHALLENGE_START = new Date('2026-03-01T00:00:00+01:00');
 const CHALLENGE_END = new Date('2026-03-21T23:59:59+01:00');
 
@@ -56,13 +56,13 @@ export async function sendChallengeMagicLink(
   source?: string
 ): Promise<ChallengeMagicLinkResponse> {
   try {
-    // 1. Check registration deadline (28.2. 23:59)
+    // 1. Check registration deadline (7.3. 23:59)
     const now = new Date();
     
     if (now > REGISTRATION_DEADLINE) {
       return {
         success: false,
-        error: 'Registrace do výzvy již skončila. Deadline byl 28. února 2026.'
+        error: 'Registrace do výzvy již skončila. Deadline byl 7. března 2026.'
       };
     }
     

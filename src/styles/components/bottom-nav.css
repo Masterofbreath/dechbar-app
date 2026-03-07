@@ -8,9 +8,6 @@
    ============================================================ */
 
 .bottom-nav {
-  /* React Portal: renderuje se jako přímé dítě <body>, nikdy není flex item.
-     position:fixed je vždy viewport-relative — žádný scroll/overflow kontext
-     v app-layout ho nemůže ovlivnit. iOS WebKit UIScrollView bug eliminován. */
   position: fixed;
   bottom: 0;
   left: 0;
@@ -18,9 +15,8 @@
   width: 100%;
   z-index: 1000;
 
-  /* height = 72px (obsah) + env(safe-area-inset-bottom) (home indicator).
-     padding-bottom = env(...) → flex items centrované v 72px content boxu,
-     spodní padding plynule vyplňuje home indicator zónu barvou navu. */
+  /* Výška = 72px obsah + safe-area-inset-bottom (home indicator / iOS toolbar).
+     Barva navu vizuálně vyplňuje celou spodní safe-area zónu. */
   height: calc(72px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0);
   background: var(--color-surface);

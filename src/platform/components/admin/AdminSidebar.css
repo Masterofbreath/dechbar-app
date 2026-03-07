@@ -105,8 +105,32 @@
 
 .admin-sidebar__nav {
   flex: 1;
-  padding: 0.75rem 0;
+  padding: 0.5rem 0;
   overflow-y: auto;
+}
+
+/* ── Menu skupiny ─────────────────────────────────────────── */
+
+.admin-sidebar__group {
+  padding: 0.25rem 0;
+}
+
+.admin-sidebar__group + .admin-sidebar__group {
+  border-top: 1px solid var(--color-border);
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+}
+
+.admin-sidebar__group-label {
+  display: block;
+  padding: 0.375rem 1rem 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary, var(--color-text-secondary));
+  opacity: 0.6;
+  user-select: none;
 }
 
 .admin-sidebar__item {

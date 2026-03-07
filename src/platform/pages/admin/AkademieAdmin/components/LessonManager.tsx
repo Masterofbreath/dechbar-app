@@ -35,12 +35,27 @@ interface EditingDuration {
 interface EditingLesson {
   lessonId: string;
   title: string;
+  primary_technique: string;
+  secondary_technique: string;
   audioFile: File | null;
   uploadProgress: number | null;
   isUploading: boolean;
   isSaving: boolean;
   error: string | null;
 }
+
+const TECHNIQUE_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: '— nevybráno —' },
+  { value: 'humming', label: 'Bzučení' },
+  { value: 'box_breathing', label: 'Box Breathing' },
+  { value: 'extended_exhale', label: 'Prodloužený výdech' },
+  { value: 'belly_breathing', label: 'Aktivace bránice' },
+  { value: 'retention', label: 'Zádrže dechu' },
+  { value: 'visualization', label: 'Vizualizace' },
+  { value: 'pursed_lip', label: 'Přidušení' },
+  { value: 'energizing', label: 'Hyperventilace' },
+  { value: 'other', label: 'Funkční' },
+];
 
 const emptyForm = (): LessonForm => ({
   title: '', audioFile: null, uploadProgress: null, isUploading: false, error: null,
@@ -178,6 +193,8 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
     setEditingLesson({
       lessonId: lesson.id,
       title: lesson.title,
+      primary_technique: lesson.primary_technique ?? '',
+      secondary_technique: lesson.secondary_technique ?? '',
       audioFile: null,
       uploadProgress: null,
       isUploading: false,
@@ -194,7 +211,11 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
     setEditingLesson((prev) => prev ? { ...prev, isSaving: true, error: null } : null);
 
     try {
-      const patch: Record<string, unknown> = { title: editingLesson.title.trim() };
+      const patch: Record<string, unknown> = {
+        title: editingLesson.title.trim(),
+        primary_technique: editingLesson.primary_technique || null,
+        secondary_technique: editingLesson.secondary_technique || null,
+      };
 
       // Pokud je vybrán nový audio soubor → nahrát na CDN
       if (editingLesson.audioFile) {
@@ -413,6 +434,34 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
                                                 }}
                                                 autoFocus
                                               />
+                                            </div>
+
+                                            {/* Primární technika */}
+                                            <div className="aa-field" style={{ flex: 1, minWidth: 140 }}>
+                                              <label className="aa-field__label" style={{ fontSize: '0.75rem' }}>Primární technika</label>
+                                              <select
+                                                className="aa-input"
+                                                value={editingLesson.primary_technique}
+                                                onChange={(e) => setEditingLesson((prev) => prev ? { ...prev, primary_technique: e.target.value } : null)}
+                                              >
+                                                {TECHNIQUE_OPTIONS.map((opt) => (
+                                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                ))}
+                                              </select>
+                                            </div>
+
+                                            {/* Sekundární technika */}
+                                            <div className="aa-field" style={{ flex: 1, minWidth: 140 }}>
+                                              <label className="aa-field__label" style={{ fontSize: '0.75rem' }}>Sekundární technika</label>
+                                              <select
+                                                className="aa-input"
+                                                value={editingLesson.secondary_technique}
+                                                onChange={(e) => setEditingLesson((prev) => prev ? { ...prev, secondary_technique: e.target.value } : null)}
+                                              >
+                                                {TECHNIQUE_OPTIONS.map((opt) => (
+                                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                ))}
+                                              </select>
                                             </div>
 
                                             {/* Audio upload */}

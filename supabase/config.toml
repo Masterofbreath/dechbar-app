@@ -376,6 +376,11 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# Edge Functions — JWT verification (hosted project bere z tohoto configu při deployi)
+[functions.create-checkout-session]
+# Guest checkout: volání bez přihlášení; přihlášení ověřujeme uvnitř funkce.
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

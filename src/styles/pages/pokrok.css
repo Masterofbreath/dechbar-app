@@ -4,7 +4,7 @@
    ============================================================ */
 
 .pokrok-page {
-  padding: 0 20px 120px;
+  padding: 20px 20px 120px;
   color: #f0f0f0;
   max-width: 600px;
   margin: 0 auto;
@@ -664,4 +664,153 @@
   margin-top: 8px;
   font-style: italic;
   letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   Pokrok page — top-level tabs (Přehled / Komunita / TOP10)
+   ============================================================ */
+
+/* Sticky wrapper — odstraněno na žádost uživatele (scrolluje s obsahem) */
+.pokrok-page__sticky-header {
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pokrok-page__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  padding: 0 16px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pokrok-page__tab {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  text-align: center;
+}
+
+.pokrok-page__tab--active {
+  color: var(--color-text-primary, #fff);
+  border-bottom-color: var(--color-teal, #2CBEC6);
+}
+
+/* Coming soon placeholder */
+.pokrok-page__coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.pokrok-page__coming-soon-icon {
+  color: var(--color-teal, #2CBEC6);
+  opacity: 0.5;
+  margin-bottom: 4px;
+}
+
+.pokrok-page__coming-soon-title {
+  color: var(--color-text-primary, #e0e0e0);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.pokrok-page__coming-soon-text {
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  font-size: 0.875rem;
+  max-width: 280px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   ProfilPage — Health Questionnaire (Safety Flags)
+   ============================================================ */
+
+.profil-health-questionnaire {
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 8%);
+}
+
+.profil-health-questionnaire__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+}
+
+.profil-health-questionnaire__loading {
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+}
+
+.profil-health-questionnaire__body {
+  padding: 0 16px 16px;
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+.profil-health-questionnaire__desc {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+  margin: 12px 0;
+  line-height: 1.4;
+}
+
+.profil-health-questionnaire__items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profil-health-questionnaire__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.profil-health-questionnaire__checkbox {
+  accent-color: var(--color-teal, #2CBEC6);
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.profil-health-questionnaire__label {
+  font-size: 0.875rem;
+  color: var(--color-text-primary, #fff);
+  display: block;
+}
+
+.profil-health-questionnaire__warning {
+  font-size: 0.75rem;
+  color: var(--color-gold, #D6A23A);
+  display: block;
+  margin-top: 2px;
+  line-height: 1.3;
 }

@@ -22,6 +22,7 @@ import { useAuthStore } from '@/platform/auth';
 import { useNavigation } from '@/platform/hooks/useNavigation';
 import type { ActivityPeriod, ActivityDayData } from '@/platform/analytics';
 import { KPSection } from '@/components/pokrok/KPSection';
+import { SmartSection } from '@/components/pokrok/SmartSection';
 import '@/styles/pages/pokrok.css';
 
 // ── Prime number milestones (in hours) ──
@@ -247,6 +248,7 @@ function formatStreak(days: number): string | null {
 
 export function PokrokPage() {
   const [period, setPeriod] = useState<ActivityPeriod>('day');
+  const [pokrokTab, setPokrokTab] = useState<'prehled' | 'komunita' | 'top10'>('prehled');
   const userId = useAuthStore((s) => s.user?.id);
   const { currentTab } = useNavigation();
   const { openKPDetail } = useNavigation();
@@ -310,25 +312,93 @@ export function PokrokPage() {
 
   return (
     <>
-      {/* Page header */}
-      <div className="pokrok-page__page-header">
-        <h1 className="pokrok-page__page-title">Pokrok</h1>
+      {/* Sticky header — title + tab navigation together */}
+      <div className="pokrok-page__sticky-header">
+        <div className="pokrok-page__page-header">
+          <h1 className="pokrok-page__page-title">Pokrok</h1>
+        </div>
+
+        {/* Tab navigation */}
+        <div className="pokrok-page__tabs" role="tablist" aria-label="Sekce pokroku">
+          {[
+            { key: 'prehled',  label: 'Přehled' },
+            { key: 'komunita', label: 'Komunita' },
+            { key: 'top10',    label: 'TOP10' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              className={`pokrok-page__tab${pokrokTab === tab.key ? ' pokrok-page__tab--active' : ''}`}
+              onClick={() => {
+                setPokrokTab(tab.key as 'prehled' | 'komunita' | 'top10');
+                // Scroll na vrch obsahu při přepnutí tabu
+                document.querySelector('.app-layout__content')?.scrollTo({ top: 0, behavior: 'instant' });
+              }}
+              role="tab"
+              aria-selected={pokrokTab === tab.key}
+              type="button"
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* Komunita / TOP10 — coming soon */}
+      {(pokrokTab === 'komunita' || pokrokTab === 'top10') && (
+        <div className="pokrok-page">
+          <div className="pokrok-page__coming-soon">
+            <div className="pokrok-page__coming-soon-icon">
+              {pokrokTab === 'komunita' ? (
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              ) : (
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              )}
+            </div>
+            <p className="pokrok-page__coming-soon-title">
+              {pokrokTab === 'komunita' ? 'Komunita se rozdýchává' : 'Žebříček přichází'}
+            </p>
+            <p className="pokrok-page__coming-soon-text">
+              {pokrokTab === 'komunita'
+                ? 'Brzy se budeš moci porovnat a inspirovat ostatními DechBar uživateli.'
+                : 'Nejlepší dýchači DechBaru se brzy setkají na jednom místě.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {pokrokTab === 'prehled' && (
       <div className="pokrok-page">
 
         {/* 1. KP Sekce */}
-        <KPSection
-          currentKP={currentKP}
-          bestKP={bestKP}
-          baselineKP={baselineKP}
-          totalMeasurements={totalMeasurements}
-          measurements={measurements}
-          trend={kpStats?.trend ?? 0}
-          isLoading={kpLoading}
-          registeredAt={registeredAt}
-          onOpenKPCenter={openKPDetail}
-        />
+        <div className="pokrok-page__section-gap">
+          <KPSection
+            currentKP={currentKP}
+            bestKP={bestKP}
+            baselineKP={baselineKP}
+            totalMeasurements={totalMeasurements}
+            measurements={measurements}
+            trend={kpStats?.trend ?? 0}
+            isLoading={kpLoading}
+            registeredAt={registeredAt}
+            onOpenKPCenter={openKPDetail}
+          />
+        </div>
+
+        {/* 1b. SMART Sekce */}
+        <div className="pokrok-page__section-gap">
+          <SmartSection
+            userId={userId}
+            latestKP={currentKP}
+            onMeasureKP={openKPDetail}
+          />
+        </div>
 
         {/* 2. Tento týden — WeeklyDots + streak inline */}
         <div className="pokrok-page__week-section pokrok-page__section-gap">
@@ -447,6 +517,7 @@ export function PokrokPage() {
         <CommunityMilestone />
 
       </div>
+      )} {/* end pokrokTab === 'prehled' */}
     </>
   );
 }

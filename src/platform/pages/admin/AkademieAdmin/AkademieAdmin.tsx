@@ -31,13 +31,13 @@ export default function AkademieAdmin() {
 
         <div className="akademie-admin__tabs">
           <button
-            className={`akademie-admin__tab ${activeTab === 'programs' ? 'aktive' : ''}`}
+            className={`akademie-admin__tab ${activeTab === 'programs' ? 'akademie-admin__tab--active' : ''}`}
             onClick={() => setActiveTab('programs')}
           >
             Programy
           </button>
           <button
-            className={`akademie-admin__tab ${activeTab === 'categories' ? 'aktive' : ''}`}
+            className={`akademie-admin__tab ${activeTab === 'categories' ? 'akademie-admin__tab--active' : ''}`}
             onClick={() => setActiveTab('categories')}
           >
             Kategorie

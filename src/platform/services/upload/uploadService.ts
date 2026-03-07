@@ -494,4 +494,178 @@ export const uploadService = {
 
     return `${BUNNY_CONFIG.cdnUrl}/${storagePath}`;
   },
+
+  /**
+   * Upload session audio file (background track, breathing cue, or vocal snippet).
+   *
+   * CDN paths:
+   *   background → audio/session/background/{slug}.{ext}
+   *   cue        → audio/session/cues/{slug}.{ext}
+   *   vocal      → audio/session/vocal/{slug}.{ext}
+   *
+   * @param file        - Audio file (.aac, .mp3, .m4a, .wav)
+   * @param type        - Target category
+   * @param slug        - Filename slug (no extension)
+   * @param onProgress  - Optional upload progress callback
+   * @returns CDN URL of uploaded file
+   */
+  async uploadSessionAudio(
+    file: File,
+    type: 'background' | 'cue' | 'vocal',
+    slug: string,
+    onProgress?: UploadProgressCallback,
+  ): Promise<string> {
+    const allowedTypes = ['mp3', 'm4a', 'aac', 'wav'];
+    if (!validateFileType(file, allowedTypes)) {
+      throw new Error(`Invalid file type. Allowed: ${allowedTypes.join(', ')}`);
+    }
+
+    const ext = getExtension(file.name) || 'aac';
+    const pathMap: Record<typeof type, string> = {
+      background: `audio/session/background/${slug}.${ext}`,
+      cue:        `audio/session/cues/${slug}.${ext}`,
+      vocal:      `audio/session/vocal/${slug}.${ext}`,
+    };
+    const storagePath = pathMap[type];
+    const uploadUrl = `https://${BUNNY_CONFIG.hostname}/${BUNNY_CONFIG.storageZone}/${storagePath}`;
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress({
+            loaded: e.loaded,
+            total: e.total,
+            percent: Math.round((e.loaded / e.total) * 100),
+          });
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Session audio upload failed'));
+      });
+
+      xhr.open('PUT', uploadUrl);
+      xhr.setRequestHeader('AccessKey', BUNNY_CONFIG.accessKey);
+      xhr.setRequestHeader('Content-Type', file.type || 'audio/aac');
+      xhr.send(file);
+    });
+
+    return `${BUNNY_CONFIG.cdnUrl}/${storagePath}`;
+  },
+
+  /**
+   * Upload audio file for Daily Program override to Bunny.net CDN.
+   * Path: audio/daily/{uuid}.mp3
+   *
+   * @param file       - Audio file (MP3, M4A, WAV, AAC)
+   * @param onProgress - Optional progress callback (0–100)
+   * @returns CDN URL + duration in seconds (extracted from file)
+   */
+  async uploadDailyProgramAudio(
+    file: File,
+    onProgress?: UploadProgressCallback,
+  ): Promise<{ url: string; durationSeconds: number }> {
+    const allowedTypes = ['mp3', 'm4a', 'wav', 'aac'];
+    if (!validateFileType(file, allowedTypes)) {
+      throw new Error(`Nepodporovaný formát. Povolené: ${allowedTypes.join(', ')}`);
+    }
+
+    const uuid = crypto.randomUUID();
+    const storagePath = `audio/daily/${uuid}.mp3`;
+    const uploadUrl = `https://${BUNNY_CONFIG.hostname}/${BUNNY_CONFIG.storageZone}/${storagePath}`;
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress({
+            loaded: e.loaded,
+            total: e.total,
+            percent: Math.round((e.loaded / e.total) * 100),
+          });
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error(`Upload selhal se statusem ${xhr.status}`));
+      });
+
+      xhr.addEventListener('error', () => reject(new Error('Upload selhal')));
+
+      xhr.open('PUT', uploadUrl);
+      xhr.setRequestHeader('AccessKey', BUNNY_CONFIG.accessKey);
+      xhr.setRequestHeader('Content-Type', 'audio/mpeg');
+      xhr.send(file);
+    });
+
+    const meta = await this.extractMetadataFromFile(file).catch(() => ({ duration: 0 }));
+
+    return {
+      url: `${BUNNY_CONFIG.cdnUrl}/${storagePath}`,
+      durationSeconds: meta.duration ?? 0,
+    };
+  },
+
+  /**
+   * Upload cover image for Daily Program override to Bunny.net CDN.
+   * Path: images/daily/{uuid}.{ext}
+   *
+   * @param file       - Image file (JPG, PNG, WebP)
+   * @param onProgress - Optional progress callback (0–100)
+   * @returns CDN URL
+   */
+  async uploadDailyProgramCover(
+    file: File,
+    onProgress?: UploadProgressCallback,
+  ): Promise<string> {
+    const allowedTypes = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!validateFileType(file, allowedTypes)) {
+      throw new Error(`Nepodporovaný formát. Povolené: ${allowedTypes.join(', ')}`);
+    }
+
+    const ext = getExtension(file.name) || 'jpg';
+    const uuid = crypto.randomUUID();
+    const storagePath = `images/daily/${uuid}.${ext}`;
+    const uploadUrl = `https://${BUNNY_CONFIG.hostname}/${BUNNY_CONFIG.storageZone}/${storagePath}`;
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress({
+            loaded: e.loaded,
+            total: e.total,
+            percent: Math.round((e.loaded / e.total) * 100),
+          });
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error(`Upload selhal se statusem ${xhr.status}`));
+      });
+
+      xhr.addEventListener('error', () => reject(new Error('Upload selhal')));
+
+      xhr.open('PUT', uploadUrl);
+      xhr.setRequestHeader('AccessKey', BUNNY_CONFIG.accessKey);
+      xhr.setRequestHeader('Content-Type', file.type || 'image/jpeg');
+      xhr.send(file);
+    });
+
+    return `${BUNNY_CONFIG.cdnUrl}/${storagePath}`;
+  },
 };

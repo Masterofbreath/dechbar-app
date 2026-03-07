@@ -1300,3 +1300,34 @@ section[id] {
     animation: none;
   }
 }
+
+/* ============================================================
+   CHECKOUT THANK YOU MODAL (guest po platbě předplatného)
+   ============================================================ */
+
+.checkout-thankyou-modal {
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+}
+
+.checkout-thankyou-modal__icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.checkout-thankyou-modal__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--spacing-4);
+  text-align: center;
+}
+
+.checkout-thankyou-modal__spam {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin: 0 0 var(--spacing-6);
+  text-align: center;
+}

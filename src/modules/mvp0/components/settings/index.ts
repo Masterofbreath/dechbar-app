@@ -10,9 +10,13 @@ export { Toggle } from './Toggle';
 export { VolumeSlider } from './VolumeSlider';
 export { IntensitySelector } from './IntensitySelector';
 export { TrackSelector } from './TrackSelector';
+export { VoicePackSelector } from './VoicePackSelector';
+export { CueSoundSelector } from './CueSoundSelector';
 
 export type { SettingsCardProps } from './SettingsCard';
 export type { ToggleProps } from './Toggle';
 export type { VolumeSliderProps } from './VolumeSlider';
 export type { IntensitySelectorProps } from './IntensitySelector';
 export type { TrackSelectorProps } from './TrackSelector';
+export type { VoicePackSelectorProps } from './VoicePackSelector';
+export type { CueSoundSelectorProps, CueSoundPack } from './CueSoundSelector';

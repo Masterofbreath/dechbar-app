@@ -97,6 +97,22 @@
   padding: 0 20px;
 }
 
+/* SMART phase description hint (subdued, smaller) */
+.session-active__phase-hint {
+  position: absolute;
+  top: 44px;
+  left: var(--fullscreen-modal-content-padding);
+  right: var(--fullscreen-modal-content-padding);
+  text-align: center;
+  font-size: 12px;
+  font-weight: var(--font-weight-regular, 400);
+  color: var(--color-text-tertiary);
+  opacity: 0.75;
+  line-height: 1.3;
+  margin: 0;
+  padding: 0 20px;
+}
+
 /* Instructions gold box */
 .session-active__instructions {
   max-width: 340px;
@@ -152,14 +168,15 @@
   
   /* Soft fade-in from below (Apple Watch pattern) */
   opacity: 0;
-  animation: fadeInUp 0.4s ease-out forwards;
+  animation: fade-in-up 0.4s ease-out forwards;
 }
 
-@keyframes fadeInUp {
+@keyframes fade-in-up {
   from {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -171,15 +188,39 @@
   display: none; /* ✅ Replaced by floating version */
 }
 
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .session-active__next-floating {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 1;
+      transform: none;
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
 /* ✅ NEW v2.42.13: Desktop-specific "Další:" positioning */
-@media (min-width: 769px) {
+@media (width >= 769px) {
   .session-active__next-floating {
     bottom: -9px; /* ✅ v2.42.16: Posunout POD ContentZone edge (clears timer, was 0px) */
     font-size: 12px; /* ✅ Larger font on desktop (was 11px) */
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .session-countdown__phase-name,
   .session-active__phase-name,
   .session-active__instruction-text {

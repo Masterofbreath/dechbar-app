@@ -73,6 +73,30 @@ export function SessionActive({
         </>
       )}
 
+      {/* SMART / custom exercise: phase name + special instructions above circle */}
+      {!isProtocol(exercise) && currentPhase && (
+        <>
+          <p className="session-active__phase-name">
+            {currentPhase.name}
+          </p>
+          {isBuzzingPhase && (
+            <p className="session-active__buzzing-hint">
+              Při výdechu jemně bzuč
+            </p>
+          )}
+          {isFinalPhase && (
+            <p className="session-active__final-instruction">
+              Dýchej volně ve svém rytmu
+            </p>
+          )}
+          {currentPhase.instructions && !isBuzzingPhase && !isFinalPhase && (
+            <p className="session-active__phase-hint">
+              {currentPhase.instructions}
+            </p>
+          )}
+        </>
+      )}
+
       {/*
         intensity-circle-zone wraps [−][circle][+] as one unit.
         Desktop: flex row — buttons are in-flow left/right of the circle.

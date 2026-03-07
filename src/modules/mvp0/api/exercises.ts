@@ -357,6 +357,8 @@ export function useCompleteSession() {
           quality_rating: payload.quality_rating || null,
           notes: payload.notes || null,
           final_intensity_multiplier: payload.final_intensity_multiplier ?? 1.0,
+          session_type: payload.session_type ?? 'preset',
+          smart_context: payload.smart_context ?? null,
         })
         .select()
         .single();
@@ -432,6 +434,151 @@ export function useUpdateSafetyFlags() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: exerciseKeys.safetyFlags(user?.id || '') });
+    },
+  });
+}
+
+// =====================================================
+// HOOKS: SMART Recommendation
+// =====================================================
+
+/**
+ * Increment session_count_smart after each completed SMART session.
+ * Also applies the BIE-computed level change — level is ONLY updated after a real session,
+ * never during computeAndBuild() which runs before the session starts.
+ * Called by SessionEngineModal after saveSession() succeeds.
+ */
+export function useIncrementSmartSessionCount() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ wasCompleted, newLevel }: { wasCompleted: boolean; newLevel?: number }) => {
+      if (!user || !wasCompleted) return;
+
+      // Use upsert: if row exists, increment; if not, create with count=1
+      const { data: existing } = await supabase
+        .from('smart_exercise_recommendations')
+        .select('session_count_smart, current_level')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const newCount = (existing?.session_count_smart ?? 0) + 1;
+      const prevLevel = existing?.current_level ?? 3;
+      const levelChanged = newLevel !== undefined && newLevel !== prevLevel;
+      const recalculateAfter = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      const now = new Date().toISOString();
+
+      const { error } = await supabase
+        .from('smart_exercise_recommendations')
+        .upsert(
+          {
+            user_id: user.id,
+            session_count_smart: newCount,
+            recalculate_after: recalculateAfter,
+            ...(levelChanged ? {
+              current_level: newLevel,
+              last_level_change_at: now,
+            } : {}),
+          },
+          { onConflict: 'user_id' },
+        );
+
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['smart-recommendation', user?.id ?? ''] });
+      queryClient.invalidateQueries({ queryKey: ['smart-history', user?.id ?? ''] });
+    },
+  });
+}
+
+// =====================================================
+// HOOKS: Data Reset
+// =====================================================
+
+/**
+ * Soft-reset SMART progress.
+ *
+ * Does NOT delete any rows — historical data is preserved for analytics.
+ * Instead, resets the smart_exercise_recommendations row to cold-start state:
+ *   - current_level → 3 (cold start)
+ *   - session_count_smart → 0 (BIE re-enters calibration)
+ *   - recalculate_after → now (cache expires immediately → fresh BIE on next click)
+ *   - reset_at → now (timestamp used to filter sessions after reset)
+ *
+ * exercise_sessions rows are kept intact — exercise_sessions after reset_at
+ * will be a new "epoch" visible in analytics.
+ *
+ * Called from SettingsPage "Začít znovu" after user confirmation.
+ */
+export function useResetSmartProgress() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('Not authenticated');
+
+      const now = new Date().toISOString();
+
+      const { error } = await supabase
+        .from('smart_exercise_recommendations')
+        .upsert(
+          {
+            user_id: user.id,
+            current_level: 3,
+            session_count_smart: 0,
+            confidence_score: 0,
+            data_points_count: 0,
+            is_ready: false,
+            recalculate_after: now,
+            last_calculated_at: now,
+            last_level_change_at: null,
+            reset_at: now,
+          },
+          { onConflict: 'user_id' },
+        );
+
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      // Invalidate all SMART-related queries so UI reflects cold start immediately
+      queryClient.invalidateQueries({ queryKey: ['smart-recommendation', user?.id ?? ''] });
+      queryClient.invalidateQueries({ queryKey: ['smart-history', user?.id ?? ''] });
+      queryClient.invalidateQueries({ queryKey: ['smart-history-full', user?.id ?? ''] });
+      queryClient.invalidateQueries({ queryKey: ['exercise-sessions'] });
+    },
+    onError: (err) => {
+      console.error('[useResetSmartProgress] Reset failed:', err);
+    },
+  });
+}
+
+/**
+ * Reset KP measurements — soft delete: marks kp_measurements rows as inactive
+ * via a reset_at timestamp stored in a separate user_progress_resets table.
+ *
+ * NOTE: Not yet implemented — KP reset is planned for a future iteration
+ * with full soft-reset architecture (user_progress_resets table).
+ * Kept here as a stub for type-safety in SettingsPage.
+ */
+export function useResetKPMeasurements() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('Not authenticated');
+
+      await supabase
+        .from('kp_measurements')
+        .delete()
+        .eq('user_id', user.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kp-measurements', user?.id ?? ''] });
+      queryClient.invalidateQueries({ queryKey: ['kp-measurements'] });
     },
   });
 }

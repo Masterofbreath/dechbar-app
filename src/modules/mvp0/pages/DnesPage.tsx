@@ -23,16 +23,8 @@ import {
   SessionEngineModal
 } from '../components';
 import { useExercises } from '../api/exercises';
-import type { Exercise } from '../types/exercises';
+import type { Exercise, SmartSessionConfig } from '../types/exercises';
 
-/**
- * DnesPage - Dashboard with core protocols
- * 
- * @example
- * <AppLayout>
- *   <DnesPage />
- * </AppLayout>
- */
 /**
  * Převede sekundy na "X min" label.
  * Používá Math.round — 570s → "10 min", 330s → "6 min", 420s → "7 min".
@@ -46,54 +38,43 @@ export function DnesPage() {
   const { user } = useAuth();
   const { data: exercises, isLoading, error } = useExercises();
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
-  const [skipFlow, setSkipFlow] = useState(false); // NEW: Track if direct start
+  const [skipFlow, setSkipFlow] = useState(false);
+  const [smartConfig, setSmartConfig] = useState<SmartSessionConfig | undefined>(undefined);
 
   // Dynamické délky z DB — aktualizují se automaticky když se změní protokol
   const ranoExercise = exercises?.find(ex => ex.name === 'RÁNO');
   const klidExercise = exercises?.find(ex => ex.name === 'KLID');
   const vecerExercise = exercises?.find(ex => ex.name === 'VEČER');
   
+  // Handle SMART button click — opens modal with smartConfig
+  function handleSmartStart(config: SmartSessionConfig, exercise: Exercise) {
+    setSmartConfig(config);
+    setSkipFlow(false); // SmartPrepState handles its own countdown
+    setSelectedExercise(exercise);
+  }
+
   // Handle protocol button clicks - open SessionEngineModal
   function handleProtocolClick(protocolName: string) {
-    // Debug logging
-    console.log('🔍 [DnesPage] Hledám cvičení:', protocolName);
-    console.log('📦 [DnesPage] Načtená cvičení:', exercises?.length || 0, 'celkem');
-    console.log('📋 [DnesPage] Dostupné názvy:', exercises?.map(ex => ex.name).join(', '));
+    if (!exercises) return;
     
-    if (!exercises) {
-      console.warn('⚠️ [DnesPage] Exercises ještě nejsou načteny');
-      return;
-    }
-    
-    // Try exact match first
     let exercise = exercises.find(ex => ex.name === protocolName);
-    
-    // Fallback: case-insensitive search
     if (!exercise) {
-      console.log('🔄 [DnesPage] Zkouším case-insensitive search...');
-      exercise = exercises.find(ex => 
-        ex.name.toLowerCase() === protocolName.toLowerCase()
-      );
+      exercise = exercises.find(ex => ex.name.toLowerCase() === protocolName.toLowerCase());
     }
     
     if (exercise) {
-      console.log('✅ [DnesPage] Cvičení nalezeno:', exercise.name, `(${exercise.id})`);
-      setSkipFlow(true); // NEW: Enable direct start for preset protocols
+      setSmartConfig(undefined);
+      setSkipFlow(true);
       setSelectedExercise(exercise);
-    } else {
-      console.error('❌ [DnesPage] Cvičení nenalezeno:', protocolName);
-      console.log('💡 [DnesPage] Tip: Zkontroluj názvy v databázi (exercises table)');
     }
   }
-  
-  // Show loading state
+
   if (isLoading) {
-    console.log('⏳ [DnesPage] Načítám cvičení...');
+    // loading state handled by buttons gracefully
   }
   
-  // Show error in console
   if (error) {
-    console.error('🚨 [DnesPage] Chyba při načítání cvičení:', error);
+    console.error('[DnesPage] Chyba při načítání cvičení:', error);
   }
   
   return (
@@ -109,9 +90,7 @@ export function DnesPage() {
       {/* Content — všechen obsah pod headerem */}
       <div className="dnes-page__content">
         {/* 2. SMART Exercise Button (tier-aware) */}
-        <SmartExerciseButton 
-          onClick={() => console.log('SMART exercise clicked')}
-        />
+        <SmartExerciseButton onSmartStart={handleSmartStart} />
         
         {/* 2.5 Daily Program — section s diskrétním labelem */}
         <section className="dnes-page__section dnes-page__section--daily">
@@ -154,14 +133,16 @@ export function DnesPage() {
         <DailyTipWidget />
       </div>
       
-      {/* Session Engine Modal */}
+      {/* Session Engine Modal — preset protocols and SMART sessions */}
       {selectedExercise && (
         <SessionEngineModal
           exercise={selectedExercise}
           skipFlow={skipFlow}
+          smartConfig={smartConfig}
           onClose={() => {
             setSelectedExercise(null);
             setSkipFlow(false);
+            setSmartConfig(undefined);
           }}
         />
       )}

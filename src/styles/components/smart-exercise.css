@@ -1,0 +1,504 @@
+/* ============================================================
+   smart-exercise.css
+   Styles for SmartPrepState, SmartSection widget (PokrokPage),
+   and SMART-related UI elements.
+   Prefix: .smart-prep__*, .smart-widget__*
+   ============================================================ */
+
+/* ============================================================
+   SmartPrepState — Full-screen SMART preparation screen
+   ============================================================ */
+
+.smart-prep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 24px 24px 32px;
+  min-height: 100%;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+/* Top bar — stejný pattern jako .fullscreen-modal__top-bar.
+   Drží CloseButton jako flex item → vertikálně centrovaný, bez absolutní pozice.
+   Výška = 60px obsah + env(safe-area-inset-top) → button nikdy nespadne pod status bar. */
+.smart-prep__top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(60px + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: env(safe-area-inset-top, 0) max(16px, env(safe-area-inset-right, 16px)) 8px max(16px, env(safe-area-inset-left, 16px));
+}
+
+/* CloseButton je flex item top-baru → žádné top/right override nutné */
+.smart-prep__close {
+  position: static;
+  z-index: var(--fullscreen-modal-close-z, 20);
+}
+
+/* Header */
+.smart-prep__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.smart-prep__icon {
+  color: var(--color-teal, #2CBEC6);
+  opacity: 0.85;
+}
+
+.smart-prep__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-teal, #2CBEC6);
+  margin: 0;
+}
+
+/* Recommendation card */
+.smart-prep__card {
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(248 202 0 / 18%);
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 320px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 24px rgb(248 202 0 / 6%);
+}
+
+.smart-prep__rhythm-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+}
+
+.smart-prep__rhythm {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent, #F8CA00);
+  letter-spacing: 0.04em;
+  font-feature-settings: 'tnum';
+  text-shadow: 0 0 16px rgb(248 202 0 / 35%);
+}
+
+/* Duration row */
+.smart-prep__duration-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.smart-prep__duration {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-accent, #F8CA00);
+  min-width: 60px;
+  text-align: center;
+}
+
+.smart-prep__duration-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary, rgb(255 255 255 / 60%));
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.smart-prep__duration-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.smart-prep__duration-btn:hover:not(:disabled) {
+  border-color: rgb(248 202 0 / 30%);
+  color: var(--color-accent, #F8CA00);
+  background: rgb(248 202 0 / 5%);
+}
+
+/* Calibration */
+.smart-prep__calibration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 300px;
+  text-align: center;
+}
+
+.smart-prep__calibration-text {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 60%));
+  margin: 0;
+  line-height: 1.4;
+}
+
+.smart-prep__dots {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.smart-prep__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 15%);
+  transition: background 0.2s ease;
+}
+
+.smart-prep__dot--filled {
+  background: var(--color-teal, #2CBEC6);
+}
+
+/* No KP hint */
+.smart-prep__kp-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-gold, #D6A23A);
+  opacity: 0.85;
+}
+
+/* Auto-start hint */
+.smart-prep__hint {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  text-align: center;
+  line-height: 1.5;
+}
+
+.smart-prep__hint-count {
+  color: var(--color-accent, #F8CA00);
+  font-weight: 600;
+}
+
+.smart-prep__hint-sub {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+/* ============================================================
+   SmartSection Widget — PokrokPage
+   Matches KPSection glass-card visual language exactly.
+   Label: teal + text-shadow (same as .kp-section__label)
+   Sparkline: KPSparkline component (teal, identical to KPSection)
+   Milestones: same tick + label pattern as LungProgress milestones
+   ============================================================ */
+
+.smart-widget {
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 20px;
+  padding: 16px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: visible;
+}
+
+/* Hero wrap — label vlevo, rhythm vpravo (identická struktura jako .kp-section__hero-wrap) */
+.smart-widget__hero-wrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Hero left: label + volitelný KP badge */
+.smart-widget__hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Hero right: rhythm + sublabel — vpravo, jako .kp-section__value blok */
+.smart-widget__hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Label — stejný styl jako .kp-section__label */
+.smart-widget__label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary, #2CBEC6);
+  text-shadow: 0 0 12px rgb(44 190 198 / 50%);
+  line-height: 1.2;
+}
+
+/* Rhythm hero value — warm gold accent jako .kp-section__value */
+.smart-widget__rhythm {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent, #D6A23A);
+  letter-spacing: 0.04em;
+  font-feature-settings: 'tnum';
+  line-height: 1.1;
+  text-shadow: 0 0 20px rgb(214 162 58 / 40%);
+}
+
+.smart-widget__rhythm-sublabel {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  text-align: right;
+}
+
+/* KP limit badge — teal pill pod labelem vlevo */
+.smart-widget__kp-badge {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-teal, #2CBEC6);
+  background: rgb(44 190 198 / 10%);
+  border: 1px solid rgb(44 190 198 / 28%);
+  border-radius: 20px;
+  padding: 4px 10px;
+  opacity: 0.9;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.smart-widget__kp-badge:hover {
+  background: rgb(44 190 198 / 18%);
+  opacity: 1;
+}
+
+/* Level section */
+.smart-widget__level-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.smart-widget__level-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.smart-widget__level-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+}
+
+.smart-widget__level-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #fff);
+}
+
+/* Level bar wrapper — relative context for milestone markers */
+.smart-widget__level-bar-wrap {
+  position: relative;
+  padding-bottom: 18px; /* space for milestone labels below bar */
+}
+
+/* Level bar (21 segments) */
+.smart-widget__level-bar {
+  display: flex;
+  gap: 2px;
+}
+
+.smart-widget__level-segment {
+  flex: 1;
+  height: 6px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 10%);
+  transition: background 0.3s ease;
+}
+
+.smart-widget__level-segment--filled {
+  background: var(--color-teal, #2CBEC6);
+}
+
+/* Milestone markers — tick above bar edge + label below */
+.smart-widget__milestone {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  pointer-events: none;
+}
+
+.smart-widget__milestone-tick {
+  width: 1px;
+  height: 10px;
+  border-radius: 1px;
+  margin-top: -4px; /* stick up above bar */
+  transition: background 0.3s ease;
+}
+
+.smart-widget__milestone-label {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  margin-top: 6px; /* push label below bar */
+  transition: color 0.3s ease;
+}
+
+/* Sparkline — identical spacing to KPSection sparkline overlay */
+.smart-widget__sparkline-wrap {
+  width: 100%;
+  margin-top: -4px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.smart-widget__sparkline-wrap .kp-sparkline {
+  opacity: 0.75;
+}
+
+.smart-widget__sparkline-meta {
+  font-size: 10px;
+  color: rgb(255 255 255 / 30%);
+  text-align: right;
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* Info row */
+.smart-widget__info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.smart-widget__info-inline {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  white-space: nowrap;
+}
+
+.smart-widget__info-sep {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 25%));
+}
+
+/* CTA button */
+.smart-widget__cta {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-teal, #2CBEC6);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-teal, #2CBEC6);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: center;
+}
+
+.smart-widget__cta:hover {
+  background: rgb(44 190 198 / 10%);
+}
+
+/* Empty state */
+.smart-widget__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0 8px;
+  text-align: center;
+}
+
+.smart-widget__empty-text {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+  line-height: 1.4;
+}
+
+/* Skeleton loading */
+.smart-widget__skeleton {
+  height: 16px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 8%);
+  animation: smart-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.smart-widget__skeleton--wide { width: 100%; }
+.smart-widget__skeleton--mid  { width: 60%; }
+.smart-widget__skeleton--short { width: 40%; }
+
+@keyframes smart-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ============================================================
+   SmartExerciseButton — error state
+   ============================================================ */
+
+.smart-exercise-button__error {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 6px;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-prep__dot,
+  .smart-widget__level-segment,
+  .smart-widget__milestone-tick,
+  .smart-widget__milestone-label,
+  .smart-widget__skeleton,
+  .smart-exercise-button,
+  .smart-exercise-button--loading,
+  .smart-duration-option,
+  .smart-duration-preset,
+  .smart-duration-slider,
+  .smart-widget__kp-badge {
+    transition: none;
+    animation: none;
+  }
+}

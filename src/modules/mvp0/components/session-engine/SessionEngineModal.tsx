@@ -17,18 +17,27 @@ import { createPortal } from 'react-dom';
 import { useScrollLock } from '@/platform/hooks';
 import { useAuth } from '@/platform/auth';
 import { Button } from '@/platform/components';
+import { useMembership } from '@/platform/membership/useMembership';
 import { ConfirmModal, FullscreenModal } from '@/components/shared';
 import { useBreathingAnimation } from '@/components/shared/BreathingCircle';
 import { SafetyQuestionnaire } from '../SafetyQuestionnaire';
-import { useSafetyFlags, useCompleteSession } from '../../api/exercises';
+import { useSafetyFlags, useCompleteSession, useIncrementSmartSessionCount } from '../../api/exercises';
 import { useAudioCues } from './hooks/useAudioCues';
 import { useIntensityControl } from './hooks/useIntensityControl';
 import { useWakeLock } from '../../hooks/useWakeLock';
 import { useHaptics } from '../../hooks/useHaptics';
+import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
+import { unlockSharedAudioContext } from '../../utils/sharedAudioContext';
 import { useBackgroundMusic } from '../../hooks/useBackgroundMusic';
+import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
 import { isProtocol } from '@/utils/exerciseHelpers';
+import { SmartPrepState } from './SmartPrepState';
+import { buildSmartExercise, buildSmartContextSnapshot } from '../../engine/BreathIntelligenceEngine';
+import { smartKeys } from '../../hooks/useSmartExercise';
+import { updateStreakOnActivity } from '@/platform/analytics';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   SessionStartScreen,
   SessionCountdown,
@@ -36,24 +45,26 @@ import {
   SessionCompleted,
   MoodBeforePick,
 } from './components';
-import type { Exercise, MoodType } from '../../types/exercises';
+import type { Exercise, MoodType, SmartSessionConfig } from '../../types/exercises';
 import type { SessionState } from './types';
 
 export interface SessionEngineModalProps {
   exercise: Exercise;
   isOpen?: boolean;
   onClose: () => void;
-  skipFlow?: boolean; // NEW: Skip SessionStartScreen + MoodBeforePick
+  skipFlow?: boolean; // Skip SessionStartScreen + MoodBeforePick
+  smartConfig?: SmartSessionConfig; // Present for SMART sessions
 }
 
 /**
  * SessionEngineModal - Complete session engine
  */
 export function SessionEngineModal({
-  exercise,
+  exercise: exerciseProp,
   isOpen = true,
   onClose,
-  skipFlow = false, // NEW: Default false (preserve existing behavior)
+  skipFlow = false,
+  smartConfig,
 }: SessionEngineModalProps) {
   // =====================================================
   // STATE
@@ -70,25 +81,80 @@ export function SessionEngineModal({
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [sessionProgress, setSessionProgress] = useState(0);
-  
+  const [showSaveError, setShowSaveError] = useState(false);
+
+  // SMART: adjusted duration state (changed via ±1 min buttons in SmartPrepState)
+  const [smartDurationAdjust, setSmartDurationAdjust] = useState(0);
+
+  // SMART: derive effective exercise (re-built when duration changes)
+  const smartConfigAdjusted = useMemo<SmartSessionConfig | undefined>(
+    () => smartConfig
+      ? { ...smartConfig, totalDurationSeconds: smartConfig.totalDurationSeconds + smartDurationAdjust }
+      : undefined,
+    [smartConfig, smartDurationAdjust],
+  );
+  const exercise: Exercise = smartConfigAdjusted
+    ? buildSmartExercise(smartConfigAdjusted)
+    : exerciseProp;
+
+  // Session type ref (for saveSession)
+  const sessionTypeRef = useRef<'preset' | 'custom' | 'smart'>(smartConfig ? 'smart' : 'preset');
+
   const timerRef = useRef<number | null>(null);
   const currentPhaseRef = useRef(currentPhaseIndex);
+  const queryClient = useQueryClient();
   
   const { user } = useAuth();
   const { data: safetyFlags } = useSafetyFlags();
+  const { currentKP } = useKPMeasurements();
+  const hasNoKP = currentKP === null || currentKP === undefined;
   const completeSession = useCompleteSession();
+  const incrementSmartCount = useIncrementSmartSessionCount();
   const intensityControl = useIntensityControl({ userId: user?.id });
+  const { plan: userTier } = useMembership();
   
   // Custom hooks
   const { playBell } = useAudioCues(); // Legacy bell sound (fallback)
   const { circleRef, animateBreathingCircle, cleanup: cleanupAnimation } = useBreathingAnimation();
   const wakeLock = useWakeLock();
   
+  const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume, backgroundMusicRandomEnabled,
+    smartMusicEnabled, smartMusicSlug, smartMusicRandomEnabled, smartMusicVolume,
+  } = useSessionSettings();
+
   // NEW: Audio & Haptics system
   const haptics = useHaptics();
-  const breathingCues = useBreathingCues();
-  const backgroundMusic = useBackgroundMusic();
-  const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn } = useSessionSettings();
+  const breathingCues = useBreathingCues({ isSmartSession: !!smartConfig });
+  const backgroundMusic = useBackgroundMusic({
+    volumeOverride: sessionTypeRef.current === 'smart' ? smartMusicVolume : undefined,
+  });
+
+  /**
+   * Unlock audio pipeline on user gesture — must be called synchronously in every
+   * button handler that leads to audio playback.
+   */
+  const unlockAudio = useCallback(() => {
+    unlockSharedAudioContext();
+  }, []);
+
+  // NEW: Vocal Intelligence System
+  const vocalGuidance = useVocalGuidance({
+    exercise,
+    currentPhaseIndex,
+    totalPhases: exercise.breathing_pattern.phases.length,
+    phaseTimeRemaining,
+    sessionProgress,
+    currentInstruction,
+    elapsedSessionSeconds: sessionStartTime ? Math.floor((Date.now() - sessionStartTime.getTime()) / 1000) : 0,
+    intensityStep: intensityControl.intensityStep,
+    multiplier: intensityControl.multiplier,
+    currentKP: null,
+    baselineKP: null,
+    userTier,
+    selectedVoicePackId,
+    vocalVolume,
+    vocalGuidanceEnabled,
+  });
   
   useScrollLock(isOpen);
   
@@ -113,9 +179,19 @@ export function SessionEngineModal({
     };
   }, [isOpen]);
   
-  // Auto-start countdown for direct protocol start (skipFlow)
+  // Auto-switch to smart-prep state when smartConfig is provided
   useEffect(() => {
-    if (skipFlow && sessionState === 'idle') {
+    if (smartConfig && sessionState === 'idle') {
+      setSessionState('smart-prep');
+    }
+  }, [smartConfig, sessionState]);
+
+  // Auto-start countdown for direct protocol start (skipFlow).
+  // Note: skipFlow sessions are initiated by a user tap in the parent component,
+  // so audio is typically already unlocked. We call unlockAudio() here as safety net.
+  useEffect(() => {
+    if (skipFlow && sessionState === 'idle' && !smartConfig) {
+      unlockAudio();
       startCountdown();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -128,29 +204,52 @@ export function SessionEngineModal({
     } else {
       wakeLock.release();
     }
-  }, [sessionState, keepScreenOn]); // FIXED: Removed wakeLock from deps
+  }, [sessionState, keepScreenOn]); // eslint-disable-line react-hooks/exhaustive-deps -- wakeLock stable ref, intentionally omitted
   
-  // ✅ NEW: Preload audio during countdown
+  // Preload breathing cues + vocal snippets immediately on mount.
+  // Previously conditioned on sessionState === 'idle' but that delayed bells
+  // when skipFlow=true (modal opens directly in countdown).
+  // Running once on mount ensures cueDataRef is populated before any bell plays.
   useEffect(() => {
-    if (sessionState === 'countdown') {
-      breathingCues.preloadAll();
-    }
-  }, [sessionState]); // FIXED: Removed breathingCues from deps
-  
-  // ✅ NEW: Background music lifecycle
+    breathingCues.preloadAll();
+    vocalGuidance.preloadSnippets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentional empty deps — run once on mount only
+
+  // Background music lifecycle:
+  // ONLY react to 'active' — don't pause on 'countdown' or 'idle' (music isn't playing yet anyway).
+  // SMART sessions use their own music settings (smartMusicEnabled/smartMusicSlug/smartMusicVolume).
   useEffect(() => {
-    if (!backgroundMusicEnabled) {
-      // Music is disabled - don't call pause/play (prevents mounting loop)
-      return;
-    }
-    
+    const isSmartSession = sessionTypeRef.current === 'smart';
+    const musicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
+    const randomEnabled = isSmartSession ? smartMusicRandomEnabled : backgroundMusicRandomEnabled;
+    const fixedSlug = isSmartSession ? smartMusicSlug : null;
+
+    if (!musicEnabled) return;
+
     if (sessionState === 'active') {
+      if (randomEnabled && backgroundMusic.tracks.length > 0) {
+        const TIER_LEVEL: Record<string, number> = { ZDARMA: 0, SMART: 1, AI_COACH: 2 };
+        const userLevel = TIER_LEVEL[userTier] ?? 0;
+        const accessible = backgroundMusic.tracks.filter(
+          t => (TIER_LEVEL[t.required_tier] ?? 0) <= userLevel
+            && (!isSmartSession || true) // SMART sees all (smart_only filtering done in TrackSelector)
+        );
+        if (accessible.length > 0) {
+          const random = accessible[Math.floor(Math.random() * accessible.length)];
+          void backgroundMusic.setTrack(random.slug).then(() => backgroundMusic.play());
+          return;
+        }
+      }
+      // SMART fixed slug — switch track before playing
+      if (isSmartSession && fixedSlug) {
+        void backgroundMusic.setTrack(fixedSlug).then(() => backgroundMusic.play());
+        return;
+      }
       backgroundMusic.play();
-    } else {
-      backgroundMusic.pause();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState, backgroundMusicEnabled]); // backgroundMusic deliberately excluded
+  }, [sessionState, backgroundMusicEnabled, smartMusicEnabled]); // backgroundMusic deliberately excluded
   
   // ✅ NEW: Walking mode display dimming
   useEffect(() => {
@@ -172,40 +271,52 @@ export function SessionEngineModal({
   
   // Start session (idle → countdown for exercises with embedded mood)
   const startSession = useCallback((mood: MoodType | null = null) => {
+    unlockAudio(); // Unlock Web Audio API on user gesture
     setMoodBefore(mood);
-    startCountdown(); // Skip mood-before state (merged into idle)
-  }, []);
+    startCountdown();
+  }, [unlockAudio]); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Start countdown after mood selection (or skip)
   const startCountdown = useCallback(() => {
-    
+    unlockAudio();
+
     setSessionState('countdown');
     setCountdownNumber(5);
-    
-    
-    // Play start bell (use new breathingCues or fallback to legacy)
-    breathingCues.playBell('start').catch(() => {
-      playBell();
-    });
-    
+
     let count = 5;
-    
+
     const countdownInterval = window.setInterval(() => {
       count--;
       setCountdownNumber(count);
-      
-      if (count > 0) {
-        breathingCues.playBell('start').catch(() => playBell());
-      } else {
+
+      if (count === 2) {
+        // First bell at 33% — gentle warning
+        breathingCues.playBell('start', 0.33).catch(() => null);
+      } else if (count === 1) {
+        // Second bell at 66% — building up
+        breathingCues.playBell('start', 0.66).catch(() => null);
+      } else if (count === 0) {
+        // Session starts — NO bell here, first inhale cue takes over immediately
         window.clearInterval(countdownInterval);
+        setSessionProgress(0); // explicit reset — prevents stale progress from previous session
         setSessionState('active');
         setSessionStartTime(new Date());
         setCurrentPhaseIndex(0);
         intensityControl.notifySessionStart();
-        breathingCues.playBell('start').catch(() => playBell());
       }
     }, 1000);
-  }, [breathingCues, playBell]);
+  }, [breathingCues, playBell, unlockAudio]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // SMART: skip countdown entirely — bells are played inside SmartPrepState at 2s/1s
+  const startSmartSession = useCallback(() => {
+    unlockAudio();
+    // Bells already fired in SmartPrepState — go straight to active
+    setSessionProgress(0);
+    setSessionState('active');
+    setSessionStartTime(new Date());
+    setCurrentPhaseIndex(0);
+    intensityControl.notifySessionStart();
+  }, [unlockAudio, intensityControl]);  
   
   // Complete exercise
   const completeExercise = useCallback(() => {
@@ -222,7 +333,12 @@ export function SessionEngineModal({
     
     // Stop background music
     backgroundMusic.stop();
-  }, [breathingCues, playBell, cleanupAnimation, backgroundMusic]);
+
+    // Update streak — fire-and-forget
+    if (user?.id) {
+      updateStreakOnActivity(user.id);
+    }
+  }, [breathingCues, playBell, cleanupAnimation, backgroundMusic, user]);
   
   // Calculate session progress
   useEffect(() => {
@@ -241,9 +357,74 @@ export function SessionEngineModal({
     }
   }, [sessionState, currentPhaseIndex, phaseTimeRemaining, currentPhase, exercise]);
 
+  // Notify breathingCues when session is ending — progressive fade out based on progress.
+  // Thresholds: 85% → 3 cycles remaining, 90% → 2, 95% → 1, 100% → 0 (silent)
+  // Each threshold fires ONCE (guard: only call notifySessionEnding with decreasing values).
+  const endingPhaseRef = useRef<number>(99); // tracks last notified remaining value (99 = not started)
+  useEffect(() => {
+    if (sessionState !== 'active') {
+      endingPhaseRef.current = 99; // reset for next session
+      return;
+    }
+
+    let cyclesRemaining: number | null = null;
+    if (sessionProgress >= 95)      cyclesRemaining = 1;
+    else if (sessionProgress >= 90) cyclesRemaining = 2;
+    else if (sessionProgress >= 85) cyclesRemaining = 3;
+
+    // Only notify if we have a new, lower value (never go back up)
+    if (cyclesRemaining !== null && cyclesRemaining < endingPhaseRef.current) {
+      endingPhaseRef.current = cyclesRemaining;
+      breathingCues.notifySessionEnding(cyclesRemaining);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState, sessionProgress]);
+
+  // Trigger background music fade OUT exactly 9s before session ends.
+  // Uses a real-time interval based on sessionStartTime + totalDuration — not sessionProgress
+  // (sessionProgress is derived from phase rendering and can be unreliable at session boundaries).
+  const bgFadeOutStartedRef = useRef(false);
+  const bgFadeOutTimerRef   = useRef<number | null>(null);
+  useEffect(() => {
+    // Clear any previous timer when session state changes
+    if (bgFadeOutTimerRef.current) {
+      window.clearTimeout(bgFadeOutTimerRef.current);
+      bgFadeOutTimerRef.current = null;
+    }
+
+    if (sessionState !== 'active' || !backgroundMusicEnabled || !sessionStartTime) return;
+
+    // Reset flag for new session
+    bgFadeOutStartedRef.current = false;
+
+    const totalDuration = exercise.breathing_pattern.phases.reduce(
+      (sum, phase) => sum + phase.duration_seconds,
+      0
+    );
+
+    // Calculate exact ms until fade OUT should start (9s before end)
+    const sessionEndMs  = sessionStartTime.getTime() + totalDuration * 1000;
+    const fadeOutAtMs   = sessionEndMs - 9000;
+    const delayMs       = Math.max(0, fadeOutAtMs - Date.now());
+
+    bgFadeOutTimerRef.current = window.setTimeout(() => {
+      if (!bgFadeOutStartedRef.current) {
+        bgFadeOutStartedRef.current = true;
+        backgroundMusic.startFadeOut();
+      }
+    }, delayMs);
+
+    return () => {
+      if (bgFadeOutTimerRef.current) {
+        window.clearTimeout(bgFadeOutTimerRef.current);
+        bgFadeOutTimerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState, backgroundMusicEnabled, sessionStartTime]);
+
   // Run current phase
   useEffect(() => {
-    
     if (sessionState !== 'active' || !currentPhase) {
       return;
     }
@@ -302,6 +483,7 @@ export function SessionEngineModal({
             const nextIndex = currentPhaseRef.current + 1;
             if (nextIndex < totalPhases) {
               setCurrentPhaseIndex(nextIndex);
+              vocalGuidance.triggerPhaseStart(nextIndex);
               playBell();
             } else {
               completeExercise();
@@ -465,40 +647,52 @@ export function SessionEngineModal({
   const confirmClose = useCallback(() => {
     cleanupAnimation();
     if (timerRef.current) window.clearInterval(timerRef.current);
-    
+
+    backgroundMusic.pause(); // fade OUT on manual close
     setSessionState('idle');
     setCurrentPhaseIndex(0);
     setMoodBefore(null);
     setMoodAfter(null);
-    intensityControl.reset(); // Discards pending events for abandoned session
-    
+    intensityControl.reset();
+
     onClose();
-  }, [onClose, cleanupAnimation, intensityControl]);
+  }, [onClose, cleanupAnimation, intensityControl, backgroundMusic]);
   
   // Share completed exercise - ODSTRANĚNO (přidáme později s visual presets)
   // TODO: Implementovat share feature s custom vizuálním presetem
   
   // Save session to history
   const saveSession = useCallback(async () => {
-    if (!sessionStartTime) return;
-    
+    // Fallback: if sessionStartTime somehow null (e.g. session abandoned mid-flow), use now
+    const startTime = sessionStartTime ?? new Date();
+
     try {
       // Map difficulty (1-3) to quality_rating (1-5) for DB storage
       // 1 (Snadné) → 5 (vysoká kvalita), 2 (Akorát) → 3 (střední), 3 (Náročné) → 1 (nízká)
       const qualityRating = difficultyRating 
         ? (4 - difficultyRating) + 1  // 1→5, 2→3, 3→1
         : undefined;
+
+      // Smart sessions use null exercise_id (ephemeral, no DB row in exercises table)
+      const exerciseId = sessionTypeRef.current === 'smart' ? null : exercise.id;
+
+      // Build smart_context snapshot for SMART sessions
+      const smartContextPayload = smartConfigAdjusted
+        ? buildSmartContextSnapshot(smartConfigAdjusted, null, exercise)
+        : undefined;
       
       const session = await completeSession.mutateAsync({
-        exercise_id: exercise.id,
-        started_at: sessionStartTime,
+        exercise_id: exerciseId,
+        started_at: startTime,
         completed_at: new Date(),
         was_completed: sessionState === 'completed',
         mood_before: moodBefore || undefined,
         mood_after: moodAfter || undefined,
-        quality_rating: qualityRating, // DB field (mapped from difficulty)
+        quality_rating: qualityRating,
         notes: notes.trim() || undefined,
         final_intensity_multiplier: intensityControl.multiplierRef.current,
+        session_type: sessionTypeRef.current,
+        smart_context: smartContextPayload,
       });
 
       // Flush intensity events after session_id is available (fire-and-forget)
@@ -506,13 +700,26 @@ export function SessionEngineModal({
         void intensityControl.flushEvents(session.id);
       }
 
+      // Invalidate SMART recommendation cache so next BIE run gets fresh data
+      if (sessionTypeRef.current === 'smart' && user?.id) {
+        // Increment session_count_smart and apply level change if BIE computed one.
+        // Level is only applied here (after session), never during computeAndBuild().
+        await incrementSmartCount.mutateAsync({
+          wasCompleted: sessionState === 'completed',
+          newLevel: smartConfigAdjusted?.level,
+        });
+        await queryClient.invalidateQueries({ queryKey: smartKeys.history(user.id) });
+        await queryClient.invalidateQueries({ queryKey: smartKeys.recommendation(user.id) });
+      }
+
       intensityControl.reset();
       onClose();
     } catch (error) {
-      console.error('Error saving session:', error);
-      alert('Nepodařilo se uložit session. Zkus to znovu.');
+      console.error('[SessionEngineModal] Error saving session:', error);
+      // Use non-blocking error — alert() blocks iOS WebView event loop
+      setShowSaveError(true);
     }
-  }, [exercise.id, sessionStartTime, sessionState, moodBefore, moodAfter, difficultyRating, notes, completeSession, onClose]);
+  }, [exercise, sessionStartTime, sessionState, moodBefore, moodAfter, difficultyRating, notes, completeSession, incrementSmartCount, onClose, smartConfigAdjusted, user?.id, queryClient, intensityControl]);
   
   // =====================================================
   // RENDER: Safety Questionnaire (first-time)
@@ -546,6 +753,25 @@ export function SessionEngineModal({
           sessionState === 'completed' ? 'session-engine-modal__content--completion' : ''
         }`}
       >
+        {/* SMART-PREP: Smart exercise preparation screen (replaces idle/start for SMART sessions) */}
+        {sessionState === 'smart-prep' && (
+          <SmartPrepState
+            smartConfig={smartConfigAdjusted ?? null}
+            hasNoKP={hasNoKP}
+            onStart={() => {
+              startSmartSession();
+            }}
+            onPlayBell={(volume) => {
+              unlockAudio();
+              breathingCues.playBell('start', volume).catch(() => null);
+            }}
+            onAdjustDuration={(delta) => {
+              setSmartDurationAdjust((prev) => prev + delta);
+            }}
+            onClose={handleClose}
+          />
+        )}
+
         {/* IDLE: Combined start + mood screen — shown for all exercises when skipFlow=false.
             Protocols from Dnes view use skipFlow=true (direct countdown), protocols from
             Cvičit view use skipFlow=false and correctly land here for mood collection. */}
@@ -626,10 +852,11 @@ export function SessionEngineModal({
         {sessionState === 'active' && currentPhase && (
           <>
             <FullscreenModal.TopBar>
+              {/* Exercise/protocol name stays in title, phase counter in badge */}
               <FullscreenModal.Title>{exercise.name}</FullscreenModal.Title>
               {totalPhases > 1 && (
                 <FullscreenModal.Badge>
-                  FÁZE {currentPhaseIndex + 1}/{totalPhases}
+                  {currentPhaseIndex + 1}/{totalPhases}
                 </FullscreenModal.Badge>
               )}
               <FullscreenModal.CloseButton onClick={handleClose} />
@@ -647,8 +874,14 @@ export function SessionEngineModal({
                   intensityStep: intensityControl.intensityStep,
                   canIncrease: intensityControl.canIncrease,
                   canDecrease: intensityControl.canDecrease,
-                  onIncrease: intensityControl.handleIncrease,
-                  onDecrease: intensityControl.handleDecrease,
+                  onIncrease: () => {
+                    intensityControl.handleIncrease();
+                    vocalGuidance.triggerIntensityChange('up');
+                  },
+                  onDecrease: () => {
+                    intensityControl.handleDecrease();
+                    vocalGuidance.triggerIntensityChange('down');
+                  },
                 })}
               />
               
@@ -687,6 +920,11 @@ export function SessionEngineModal({
             </FullscreenModal.TopBar>
             
             <FullscreenModal.ContentZone className="completion-content">
+              {showSaveError && (
+                <div className="session-save-error" role="alert">
+                  Nepodařilo se uložit. Zkontroluj připojení a zkus znovu.
+                </div>
+              )}
               <SessionCompleted
                 difficultyRating={difficultyRating}
                 onDifficultyChange={setDifficultyRating}
@@ -718,8 +956,12 @@ export function SessionEngineModal({
           onClose={() => setShowCloseConfirm(false)}
           onConfirm={confirmClose}
           title="Opravdu ukončit cvičení?"
-          message="Progres nebude uložen."
-          confirmText="Ukončit"
+          message={
+            sessionTypeRef.current === 'smart' && smartConfigAdjusted && smartConfigAdjusted.isCalibrating
+              ? 'Probíhá kalibrace SMART CVIČENÍ. Nedokončené cvičení se do kalibrace nepočítá.'
+              : 'Progres nebude uložen.'
+          }
+          confirmText="Odejít"
           cancelText="Pokračovat"
           variant="warning"
         />

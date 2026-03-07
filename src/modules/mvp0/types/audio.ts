@@ -7,6 +7,8 @@
  * @subpackage MVP0/Types
  */
 
+import type { SmartDurationMode } from '../types/exercises';
+
 // ==================== AUDIO CUES ====================
 
 /**
@@ -56,7 +58,7 @@ export interface BackgroundTrack {
   id: string;
   name: string;
   slug: string;
-  category: 'nature' | 'binaural' | 'tibetan' | 'yogic';
+  category: string; // slug z background_categories (dynamické)
   description: string | null;
   duration_seconds: number;
   cdn_url: string;
@@ -64,12 +66,32 @@ export interface BackgroundTrack {
   required_tier: 'ZDARMA' | 'SMART' | 'AI_COACH';
   is_active: boolean;
   sort_order: number;
+  /** If true, track is exclusive to SMART CVIČENÍ — hidden from standard protocol settings */
+  smart_only: boolean;
 }
 
 /**
  * Background music playback state
  */
 export type MusicPlaybackState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
+
+// ==================== VOICE PACKS ====================
+
+/**
+ * Voice pack from database (vocal guidance)
+ */
+export interface VoicePack {
+  id: string;
+  name: string;
+  author: string | null;
+  language: string;
+  voice_type: 'human' | 'ai';
+  description: string | null;
+  preview_url: string | null;
+  required_tier: 'ZDARMA' | 'SMART' | 'AI_COACH';
+  is_active: boolean;
+  sort_order: number;
+}
 
 // ==================== SETTINGS ====================
 
@@ -80,6 +102,7 @@ export interface SessionSettings {
   // Audio Cues
   audioCuesEnabled: boolean;
   audioCueSound: 'solfeggio-963-639-396'; // Future: add more sound packs
+  selectedCueSoundPack: string; // 'solfeggio' | 'tibetan-bowls' | 'birds' | ...
   audioCueVolume: number; // 0-1
   
   // Haptics
@@ -90,6 +113,7 @@ export interface SessionSettings {
   // Background Music
   backgroundMusicEnabled: boolean;
   selectedTrackSlug: string | null; // 'nature-forest', 'tibetan-bowls', etc.
+  backgroundMusicRandomEnabled: boolean; // Náhodný výběr z aktivních tracků
   backgroundMusicVolume: number; // 0-1
   
   // Bells (Start/End)
@@ -100,6 +124,29 @@ export interface SessionSettings {
 
   // Wake Lock
   keepScreenOn: boolean;
+
+  // Vocal Guidance
+  vocalGuidanceEnabled: boolean;
+  selectedVoicePackId: string | null;
+  vocalVolume: number; // 0-1
+
+  // SMART CVIČENÍ
+  smartDurationMode: SmartDurationMode;
+  smartAudioPack: string | null;
+  smartMusicEnabled: boolean;
+  smartMusicSlug: string | null;
+  smartMusicRandomEnabled: boolean;
+  smartMusicVolume: number;
+  smartBellsEnabled: boolean;
+  smartCuesEnabled: boolean;
+  smartCueVolume: number;
+  /** Separate CueSound pack for SMART sessions (independent from protocol cue settings) */
+  smartCueSoundSlug: string;
+  smartCueSoundVariant: string | null;
+
+  // Cue sound slug/variant (shared state used by non-SMART settings card)
+  cueSoundSlug: string;
+  cueSoundVariant: string | null;
 }
 
 /**
@@ -108,6 +155,7 @@ export interface SessionSettings {
 export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   audioCuesEnabled: true,
   audioCueSound: 'solfeggio-963-639-396',
+  selectedCueSoundPack: 'solfeggio',
   audioCueVolume: 0.6,
   
   hapticsEnabled: true,
@@ -116,6 +164,7 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   
   backgroundMusicEnabled: false,
   selectedTrackSlug: null,
+  backgroundMusicRandomEnabled: false,
   backgroundMusicVolume: 0.5,
   
   bellsEnabled: true,
@@ -123,6 +172,24 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   walkingModeEnabled: false,
 
   keepScreenOn: true,
+
+  vocalGuidanceEnabled: true,
+  selectedVoicePackId: null,
+  vocalVolume: 0.7,
+
+  smartDurationMode: { type: 'range', preset: 'medium' },
+  smartAudioPack: null,
+  smartMusicEnabled: false,
+  smartMusicSlug: null,
+  smartMusicRandomEnabled: false,
+  smartMusicVolume: 0.5,
+  smartBellsEnabled: true,
+  smartCuesEnabled: true,
+  smartCueVolume: 0.6,
+  smartCueSoundSlug: 'solfeggio',
+  smartCueSoundVariant: null,
+  cueSoundSlug: 'solfeggio',
+  cueSoundVariant: null,
 };
 
 // ==================== CACHE ====================
