@@ -68,73 +68,31 @@ export function AppLayout({
   // Synchronizace přehrávače mezi záložkami ve stejném browseru (BroadcastChannel)
   usePlayerBroadcast();
 
-  // iOS PWA fix: BottomNav gap při prvním spuštění PWA.
+  // iOS PWA fix: při cold-start PWA iOS WebKit nejprve renderuje layout s "large viewport"
+  // (safe-area insets = 0), teprve po chvíli finalizuje skutečné hodnoty safe-area.
+  // Výsledek: celý .app-layout je o ~safe-area-inset-bottom (34px) kratší než displej
+  // a BottomNav visí výše. Po prvním scrollu iOS přepočítá → bug zmizí.
   //
-  // Root cause: iOS WebKit pozicuje position:fixed elementy vůči "large viewport"
-  // (před finalizací safe-area insets). Gap zmizí AŽ po prvním scroll eventu na window.
-  //
-  // Proč scrollTop mutace na .app-layout__content nefunguje:
-  // Element má overflow:hidden na ose X → iOS WebKit nevyvolá window-level scroll
-  // event → position:fixed přepočet nenastane.
-  //
-  // Fix: window.dispatchEvent(new Event('scroll')) — window scroll event je přesně
-  // ten signál, na který iOS WebKit čeká pro přepočet fixed-position layerů.
-  // Žádná viditelná změna obsahu, pouze interní iOS layout invalidation.
+  // Fix: --app-height CSS proměnná nastavená ze window.visualViewport.height.
+  // visualViewport API vrací OKAMŽITĚ správnou výšku bez toolbarů (=skutečná dostupná výška).
+  // Tuto proměnnou pak používáme místo 100dvh/100vh na .app-layout.
+  // Při každé změně viewportu (rotace, keyboard) hodnotu aktualizujeme.
   useEffect(() => {
-    const fixBottomNav = () => {
-      window.dispatchEvent(new Event('scroll'));
+    const setAppHeight = () => {
+      const h = window.visualViewport?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty('--app-height', `${h}px`);
     };
 
-    // Double-rAF: 2. paint cycle kdy iOS finalizuje safe-area metriky
-    requestAnimationFrame(() => requestAnimationFrame(fixBottomNav));
+    setAppHeight();
+    requestAnimationFrame(setAppHeight);
 
-    // Pojistka: visualViewport resize = iOS finalizuje viewport asynchronně
     const vv = window.visualViewport;
-    vv?.addEventListener('resize', fixBottomNav, { once: true });
-
-    // Timeout fallback pro pomalá zařízení / heavy JS bundle
-    const t = setTimeout(fixBottomNav, 400);
+    vv?.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', setAppHeight);
 
     return () => {
-      clearTimeout(t);
-      vv?.removeEventListener('resize', fixBottomNav);
-    };
-  }, []);
-
-  // 🔍 DIAGNOSTIKA BottomNav gap — aktivní, zachytí hodnoty v konzoli Safari DevTools.
-  // Postup: iPhone → Safari → Develop → [tvůj iPhone] → dechbar.cz → Console
-  // Smaž tento useEffect až bug vyřešíme.
-  useEffect(() => {
-    const log = (label: string) => {
-      const nav = document.querySelector<HTMLElement>('.bottom-nav');
-      const navRect = nav?.getBoundingClientRect();
-      const vv = window.visualViewport;
-      const css = nav ? getComputedStyle(nav) : null;
-      console.group(`[BottomNav diag] ${label}`);
-      console.log('window.innerHeight       :', window.innerHeight);
-      console.log('screen.height            :', screen.height);
-      console.log('visualViewport.height    :', vv?.height);
-      console.log('visualViewport.offsetTop :', vv?.offsetTop);
-      console.log('nav.getBoundingClientRect:', navRect);
-      console.log('nav computed bottom      :', css?.bottom);
-      console.log('nav computed transform   :', css?.transform);
-      console.log('safe-area-inset-bottom   :', getComputedStyle(document.documentElement).getPropertyValue('--sab') || '(add --sab to :root)');
-      console.log('display-mode standalone  :', window.matchMedia('(display-mode: standalone)').matches);
-      console.groupEnd();
-    };
-
-    // T=0: ihned po renderu
-    log('T=0 (immediate)');
-    // T=rAF: po prvním paint
-    requestAnimationFrame(() => log('T=rAF'));
-    // T=500ms: po dispatch scroll eventu
-    const t1 = setTimeout(() => log('T=500ms'), 500);
-    // T=2000ms: po stabilizaci (po případném ručním scrollu to bude ok)
-    const t2 = setTimeout(() => log('T=2000ms'), 2000);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
+      vv?.removeEventListener('resize', setAppHeight);
+      window.removeEventListener('orientationchange', setAppHeight);
     };
   }, []);
 

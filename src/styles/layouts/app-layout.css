@@ -10,8 +10,12 @@
 .app-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Fallback */
-  min-height: 100dvh; /* Dynamic viewport height (mobile) */
+
+  /* iOS PWA fix: --app-height je nastaveno z visualViewport.height v AppLayout.tsx.
+     visualViewport vrací okamžitě správnou výšku = displej minus safe-area.
+     100dvh/100vh na iOS PWA cold-start = "large viewport" (safe-area insets = 0),
+     appka je kratší a celý layout sedí výše. --app-height tento bug eliminuje. */
+  min-height: var(--app-height, 100dvh);
   background: var(--color-background); /* #121212 */
 
   /* overflow: hidden fallback pro iOS < 15.4 (Safari < 15.4, 2022).
