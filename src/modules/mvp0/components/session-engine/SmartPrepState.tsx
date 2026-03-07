@@ -26,8 +26,18 @@ export interface SmartPrepStateProps {
   onClose: () => void;
   /** True when user has never measured KP */
   hasNoKP?: boolean;
-  /** Play a start bell at a given volume — called at countdown 2s and 1s */
-  onPlayBell?: (volume: number) => void;
+  /**
+   * Schedule both start bells onto the Web Audio timeline NOW (synchronously).
+   *
+   * Must be called from a synchronous gesture handler AFTER unlockSharedAudioContext()
+   * so that AudioContext.state === 'running'. The AudioNodes are created here and
+   * fire automatically at the scheduled offset — no gesture token needed at playback time.
+   *
+   * @param delay1Sec  Seconds from now for the first bell  (fires at countdown 2)
+   * @param delay2Sec  Seconds from now for the second bell (fires at countdown 1)
+   * @returns Cancel function — call on abort/close to discard scheduled bells
+   */
+  onScheduleBells?: (delay1Sec: number, delay2Sec: number) => (() => void);
   /** Unlock Web Audio pipeline — must be called on any user gesture before audio */
   onUnlockAudio?: () => void;
 }
@@ -42,6 +52,10 @@ const FALLBACK_CONFIG: SmartSessionConfig = {
     exhale_seconds: 6,
     hold_after_exhale_seconds: 0,
   },
+  phaseProfile: 'standard',
+  timeContext: 'day',
+  confidenceScore: 0,
+  cacheValid: false,
   isCalibrating: true,
   sessionCountSmart: 0,
 };
@@ -113,7 +127,7 @@ export function SmartPrepState({
   onAdjustDuration,
   onClose,
   hasNoKP = false,
-  onPlayBell,
+  onScheduleBells,
   onUnlockAudio,
 }: SmartPrepStateProps) {
   // Tiché použití fallback konfigurace pokud BIE selže
@@ -123,6 +137,8 @@ export function SmartPrepState({
   const [started, setStarted] = useState(false);
   const timerRef = useRef<number | null>(null);
   const startedRef = useRef(false);
+  // Holds the cancel function returned by onScheduleBells — called on close/abort
+  const cancelBellsRef = useRef<(() => void) | null>(null);
 
   const triggerStart = useCallback(() => {
     if (startedRef.current) return;
@@ -133,22 +149,40 @@ export function SmartPrepState({
     onStart();
   }, [onStart, onUnlockAudio]);
 
-  // Auto-countdown — plays bells at 2s and 1s, triggers start at 0
-  // All side effects are scheduled via setTimeout(fn, 0) to run AFTER the
-  // current render — avoids "setState during render" React/ESLint errors.
+  // Schedule bells ONCE, synchronously, when this component mounts.
+  //
+  // WHY HERE and not in a useEffect:
+  //   SmartPrepState mounts immediately after the SMART button gesture resolves.
+  //   At this point SessionEngineModal has already called unlockSharedAudioContext()
+  //   and AudioContext should be 'running'.  By scheduling bells here — at mount
+  //   time, which is still part of the synchronous React commit triggered by the
+  //   gesture — we avoid the Safari gesture token window entirely.
+  //   The scheduled AudioNodes live on the timeline and fire automatically;
+  //   no gesture token is required at the moment they play.
+  //
+  //   delay1Sec = (AUTO_START_SECONDS - 2)  → bell fires when countdown shows 2
+  //   delay2Sec = (AUTO_START_SECONDS - 1)  → bell fires when countdown shows 1
+  //
+  //   Using a ref (scheduleBellsCalledRef) prevents double-scheduling in React
+  //   StrictMode or any future double-mount scenario.
+  const scheduleBellsCalledRef = useRef(false);
+  if (!scheduleBellsCalledRef.current && onScheduleBells) {
+    scheduleBellsCalledRef.current = true;
+    cancelBellsRef.current = onScheduleBells(
+      AUTO_START_SECONDS - 2,  // 3 seconds from now → bell at countdown 2
+      AUTO_START_SECONDS - 1,  // 4 seconds from now → bell at countdown 1
+    ) ?? null;
+  }
+
+  // Auto-countdown — triggers start at 0
+  // Bells are already scheduled onto the Web Audio timeline at mount time above.
+  // The setInterval only manages the visual countdown and the session start trigger.
   useEffect(() => {
     timerRef.current = window.setInterval(() => {
       setCountdown((prev) => {
         const next = prev <= 1 ? 0 : prev - 1;
 
-        if (next === 2) {
-          window.setTimeout(() => {
-            onUnlockAudio?.();
-            onPlayBell?.(0.5);
-          }, 0);
-        } else if (next === 1) {
-          window.setTimeout(() => { onPlayBell?.(1.0); }, 0);
-        } else if (next === 0) {
+        if (next === 0) {
           window.clearInterval(timerRef.current!);
           window.setTimeout(() => { triggerStart(); }, 0);
         }
@@ -203,9 +237,9 @@ export function SmartPrepState({
       {/* Top bar — stejný pattern jako FullscreenModal: safe-area řeší top-bar, ne button */}
       <div className="smart-prep__top-bar">
         <CloseButton
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             if (timerRef.current) window.clearInterval(timerRef.current);
+            cancelBellsRef.current?.();
             onClose();
           }}
           className="smart-prep__close"

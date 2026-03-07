@@ -28,7 +28,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
-import { playSharedTone } from '../utils/sharedAudioContext';
+import { playSharedTone, scheduleSharedTone } from '../utils/sharedAudioContext';
 import type { BreathingPhaseAudio } from '../types/audio';
 
 interface BreathingCueData {
@@ -377,5 +377,42 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     };
   }, []);
 
-  return { playCue, playBell, preloadAll, notifyCuePlayed, notifySessionEnding, isReady };
+  // ─── scheduleBells ────────────────────────────────────────────────────────
+  /**
+   * Pre-schedule the two SMART countdown start bells using the Web Audio timeline.
+   *
+   * MUST be called synchronously from a user gesture handler (e.g. button click)
+   * AFTER unlockSharedAudioContext() so that AudioContext.state === 'running'.
+   *
+   * AudioNodes are created immediately (within the gesture stack) and will fire
+   * automatically when ctx.currentTime reaches the scheduled offset — no gesture
+   * token is needed at the moment of playback. This is the correct solution for
+   * Safari's autoplay restriction in the SMART prep countdown.
+   *
+   * @param delay1Sec  Seconds from now for the first bell  (e.g. 3.0 → fires 3s later)
+   * @param delay2Sec  Seconds from now for the second bell (e.g. 4.0 → fires 4s later)
+   *
+   * @returns A cancel function that stops both scheduled bells (e.g. if session is aborted).
+   */
+  const scheduleBells = useCallback((delay1Sec: number, delay2Sec: number): (() => void) => {
+    if (!effectiveBellsEnabled) {
+      return () => {/* bells disabled — nothing to cancel */};
+    }
+
+    const cue = cueDataRef.current.get('start_bell');
+    const hz = cue?.generate_hz ?? 528;
+    const volume = effectiveCueVolume; // first bell: lower volume, scaled by caller via volumeScale
+    const vol1   = volume * 0.5;       // 50% for first bell (2s before start)
+    const vol2   = volume * 1.0;       // 100% for second bell (1s before start)
+
+    const cancel1 = scheduleSharedTone(hz, 2.5, vol1, delay1Sec, true);
+    const cancel2 = scheduleSharedTone(hz, 2.5, vol2, delay2Sec, true);
+
+    return () => {
+      cancel1?.();
+      cancel2?.();
+    };
+  }, [effectiveBellsEnabled, effectiveCueVolume]);
+
+  return { playCue, playBell, scheduleBells, preloadAll, notifyCuePlayed, notifySessionEnding, isReady };
 }

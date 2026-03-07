@@ -927,9 +927,12 @@ export function SessionEngineModal({
             onStart={() => {
               startSmartSession();
             }}
-            onPlayBell={(volume) => {
-              unlockAudio();
-              breathingCues.playBell('start', volume).catch(() => null);
+            onScheduleBells={(delay1Sec, delay2Sec) => {
+              // Called synchronously at SmartPrepState mount — AudioContext is 'running'
+              // because unlockSharedAudioContext() was called from the SMART button gesture.
+              // scheduleBells() creates AudioNodes NOW and fires them at the given offsets
+              // — no gesture token required at playback time. Fixes bells on Safari.
+              return breathingCues.scheduleBells(delay1Sec, delay2Sec);
             }}
             onUnlockAudio={unlockAudio}
             onAdjustDuration={(delta) => {

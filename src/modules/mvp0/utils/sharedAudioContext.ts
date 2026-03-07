@@ -163,6 +163,95 @@ export function playSharedTone(
   }
 }
 
+/**
+ * Schedule a generated tone to play at a future point on the Web Audio timeline.
+ *
+ * Unlike playSharedTone(), this function schedules the tone using an ABSOLUTE
+ * ctx.currentTime offset — the AudioNode is created NOW (within the gesture call
+ * stack) and will fire automatically when the timeline reaches `ctx.currentTime + delaySeconds`.
+ *
+ * This is the correct way to play bells during SMART prep countdown:
+ *   - AudioContext must be `running` at the moment this is called (i.e. call from gesture)
+ *   - No gesture token is needed when the tone actually fires (it fires via timeline)
+ *   - Works identically on desktop Safari, mobile Safari, iOS PWA, Chrome
+ *
+ * Call this from a synchronous gesture handler (e.g. button click, screen tap)
+ * AFTER unlockSharedAudioContext().
+ *
+ * @param hz            Frequency in Hz
+ * @param duration      Duration in seconds
+ * @param volume        Volume 0..1
+ * @param delaySeconds  How many seconds from now to start the tone (0 = immediate)
+ * @param isBell        true = triangle wave + exponential decay (bowl/bell feel)
+ *
+ * @returns A cancel function — call it to stop the scheduled tone before it fires.
+ *          Returns null if context is not available or not running.
+ */
+export function scheduleSharedTone(
+  hz: number,
+  duration: number,
+  volume: number,
+  delaySeconds: number,
+  isBell = false,
+): (() => void) | null {
+  try {
+    const ctx = getSharedAudioContext();
+    if (!ctx) {
+      console.warn('[SharedAudio] scheduleSharedTone: no context');
+      return null;
+    }
+
+    if (ctx.state !== 'running') {
+      console.warn(`[SharedAudio] scheduleSharedTone: ctx state=${ctx.state} — not running, cannot schedule hz=${hz}`);
+      // Attempt resume and schedule after — best-effort fallback for unexpected suspension.
+      if (ctx.state === 'suspended') {
+        void ctx.resume().then(() => {
+          playToneOnContext(ctx, hz, duration, volume, isBell, delaySeconds + 0.015);
+        });
+      }
+      return null;
+    }
+
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.frequency.value = hz;
+    osc.type = isBell ? 'triangle' : 'sine';
+
+    const startAt = ctx.currentTime + delaySeconds;
+    const stopAt  = startAt + duration;
+
+    if (isBell) {
+      gain.gain.setValueAtTime(volume, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.001, stopAt);
+    } else {
+      gain.gain.setValueAtTime(0, startAt);
+      gain.gain.linearRampToValueAtTime(volume, startAt + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, stopAt);
+    }
+
+    osc.start(startAt);
+    osc.stop(stopAt);
+
+    // Return cancel function — disconnects node before it fires
+    return () => {
+      try {
+        osc.stop();
+        osc.disconnect();
+        gain.disconnect();
+      } catch {
+        // Already stopped or disconnected — ignore
+      }
+    };
+  } catch (err) {
+    console.warn('[SharedAudio] scheduleSharedTone failed:', err);
+    return null;
+  }
+}
+
 function playToneOnContext(
   ctx: AudioContext,
   hz: number,
