@@ -518,14 +518,14 @@ export function SessionEngineModal({
 
   // Trigger background music fade OUT so it ends exactly at the start of the final silence phase.
   //
-  // DESIGN (phase-anchored approach):
-  //   Instead of a long timer from session start (which suffers from Safari setTimeout throttling),
-  //   we anchor the fade OUT to the REAL start of the second-to-last phase.
-  //   When the phase timer enters the phase just before "silence", we schedule a short timer:
-  //     delay = (phase.duration_seconds - FADE_OUT_DURATION_MS/1000) * 1000
-  //   This timer is typically only 0–85s long — well within Safari's throttling threshold.
-  //   The silence phase itself is never shorter than MIN_SILENCE (30s), so fade OUT
-  //   always completes before the silence phase starts.
+  // DESIGN (phaseTimeRemaining-anchored approach):
+  //   phaseTimeRemaining is decremented every real second by the phase countdown timer,
+  //   so it reflects the ACTUAL remaining time — including isWaitingForCycleEnd overrun.
+  //   When we're on the second-to-last phase and phaseTimeRemaining hits exactly fadeOutSec,
+  //   we fire startFadeOut(). This means fade OUT always starts exactly 9 real seconds
+  //   before the phase ends, regardless of how long the phase actually runs.
+  //
+  //   phaseTimeRemaining = 9 → fire fade OUT → music silent after 9s → silence phase starts
   //
   // For non-SMART sessions (no silence phase): fade OUT is triggered by completeExercise().
   const bgFadeOutStartedRef = useRef(false);
@@ -544,6 +544,38 @@ export function SessionEngineModal({
     }
   }, [sessionState]);
 
+  // Watch phaseTimeRemaining on the second-to-last phase — fire fade OUT at exactly fadeOutSec left.
+  const fadeOutSec = FADE_OUT_DURATION_MS / 1000;
+  const phases = exercise.breathing_pattern.phases;
+  const isSecondToLastPhase = currentPhaseIndex === totalPhases - 2;
+  const lastPhaseIsSilence  = phases[totalPhases - 1]?.type === 'silence';
+  const isSmartSession      = sessionTypeRef.current === 'smart';
+  const isMusicEnabledForFO = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
+
+  useEffect(() => {
+    if (
+      sessionState !== 'active' ||
+      !isSmartSession ||
+      !isMusicEnabledForFO ||
+      !isSecondToLastPhase ||
+      !lastPhaseIsSilence ||
+      bgFadeOutStartedRef.current
+    ) return;
+
+    if (phaseTimeRemaining === fadeOutSec) {
+      bgFadeOutStartedRef.current = true;
+      console.log('[FadeOut] FIRE (phaseTimeRemaining-anchored)', {
+        firedAtISO: new Date().toISOString(),
+        phaseTimeRemaining,
+        fadeOutSec,
+        phaseIndex: currentPhaseIndex,
+        note: 'fade OUT starts now — will complete exactly when silence phase begins',
+      });
+      backgroundMusic.startFadeOut();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phaseTimeRemaining, sessionState, currentPhaseIndex]);
+
   // Run current phase
   useEffect(() => {
     if (sessionState !== 'active' || !currentPhase) {
@@ -558,57 +590,6 @@ export function SessionEngineModal({
       durationSec: currentPhase.duration_seconds,
       startedAt: phaseStartedAt.toISOString(),
     });
-
-    // ─── Phase-anchored fade OUT (SMART sessions only) ────────────────────────
-    // We schedule fade OUT when the second-to-last phase starts.
-    // The last phase is always 'silence' (Ticho, MIN_SILENCE = 30s).
-    // Timer length = phaseDuration - fadeOutSec — typically only 0–85s, safely
-    // below Safari's throttling threshold for long setTimeout calls.
-    const phases = exercise.breathing_pattern.phases;
-    const isSmartSession = sessionTypeRef.current === 'smart';
-    const isMusicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
-    const isSecondToLastPhase = currentPhaseIndex === totalPhases - 2;
-    const lastPhaseIsSilence = phases[totalPhases - 1]?.type === 'silence';
-
-    if (
-      isSmartSession &&
-      isMusicEnabled &&
-      isSecondToLastPhase &&
-      lastPhaseIsSilence &&
-      !bgFadeOutStartedRef.current
-    ) {
-      const fadeOutSec = FADE_OUT_DURATION_MS / 1000;
-      const phaseDurationSec = currentPhase.duration_seconds;
-      // Delay from NOW (real phase start) so fade finishes exactly when silence starts.
-      // Math.max(100ms) guards against negative on very short phases.
-      const delayMs = Math.max(100, (phaseDurationSec - fadeOutSec) * 1000);
-
-      console.log('[FadeOut] SCHEDULED (phase-anchored)', {
-        phaseIndex: currentPhaseIndex,
-        phaseName: (currentPhase as { name?: string }).name,
-        phaseDurationSec,
-        fadeOutSec,
-        delayMs,
-        fireAtISO: new Date(Date.now() + delayMs).toISOString(),
-        fireInSec: Math.round(delayMs / 1000),
-      });
-
-      if (bgFadeOutTimerRef.current) {
-        window.clearTimeout(bgFadeOutTimerRef.current);
-      }
-      bgFadeOutTimerRef.current = window.setTimeout(() => {
-        if (!bgFadeOutStartedRef.current) {
-          bgFadeOutStartedRef.current = true;
-          bgFadeOutTimerRef.current = null;
-          console.log('[FadeOut] FIRE', {
-            firedAtISO: new Date().toISOString(),
-            expectedAtISO: new Date(phaseStartedAt.getTime() + delayMs).toISOString(),
-            driftMs: Date.now() - (phaseStartedAt.getTime() + delayMs),
-          });
-          backgroundMusic.startFadeOut();
-        }
-      }, delayMs);
-    }
 
     setPhaseTimeRemaining(currentPhase.duration_seconds);
     
@@ -853,13 +834,11 @@ export function SessionEngineModal({
       });
       if (timerRef.current) window.clearInterval(timerRef.current);
       if (breathingIntervalId) window.clearInterval(breathingIntervalId);
-      // Note: bgFadeOutTimerRef is intentionally NOT cleared here.
-      // The fade OUT timer was scheduled for the second-to-last phase and must survive
-      // even after that phase's cleanup (so it fires during or at the end of that phase).
+      // Breathing interval and animation cleanup only — bgFadeOut has no timer to clear.
       cleanupAnimation();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState, currentPhaseIndex, totalPhases, smartMusicEnabled, backgroundMusicEnabled]); // FIXED: Only primitive values - functions are stable via useCallback
+  }, [sessionState, currentPhaseIndex, totalPhases]); // FIXED: Only primitive values - functions are stable via useCallback
   
   // Handle modal close
   const handleClose = useCallback(() => {
