@@ -518,97 +518,31 @@ export function SessionEngineModal({
 
   // Trigger background music fade OUT so it ends exactly at the start of the final silence phase.
   //
-  // DESIGN:
-  //   totalSec and silenceSec are snapshotted into sessionDurationSnapshotRef at session start
-  //   (in startSmartSession / startCountdown). This ensures the timer is set ONCE with correct
-  //   values and never re-computes with a shifted Date.now() due to re-renders.
+  // DESIGN (phase-anchored approach):
+  //   Instead of a long timer from session start (which suffers from Safari setTimeout throttling),
+  //   we anchor the fade OUT to the REAL start of the second-to-last phase.
+  //   When the phase timer enters the phase just before "silence", we schedule a short timer:
+  //     delay = (phase.duration_seconds - FADE_OUT_DURATION_MS/1000) * 1000
+  //   This timer is typically only 0–85s long — well within Safari's throttling threshold.
+  //   The silence phase itself is never shorter than MIN_SILENCE (30s), so fade OUT
+  //   always completes before the silence phase starts.
   //
-  // Formula:
-  //   fadeOutAt = sessionStart + totalSec - silenceSec - fadeOutSec
-  //   → music volume reaches 0 exactly when silence phase (Ticho) starts
+  // For non-SMART sessions (no silence phase): fade OUT is triggered by completeExercise().
   const bgFadeOutStartedRef = useRef(false);
   const bgFadeOutTimerRef   = useRef<number | null>(null);
+
+  // Reset fade out state when a new session starts
   useEffect(() => {
-    // Clear any previous interval when session state changes
-    if (bgFadeOutTimerRef.current) {
-      window.clearInterval(bgFadeOutTimerRef.current);
-      bgFadeOutTimerRef.current = null;
+    if (sessionState === 'active') {
+      bgFadeOutStartedRef.current = false;
     }
-
-    // Use the correct toggle: SMART sessions use smartMusicEnabled, regular use backgroundMusicEnabled
-    const isMusicEnabled = smartConfigAdjusted ? smartMusicEnabled : backgroundMusicEnabled;
-    if (sessionState !== 'active' || !isMusicEnabled || !sessionStartTime) return;
-
-    // Reset flag for new session
-    bgFadeOutStartedRef.current = false;
-
-    // Read snapshotted values — set once at session start, never shift with re-renders.
-    // Fallback: compute from current values if snapshot somehow missing (edge case).
-    const snapshot = sessionDurationSnapshotRef.current;
-    const totalSec = snapshot?.totalSec
-      ?? (smartConfigAdjusted?.totalDurationSeconds
-        ?? exercise.breathing_pattern.phases.reduce((sum, p) => sum + p.duration_seconds, 0));
-    const silenceSec = snapshot?.silenceSec
-      ?? (smartConfigAdjusted ? Math.max(MIN_SILENCE, Math.round(totalSec * 0.05)) : 0);
-    const fadeOutSec = FADE_OUT_DURATION_MS / 1000;
-
-    // Fade OUT fires so that music volume reaches 0 exactly when silence phase begins.
-    // Math.max(1000, ...) guards against negative values on edge-case timing glitches.
-    const sessionEndMs = sessionStartTime.getTime() + totalSec * 1000;
-    const fadeOutAtMs  = sessionEndMs - (silenceSec * 1000) - (fadeOutSec * 1000);
-
-    console.log('[FadeOutTimer] SETUP', {
-      snapshotPresent: !!snapshot,
-      totalSec,
-      silenceSec,
-      fadeOutSec,
-      sessionStartISO: sessionStartTime.toISOString(),
-      nowISO: new Date().toISOString(),
-      elapsedSinceStartSec: (Date.now() - sessionStartTime.getTime()) / 1000,
-      expectedFireAtISO: new Date(fadeOutAtMs).toISOString(),
-      expectedInSec: Math.round((fadeOutAtMs - Date.now()) / 1000),
-    });
-
-    // Use setInterval polling (1s) instead of a single long setTimeout.
-    // Safari throttles long setTimeout timers and can fire them 10-40s early.
-    // Polling checks the wall clock every second — max 1s error regardless of tab state.
-    const pollStart = Date.now();
-    bgFadeOutTimerRef.current = window.setInterval(() => {
-      const now = Date.now();
-      const elapsedSec = Math.round((now - pollStart) / 1000);
-
-      // Log every 30s to confirm polling is alive without flooding console
-      if (elapsedSec > 0 && elapsedSec % 30 === 0) {
-        console.log('[FadeOutTimer] POLL alive', {
-          elapsedSec,
-          remainingSec: Math.round((fadeOutAtMs - now) / 1000),
-          fired: bgFadeOutStartedRef.current,
-        });
-      }
-
-      if (now >= fadeOutAtMs && !bgFadeOutStartedRef.current) {
-        bgFadeOutStartedRef.current = true;
-        window.clearInterval(bgFadeOutTimerRef.current!);
-        bgFadeOutTimerRef.current = null;
-        console.log('[FadeOutTimer] FIRE', {
-          firedAtISO: new Date().toISOString(),
-          expectedAtISO: new Date(fadeOutAtMs).toISOString(),
-          driftMs: now - fadeOutAtMs,  // positive = late, negative = early (should be near 0)
-        });
-        backgroundMusic.startFadeOut();
-      }
-    }, 1000);
-
-    return () => {
+    if (sessionState !== 'active') {
       if (bgFadeOutTimerRef.current) {
-        window.clearInterval(bgFadeOutTimerRef.current);
+        window.clearTimeout(bgFadeOutTimerRef.current);
         bgFadeOutTimerRef.current = null;
       }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState, smartMusicEnabled, backgroundMusicEnabled, sessionStartTime]);
-  // NOTE: smartConfigAdjusted intentionally NOT in deps — duration is snapshotted at session
-  // start into sessionDurationSnapshotRef. Adding it would reset the timer on every re-render.
+    }
+  }, [sessionState]);
 
   // Run current phase
   useEffect(() => {
@@ -616,13 +550,65 @@ export function SessionEngineModal({
       return;
     }
 
+    const phaseStartedAt = new Date();
     console.log('[PhaseTimer] START', {
       phaseIndex: currentPhaseIndex,
       phaseType: currentPhase.type,
       phaseName: (currentPhase as { name?: string }).name,
       durationSec: currentPhase.duration_seconds,
-      startedAt: new Date().toISOString(),
+      startedAt: phaseStartedAt.toISOString(),
     });
+
+    // ─── Phase-anchored fade OUT (SMART sessions only) ────────────────────────
+    // We schedule fade OUT when the second-to-last phase starts.
+    // The last phase is always 'silence' (Ticho, MIN_SILENCE = 30s).
+    // Timer length = phaseDuration - fadeOutSec — typically only 0–85s, safely
+    // below Safari's throttling threshold for long setTimeout calls.
+    const phases = exercise.breathing_pattern.phases;
+    const isSmartSession = sessionTypeRef.current === 'smart';
+    const isMusicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
+    const isSecondToLastPhase = currentPhaseIndex === totalPhases - 2;
+    const lastPhaseIsSilence = phases[totalPhases - 1]?.type === 'silence';
+
+    if (
+      isSmartSession &&
+      isMusicEnabled &&
+      isSecondToLastPhase &&
+      lastPhaseIsSilence &&
+      !bgFadeOutStartedRef.current
+    ) {
+      const fadeOutSec = FADE_OUT_DURATION_MS / 1000;
+      const phaseDurationSec = currentPhase.duration_seconds;
+      // Delay from NOW (real phase start) so fade finishes exactly when silence starts.
+      // Math.max(100ms) guards against negative on very short phases.
+      const delayMs = Math.max(100, (phaseDurationSec - fadeOutSec) * 1000);
+
+      console.log('[FadeOut] SCHEDULED (phase-anchored)', {
+        phaseIndex: currentPhaseIndex,
+        phaseName: (currentPhase as { name?: string }).name,
+        phaseDurationSec,
+        fadeOutSec,
+        delayMs,
+        fireAtISO: new Date(Date.now() + delayMs).toISOString(),
+        fireInSec: Math.round(delayMs / 1000),
+      });
+
+      if (bgFadeOutTimerRef.current) {
+        window.clearTimeout(bgFadeOutTimerRef.current);
+      }
+      bgFadeOutTimerRef.current = window.setTimeout(() => {
+        if (!bgFadeOutStartedRef.current) {
+          bgFadeOutStartedRef.current = true;
+          bgFadeOutTimerRef.current = null;
+          console.log('[FadeOut] FIRE', {
+            firedAtISO: new Date().toISOString(),
+            expectedAtISO: new Date(phaseStartedAt.getTime() + delayMs).toISOString(),
+            driftMs: Date.now() - (phaseStartedAt.getTime() + delayMs),
+          });
+          backgroundMusic.startFadeOut();
+        }
+      }, delayMs);
+    }
 
     setPhaseTimeRemaining(currentPhase.duration_seconds);
     
@@ -867,10 +853,13 @@ export function SessionEngineModal({
       });
       if (timerRef.current) window.clearInterval(timerRef.current);
       if (breathingIntervalId) window.clearInterval(breathingIntervalId);
+      // Note: bgFadeOutTimerRef is intentionally NOT cleared here.
+      // The fade OUT timer was scheduled for the second-to-last phase and must survive
+      // even after that phase's cleanup (so it fires during or at the end of that phase).
       cleanupAnimation();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState, currentPhaseIndex, totalPhases]); // FIXED: Only primitive values - functions are stable via useCallback
+  }, [sessionState, currentPhaseIndex, totalPhases, smartMusicEnabled, backgroundMusicEnabled]); // FIXED: Only primitive values - functions are stable via useCallback
   
   // Handle modal close
   const handleClose = useCallback(() => {
