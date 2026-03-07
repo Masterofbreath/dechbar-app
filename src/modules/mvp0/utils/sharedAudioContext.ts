@@ -56,16 +56,25 @@ export function getSharedAudioContext(): AudioContext | null {
       _ctx = new AudioCtx();
 
       // Oprava #3: Auto-resume on statechange — handles iOS Safari interruptions
-      // (phone call, notification, app backgrounding) which suspend the context.
-      // Without this, returning to the app leaves AudioContext suspended → no bells/cues.
+      // (phone call, notification, app backgrounding) which suspend the context AFTER
+      // it was already running. We track whether the context was ever running to avoid
+      // calling resume() on the initial suspended state (before first user gesture) —
+      // that would cause Safari desktop to reject the resume and potentially close the context.
+      let _wasEverRunning = false;
       _ctx.addEventListener('statechange', () => {
-        if (_ctx && _ctx.state === 'suspended') {
+        if (!_ctx) return;
+        if (_ctx.state === 'running') {
+          _wasEverRunning = true;
+        }
+        // Only auto-resume if context was already running before — this is a real interruption
+        // (e.g. phone call), not the initial suspended-before-gesture state.
+        if (_ctx.state === 'suspended' && _wasEverRunning) {
           void _ctx.resume();
         }
         // Oprava #4: Release singleton playback lock when context is interrupted/closed.
         // On iOS PWA, the context can be destroyed while music is playing.
         // _isAnyInstancePlaying stays true → new play() is permanently blocked.
-        if (_ctx && (_ctx.state === 'closed' || _ctx.state === 'interrupted' as AudioContextState)) {
+        if (_ctx.state === 'closed' || _ctx.state === ('interrupted' as AudioContextState)) {
           releasePlayback();
         }
       });
@@ -127,18 +136,24 @@ export function playSharedTone(
 ): void {
   try {
     const ctx = getSharedAudioContext();
-    if (!ctx) return;
+    if (!ctx) { console.warn('[SharedAudio] playSharedTone: no context'); return; }
 
     // If suspended, attempt resume and schedule the tone for after resume.
     // (unlockSharedAudioContext should have been called from the gesture handler,
     //  but the resume() Promise may not have resolved yet — race condition on Safari.)
     if (ctx.state === 'suspended') {
+      console.warn(`[SharedAudio] playSharedTone: ctx suspended, resuming first (hz=${hz})`);
       void ctx.resume().then(() => {
         // Add a small start offset so the tone doesn't get scheduled into the past.
         // ctx.currentTime was frozen while suspended; after resume() it jumps forward.
         // Without offset, osc.start(frozenTime) is in the past → tone never plays on Safari.
         playToneOnContext(ctx, hz, duration, volume, isBell, 0.015);
       });
+      return;
+    }
+
+    if (ctx.state !== 'running') {
+      console.warn(`[SharedAudio] playSharedTone: ctx state=${ctx.state}, skipping hz=${hz}`);
       return;
     }
 
@@ -178,7 +193,7 @@ function playToneOnContext(
 
     osc.start(now);
     osc.stop(now + duration);
-  } catch {
-    // Web Audio not supported — silent skip
+  } catch (err) {
+    console.warn('[SharedAudio] playToneOnContext failed:', err);
   }
 }
