@@ -40,6 +40,12 @@ export interface SmartPrepStateProps {
   onScheduleBells?: (delay1Sec: number, delay2Sec: number) => (() => void);
   /** Unlock Web Audio pipeline — must be called on any user gesture before audio */
   onUnlockAudio?: () => void;
+  /**
+   * Called by SessionEngineModal when the modal is closed from outside SmartPrepState
+   * (e.g. overlay tap, handleClose). Cancels any scheduled bells.
+   * SmartPrepState passes the cancel function up via this callback at schedule time.
+   */
+  onRegisterCancelBells?: (cancelFn: () => void) => void;
 }
 
 // Fallback cold-start config used when BIE fails and config is null
@@ -129,6 +135,7 @@ export function SmartPrepState({
   hasNoKP = false,
   onScheduleBells,
   onUnlockAudio,
+  onRegisterCancelBells,
 }: SmartPrepStateProps) {
   // Tiché použití fallback konfigurace pokud BIE selže
   const smartConfig = smartConfigProp ?? FALLBACK_CONFIG;
@@ -145,6 +152,11 @@ export function SmartPrepState({
     startedRef.current = true;
     setStarted(true);
     if (timerRef.current) window.clearInterval(timerRef.current);
+    // Cancel any scheduled bells that haven't fired yet — they were timed for the
+    // auto-countdown (t+3s, t+4s). If the user taps early, bells would fire during
+    // the active session which is incorrect. Web Audio nodes are cancelled here.
+    cancelBellsRef.current?.();
+    cancelBellsRef.current = null;
     onUnlockAudio?.(); // Unlock Web Audio before any playback
     onStart();
   }, [onStart, onUnlockAudio]);
@@ -168,10 +180,13 @@ export function SmartPrepState({
   const scheduleBellsCalledRef = useRef(false);
   if (!scheduleBellsCalledRef.current && onScheduleBells) {
     scheduleBellsCalledRef.current = true;
-    cancelBellsRef.current = onScheduleBells(
+    const cancelFn = onScheduleBells(
       AUTO_START_SECONDS - 2,  // 3 seconds from now → bell at countdown 2
       AUTO_START_SECONDS - 1,  // 4 seconds from now → bell at countdown 1
-    ) ?? null;
+    ) ?? (() => {/* noop */});
+    cancelBellsRef.current = cancelFn;
+    // Register with parent so overlay-close / handleClose can also cancel bells
+    onRegisterCancelBells?.(cancelFn);
   }
 
   // Auto-countdown — triggers start at 0
@@ -238,8 +253,12 @@ export function SmartPrepState({
       <div className="smart-prep__top-bar">
         <CloseButton
           onClick={() => {
+            // Mark as started to block any pending setTimeout(triggerStart) race condition
+            // (e.g. countdown reached 0 just as user tapped close).
+            startedRef.current = true;
             if (timerRef.current) window.clearInterval(timerRef.current);
             cancelBellsRef.current?.();
+            cancelBellsRef.current = null;
             onClose();
           }}
           className="smart-prep__close"

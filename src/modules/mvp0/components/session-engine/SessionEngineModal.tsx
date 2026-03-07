@@ -90,6 +90,10 @@ export function SessionEngineModal({
   // Using new Date() in saveSession() would include time spent on the post-session form.
   const sessionCompletedAtRef = useRef<Date | null>(null);
 
+  // Cancel function for scheduled start bells — set by SmartPrepState via onRegisterCancelBells.
+  // Called in handleClose so overlay-tap / back-navigation also cancels bells.
+  const cancelScheduledBellsRef = useRef<(() => void) | null>(null);
+
   // Snapshot of session total duration + silence duration captured at session start.
   // Used by the fade OUT timer useEffect so it never re-computes with a shifted Date.now().
   // Values are set once in startSmartSession / startCountdown and never change mid-session.
@@ -188,6 +192,7 @@ export function SessionEngineModal({
       setSmartDurationAdjust(0);
       isSavingRef.current = false;
       sessionCompletedAtRef.current = null;
+      cancelScheduledBellsRef.current = null;
     }
     prevIsOpenRef.current = isOpen;
   }, [isOpen]);
@@ -833,6 +838,12 @@ export function SessionEngineModal({
     cleanupAnimation();
     if (timerRef.current) window.clearInterval(timerRef.current);
 
+    // Cancel any scheduled start bells (overlay-tap, back-navigation, outside-prep-area tap).
+    // SmartPrepState's CloseButton already cancels via its own ref — this covers
+    // the case where close originates OUTSIDE SmartPrepState.
+    cancelScheduledBellsRef.current?.();
+    cancelScheduledBellsRef.current = null;
+
     // Stop music if modal is closed from prep/countdown/idle — session never started
     backgroundMusic.stop();
     
@@ -977,6 +988,9 @@ export function SessionEngineModal({
               // scheduleBells() creates AudioNodes NOW and fires them at the given offsets
               // — no gesture token required at playback time. Fixes bells on Safari.
               return breathingCues.scheduleBells(delay1Sec, delay2Sec);
+            }}
+            onRegisterCancelBells={(cancelFn) => {
+              cancelScheduledBellsRef.current = cancelFn;
             }}
             onUnlockAudio={unlockAudio}
             onAdjustDuration={(delta) => {
