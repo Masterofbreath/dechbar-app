@@ -399,15 +399,44 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       // start the ramp anyway — better than staying silent.
       // On desktop Safari / Chrome, readyState is typically 4 (HAVE_ENOUGH_DATA) already —
       // the condition is true immediately → no delay.
+      // iOS audio session fix: even when readyState >= 3 (audio buffered), iOS needs a
+      // brief moment after play() resolves before it honours volume changes via JS.
+      // If we start rampVolume immediately after play(), iOS ignores the first few frames
+      // → volume stays at 0 → no fade IN heard, or volume "jumps" when session finally activates.
+      // Fix: always defer ramp start by one macrotask (setTimeout 0) on ALL platforms.
+      // On desktop Safari/Chrome this is imperceptible (~4ms = one rAF frame).
+      // On iOS this gives the audio session time to activate before we start changing volume.
+      //
+      // Additionally, on iOS PWA, readyState can be < 3 even after play() resolves (audio not
+      // yet fully buffered from CDN). In that case we also wait for canplay event, with a
+      // 600ms safety timeout in case the event never fires.
+
+      const startFadeInRamp = (trigger: string) => {
+        if (stateRef.current !== 'playing') {
+          console.warn('[BackgroundMusic] fade IN ramp skipped — state changed before trigger', {
+            platform: getPlatformLabel(),
+            trigger,
+            state: stateRef.current,
+          });
+          return;
+        }
+        console.log(`[BackgroundMusic] fade IN ramp starting (trigger: ${trigger})`, {
+          platform: getPlatformLabel(),
+          readyState: primary.readyState,
+          volume: primary.volume,
+        });
+        void rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+      };
+
       if (primary.readyState >= 3) {
-        // Audio is ready — start fade IN immediately (desktop Safari / cached audio path)
-        console.log('[BackgroundMusic] readyState ready — starting fade IN immediately', {
+        // Audio fully buffered — defer by one macrotask to let iOS audio session activate
+        console.log('[BackgroundMusic] readyState ready — deferring fade IN by 1 tick', {
           platform: getPlatformLabel(),
           readyState: primary.readyState,
         });
-        rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+        window.setTimeout(() => startFadeInRamp('readyState-deferred'), 0);
       } else {
-        // Audio not yet buffered — wait for canplay then fade IN (iOS PWA / slow network path)
+        // Audio not yet buffered (iOS PWA / slow network) — wait for canplay event
         console.log('[BackgroundMusic] readyState < 3 — waiting for canplay before fade IN', {
           platform: getPlatformLabel(),
           readyState: primary.readyState,
@@ -423,14 +452,8 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
             readyState: primary.readyState,
             paused: primary.paused,
           });
-          if (stateRef.current === 'playing') {
-            rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
-          } else {
-            console.warn('[BackgroundMusic] fade IN ramp skipped — state changed before trigger', {
-              platform: getPlatformLabel(),
-              state: stateRef.current,
-            });
-          }
+          // Extra defer here too — same iOS session activation issue applies
+          window.setTimeout(() => startFadeInRamp(trigger), 0);
         };
 
         const onCanPlay = () => startRamp('canplay');
@@ -608,7 +631,14 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     }
 
     Promise.all(promises).then(() => {
-      console.log('[BackgroundMusic] Pre-emptive fade OUT complete');
+      // iOS fix: after fade OUT ramp completes, explicitly pause() both elements.
+      // On iOS, HTMLAudioElement.volume = 0 may be overridden by the system audio session
+      // (hardware volume control). Without pause(), audio continues playing at system volume
+      // even though element.volume is 0. Calling pause() here ensures silence on all platforms.
+      // On desktop Safari, pause() after volume=0 is harmless.
+      primary.pause();
+      if (secondary && secondary.volume <= 0.01) secondary.pause();
+      console.log('[BackgroundMusic] Pre-emptive fade OUT complete — audio paused');
     });
 
     console.log('[BackgroundMusic] Pre-emptive fade OUT started (9s)');

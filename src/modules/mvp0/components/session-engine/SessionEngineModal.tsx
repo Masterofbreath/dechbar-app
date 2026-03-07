@@ -704,7 +704,6 @@ export function SessionEngineModal({
             if (nextIndex < totalPhases) {
               setCurrentPhaseIndex(nextIndex);
               vocalGuidance.triggerPhaseStart(nextIndex);
-              breathingCues.playBell('start').catch(() => null);
             } else {
               completeExercise();
             }
@@ -813,7 +812,6 @@ export function SessionEngineModal({
                 const nextIndex = currentPhaseRef.current + 1;
                 if (nextIndex < totalPhases) {
                   setCurrentPhaseIndex(nextIndex);
-                  breathingCues.playBell('start').catch(() => null);
                 } else {
                   completeExercise();
                 }
@@ -827,7 +825,6 @@ export function SessionEngineModal({
           
           if (nextIndex < totalPhases) {
             setCurrentPhaseIndex(nextIndex);
-            breathingCues.playBell('start').catch(() => null);
           } else {
             completeExercise();
           }
