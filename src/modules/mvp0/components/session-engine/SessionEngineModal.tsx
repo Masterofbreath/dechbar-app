@@ -567,8 +567,9 @@ export function SessionEngineModal({
       // Track which cues have already been pre-fired to avoid double-play
       let cueFiredForInstruction = '';
       // How many ms before the visual phase change to fire the audio cue.
-      // Compensates for HTMLAudioElement decode latency (~50-150ms on Safari).
-      const CUE_LEAD_MS = 80;
+      // Must be > setInterval tick (100ms) so the lookahead window is never missed.
+      // 120ms gives one full tick of margin.
+      const CUE_LEAD_MS = 120;
 
       // Fire inhale cue immediately at session/phase start — before the first 100ms tick.
       // Without this, the first cue is missed: the lookahead window (0..CUE_LEAD_MS)
@@ -632,6 +633,15 @@ export function SessionEngineModal({
           currentCyclePosition = 0;
           lastInstruction = '';       // reset so visual block re-fires on new cycle
           cueFiredForInstruction = ''; // reset so lookahead pre-fires on new cycle
+
+          // Fire inhale cue immediately at cycle boundary — same as at phase start.
+          // The lookahead window (0..CUE_LEAD_MS) would be missed if the next tick
+          // arrives at ~100ms (past the window). Firing here guarantees every cycle.
+          try {
+            breathingCues.playCue('inhale');
+            haptics.trigger('inhale');
+          } catch { /* ignore */ }
+          cueFiredForInstruction = 'NÁDECH-pre';
 
           // If phase timer already expired and we were waiting for the natural breath end,
           // advance NOW — 100ms precision vs relying on 1s timer hitting a 0.5s window.

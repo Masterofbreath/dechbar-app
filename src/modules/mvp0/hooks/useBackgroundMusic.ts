@@ -223,10 +223,13 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
             return;
           }
 
-          rampVolume(secondary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+          // Fade secondary IN and primary OUT simultaneously for smooth crossfade.
+          // Use separate ramp refs to avoid cancelling each other.
+          rampVolume(secondary, effectiveVolume, CROSSFADE_BEFORE_END * 1000, fadeInRampRef);
+          rampVolume(primary, 0, CROSSFADE_BEFORE_END * 1000, fadeOutRamp2Ref);
 
           window.setTimeout(() => {
-            // Final guard before swap — stop() may have been called during the 10s overlap
+            // Final guard before swap — stop() may have been called during the overlap
             if (!crossfadeEnabledRef.current) {
               secondary.pause();
               secondary.volume = 0;
@@ -235,6 +238,7 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
 
             primary.pause();
             primary.currentTime = 0;
+            primary.volume = 0;
             primaryRef.current   = secondary;
             secondaryRef.current = primary;
             scheduleCrossfade(primaryRef.current);

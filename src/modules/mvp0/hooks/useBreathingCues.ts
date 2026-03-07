@@ -298,10 +298,15 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
         return;
       }
 
-      // CDN bell — attempt HTMLAudioElement
+      // CDN bell — attempt HTMLAudioElement, fall back to Web Audio on error
       if (cue.cdn_url) {
         const audio = getAudioElement(cue.cdn_url);
-        if (!audio.src || audio.src === window.location.href) return;
+        if (!audio.src || audio.src === window.location.href) {
+          // src not loaded — use Web Audio fallback immediately
+          const hz = type === 'start' ? 528 : 396;
+          playSharedTone(hz, type === 'start' ? 2.5 : 3.5, volume, true);
+          return;
+        }
         audio.volume = volume;
         audio.playbackRate = cue.playback_rate;
         audio.currentTime = 0;
@@ -311,8 +316,10 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
       }
     } catch (error) {
       if (error instanceof DOMException && (error.name === 'NotSupportedError' || error.name === 'NotAllowedError')) {
-        // HTMLAudioElement blocked — already no generate_hz to fall back to (handled above)
-        console.warn(`[BreathingCues] Bell (${type}) CDN blocked, no hz fallback`);
+        // HTMLAudioElement blocked (Safari autoplay or format) — fall back to Web Audio tone
+        console.warn(`[BreathingCues] Bell (${type}) CDN blocked — falling back to Web Audio tone`);
+        const hz = type === 'start' ? 528 : 396;
+        playSharedTone(hz, type === 'start' ? 2.5 : 3.5, volume, true);
       } else {
         console.error(`[BreathingCues] Bell error (${type}):`, error);
       }
