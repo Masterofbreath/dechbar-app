@@ -29,7 +29,7 @@ import { useHaptics } from '../../hooks/useHaptics';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
 import { unlockSharedAudioContext } from '../../utils/sharedAudioContext';
-import { useBackgroundMusic } from '../../hooks/useBackgroundMusic';
+import { useBackgroundMusic, FADE_OUT_DURATION_MS } from '../../hooks/useBackgroundMusic';
 import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
 import { isProtocol } from '@/utils/exerciseHelpers';
@@ -485,9 +485,17 @@ export function SessionEngineModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState, sessionProgress]);
 
-  // Trigger background music fade OUT exactly 9s before session ends.
-  // Uses a real-time interval based on sessionStartTime + totalDuration — not sessionProgress
-  // (sessionProgress is derived from phase rendering and can be unreliable at session boundaries).
+  // Trigger background music fade OUT so it ends exactly at the start of the final silence phase.
+  //
+  // WHY dynamic calculation:
+  //   SMART cvičení always ends with a 'silence' phase (Ticho, default ~30s = 5% of total).
+  //   We want music to end precisely when Ticho begins — not 9s before the very end.
+  //   All values are read at runtime so changes to FADE_OUT_DURATION_MS, MIN_SILENCE,
+  //   or the phase profile propagate automatically without touching this code.
+  //
+  // Formula:
+  //   fadeOutAt = sessionStart + totalDuration - silenceSec - (FADE_OUT_DURATION_MS / 1000)
+  //   → music reaches vol=0 exactly when silence phase starts
   const bgFadeOutStartedRef = useRef(false);
   const bgFadeOutTimerRef   = useRef<number | null>(null);
   useEffect(() => {
@@ -497,7 +505,9 @@ export function SessionEngineModal({
       bgFadeOutTimerRef.current = null;
     }
 
-    if (sessionState !== 'active' || !backgroundMusicEnabled || !sessionStartTime) return;
+    // Use the correct toggle: SMART sessions use smartMusicEnabled, regular use backgroundMusicEnabled
+    const isMusicEnabled = smartConfigAdjusted ? smartMusicEnabled : backgroundMusicEnabled;
+    if (sessionState !== 'active' || !isMusicEnabled || !sessionStartTime) return;
 
     // Reset flag for new session
     bgFadeOutStartedRef.current = false;
@@ -510,10 +520,18 @@ export function SessionEngineModal({
         0
       );
 
-    // Calculate exact ms until fade OUT should start (9s before end)
-    const sessionEndMs  = sessionStartTime.getTime() + totalDuration * 1000;
-    const fadeOutAtMs   = sessionEndMs - 9000;
-    const delayMs       = Math.max(0, fadeOutAtMs - Date.now());
+    // Read silence phase duration dynamically — last phase is always 'silence' in SMART.
+    // If the last phase type ever changes, silenceSec gracefully falls to 0 (old behaviour).
+    const phases      = exercise.breathing_pattern.phases;
+    const lastPhase   = phases[phases.length - 1];
+    const silenceSec  = lastPhase?.type === 'silence' ? lastPhase.duration_seconds : 0;
+    const fadeOutSec  = FADE_OUT_DURATION_MS / 1000;
+
+    // Fade OUT fires so that music volume reaches 0 exactly when silence phase begins.
+    // Minimum delay 1s guards against negative values on edge-case timing glitches.
+    const sessionEndMs = sessionStartTime.getTime() + totalDuration * 1000;
+    const fadeOutAtMs  = sessionEndMs - (silenceSec * 1000) - (fadeOutSec * 1000);
+    const delayMs      = Math.max(1000, fadeOutAtMs - Date.now());
 
     bgFadeOutTimerRef.current = window.setTimeout(() => {
       if (!bgFadeOutStartedRef.current) {
@@ -529,7 +547,7 @@ export function SessionEngineModal({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState, backgroundMusicEnabled, sessionStartTime]);
+  }, [sessionState, smartMusicEnabled, backgroundMusicEnabled, sessionStartTime]);
 
   // Run current phase
   useEffect(() => {

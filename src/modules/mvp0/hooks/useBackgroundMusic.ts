@@ -26,8 +26,10 @@ import type { BackgroundTrack, MusicPlaybackState } from '../types/audio';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FADE_IN_DURATION_MS  = 9000; // 9s fade in
-const FADE_OUT_DURATION_MS = 9000; // 9s fade out
+const FADE_IN_DURATION_MS = 9000; // 9s fade in
+// Exported so SessionEngineModal can schedule fade OUT trigger dynamically
+// without hardcoding the 9s value — change here propagates everywhere.
+export const FADE_OUT_DURATION_MS = 9000; // 9s fade out
 const CROSSFADE_BEFORE_END = 10;   // seconds before track end to start secondary
 
 // ─── Types ────────────────────────────────────────────────────────────────────
