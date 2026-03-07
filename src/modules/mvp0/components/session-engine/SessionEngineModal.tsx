@@ -34,7 +34,7 @@ import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
 import { isProtocol } from '@/utils/exerciseHelpers';
 import { SmartPrepState } from './SmartPrepState';
-import { buildSmartExercise, buildSmartContextSnapshot } from '../../engine/BreathIntelligenceEngine';
+import { buildSmartExercise, buildSmartContextSnapshot, MIN_SILENCE } from '../../engine/BreathIntelligenceEngine';
 import { smartKeys } from '../../hooks/useSmartExercise';
 import { updateStreakOnActivity } from '@/platform/analytics';
 import { useQueryClient } from '@tanstack/react-query';
@@ -487,19 +487,22 @@ export function SessionEngineModal({
 
   // Trigger background music fade OUT so it ends exactly at the start of the final silence phase.
   //
-  // WHY dynamic calculation:
-  //   SMART cvičení always ends with a 'silence' phase (Ticho, default ~30s = 5% of total).
-  //   We want music to end precisely when Ticho begins — not 9s before the very end.
-  //   All values are read at runtime so changes to FADE_OUT_DURATION_MS, MIN_SILENCE,
-  //   or the phase profile propagate automatically without touching this code.
+  // DESIGN:
+  //   SMART exercises always end with a 'silence' phase (Ticho).
+  //   silenceSec is computed from totalDurationSeconds using the same formula as BIE —
+  //   this avoids reading exercise.breathing_pattern.phases (stale closure risk in useEffect).
   //
-  // Formula:
-  //   fadeOutAt = sessionStart + totalDuration - silenceSec - (FADE_OUT_DURATION_MS / 1000)
-  //   → music reaches vol=0 exactly when silence phase starts
+  // Formula (all values from live refs — no stale closure):
+  //   silenceSec   = Math.max(MIN_SILENCE, Math.round(totalDuration * 0.05))
+  //   fadeOutAt    = sessionStart + totalDuration - silenceSec - fadeOutSec
+  //   → music volume reaches 0 exactly when silence phase starts
+  //
+  // Dynamic: changing MIN_SILENCE, FADE_OUT_DURATION_MS, or the ±1min buttons in SmartPrepState
+  //          all propagate automatically (smartConfigAdjusted is in the dependency array).
   const bgFadeOutStartedRef = useRef(false);
   const bgFadeOutTimerRef   = useRef<number | null>(null);
   useEffect(() => {
-    // Clear any previous timer when session state changes
+    // Clear any previous timer when session state or config changes
     if (bgFadeOutTimerRef.current) {
       window.clearTimeout(bgFadeOutTimerRef.current);
       bgFadeOutTimerRef.current = null;
@@ -512,23 +515,25 @@ export function SessionEngineModal({
     // Reset flag for new session
     bgFadeOutStartedRef.current = false;
 
-    // For SMART sessions use the adjusted SMART duration (may differ from the exercise template).
-    // exercise.breathing_pattern.phases reflects the DB template, not the actual SMART length.
+    // Total duration: for SMART use the adjusted value (user may have changed ±1min in SmartPrep).
+    // For regular exercises: sum phases from the exercise template.
     const totalDuration = smartConfigAdjusted?.totalDurationSeconds
       ?? exercise.breathing_pattern.phases.reduce(
         (sum, phase) => sum + phase.duration_seconds,
         0
       );
 
-    // Read silence phase duration dynamically — last phase is always 'silence' in SMART.
-    // If the last phase type ever changes, silenceSec gracefully falls to 0 (old behaviour).
-    const phases      = exercise.breathing_pattern.phases;
-    const lastPhase   = phases[phases.length - 1];
-    const silenceSec  = lastPhase?.type === 'silence' ? lastPhase.duration_seconds : 0;
+    // Silence duration: computed from totalDuration using the same formula as BIE.
+    // Does NOT read exercise.phases — avoids stale closure bug where phases array
+    // captured at effect creation time could differ from phases at actual playback time.
+    const silenceSec = smartConfigAdjusted
+      ? Math.max(MIN_SILENCE, Math.round(totalDuration * 0.05))
+      : 0; // Regular exercises have no guaranteed silence phase — skip offset
+
     const fadeOutSec  = FADE_OUT_DURATION_MS / 1000;
 
     // Fade OUT fires so that music volume reaches 0 exactly when silence phase begins.
-    // Minimum delay 1s guards against negative values on edge-case timing glitches.
+    // Math.max(1000, ...) guards against negative values on edge-case timing glitches.
     const sessionEndMs = sessionStartTime.getTime() + totalDuration * 1000;
     const fadeOutAtMs  = sessionEndMs - (silenceSec * 1000) - (fadeOutSec * 1000);
     const delayMs      = Math.max(1000, fadeOutAtMs - Date.now());
@@ -547,7 +552,7 @@ export function SessionEngineModal({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState, smartMusicEnabled, backgroundMusicEnabled, sessionStartTime]);
+  }, [sessionState, smartMusicEnabled, backgroundMusicEnabled, sessionStartTime, smartConfigAdjusted]);
 
   // Run current phase
   useEffect(() => {

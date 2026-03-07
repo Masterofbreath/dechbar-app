@@ -71,7 +71,9 @@ function resolveColdStartLevel(kp: number | null): number {
 const _COLD_START_DURATION = 420; // 7 min
 const MIN_DURATION = 300; // 5 min
 const MAX_DURATION = 900; // 15 min
-const MIN_SILENCE = 30;
+// Exported so SessionEngineModal can compute silence duration without reading exercise phases
+// (avoids stale closure bugs — single source of truth for silence calculation)
+export const MIN_SILENCE = 30;
 
 // KP → maxLevel mapping (TIER 2)
 const KP_CAP_TABLE: Array<{ maxKP: number; maxLevel: number; noHolds: boolean }> = [
