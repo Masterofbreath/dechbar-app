@@ -78,49 +78,60 @@ export function AppLayout({
   // Tuto proměnnou pak používáme místo 100dvh/100vh na .app-layout.
   // Při každé změně viewportu (rotace, keyboard) hodnotu aktualizujeme.
   useEffect(() => {
-    const setAppHeight = (label: string) => {
+    const snap = (label: string) => {
       const h = window.visualViewport?.height ?? window.innerHeight;
       const prev = parseFloat(
         getComputedStyle(document.documentElement).getPropertyValue('--app-height') || '0'
       );
       document.documentElement.style.setProperty('--app-height', `${h}px`);
 
-      // DIAGNOSTIKA
       const nav = document.querySelector<HTMLElement>('.bottom-nav');
       const navRect = nav?.getBoundingClientRect();
       const vv = window.visualViewport;
-      console.group(`[AppHeight diag] useEffect → ${label}`);
-      console.log('T (ms since nav)       :', Math.round(performance.now()));
-      console.log('--app-height set to    :', `${h}px`);
-      console.log('delta from inline/prev :', `${Math.round((h - prev) * 10) / 10}px ← if nonzero, timing issue!`);
-      console.log('visualViewport.height  :', vv?.height ?? 'N/A');
-      console.log('window.innerHeight     :', window.innerHeight);
-      console.log('isPWA standalone       :', window.matchMedia('(display-mode: standalone)').matches);
-      if (nav && navRect) {
-        const gap = window.innerHeight - navRect.bottom;
-        console.log('BottomNav rect.bottom  :', Math.round(navRect.bottom), `(gap below: ${Math.round(gap)}px) ← should be ~0`);
-        console.log('BottomNav rect.height  :', Math.round(navRect.height));
-        if (Math.abs(gap) > 2) {
-          console.warn('⚠️  BottomNav gap DETECTED:', Math.round(gap) + 'px below viewport bottom!');
+      const gap = navRect ? window.innerHeight - navRect.bottom : null;
+
+      console.group(`[AppHeight diag] ${label}`);
+      console.log('T (ms)              :', Math.round(performance.now()));
+      console.log('--app-height        :', `${h}px`);
+      console.log('delta from prev     :', `${Math.round((h - prev) * 10) / 10}px`);
+      console.log('visualViewport.h    :', vv?.height ?? 'N/A');
+      console.log('window.innerHeight  :', window.innerHeight);
+      console.log('screen.height       :', screen.height);
+      console.log('vv.offsetTop        :', vv?.offsetTop ?? 'N/A', '← nonzero = keyboard/toolbar pushing viewport');
+      console.log('isPWA standalone    :', window.matchMedia('(display-mode: standalone)').matches);
+      if (navRect) {
+        console.log('BottomNav.bottom    :', Math.round(navRect.bottom), `gap: ${Math.round(gap ?? 0)}px`);
+        console.log('BottomNav.height    :', Math.round(navRect.height));
+        if (gap !== null && Math.abs(gap) > 2) {
+          console.warn(`⚠️  gap: ${Math.round(gap)}px — nav NOT flush with viewport bottom`);
         } else {
-          console.log('✅ BottomNav position OK');
+          console.log('✅ BottomNav OK — flush with viewport');
         }
       } else {
-        console.log('BottomNav DOM          : not found yet');
+        console.log('BottomNav           : not in DOM yet');
       }
       console.groupEnd();
     };
 
-    setAppHeight('mount (sync)');
-    requestAnimationFrame(() => setAppHeight('rAF after mount'));
+    // Cold-start snapshots — 3 klíčové momenty
+    snap('① mount sync');
+    requestAnimationFrame(() => snap('② rAF (1st paint)'));
+    requestAnimationFrame(() => requestAnimationFrame(() => snap('③ rAF×2 (2nd paint)')));
+    const t300 = setTimeout(() => snap('④ 300ms'), 300);
+    const t800 = setTimeout(() => snap('⑤ 800ms'), 800);
+    const t1500 = setTimeout(() => snap('⑥ 1500ms'), 1500);
 
+    // Live listener — zachytí každou změnu výšky (toolbar animate, keyboard, rotace)
     const vv = window.visualViewport;
-    vv?.addEventListener('resize', () => setAppHeight('visualViewport resize'));
-    window.addEventListener('orientationchange', () => setAppHeight('orientationchange'));
+    const onChange = () => snap('🔄 visualViewport resize');
+    vv?.addEventListener('resize', onChange);
+    window.addEventListener('orientationchange', () => snap('↩️ orientationchange'));
 
     return () => {
-      vv?.removeEventListener('resize', () => setAppHeight('visualViewport resize'));
-      window.removeEventListener('orientationchange', () => setAppHeight('orientationchange'));
+      clearTimeout(t300);
+      clearTimeout(t800);
+      clearTimeout(t1500);
+      vv?.removeEventListener('resize', onChange);
     };
   }, []);
 
