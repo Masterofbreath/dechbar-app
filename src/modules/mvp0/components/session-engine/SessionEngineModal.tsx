@@ -96,9 +96,17 @@ export function SessionEngineModal({
       : undefined,
     [smartConfig, smartDurationAdjust],
   );
-  const exercise: Exercise = smartConfigAdjusted
-    ? buildSmartExercise(smartConfigAdjusted)
-    : exerciseProp;
+  // useMemo ensures exercise has a stable object reference between re-renders.
+  // Without memo, buildSmartExercise() runs on EVERY render → new object reference
+  // every time → currentPhase useMemo recomputes → phase useEffect restarts the
+  // phase timer → phases restart mid-session → session runs longer than set duration
+  // (e.g. 5min appears as 9min in history) + fade OUT timer resets and fires early.
+  const exercise: Exercise = useMemo(
+    () => smartConfigAdjusted
+      ? buildSmartExercise(smartConfigAdjusted)
+      : exerciseProp,
+    [smartConfigAdjusted, exerciseProp],
+  );
 
   // Session type ref (for saveSession)
   const sessionTypeRef = useRef<'preset' | 'custom' | 'smart'>(smartConfig ? 'smart' : 'preset');
