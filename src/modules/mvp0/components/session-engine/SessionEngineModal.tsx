@@ -529,9 +529,9 @@ export function SessionEngineModal({
   const bgFadeOutStartedRef = useRef(false);
   const bgFadeOutTimerRef   = useRef<number | null>(null);
   useEffect(() => {
-    // Clear any previous timer when session state changes
+    // Clear any previous interval when session state changes
     if (bgFadeOutTimerRef.current) {
-      window.clearTimeout(bgFadeOutTimerRef.current);
+      window.clearInterval(bgFadeOutTimerRef.current);
       bgFadeOutTimerRef.current = null;
     }
 
@@ -556,7 +556,6 @@ export function SessionEngineModal({
     // Math.max(1000, ...) guards against negative values on edge-case timing glitches.
     const sessionEndMs = sessionStartTime.getTime() + totalSec * 1000;
     const fadeOutAtMs  = sessionEndMs - (silenceSec * 1000) - (fadeOutSec * 1000);
-    const delayMs      = Math.max(1000, fadeOutAtMs - Date.now());
 
     console.log('[FadeOutTimer] SETUP', {
       snapshotPresent: !!snapshot,
@@ -566,20 +565,43 @@ export function SessionEngineModal({
       sessionStartISO: sessionStartTime.toISOString(),
       nowISO: new Date().toISOString(),
       elapsedSinceStartSec: (Date.now() - sessionStartTime.getTime()) / 1000,
-      delayMs,
-      fadeOutFiresAtISO: new Date(fadeOutAtMs).toISOString(),
+      expectedFireAtISO: new Date(fadeOutAtMs).toISOString(),
+      expectedInSec: Math.round((fadeOutAtMs - Date.now()) / 1000),
     });
 
-    bgFadeOutTimerRef.current = window.setTimeout(() => {
-      if (!bgFadeOutStartedRef.current) {
+    // Use setInterval polling (1s) instead of a single long setTimeout.
+    // Safari throttles long setTimeout timers and can fire them 10-40s early.
+    // Polling checks the wall clock every second — max 1s error regardless of tab state.
+    const pollStart = Date.now();
+    bgFadeOutTimerRef.current = window.setInterval(() => {
+      const now = Date.now();
+      const elapsedSec = Math.round((now - pollStart) / 1000);
+
+      // Log every 30s to confirm polling is alive without flooding console
+      if (elapsedSec > 0 && elapsedSec % 30 === 0) {
+        console.log('[FadeOutTimer] POLL alive', {
+          elapsedSec,
+          remainingSec: Math.round((fadeOutAtMs - now) / 1000),
+          fired: bgFadeOutStartedRef.current,
+        });
+      }
+
+      if (now >= fadeOutAtMs && !bgFadeOutStartedRef.current) {
         bgFadeOutStartedRef.current = true;
+        window.clearInterval(bgFadeOutTimerRef.current!);
+        bgFadeOutTimerRef.current = null;
+        console.log('[FadeOutTimer] FIRE', {
+          firedAtISO: new Date().toISOString(),
+          expectedAtISO: new Date(fadeOutAtMs).toISOString(),
+          driftMs: now - fadeOutAtMs,  // positive = late, negative = early (should be near 0)
+        });
         backgroundMusic.startFadeOut();
       }
-    }, delayMs);
+    }, 1000);
 
     return () => {
       if (bgFadeOutTimerRef.current) {
-        window.clearTimeout(bgFadeOutTimerRef.current);
+        window.clearInterval(bgFadeOutTimerRef.current);
         bgFadeOutTimerRef.current = null;
       }
     };
