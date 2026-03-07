@@ -25,6 +25,7 @@ import { useBackgroundMusic } from '../hooks/useBackgroundMusic';
 import { useSwipeBack } from '@/platform/hooks/useSwipeBack';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { useMembership } from '@/platform/membership/useMembership';
+import { useUserState } from '@/platform/user/userStateStore';
 import { isNativeApp } from '@/platform/utils/environment';
 import { PageLayout } from '@/platform/layouts/PageLayout';
 import { useResetSmartProgress, useResetKPMeasurements } from '../api/exercises';
@@ -126,6 +127,7 @@ export function SettingsPage() {
   const backgroundMusic = useBackgroundMusic();
   const { isSupported: wakeLockSupported } = useWakeLock();
   const { plan: userTier } = useMembership();
+  const { isAdmin } = useUserState();
   const nativeApp = isNativeApp();
 
   // Data reset hooks
@@ -230,7 +232,7 @@ export function SettingsPage() {
           <SettingsCard
             title="SMART CVIČENÍ"
             icon={<SmartWaveIcon />}
-            locked={userTier === 'ZDARMA'}
+            locked={userTier === 'ZDARMA' && !isAdmin}
             lockedTooltip="Prémiová funkce dostupná s tarifem SMART"
           >
             {userTier !== 'ZDARMA' && (

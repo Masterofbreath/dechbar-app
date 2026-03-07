@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { NavIcon } from '@/platform/components';
 import { useAuth } from '@/platform/auth';
 import { useMembership } from '@/platform/membership';
+import { useUserState } from '@/platform/user/userStateStore';
 import { LockedFeatureModal } from './LockedFeatureModal';
 import { useSmartExercise } from '../hooks/useSmartExercise';
 import type { SmartSessionConfig } from '../types/exercises';
@@ -36,13 +37,14 @@ export interface SmartExerciseButtonProps {
 export function SmartExerciseButton({ onSmartStart }: SmartExerciseButtonProps) {
   const { user } = useAuth();
   const { plan } = useMembership(user?.id);
+  const { isAdmin } = useUserState();
   const [showModal, setShowModal] = useState(false);
   const [isComputing, setIsComputing] = useState(false);
   const [computeError, setComputeError] = useState<string | null>(null);
   const { computeAndBuild, isLoading: isDataLoading } = useSmartExercise();
   
-  // User has SMART or AI COACH tier - becomes PRIMARY CTA
-  const isPremium = plan === 'SMART' || plan === 'AI_COACH';
+  // ADMIN/CEO bypass — always unlocked for internal testing
+  const isPremium = plan === 'SMART' || plan === 'AI_COACH' || isAdmin;
   const locked = !isPremium;
   const isBusy = isComputing || isDataLoading;
   
