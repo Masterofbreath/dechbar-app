@@ -50,17 +50,17 @@ export function DnesPage() {
   const vecerExercise = exercises?.find(ex => ex.name === 'VEČER');
 
   // Called synchronously on SMART button click (within gesture stack) —
-  // opens modal immediately so unlockAudio() runs before any awaits.
+  // unlocks AudioContext BEFORE any await. Modal stays closed until config arrives.
   function handleSmartEarlyOpen() {
-    unlockSharedAudioContext(); // extra safety unlock — idempotent
+    unlockSharedAudioContext();
     setSmartLoading(true);
     setSmartConfig(undefined);
     setSkipFlow(false);
-    // Open modal immediately with a loading placeholder
-    setSelectedExercise({ id: '__smart_loading__' } as Exercise);
+    // Do NOT open SessionEngineModal yet — it needs a real exercise with breathing_pattern.
+    // SmartExerciseButton will call handleSmartStart when computeAndBuild resolves.
   }
 
-  // Called after computeAndBuild resolves — updates modal with real config
+  // Called after computeAndBuild resolves — opens modal with real exercise + config
   function handleSmartStart(config: SmartSessionConfig, exercise: Exercise) {
     setSmartLoading(false);
     setSmartConfig(config);
@@ -151,13 +151,22 @@ export function DnesPage() {
         <DailyTipWidget />
       </div>
       
+      {/* SMART Loading overlay — shown while computeAndBuild runs (gesture already captured) */}
+      {smartLoading && !selectedExercise && (
+        <div className="smart-exercise-loading-overlay" aria-label="Připravuji SMART cvičení" role="status">
+          <div className="smart-exercise-loading-overlay__content">
+            <div className="smart-exercise-loading-overlay__spinner" />
+            <p className="smart-exercise-loading-overlay__text">Připravuji cvičení…</p>
+          </div>
+        </div>
+      )}
+
       {/* Session Engine Modal — preset protocols and SMART sessions */}
       {selectedExercise && (
         <SessionEngineModal
           exercise={selectedExercise}
           skipFlow={skipFlow}
           smartConfig={smartConfig}
-          smartLoading={smartLoading}
           onClose={() => {
             setSelectedExercise(null);
             setSkipFlow(false);
