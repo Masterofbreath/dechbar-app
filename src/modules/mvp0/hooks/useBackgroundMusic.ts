@@ -79,6 +79,9 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
   const fadeInRampRef     = useRef<number | null>(null);
   const fadeOutRampRef    = useRef<number | null>(null);
   const volumeSyncRampRef = useRef<number | null>(null);
+  // Dedicated ramp ref for crossfade secondary fade IN — must NOT share fadeInRampRef
+  // (primary fade IN uses fadeInRampRef; if crossfade reused it, it would cancel primary's fade IN)
+  const crossfadeSecondaryRampRef = useRef<number | null>(null);
 
   const crossfadeTimerRef = useRef<number | null>(null);
   const trackUrlRef       = useRef<string | null>(null);
@@ -105,9 +108,10 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
   // ─── Ramp helpers ────────────────────────────────────────────────────────
 
   const clearRamps = useCallback(() => {
-    if (fadeInRampRef.current)   { window.clearInterval(fadeInRampRef.current);   fadeInRampRef.current   = null; }
-    if (fadeOutRampRef.current)  { window.clearInterval(fadeOutRampRef.current);  fadeOutRampRef.current  = null; }
-    if (fadeOutRamp2Ref.current) { window.clearInterval(fadeOutRamp2Ref.current); fadeOutRamp2Ref.current = null; }
+    if (fadeInRampRef.current)              { window.clearInterval(fadeInRampRef.current);              fadeInRampRef.current              = null; }
+    if (fadeOutRampRef.current)             { window.clearInterval(fadeOutRampRef.current);             fadeOutRampRef.current             = null; }
+    if (fadeOutRamp2Ref.current)            { window.clearInterval(fadeOutRamp2Ref.current);            fadeOutRamp2Ref.current            = null; }
+    if (crossfadeSecondaryRampRef.current)  { window.clearInterval(crossfadeSecondaryRampRef.current);  crossfadeSecondaryRampRef.current  = null; }
   }, []);
 
   const rampVolume = useCallback((
@@ -224,8 +228,9 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
           }
 
           // Fade secondary IN and primary OUT simultaneously for smooth crossfade.
-          // Use separate ramp refs to avoid cancelling each other.
-          rampVolume(secondary, effectiveVolume, CROSSFADE_BEFORE_END * 1000, fadeInRampRef);
+          // crossfadeSecondaryRampRef is intentionally separate from fadeInRampRef —
+          // primary may still be in its initial 9s fade IN; sharing the ref would cancel it.
+          rampVolume(secondary, effectiveVolume, CROSSFADE_BEFORE_END * 1000, crossfadeSecondaryRampRef);
           rampVolume(primary, 0, CROSSFADE_BEFORE_END * 1000, fadeOutRamp2Ref);
 
           window.setTimeout(() => {
@@ -359,6 +364,7 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       clearRamps();
       fadeOutStartedRef.current   = false;
       crossfadeEnabledRef.current = true;
+      primary.currentTime = 0; // reset position — cached audio may have non-zero currentTime from a previous session
       primary.volume = 0;
 
       await primary.play();

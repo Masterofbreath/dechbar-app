@@ -506,10 +506,13 @@ export function SessionEngineModal({
     // Reset flag for new session
     bgFadeOutStartedRef.current = false;
 
-    const totalDuration = exercise.breathing_pattern.phases.reduce(
-      (sum, phase) => sum + phase.duration_seconds,
-      0
-    );
+    // For SMART sessions use the adjusted SMART duration (may differ from the exercise template).
+    // exercise.breathing_pattern.phases reflects the DB template, not the actual SMART length.
+    const totalDuration = smartConfigAdjusted?.totalDurationSeconds
+      ?? exercise.breathing_pattern.phases.reduce(
+        (sum, phase) => sum + phase.duration_seconds,
+        0
+      );
 
     // Calculate exact ms until fade OUT should start (9s before end)
     const sessionEndMs  = sessionStartTime.getTime() + totalDuration * 1000;
