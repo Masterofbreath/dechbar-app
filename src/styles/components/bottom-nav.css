@@ -12,24 +12,19 @@
      position:fixed je vždy viewport-relative — žádný scroll/overflow kontext
      v app-layout ho nemůže ovlivnit. iOS WebKit UIScrollView bug eliminován. */
   position: fixed;
-  bottom: 0;
+
+  /* bottom: env(safe-area-inset-bottom) místo bottom:0 + height s env():
+     Přichytí horní hranu nav na innerHeight - safe-area-inset-bottom.
+     nav.bottom = innerHeight (flush s viewport), nikdy nepřesahuje.
+     Předchozí přístup (bottom:0 + height: 72+safe-area) způsoboval,
+     že nav přesahoval viewport o safe-area-inset-bottom px. */
+  bottom: env(safe-area-inset-bottom, 0);
   left: 0;
   right: 0;
   width: 100%;
   z-index: 1000;
-
-  /* iOS PWA fix: transform: translateZ(0) vytváří compositing layer IHNED při
-     prvním renderu — iOS WebKit musí přečíst finalizované viewport metriky
-     (včetně env(safe-area-inset-bottom)) před vykreslením layeru.
-     Bez toho WebKit občas pozicuje fixed element před tím, než jsou safe-area
-     insets k dispozici → BottomNav visí s mezerou nad home indicatorem. */
-  transform: translateZ(0);
-
-  /* height = 72px (obsah) + env(safe-area-inset-bottom) (home indicator).
-     padding-bottom = env(...) → flex items centrované v 72px content boxu,
-     spodní padding plynule vyplňuje home indicator zónu barvou navu. */
-  height: calc(72px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  height: 72px;
+  padding-bottom: 0;
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   display: flex;
