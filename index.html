@@ -75,43 +75,36 @@
   </head>
   <body>
     <!-- iOS PWA fix: nastav --app-height PŘED prvním render pasem.
-         visualViewport.height = správná výška okamžitě (bez safe-area-inset-bottom).
-         Fallback na innerHeight pokud visualViewport není dostupný (starší prohlížeče).
-         useEffect v AppLayout.tsx pak hodnotu udržuje aktuální (rotace, keyboard). -->
+         OPRAVA: používáme vv.height + vv.offsetTop (offsetTop je záporný na iOS PWA —
+         iOS posouvá visual viewport nahoru o safe-area-inset-bottom).
+         Správná použitelná výška = height + offsetTop, ne jen height. -->
     <script>
       (function() {
-        var t0 = performance.now();
         var vv = window.visualViewport;
-        var h = vv ? vv.height : window.innerHeight;
+        // vv.offsetTop je záporný na iOS PWA (např. -34px pro home indicator).
+        // height + offsetTop = skutečná použitelná výška bez iOS chrome.
+        var h = vv
+          ? Math.round(vv.height + (vv.offsetTop || 0))
+          : window.innerHeight;
         document.documentElement.style.setProperty('--app-height', h + 'px');
 
-        // DIAGNOSTIKA — viditelné v Safari DevTools: Develop → [iPhone] → Console
         var isPwa = window.navigator.standalone === true ||
                     window.matchMedia('(display-mode: standalone)').matches;
-        console.group('[AppHeight diag] inline script (HTML parse)');
-        console.log('T (ms since nav)    :', Math.round(t0));
-        console.log('--app-height set to :', h + 'px');
-        console.log('visualViewport.h    :', vv ? vv.height : 'N/A (API unavailable)');
-        console.log('window.innerHeight  :', window.innerHeight);
-        console.log('screen.height       :', screen.height);
-        console.log('isPWA standalone    :', isPwa);
-        console.log('CSS 100dvh fallback : would have been used BEFORE this script ran');
+        console.group('[AppHeight] inline script');
+        console.log('vv.height    :', vv ? vv.height : 'N/A');
+        console.log('vv.offsetTop :', vv ? (vv.offsetTop || 0) : 'N/A');
+        console.log('--app-height :', h + 'px  (height + offsetTop)');
+        console.log('screen.height:', screen.height);
+        console.log('isPWA        :', isPwa);
         console.groupEnd();
 
-        // Zachyť jak se visualViewport změní po finalizaci safe-area
         if (vv) {
-          vv.addEventListener('resize', function onFirstResize() {
-            var h2 = vv.height;
-            var t2 = performance.now();
+          vv.addEventListener('resize', function() {
+            var h2 = Math.round(vv.height + (vv.offsetTop || 0));
             document.documentElement.style.setProperty('--app-height', h2 + 'px');
-            console.group('[AppHeight diag] visualViewport resize (safe-area finalized?)');
-            console.log('T (ms since nav)    :', Math.round(t2));
-            console.log('--app-height updated:', h2 + 'px');
-            console.log('delta from inline   :', (h2 - h) + 'px  ← if nonzero, inline had wrong value!');
-            console.groupEnd();
-            // Nechej listener běžet — chceme vidět všechny změny
           });
-        }      })();
+        }
+      })();
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

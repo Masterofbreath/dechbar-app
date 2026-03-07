@@ -79,7 +79,12 @@ export function AppLayout({
   // Při každé změně viewportu (rotace, keyboard) hodnotu aktualizujeme.
   useEffect(() => {
     const snap = (label: string) => {
-      const h = window.visualViewport?.height ?? window.innerHeight;
+      const vv = window.visualViewport;
+      // vv.offsetTop je záporný na iOS PWA (viewport posunutý nahoru o safe-area-inset-bottom).
+      // Správná použitelná výška = height + offsetTop.
+      const h = vv
+        ? Math.round(vv.height + (vv.offsetTop ?? 0))
+        : window.innerHeight;
       const prev = parseFloat(
         getComputedStyle(document.documentElement).getPropertyValue('--app-height') || '0'
       );
@@ -87,50 +92,39 @@ export function AppLayout({
 
       const nav = document.querySelector<HTMLElement>('.bottom-nav');
       const navRect = nav?.getBoundingClientRect();
-      const vv = window.visualViewport;
       const gap = navRect ? window.innerHeight - navRect.bottom : null;
 
-      console.group(`[AppHeight diag] ${label}`);
-      console.log('T (ms)              :', Math.round(performance.now()));
-      console.log('--app-height        :', `${h}px`);
-      console.log('delta from prev     :', `${Math.round((h - prev) * 10) / 10}px`);
-      console.log('visualViewport.h    :', vv?.height ?? 'N/A');
-      console.log('window.innerHeight  :', window.innerHeight);
-      console.log('screen.height       :', screen.height);
-      console.log('vv.offsetTop        :', vv?.offsetTop ?? 'N/A', '← nonzero = keyboard/toolbar pushing viewport');
-      console.log('isPWA standalone    :', window.matchMedia('(display-mode: standalone)').matches);
+      console.group(`[AppHeight] ${label}`);
+      console.log('vv.height    :', vv?.height ?? 'N/A');
+      console.log('vv.offsetTop :', vv?.offsetTop ?? 'N/A');
+      console.log('--app-height :', `${h}px  (delta: ${Math.round((h - prev) * 10) / 10}px)`);
+      console.log('innerHeight  :', window.innerHeight);
+      console.log('screen.h     :', screen.height);
       if (navRect) {
-        console.log('BottomNav.bottom    :', Math.round(navRect.bottom), `gap: ${Math.round(gap ?? 0)}px`);
-        console.log('BottomNav.height    :', Math.round(navRect.height));
+        console.log('nav.bottom   :', Math.round(navRect.bottom), `gap: ${Math.round(gap ?? 0)}px`);
         if (gap !== null && Math.abs(gap) > 2) {
-          console.warn(`⚠️  gap: ${Math.round(gap)}px — nav NOT flush with viewport bottom`);
+          console.warn(`⚠️  gap ${Math.round(gap)}px`);
         } else {
-          console.log('✅ BottomNav OK — flush with viewport');
+          console.log('✅ BottomNav OK');
         }
-      } else {
-        console.log('BottomNav           : not in DOM yet');
       }
       console.groupEnd();
     };
 
-    // Cold-start snapshots — 3 klíčové momenty
-    snap('① mount sync');
-    requestAnimationFrame(() => snap('② rAF (1st paint)'));
-    requestAnimationFrame(() => requestAnimationFrame(() => snap('③ rAF×2 (2nd paint)')));
+    snap('① mount');
+    requestAnimationFrame(() => snap('② rAF'));
+    requestAnimationFrame(() => requestAnimationFrame(() => snap('③ rAF×2')));
     const t300 = setTimeout(() => snap('④ 300ms'), 300);
     const t800 = setTimeout(() => snap('⑤ 800ms'), 800);
-    const t1500 = setTimeout(() => snap('⑥ 1500ms'), 1500);
 
-    // Live listener — zachytí každou změnu výšky (toolbar animate, keyboard, rotace)
     const vv = window.visualViewport;
-    const onChange = () => snap('🔄 visualViewport resize');
+    const onChange = () => snap('🔄 vv resize');
     vv?.addEventListener('resize', onChange);
-    window.addEventListener('orientationchange', () => snap('↩️ orientationchange'));
+    window.addEventListener('orientationchange', () => snap('↩️ orientation'));
 
     return () => {
       clearTimeout(t300);
       clearTimeout(t800);
-      clearTimeout(t1500);
       vv?.removeEventListener('resize', onChange);
     };
   }, []);
