@@ -122,7 +122,8 @@ function resolveDuration(
   streak: number,
 ): number {
   if (mode.type === 'fixed') {
-    return Math.max(MIN_DURATION, Math.min(MAX_DURATION, mode.seconds));
+    // Round to nearest minute so ±1 min buttons always land on clean values
+    return Math.round(Math.max(MIN_DURATION, Math.min(MAX_DURATION, mode.seconds)) / 60) * 60;
   }
 
   const ranges = {
@@ -141,7 +142,7 @@ function resolveDuration(
   // High streak → longer end
   if (streak >= 7) fraction = Math.min(1, fraction + 0.25);
 
-  return Math.round(rangeMin + (rangeMax - rangeMin) * fraction);
+  return Math.round(rangeMin + (rangeMax - rangeMin) * fraction / 60) * 60;
 }
 
 // =====================================================

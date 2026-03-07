@@ -389,7 +389,9 @@ export function useBackgroundMusic(options?: { volumeOverride?: number }): Backg
   // ─── Play (public) ───────────────────────────────────────────────────────
 
   const play = useCallback(async () => {
-    if (!backgroundMusicEnabled) return;
+    // Note: intentionally no backgroundMusicEnabled check here.
+    // The caller (SessionEngineModal) is responsible for deciding whether to call play().
+    // This allows SMART sessions to use smartMusicEnabled independently of backgroundMusicEnabled.
 
     const currentState = stateRef.current;
 
@@ -560,6 +562,8 @@ export function useBackgroundMusic(options?: { volumeOverride?: number }): Backg
   }, [selectedTrackSlug]);
 
   // ─── Auto-pause when music disabled in settings ───────────────────────────
+  // Note: only reacts to backgroundMusicEnabled — SMART sessions manage their
+  // own lifecycle through SessionEngineModal, not this auto-effect.
 
   useEffect(() => {
     if (!backgroundMusicEnabled && stateRef.current === 'playing') {

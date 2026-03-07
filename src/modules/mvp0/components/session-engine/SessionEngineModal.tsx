@@ -83,6 +83,9 @@ export function SessionEngineModal({
   const [sessionProgress, setSessionProgress] = useState(0);
   const [showSaveError, setShowSaveError] = useState(false);
 
+  // Guard: prevents double-save on rapid taps (iOS touchscreen sends multiple events)
+  const isSavingRef = useRef(false);
+
   // SMART: adjusted duration state (changed via ±1 min buttons in SmartPrepState)
   const [smartDurationAdjust, setSmartDurationAdjust] = useState(0);
 
@@ -120,6 +123,7 @@ export function SessionEngineModal({
   
   const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume, backgroundMusicRandomEnabled,
     smartMusicEnabled, smartMusicSlug, smartMusicRandomEnabled, smartMusicVolume,
+    selectedTrackSlug,
   } = useSessionSettings();
 
   // NEW: Audio & Haptics system
@@ -223,7 +227,9 @@ export function SessionEngineModal({
     const isSmartSession = sessionTypeRef.current === 'smart';
     const musicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
     const randomEnabled = isSmartSession ? smartMusicRandomEnabled : backgroundMusicRandomEnabled;
-    const fixedSlug = isSmartSession ? smartMusicSlug : null;
+    // For normal sessions, fixed slug comes from selectedTrackSlug (user's track selection).
+    // For SMART sessions, it comes from smartMusicSlug setting.
+    const fixedSlug = isSmartSession ? smartMusicSlug : selectedTrackSlug;
 
     if (!musicEnabled) return;
 
@@ -232,8 +238,9 @@ export function SessionEngineModal({
         const TIER_LEVEL: Record<string, number> = { ZDARMA: 0, SMART: 1, AI_COACH: 2 };
         const userLevel = TIER_LEVEL[userTier] ?? 0;
         const accessible = backgroundMusic.tracks.filter(
+          // For normal sessions exclude smart_only tracks; SMART sessions see all
           t => (TIER_LEVEL[t.required_tier] ?? 0) <= userLevel
-            && (!isSmartSession || true) // SMART sees all (smart_only filtering done in TrackSelector)
+            && (isSmartSession || !t.smart_only)
         );
         if (accessible.length > 0) {
           const random = accessible[Math.floor(Math.random() * accessible.length)];
@@ -241,11 +248,12 @@ export function SessionEngineModal({
           return;
         }
       }
-      // SMART fixed slug — switch track before playing
-      if (isSmartSession && fixedSlug) {
+      // Fixed slug — setTrack ensures audio is loaded before play()
+      if (fixedSlug) {
         void backgroundMusic.setTrack(fixedSlug).then(() => backgroundMusic.play());
         return;
       }
+      // No track configured — play() will use whatever was auto-loaded by useBackgroundMusic
       backgroundMusic.play();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -693,6 +701,10 @@ export function SessionEngineModal({
   
   // Save session to history
   const saveSession = useCallback(async () => {
+    // Guard against rapid double-tap (iOS touchscreen fires multiple click events)
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+
     // Fallback: if sessionStartTime somehow null (e.g. session abandoned mid-flow), use now
     const startTime = sessionStartTime ?? new Date();
 
@@ -750,6 +762,8 @@ export function SessionEngineModal({
       console.error('[SessionEngineModal] Error saving session:', error);
       // Use non-blocking error — alert() blocks iOS WebView event loop
       setShowSaveError(true);
+      // Release guard so user can retry after fixing the error
+      isSavingRef.current = false;
     }
   }, [exercise, sessionStartTime, sessionState, moodBefore, moodAfter, difficultyRating, notes, completeSession, incrementSmartCount, onClose, smartConfigAdjusted, user?.id, queryClient, intensityControl]);
   

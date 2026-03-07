@@ -210,7 +210,8 @@ async function loadAudioUrl(cdnUrl: string): Promise<string> {
   try {
     const cached = await getCachedAudioFile(cdnUrl);
     if (cached) return URL.createObjectURL(cached.blob);
-    const res = await fetch(cdnUrl);
+    // mode: 'cors' required for Safari cross-origin audio fetch
+    const res = await fetch(cdnUrl, { mode: 'cors' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const blob = await res.blob();
     await cacheAudioFile(cdnUrl, blob);
@@ -379,6 +380,7 @@ export function useVocalGuidance(opts: VocalGuidanceOptions): VocalGuidanceAPI {
       const audioUrl = blobUrlsRef.current.get(snippet.cdn_url)!;
 
       const audio = new Audio(audioUrl);
+      audio.crossOrigin = 'anonymous'; // required for Safari cross-origin audio
       audioRef.current = audio;
       audio.volume = vocalVolume;
 

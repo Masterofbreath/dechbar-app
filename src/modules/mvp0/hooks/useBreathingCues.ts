@@ -132,6 +132,8 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     if (!audio) {
       audio = new Audio();
       audio.preload = 'auto';
+      // crossOrigin='anonymous' required for Safari cross-origin audio (CORS policy)
+      audio.crossOrigin = 'anonymous';
       audioRefs.current.set(url, audio);
     }
     return audio;
@@ -141,7 +143,8 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     try {
       const cached = await getCachedAudioFile(url);
       if (cached) return URL.createObjectURL(cached.blob);
-      const response = await fetch(url);
+      // mode: 'cors' required for Safari to fetch cross-origin audio without CORS error
+      const response = await fetch(url, { mode: 'cors' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob();
       await cacheAudioFile(url, blob);
