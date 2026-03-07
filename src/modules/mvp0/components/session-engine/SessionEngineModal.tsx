@@ -392,15 +392,11 @@ export function SessionEngineModal({
       setCountdownNumber(count);
 
       if (count === 2) {
-        // First bell at 33% — gentle warning (only if cues are preloaded)
-        if (breathingCues.isReady) {
-          breathingCues.playBell('start', 0.33).catch(() => null);
-        }
+        // First bell at 33% — play regardless of isReady; playBell has built-in fallback
+        breathingCues.playBell('start', 0.33).catch(() => null);
       } else if (count === 1) {
-        // Second bell at 66% — building up
-        if (breathingCues.isReady) {
-          breathingCues.playBell('start', 0.66).catch(() => null);
-        }
+        // Second bell at 66%
+        breathingCues.playBell('start', 0.66).catch(() => null);
       } else if (count === 0) {
         // Session starts — NO bell here, first inhale cue takes over immediately
         window.clearInterval(countdownInterval);

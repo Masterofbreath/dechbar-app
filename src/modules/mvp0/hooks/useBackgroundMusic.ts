@@ -28,7 +28,6 @@ import type { BackgroundTrack, MusicPlaybackState } from '../types/audio';
 
 const FADE_IN_DURATION_MS  = 9000; // 9s fade in
 const FADE_OUT_DURATION_MS = 9000; // 9s fade out
-const FADE_STEPS           = 90;   // 1 step per 100ms = smooth curve
 const CROSSFADE_BEFORE_END = 10;   // seconds before track end to start secondary
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -108,10 +107,10 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
   // ─── Ramp helpers ────────────────────────────────────────────────────────
 
   const clearRamps = useCallback(() => {
-    if (fadeInRampRef.current)              { window.clearInterval(fadeInRampRef.current);              fadeInRampRef.current              = null; }
-    if (fadeOutRampRef.current)             { window.clearInterval(fadeOutRampRef.current);             fadeOutRampRef.current             = null; }
-    if (fadeOutRamp2Ref.current)            { window.clearInterval(fadeOutRamp2Ref.current);            fadeOutRamp2Ref.current            = null; }
-    if (crossfadeSecondaryRampRef.current)  { window.clearInterval(crossfadeSecondaryRampRef.current);  crossfadeSecondaryRampRef.current  = null; }
+    if (fadeInRampRef.current)             { window.cancelAnimationFrame(fadeInRampRef.current);             fadeInRampRef.current             = null; }
+    if (fadeOutRampRef.current)            { window.cancelAnimationFrame(fadeOutRampRef.current);            fadeOutRampRef.current            = null; }
+    if (fadeOutRamp2Ref.current)           { window.cancelAnimationFrame(fadeOutRamp2Ref.current);           fadeOutRamp2Ref.current           = null; }
+    if (crossfadeSecondaryRampRef.current) { window.cancelAnimationFrame(crossfadeSecondaryRampRef.current); crossfadeSecondaryRampRef.current = null; }
   }, []);
 
   const rampVolume = useCallback((
@@ -121,13 +120,15 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     rampRef: React.MutableRefObject<number | null>,
   ): Promise<void> => {
     return new Promise((resolve) => {
-      if (rampRef.current) window.clearInterval(rampRef.current);
+      // Cancel any previous ramp on this ref
+      if (rampRef.current) {
+        window.cancelAnimationFrame(rampRef.current);
+        rampRef.current = null;
+      }
 
       const startVol = el.volume;
       const target   = Math.max(0, Math.min(1, targetVolume));
       const delta    = target - startVol;
-      const stepMs   = durationMs / FADE_STEPS;
-      let step = 0;
 
       if (Math.abs(delta) < 0.001) {
         el.volume = target;
@@ -135,17 +136,27 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
         return;
       }
 
-      rampRef.current = window.setInterval(() => {
-        step++;
-        el.volume = Math.max(0, Math.min(1, startVol + delta * (step / FADE_STEPS)));
+      // Use requestAnimationFrame + wall-clock timestamps instead of setInterval.
+      // setInterval is throttled on mobile Safari when the page loses focus or
+      // when the device is under load — causing the fade IN to "jump" to full volume.
+      // rAF runs on the compositor thread and is not throttled during active rendering.
+      const startTime = performance.now();
 
-        if (step >= FADE_STEPS) {
-          window.clearInterval(rampRef.current!);
-          rampRef.current = null;
+      const tick = (now: number) => {
+        const elapsed  = now - startTime;
+        const progress = Math.min(elapsed / durationMs, 1);
+        el.volume = Math.max(0, Math.min(1, startVol + delta * progress));
+
+        if (progress < 1) {
+          rampRef.current = window.requestAnimationFrame(tick);
+        } else {
           el.volume = target;
+          rampRef.current = null;
           resolve();
         }
-      }, stepMs);
+      };
+
+      rampRef.current = window.requestAnimationFrame(tick);
     });
   }, []);
 
@@ -550,16 +561,22 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
   // When play() is blocked by autoplay policy (NotAllowedError), pendingPlayRef
   // is set. On next user gesture, unlockSharedAudioContext() fires all listeners
   // — we retry playInternal() here once the audio pipeline is unblocked.
+  // Guard: only retry if sessionState is still 'idle' AND we are NOT currently
+  // playing — prevents double play() if music already started between unlock and callback.
 
   useEffect(() => {
     const unsub = onAudioUnlock(() => {
       // Only retry play if this modal instance is the active one
       if (!isActive) return;
+      // Only retry if there is a pending play AND music is not already playing/loading
       if (pendingPlayRef.current && stateRef.current === 'idle') {
         pendingPlayRef.current = false;
         // Ensure volume is reset to 0 before retry so fade IN always starts from silence
         if (primaryRef.current) primaryRef.current.volume = 0;
         void playInternal();
+      } else {
+        // No retry needed — clear stale pending flag to prevent future spurious retries
+        pendingPlayRef.current = false;
       }
     });
     return unsub;
