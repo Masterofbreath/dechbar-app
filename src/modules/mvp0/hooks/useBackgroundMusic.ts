@@ -21,7 +21,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
-import { onAudioUnlock, acquirePlayback, releasePlayback } from '../utils/sharedAudioContext';
+import { onAudioUnlock, acquirePlayback, releasePlayback, getPlatformLabel } from '../utils/sharedAudioContext';
 import type { BackgroundTrack, MusicPlaybackState } from '../types/audio';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -365,6 +365,15 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       return;
     }
 
+    console.log('[BackgroundMusic] playInternal start', {
+      platform: getPlatformLabel(),
+      src: primary.src.slice(-40), // last 40 chars to avoid log spam
+      readyState: primary.readyState,
+      paused: primary.paused,
+      volume: primary.volume,
+      effectiveVolume,
+    });
+
     try {
       // Singleton guard — only one instance plays at a time across all mounted hooks
       if (!acquirePlayback()) {
@@ -420,6 +429,15 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     // This allows SMART sessions to use smartMusicEnabled independently of backgroundMusicEnabled.
 
     const currentState = stateRef.current;
+
+    console.log('[BackgroundMusic] play() called', {
+      platform: getPlatformLabel(),
+      state: currentState,
+      isActive,
+      pendingPlay: pendingPlayRef.current,
+      hasSrc: !!(primaryRef.current?.src && primaryRef.current.src !== window.location.href),
+      setTrackInProgress: setTrackInProgressRef.current,
+    });
 
     // Already playing — nothing to do
     if (currentState === 'playing') return;
@@ -575,9 +593,11 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
         pendingPlayRef.current = false;
         // Ensure volume is reset to 0 before retry so fade IN always starts from silence
         if (primaryRef.current) primaryRef.current.volume = 0;
+        console.log('[BackgroundMusic] onAudioUnlock: retrying pendingPlay', { platform: getPlatformLabel(), state: stateRef.current });
         void playInternal();
       } else {
         // No retry needed — clear stale pending flag to prevent future spurious retries
+        console.log('[BackgroundMusic] onAudioUnlock: no retry needed', { platform: getPlatformLabel(), state: stateRef.current, pendingPlay: pendingPlayRef.current });
         pendingPlayRef.current = false;
       }
     });

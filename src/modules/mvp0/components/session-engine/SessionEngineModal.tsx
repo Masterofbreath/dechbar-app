@@ -28,7 +28,7 @@ import { useWakeLock } from '../../hooks/useWakeLock';
 import { useHaptics } from '../../hooks/useHaptics';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
-import { unlockSharedAudioContext } from '../../utils/sharedAudioContext';
+import { unlockSharedAudioContext, getPlatformLabel } from '../../utils/sharedAudioContext';
 import { useBackgroundMusic, FADE_OUT_DURATION_MS } from '../../hooks/useBackgroundMusic';
 import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
@@ -365,6 +365,16 @@ export function SessionEngineModal({
   const triggerMusicForSession = useCallback(() => {
     const isSmartSession = sessionTypeRef.current === 'smart';
     const musicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
+
+    console.log('[Session] triggerMusicForSession', {
+      platform: getPlatformLabel(),
+      isSmartSession,
+      musicEnabled,
+      randomEnabled: isSmartSession ? smartMusicRandomEnabled : backgroundMusicRandomEnabled,
+      fixedSlug: isSmartSession ? smartMusicSlug : selectedTrackSlug,
+      tracksLoaded: backgroundMusic.tracks.length,
+    });
+
     if (!musicEnabled) return;
 
     const randomEnabled = isSmartSession ? smartMusicRandomEnabled : backgroundMusicRandomEnabled;
@@ -438,6 +448,14 @@ export function SessionEngineModal({
   // SMART: skip countdown entirely — bells are played inside SmartPrepState at 2s/1s
   const startSmartSession = useCallback(() => {
     unlockAudio();
+
+    console.log('[Session] startSmartSession', {
+      platform: getPlatformLabel(),
+      smartMusicEnabled,
+      smartBellsEnabled: true, // scheduled in SmartPrepState
+      smartCuesEnabled: true,  // controlled by breathingCues
+      totalDurationSeconds: smartConfigAdjusted?.totalDurationSeconds,
+    });
     // Bells already fired in SmartPrepState — go straight to active
     setSessionProgress(0);
     setSessionState('active');

@@ -29,6 +29,7 @@ import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
 import { playSharedTone, scheduleSharedTone } from '../utils/sharedAudioContext';
+import { getPlatformLabel } from '../utils/sharedAudioContext';
 import type { BreathingPhaseAudio } from '../types/audio';
 
 interface BreathingCueData {
@@ -219,11 +220,10 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
 
     const cue = cueDataRef.current.get(phase);
     if (!cue) {
-      console.warn(`[BreathingCues] No cue data for phase: ${phase}`);
+      console.warn(`[BreathingCues] No cue data for phase: ${phase}`, { platform: getPlatformLabel() });
       return;
     }
 
-    // Increment cycle counter when inhale starts — this is the start of a new breathing cycle
     if (phase === 'inhale') {
       cycleCountRef.current++;
     }
@@ -231,8 +231,16 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     const scale = getVolumeScale();
     const effectiveVolume = effectiveCueVolume * scale;
 
-    // Silent — skip playback (end of session or scale=0)
     if (effectiveVolume < 0.01) return;
+
+    const method = cue.generate_hz ? 'WebAudio' : cue.cdn_url ? 'HTMLAudio' : 'none';
+    console.log('[BreathingCues] playCue', {
+      platform: getPlatformLabel(),
+      phase, method,
+      hz: cue.generate_hz ?? null,
+      volume: effectiveVolume,
+      scale,
+    });
 
     try {
       // Prefer Web Audio for cues — reliable on Safari PWA without per-play gesture
@@ -275,12 +283,18 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
   const playBell = useCallback(async (type: 'start' | 'end', volumeScale?: number) => {
     if (!effectiveBellsEnabled) return;
 
-    // Default scale: end bell is 50% (calm finish), start bell is full unless caller specifies
     const scale = volumeScale ?? (type === 'end' ? 0.5 : 1.0);
     const volume = effectiveCueVolume * scale;
-
     const phase = type === 'start' ? 'start_bell' : 'end_bell';
     const cue = cueDataRef.current.get(phase);
+    const method = cue?.generate_hz ? 'WebAudio' : cue?.cdn_url ? 'HTMLAudio' : 'fallback-WebAudio';
+
+    console.log('[BreathingCues] playBell', {
+      platform: getPlatformLabel(),
+      type, method, volume, scale,
+      hz: cue?.generate_hz ?? null,
+      cueLoaded: !!cue,
+    });
 
     if (!cue) {
       // No cue data yet — generate_hz fallback with reasonable defaults
@@ -396,14 +410,21 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
    */
   const scheduleBells = useCallback((delay1Sec: number, delay2Sec: number): (() => void) => {
     if (!effectiveBellsEnabled) {
+      console.log('[BreathingCues] scheduleBells skipped — bells disabled', { platform: getPlatformLabel() });
       return () => {/* bells disabled — nothing to cancel */};
     }
 
     const cue = cueDataRef.current.get('start_bell');
     const hz = cue?.generate_hz ?? 528;
-    const volume = effectiveCueVolume; // first bell: lower volume, scaled by caller via volumeScale
-    const vol1   = volume * 0.5;       // 50% for first bell (2s before start)
-    const vol2   = volume * 1.0;       // 100% for second bell (1s before start)
+    const volume = effectiveCueVolume;
+    const vol1   = volume * 0.5;
+    const vol2   = volume * 1.0;
+
+    console.log('[BreathingCues] scheduleBells', {
+      platform: getPlatformLabel(),
+      hz, vol1, vol2, delay1Sec, delay2Sec,
+      cueLoaded: !!cue,
+    });
 
     const cancel1 = scheduleSharedTone(hz, 2.5, vol1, delay1Sec, true);
     const cancel2 = scheduleSharedTone(hz, 2.5, vol2, delay2Sec, true);

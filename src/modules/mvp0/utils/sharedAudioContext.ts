@@ -15,6 +15,28 @@
 
 type WebKitWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
+// ─── Platform detection ───────────────────────────────────────────────────────
+// Used in diagnostic logs to distinguish iOS Safari / desktop Safari / PWA / Chrome.
+// Read-only — never used for feature branching (platform-specific code paths
+// should use capability detection, not UA sniffing).
+
+export function getPlatformLabel(): string {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
+  const isChrome = /Chrome|CriOS/.test(ua);
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches
+    || ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true);
+
+  if (isIOS && isPWA) return 'iOS-PWA';
+  if (isIOS && isSafari) return 'iOS-Safari';
+  if (isIOS && isChrome) return 'iOS-Chrome';
+  if (isIOS) return 'iOS-other';
+  if (isSafari) return 'desktop-Safari';
+  if (isChrome) return 'desktop-Chrome';
+  return 'other';
+}
+
 let _ctx: AudioContext | null = null;
 
 // Module-level playback guard — only ONE useBackgroundMusic instance may play at a time.
@@ -54,6 +76,11 @@ export function getSharedAudioContext(): AudioContext | null {
 
     if (!_ctx || _ctx.state === 'closed') {
       _ctx = new AudioCtx();
+      console.log('[SharedAudio] AudioContext created', {
+        platform: getPlatformLabel(),
+        state: _ctx.state,
+        sampleRate: _ctx.sampleRate,
+      });
 
       // Oprava #3: Auto-resume on statechange — handles iOS Safari interruptions
       // (phone call, notification, app backgrounding) which suspend the context AFTER
@@ -69,12 +96,14 @@ export function getSharedAudioContext(): AudioContext | null {
         // Only auto-resume if context was already running before — this is a real interruption
         // (e.g. phone call), not the initial suspended-before-gesture state.
         if (_ctx.state === 'suspended' && _wasEverRunning) {
+          console.log('[SharedAudio] statechange → suspended (was running) — auto-resuming', { platform: getPlatformLabel() });
           void _ctx.resume();
         }
         // Oprava #4: Release singleton playback lock when context is interrupted/closed.
         // On iOS PWA, the context can be destroyed while music is playing.
         // _isAnyInstancePlaying stays true → new play() is permanently blocked.
         if (_ctx.state === 'closed' || _ctx.state === ('interrupted' as AudioContextState)) {
+          console.log('[SharedAudio] statechange → closed/interrupted — releasing playback lock', { state: _ctx.state, platform: getPlatformLabel() });
           releasePlayback();
         }
       });
@@ -98,6 +127,8 @@ export function unlockSharedAudioContext(): void {
     const ctx = getSharedAudioContext();
     if (!ctx) return;
 
+    const stateBefore = ctx.state;
+
     // Resume suspended context (Safari suspends on creation outside gesture)
     if (ctx.state === 'suspended') {
       void ctx.resume();
@@ -109,6 +140,13 @@ export function unlockSharedAudioContext(): void {
     source.buffer = buffer;
     source.connect(ctx.destination);
     source.start(0);
+
+    console.log('[SharedAudio] unlockSharedAudioContext', {
+      platform: getPlatformLabel(),
+      stateBefore,
+      stateAfter: ctx.state,
+      currentTime: ctx.currentTime,
+    });
 
     // Notify subscribers (e.g. useBackgroundMusic retry) after unlock
     _unlockListeners.forEach(cb => { try { cb(); } catch { /* ignore */ } });
@@ -202,7 +240,7 @@ export function scheduleSharedTone(
     }
 
     if (ctx.state !== 'running') {
-      console.warn(`[SharedAudio] scheduleSharedTone: ctx state=${ctx.state} — not running, cannot schedule hz=${hz}`);
+      console.warn(`[SharedAudio] scheduleSharedTone: ctx state=${ctx.state} — not running, cannot schedule hz=${hz}`, { platform: getPlatformLabel(), currentTime: ctx.currentTime, delaySeconds });
       // Attempt resume and schedule after — best-effort fallback for unexpected suspension.
       if (ctx.state === 'suspended') {
         void ctx.resume().then(() => {
@@ -223,6 +261,14 @@ export function scheduleSharedTone(
 
     const startAt = ctx.currentTime + delaySeconds;
     const stopAt  = startAt + duration;
+
+    console.log('[SharedAudio] scheduleSharedTone scheduled', {
+      platform: getPlatformLabel(),
+      hz, isBell, volume, delaySeconds,
+      ctxState: ctx.state,
+      currentTime: ctx.currentTime,
+      startAt,
+    });
 
     if (isBell) {
       gain.gain.setValueAtTime(volume, startAt);
