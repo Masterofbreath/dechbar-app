@@ -159,18 +159,7 @@ textarea {
 }
 
 /* HTML & Body setup */
-html {
-  /* iOS PWA fix: height: 100dvh místo 100% zaručuje, že #root { min-height: 100% }
-     se počítá od dynamic viewport výšky. Na iOS PWA cold-start, 100% na html
-     je vázáno na initial containing block, který může být jiný než visualViewport.
-     --app-height je nastaven inline scriptem v index.html před prvním renderem. */
-  height: 100dvh;
-  font-family: var(--font-family-base);  /* Inter */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizelegibility;
-}
-
+html,
 body {
   height: 100%;
   font-family: var(--font-family-base);  /* Inter */

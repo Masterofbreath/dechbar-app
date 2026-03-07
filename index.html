@@ -74,23 +74,6 @@
     <title>DechBar - Dech je nový kofein</title>
   </head>
   <body>
-    <!-- iOS PWA fix: nastav --app-height = window.innerHeight PŘED prvním render pasem.
-         innerHeight = layout viewport výška = kde sedí position:fixed elementy (BottomNav).
-         vv.height a vv.offsetTop se mění při iOS toolbar animaci — není spolehlivé.
-         Listener na vv resize + orientationchange udržuje hodnotu aktuální. -->
-    <script>
-      (function() {
-        function setH() {
-          var h = window.innerHeight;
-          document.documentElement.style.setProperty('--app-height', h + 'px');
-        }
-        setH();
-        if (window.visualViewport) {
-          window.visualViewport.addEventListener('resize', setH);
-        }
-        window.addEventListener('resize', setH);
-      })();
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

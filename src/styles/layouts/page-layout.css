@@ -16,10 +16,8 @@
 .page-layout {
   display: flex;
   flex-direction: column;
-  min-height: var(--app-height, 100dvh);
+  min-height: 100svh;
   background: var(--color-background);
-
-  /* Bottom padding for iOS home indicator */
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
