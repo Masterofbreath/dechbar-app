@@ -12,6 +12,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { formatPatternRhythm } from '../../config/breathLevels';
+import { CloseButton } from '@/components/shared';
 import type { SmartSessionConfig } from '../../types/exercises';
 
 // =====================================================
@@ -174,15 +175,6 @@ export function SmartPrepState({
     [canIncrease, onAdjustDuration],
   );
 
-  const handleClose = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (timerRef.current) window.clearInterval(timerRef.current);
-      onClose();
-    },
-    [onClose],
-  );
-
   const rhythm = formatPatternRhythm(smartConfig.basePattern);
   const durationLabel = formatDurationMin(smartConfig.totalDurationSeconds);
 
@@ -197,18 +189,17 @@ export function SmartPrepState({
       aria-label="Zahájit cvičení"
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') triggerStart(); }}
     >
-      {/* Close button */}
-      <button
-        className="smart-prep__close"
-        onClick={handleClose}
-        type="button"
-        aria-label="Zavřít"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+      {/* Top bar — stejný pattern jako FullscreenModal: safe-area řeší top-bar, ne button */}
+      <div className="smart-prep__top-bar">
+        <CloseButton
+          onClick={(e) => {
+            e.stopPropagation();
+            if (timerRef.current) window.clearInterval(timerRef.current);
+            onClose();
+          }}
+          className="smart-prep__close"
+        />
+      </div>
 
       {/* Header */}
       <div className="smart-prep__header">

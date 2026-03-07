@@ -38,7 +38,6 @@
      button styl (-apple-system-button) → bílé pozadí místo průhledného.
      -webkit-appearance: none odstraní nativní styling, background pak funguje. */
   appearance: none;
-  appearance: none;
   background: transparent;
   background-color: transparent;
   border: none;
@@ -125,7 +124,8 @@
    Tento blok posouvá top na calc(16px + safe-area-inset-top) — button sedí
    vždy viditelně pod status barem bez ohledu na zařízení.
    Neaplikuje se na .fullscreen-modal__top-bar .close-button (má vlastní přepočet
-   v fullscreen-modal/_mobile.css) ani na .smart-prep__close (má position:fixed). */
+   v fullscreen-modal/_mobile.css) ani na .smart-prep__close (position:static ve
+   flex top-baru, safe-area řeší .smart-prep__top-bar). */
 @media (display-mode: standalone) {
   .close-button:not(.fullscreen-modal__close, .smart-prep__close) {
     top: calc(16px + env(safe-area-inset-top, 0px));
