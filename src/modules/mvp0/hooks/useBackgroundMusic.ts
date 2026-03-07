@@ -83,6 +83,9 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
   // Dedicated ramp ref for crossfade secondary fade IN — must NOT share fadeInRampRef
   // (primary fade IN uses fadeInRampRef; if crossfade reused it, it would cancel primary's fade IN)
   const crossfadeSecondaryRampRef = useRef<number | null>(null);
+  // Dedicated ramp ref for crossfade primary fade OUT (rAF-based, separate from session fade OUT
+  // which uses setInterval via fadeOutRamp2Ref)
+  const crossfadePrimaryRampRef   = useRef<number | null>(null);
 
   const crossfadeTimerRef = useRef<number | null>(null);
   const trackUrlRef       = useRef<string | null>(null);
@@ -110,9 +113,10 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
 
   const clearRamps = useCallback(() => {
     if (fadeInRampRef.current)             { window.cancelAnimationFrame(fadeInRampRef.current);             fadeInRampRef.current             = null; }
-    if (fadeOutRampRef.current)            { window.cancelAnimationFrame(fadeOutRampRef.current);            fadeOutRampRef.current            = null; }
-    if (fadeOutRamp2Ref.current)           { window.cancelAnimationFrame(fadeOutRamp2Ref.current);           fadeOutRamp2Ref.current           = null; }
+    if (fadeOutRampRef.current)            { window.clearInterval(fadeOutRampRef.current);                   fadeOutRampRef.current            = null; }
+    if (fadeOutRamp2Ref.current)           { window.clearInterval(fadeOutRamp2Ref.current);                  fadeOutRamp2Ref.current           = null; }
     if (crossfadeSecondaryRampRef.current) { window.cancelAnimationFrame(crossfadeSecondaryRampRef.current); crossfadeSecondaryRampRef.current = null; }
+    if (crossfadePrimaryRampRef.current)   { window.cancelAnimationFrame(crossfadePrimaryRampRef.current);   crossfadePrimaryRampRef.current   = null; }
   }, []);
 
   const rampVolume = useCallback((
@@ -159,6 +163,52 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       };
 
       rampRef.current = window.requestAnimationFrame(tick);
+    });
+  }, []);
+
+  // Separate interval-based ramp used exclusively for FADE OUT.
+  // rAF is throttled on iOS PWA when the screen dims or the system is under load,
+  // causing fade OUT to stall and then snap — audible as a sudden cut.
+  // setInterval at 50ms is NOT throttled during active audio playback on iOS,
+  // giving a smooth ~20 steps/second volume decrease.
+  // rampRef stores the interval ID (reusing the same MutableRefObject type as rampVolume).
+  const rampVolumeInterval = useCallback((
+    el: HTMLAudioElement,
+    targetVolume: number,
+    durationMs: number,
+    rampRef: React.MutableRefObject<number | null>,
+  ): Promise<void> => {
+    return new Promise((resolve) => {
+      // Cancel any previous ramp on this ref
+      if (rampRef.current) {
+        window.clearInterval(rampRef.current);
+        rampRef.current = null;
+      }
+
+      const startVol = el.volume;
+      const target   = Math.max(0, Math.min(1, targetVolume));
+      const delta    = target - startVol;
+
+      if (Math.abs(delta) < 0.001) {
+        el.volume = target;
+        resolve();
+        return;
+      }
+
+      const INTERVAL_MS = 50; // 20 steps/second — smooth and not throttled on iOS
+      const startTime = performance.now();
+
+      rampRef.current = window.setInterval(() => {
+        const elapsed  = performance.now() - startTime;
+        const progress = Math.min(elapsed / durationMs, 1);
+        el.volume = Math.max(0, Math.min(1, startVol + delta * progress));
+
+        if (progress >= 1) {
+          el.volume = target;
+          if (rampRef.current) { window.clearInterval(rampRef.current); rampRef.current = null; }
+          resolve();
+        }
+      }, INTERVAL_MS);
     });
   }, []);
 
@@ -243,8 +293,10 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
           // Fade secondary IN and primary OUT simultaneously for smooth crossfade.
           // crossfadeSecondaryRampRef is intentionally separate from fadeInRampRef —
           // primary may still be in its initial 9s fade IN; sharing the ref would cancel it.
+          // crossfadePrimaryRampRef is intentionally separate from fadeOutRamp2Ref —
+          // fadeOutRamp2Ref uses setInterval (for session fade OUT), crossfade uses rAF.
           rampVolume(secondary, effectiveVolume, CROSSFADE_BEFORE_END * 1000, crossfadeSecondaryRampRef);
-          rampVolume(primary, 0, CROSSFADE_BEFORE_END * 1000, fadeOutRamp2Ref);
+          rampVolume(primary, 0, CROSSFADE_BEFORE_END * 1000, crossfadePrimaryRampRef);
 
           window.setTimeout(() => {
             // Final guard before swap — stop() may have been called during the overlap
@@ -387,9 +439,20 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       fadeOutStartedRef.current   = false;
       crossfadeEnabledRef.current = true;
       primary.currentTime = 0; // reset position — cached audio may have non-zero currentTime from a previous session
-      primary.volume = 0;
+      // Note: volume is intentionally NOT set to 0 here.
+      // On iOS Safari/PWA, setting volume=0 BEFORE play() is ignored — iOS reinitialises
+      // the audio session on play() and resets volume to its own default (1.0).
+      // We set volume=0 AFTER play() resolves, when the audio session is active and
+      // JS volume changes are honoured. See comment below.
 
       await primary.play();
+
+      // iOS audio session fix: set volume to 0 AFTER play() resolves.
+      // iOS initialises the audio session during play() and resets any pre-play volume=0
+      // back to 1.0. Setting it here (post-play) ensures we start the fade IN ramp from 0,
+      // not from 1. On desktop Safari/Chrome, volume was already 0 from previous stop(),
+      // so this is a harmless re-assignment.
+      primary.volume = 0;
 
       // iOS PWA fix: on iOS, play() resolves but audio may not be buffered yet (readyState < 3).
       // Starting rampVolume immediately causes fade IN to complete before audio actually plays
@@ -545,10 +608,10 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     if (!primary) return;
 
     const promises: Promise<void>[] = [
-      rampVolume(primary, 0, FADE_OUT_DURATION_MS, fadeOutRampRef),
+      rampVolumeInterval(primary, 0, FADE_OUT_DURATION_MS, fadeOutRampRef),
     ];
     if (secondary && secondary.volume > 0) {
-      promises.push(rampVolume(secondary, 0, FADE_OUT_DURATION_MS, fadeOutRamp2Ref));
+      promises.push(rampVolumeInterval(secondary, 0, FADE_OUT_DURATION_MS, fadeOutRamp2Ref));
     }
 
     Promise.all(promises).then(() => {
@@ -558,7 +621,7 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       setStateAndRef('paused');
       console.log('[BackgroundMusic] Paused');
     });
-  }, [clearRamps, rampVolume, setStateAndRef]);
+  }, [clearRamps, rampVolumeInterval, setStateAndRef]);
 
   // ─── Stop ────────────────────────────────────────────────────────────────
 
@@ -589,10 +652,10 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     } else if (stateRef.current === 'playing') {
       clearRamps();
       const promises: Promise<void>[] = [
-        rampVolume(primary, 0, FADE_OUT_DURATION_MS, fadeOutRampRef),
+        rampVolumeInterval(primary, 0, FADE_OUT_DURATION_MS, fadeOutRampRef),
       ];
       if (secondary && secondary.volume > 0) {
-        promises.push(rampVolume(secondary, 0, FADE_OUT_DURATION_MS, fadeOutRamp2Ref));
+        promises.push(rampVolumeInterval(secondary, 0, FADE_OUT_DURATION_MS, fadeOutRamp2Ref));
       }
       Promise.all(promises).then(() => {
         doStop();
@@ -601,7 +664,7 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     } else {
       doStop();
     }
-  }, [clearRamps, rampVolume, setStateAndRef]);
+  }, [clearRamps, rampVolumeInterval, setStateAndRef]);
 
   // ─── Start Fade OUT (pre-emptive, 9s before session end) ─────────────────
 
@@ -624,10 +687,10 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     if (!primary) return;
 
     const promises: Promise<void>[] = [
-      rampVolume(primary, 0, FADE_OUT_DURATION_MS, fadeOutRampRef),
+      rampVolumeInterval(primary, 0, FADE_OUT_DURATION_MS, fadeOutRampRef),
     ];
     if (secondary && secondary.volume > 0) {
-      promises.push(rampVolume(secondary, 0, FADE_OUT_DURATION_MS, fadeOutRamp2Ref));
+      promises.push(rampVolumeInterval(secondary, 0, FADE_OUT_DURATION_MS, fadeOutRamp2Ref));
     }
 
     Promise.all(promises).then(() => {
@@ -642,7 +705,7 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     });
 
     console.log('[BackgroundMusic] Pre-emptive fade OUT started (9s)');
-  }, [clearRamps, rampVolume]);
+  }, [clearRamps, rampVolumeInterval]);
 
   // ─── Volume sync (user slider change) ────────────────────────────────────
 
