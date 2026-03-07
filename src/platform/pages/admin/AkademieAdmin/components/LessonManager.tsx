@@ -61,6 +61,34 @@ const emptyForm = (): LessonForm => ({
   title: '', audioFile: null, uploadProgress: null, isUploading: false, error: null,
 });
 
+// --------------------------------------------------
+// Globální offset lekcí pro danou sérii
+//
+// Počítá, kolik lekcí je celkem v sériích seřazených PŘED touto sérií
+// (podle sort_order). Výsledek se použije jako základ pro day_number
+// nové lekce — zajišťuje sekvenční odemykání D1→D2→... napříč T1/T2/T3...
+// --------------------------------------------------
+function getGlobalDayOffset(
+  seriesId: string,
+  allSeries: AkademieSeries[],
+  lessonsBySeries: Record<string, AkademieLesson[]>,
+): number {
+  const currentSeries = allSeries.find((s) => s.id === seriesId);
+  if (!currentSeries) return 0;
+
+  return allSeries
+    .filter((s) => s.sort_order < currentSeries.sort_order)
+    .reduce((sum, s) => sum + (lessonsBySeries[s.id]?.length ?? 0), 0);
+}
+
+// Formátuje datum odemknutí pro UI hint v admin panelu
+function formatUnlockDate(launchDate: string | null | undefined, dayNumber: number): string | null {
+  if (!launchDate) return null;
+  const unlock = new Date(launchDate);
+  unlock.setDate(unlock.getDate() + dayNumber - 1);
+  return unlock.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
+}
+
 export function LessonManager({ program, onClose }: LessonManagerProps) {
   const [series, setSeries] = useState<AkademieSeries[]>([]);
   const [lessonsBySeries, setLessonsBySeries] = useState<Record<string, AkademieLesson[]>>({});
@@ -119,7 +147,10 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
     if (!form.title.trim()) return;
 
     const existingLessons = lessonsBySeries[serie.id] ?? [];
-    const dayNumber = existingLessons.length + 1;
+    // day_number je globální — sečítá lekce ze všech předchozích sérií (dle sort_order)
+    // aby odemykání probíhalo sekvenčně: T1 D1..Dn → T2 Dn+1..Dm → T3 Dm+1...
+    const globalOffset = getGlobalDayOffset(serie.id, series, lessonsBySeries);
+    const dayNumber = globalOffset + existingLessons.length + 1;
     const moduleId = program.module_id;
     const catSlug = getCategorySlug();
 
@@ -270,6 +301,54 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
             </div>
           ) : (
             <>
+              {/* Přehled odemykání — zobrazí globální rozsah dnů pro každou sérii */}
+              <div style={{
+                background: 'rgba(44, 190, 198, 0.06)',
+                border: '1px solid rgba(44, 190, 198, 0.2)',
+                borderRadius: 8,
+                padding: '0.625rem 0.875rem',
+                marginBottom: 12,
+                fontSize: '0.8rem',
+                color: 'var(--color-text-secondary)',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px 16px',
+                alignItems: 'center',
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginRight: 4 }}>
+                  Odemykání lekcí:
+                </span>
+                {series.map((s, idx) => {
+                  const offset = getGlobalDayOffset(s.id, series, lessonsBySeries);
+                  const count = lessonsBySeries[s.id]?.length ?? 0;
+                  const firstDay = offset + 1;
+                  const lastDay = offset + count;
+                  return (
+                    <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{
+                        background: 'rgba(44, 190, 198, 0.15)',
+                        color: 'var(--color-text-primary)',
+                        borderRadius: 4,
+                        padding: '1px 6px',
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                      }}>
+                        T{idx + 1}
+                      </span>
+                      {count > 0
+                        ? <span>D{firstDay}–D{lastDay}</span>
+                        : <span style={{ opacity: 0.5 }}>prázdná</span>
+                      }
+                    </span>
+                  );
+                })}
+                {program.launch_date && (
+                  <span style={{ marginLeft: 'auto', opacity: 0.7, fontSize: '0.75rem' }}>
+                    Spuštění: {new Date(program.launch_date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' })}
+                  </span>
+                )}
+              </div>
+
               {/* Series tabs */}
               <div style={{ display: 'flex', gap: 4, marginBottom: 16, flexWrap: 'wrap' }}>
                 {series.map((s) => (
@@ -291,6 +370,11 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
                 const activeSerie = series.find((s) => s.id === activeSeriesId);
                 const lessons = lessonsBySeries[activeSeriesId] ?? [];
                 const form = addForms[activeSeriesId] ?? emptyForm();
+
+                // Globální číslo příští lekce pro tuto sérii
+                const globalOffset = getGlobalDayOffset(activeSeriesId, series, lessonsBySeries);
+                const nextDayNumber = globalOffset + lessons.length + 1;
+                const unlockDateStr = formatUnlockDate(program.launch_date, nextDayNumber);
 
                 return (
                   <div>
@@ -529,7 +613,23 @@ export function LessonManager({ program, onClose }: LessonManagerProps) {
                       borderRadius: 8, padding: '1rem',
                     }}>
                       <div style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 10 }}>
-                        Přidat lekci (Den {lessons.length + 1})
+                        Přidat lekci
+                        <span style={{
+                          marginLeft: 8,
+                          background: 'rgba(248,202,0,0.15)',
+                          color: 'var(--color-text-primary)',
+                          borderRadius: 4,
+                          padding: '1px 8px',
+                          fontWeight: 700,
+                          fontSize: '0.8125rem',
+                        }}>
+                          D{nextDayNumber}
+                        </span>
+                        {unlockDateStr && (
+                          <span style={{ marginLeft: 8, opacity: 0.65, fontSize: '0.75rem', fontWeight: 400 }}>
+                            odemkne se {unlockDateStr}
+                          </span>
+                        )}
                       </div>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                         <div className="aa-field" style={{ flex: 2 }}>
