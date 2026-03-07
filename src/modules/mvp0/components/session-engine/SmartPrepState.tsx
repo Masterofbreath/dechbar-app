@@ -26,6 +26,8 @@ export interface SmartPrepStateProps {
   onClose: () => void;
   /** True when user has never measured KP */
   hasNoKP?: boolean;
+  /** True while SMART config is loading — freeze countdown until config arrives */
+  isLoading?: boolean;
   /** Play a start bell at a given volume — called at countdown 2s and 1s */
   onPlayBell?: (volume: number) => void;
   /** Unlock Web Audio pipeline — must be called on any user gesture before audio */
@@ -113,6 +115,7 @@ export function SmartPrepState({
   onAdjustDuration,
   onClose,
   hasNoKP = false,
+  isLoading = false,
   onPlayBell,
   onUnlockAudio,
 }: SmartPrepStateProps) {
@@ -134,10 +137,12 @@ export function SmartPrepState({
   }, [onStart, onUnlockAudio]);
 
   // Auto-countdown — plays bells at 2s and 1s, triggers start at 0
+  // Countdown is frozen while isLoading=true (config not yet available).
   // All side effects are scheduled via setTimeout(fn, 0) to run AFTER the
   // current render — avoids "setState during render" React/ESLint errors.
   useEffect(() => {
     timerRef.current = window.setInterval(() => {
+      if (isLoading) return; // freeze countdown while config is loading
       setCountdown((prev) => {
         const next = prev <= 1 ? 0 : prev - 1;
 
@@ -186,8 +191,8 @@ export function SmartPrepState({
     [canIncrease, onAdjustDuration],
   );
 
-  const rhythm = formatPatternRhythm(smartConfig.basePattern);
-  const durationLabel = formatDurationMin(smartConfig.totalDurationSeconds);
+  const rhythm = isLoading ? '·  ·  ·' : formatPatternRhythm(smartConfig.basePattern);
+  const durationLabel = isLoading ? '—' : formatDurationMin(smartConfig.totalDurationSeconds);
 
   if (started) return null;
 
@@ -299,7 +304,10 @@ export function SmartPrepState({
 
       {/* Auto-start hint */}
       <div className="smart-prep__hint">
-        Cvičení začne automaticky za <span className="smart-prep__hint-count">{countdown}</span>s
+        {isLoading
+          ? <span>Připravuji doporučení…</span>
+          : <>Cvičení začne automaticky za <span className="smart-prep__hint-count">{countdown}</span>s</>
+        }
         <br />
         <span className="smart-prep__hint-sub">nebo dotkni se obrazovky</span>
       </div>

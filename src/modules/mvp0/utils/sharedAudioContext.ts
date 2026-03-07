@@ -54,6 +54,21 @@ export function getSharedAudioContext(): AudioContext | null {
 
     if (!_ctx || _ctx.state === 'closed') {
       _ctx = new AudioCtx();
+
+      // Oprava #3: Auto-resume on statechange — handles iOS Safari interruptions
+      // (phone call, notification, app backgrounding) which suspend the context.
+      // Without this, returning to the app leaves AudioContext suspended → no bells/cues.
+      _ctx.addEventListener('statechange', () => {
+        if (_ctx && _ctx.state === 'suspended') {
+          void _ctx.resume();
+        }
+        // Oprava #4: Release singleton playback lock when context is interrupted/closed.
+        // On iOS PWA, the context can be destroyed while music is playing.
+        // _isAnyInstancePlaying stays true → new play() is permanently blocked.
+        if (_ctx && (_ctx.state === 'closed' || _ctx.state === 'interrupted' as AudioContextState)) {
+          releasePlayback();
+        }
+      });
     }
     return _ctx;
   } catch {
@@ -119,13 +134,15 @@ export function playSharedTone(
     //  but the resume() Promise may not have resolved yet — race condition on Safari.)
     if (ctx.state === 'suspended') {
       void ctx.resume().then(() => {
-        // ctx.state should be 'running' now — schedule tone
-        playToneOnContext(ctx, hz, duration, volume, isBell);
+        // Add a small start offset so the tone doesn't get scheduled into the past.
+        // ctx.currentTime was frozen while suspended; after resume() it jumps forward.
+        // Without offset, osc.start(frozenTime) is in the past → tone never plays on Safari.
+        playToneOnContext(ctx, hz, duration, volume, isBell, 0.015);
       });
       return;
     }
 
-    playToneOnContext(ctx, hz, duration, volume, isBell);
+    playToneOnContext(ctx, hz, duration, volume, isBell, 0);
   } catch {
     // Web Audio not supported — silent skip
   }
@@ -137,6 +154,7 @@ function playToneOnContext(
   duration: number,
   volume: number,
   isBell: boolean,
+  startOffset = 0,
 ): void {
   try {
     const osc  = ctx.createOscillator();
@@ -148,7 +166,7 @@ function playToneOnContext(
     osc.frequency.value = hz;
     osc.type = isBell ? 'triangle' : 'sine';
 
-    const now = ctx.currentTime;
+    const now = ctx.currentTime + startOffset;
     if (isBell) {
       gain.gain.setValueAtTime(volume, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + duration);

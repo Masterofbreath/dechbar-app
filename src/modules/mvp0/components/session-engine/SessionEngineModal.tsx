@@ -54,6 +54,8 @@ export interface SessionEngineModalProps {
   onClose: () => void;
   skipFlow?: boolean; // Skip SessionStartScreen + MoodBeforePick
   smartConfig?: SmartSessionConfig; // Present for SMART sessions
+  /** True while SMART config is being computed — SmartPrepState shows loading UI */
+  smartLoading?: boolean;
 }
 
 /**
@@ -65,6 +67,7 @@ export function SessionEngineModal({
   onClose,
   skipFlow = false,
   smartConfig,
+  smartLoading = false,
 }: SessionEngineModalProps) {
   // =====================================================
   // STATE
@@ -195,12 +198,14 @@ export function SessionEngineModal({
     };
   }, [isOpen]);
   
-  // Auto-switch to smart-prep state when smartConfig is provided
+  // Auto-switch to smart-prep state when smartConfig is provided OR loading starts.
+  // smartLoading=true means the user tapped SMART button — open smart-prep immediately
+  // (with loading UI) so AudioContext unlock happens within the gesture stack.
   useEffect(() => {
-    if (smartConfig && sessionState === 'idle') {
+    if ((smartConfig || smartLoading) && sessionState === 'idle') {
       setSessionState('smart-prep');
     }
-  }, [smartConfig, sessionState]);
+  }, [smartConfig, smartLoading, sessionState]);
 
   // Auto-start countdown for direct protocol start (skipFlow).
   // Note: skipFlow sessions are initiated by a user tap in the parent component,
@@ -925,6 +930,7 @@ export function SessionEngineModal({
           <SmartPrepState
             smartConfig={smartConfigAdjusted ?? null}
             hasNoKP={hasNoKP}
+            isLoading={smartLoading}
             onStart={() => {
               startSmartSession();
             }}

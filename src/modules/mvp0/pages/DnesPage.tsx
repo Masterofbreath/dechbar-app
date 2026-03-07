@@ -23,6 +23,7 @@ import {
   SessionEngineModal
 } from '../components';
 import { useExercises } from '../api/exercises';
+import { unlockSharedAudioContext } from '../utils/sharedAudioContext';
 import type { Exercise, SmartSessionConfig } from '../types/exercises';
 
 /**
@@ -40,16 +41,30 @@ export function DnesPage() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [skipFlow, setSkipFlow] = useState(false);
   const [smartConfig, setSmartConfig] = useState<SmartSessionConfig | undefined>(undefined);
+  // True while computeAndBuild is in flight — modal is open but SmartPrepState shows loading
+  const [smartLoading, setSmartLoading] = useState(false);
 
   // Dynamické délky z DB — aktualizují se automaticky když se změní protokol
   const ranoExercise = exercises?.find(ex => ex.name === 'RÁNO');
   const klidExercise = exercises?.find(ex => ex.name === 'KLID');
   const vecerExercise = exercises?.find(ex => ex.name === 'VEČER');
-  
-  // Handle SMART button click — opens modal with smartConfig
+
+  // Called synchronously on SMART button click (within gesture stack) —
+  // opens modal immediately so unlockAudio() runs before any awaits.
+  function handleSmartEarlyOpen() {
+    unlockSharedAudioContext(); // extra safety unlock — idempotent
+    setSmartLoading(true);
+    setSmartConfig(undefined);
+    setSkipFlow(false);
+    // Open modal immediately with a loading placeholder
+    setSelectedExercise({ id: '__smart_loading__' } as Exercise);
+  }
+
+  // Called after computeAndBuild resolves — updates modal with real config
   function handleSmartStart(config: SmartSessionConfig, exercise: Exercise) {
+    setSmartLoading(false);
     setSmartConfig(config);
-    setSkipFlow(false); // SmartPrepState handles its own countdown
+    setSkipFlow(false);
     setSelectedExercise(exercise);
   }
 
@@ -90,7 +105,10 @@ export function DnesPage() {
       {/* Content — všechen obsah pod headerem */}
       <div className="dnes-page__content">
         {/* 2. SMART Exercise Button (tier-aware) */}
-        <SmartExerciseButton onSmartStart={handleSmartStart} />
+        <SmartExerciseButton
+          onSmartStart={handleSmartStart}
+          onEarlyOpen={handleSmartEarlyOpen}
+        />
         
         {/* 2.5 Daily Program — section s diskrétním labelem */}
         <section className="dnes-page__section dnes-page__section--daily">
@@ -139,10 +157,12 @@ export function DnesPage() {
           exercise={selectedExercise}
           skipFlow={skipFlow}
           smartConfig={smartConfig}
+          smartLoading={smartLoading}
           onClose={() => {
             setSelectedExercise(null);
             setSkipFlow(false);
             setSmartConfig(undefined);
+            setSmartLoading(false);
           }}
         />
       )}

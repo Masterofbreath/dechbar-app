@@ -27,6 +27,9 @@ import type { Exercise } from '../types/exercises';
 export interface SmartExerciseButtonProps {
   /** Called when SMART session is computed and ready to start */
   onSmartStart?: (config: SmartSessionConfig, exercise: Exercise) => void;
+  /** Called synchronously on click (before async compute) — use to open modal immediately
+   *  and unlock Web Audio API within the gesture call stack (Safari autoplay policy). */
+  onEarlyOpen?: () => void;
 }
 
 /**
@@ -35,7 +38,7 @@ export interface SmartExerciseButtonProps {
  * @example
  * <SmartExerciseButton onSmartStart={(config, exercise) => openModal(config, exercise)} />
  */
-export function SmartExerciseButton({ onSmartStart }: SmartExerciseButtonProps) {
+export function SmartExerciseButton({ onSmartStart, onEarlyOpen }: SmartExerciseButtonProps) {
   const { user } = useAuth();
   const { plan } = useMembership(user?.id);
   const { isAdmin } = useUserState();
@@ -60,10 +63,13 @@ export function SmartExerciseButton({ onSmartStart }: SmartExerciseButtonProps) 
 
     if (isComputing) return;
 
-    // Unlock Web Audio API synchronously BEFORE any await — Safari loses the
-    // gesture token after the first await, so AudioContext.resume() must be
-    // called here while we are still inside the synchronous gesture handler.
+    // 1. Unlock Web Audio API synchronously BEFORE any await.
+    //    Safari loses the gesture token after the first await.
     unlockSharedAudioContext();
+
+    // 2. Call onEarlyOpen synchronously — parent can open the modal immediately
+    //    so unlockAudio() inside SessionEngineModal also runs within the gesture stack.
+    onEarlyOpen?.();
 
     setIsComputing(true);
     setComputeError(null);
