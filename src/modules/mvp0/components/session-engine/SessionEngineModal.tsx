@@ -162,6 +162,17 @@ export function SessionEngineModal({
   });
   
   useScrollLock(isOpen);
+
+  // Reset per-session state each time the modal opens (isOpen transitions false → true).
+  // Without this, smartDurationAdjust accumulates across multiple sessions.
+  const prevIsOpenRef = useRef(false);
+  useEffect(() => {
+    if (isOpen && !prevIsOpenRef.current) {
+      setSmartDurationAdjust(0);
+      isSavingRef.current = false;
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen]);
   
   const currentPhase = useMemo(
     () => exercise.breathing_pattern.phases[currentPhaseIndex],
@@ -553,6 +564,11 @@ export function SessionEngineModal({
       let localMultiplier = intensityControl.pendingMultiplierRef.current;
       
       let lastInstruction = '';
+      // Track which cues have already been pre-fired to avoid double-play
+      let cueFiredForInstruction = '';
+      // How many ms before the visual phase change to fire the audio cue.
+      // Compensates for HTMLAudioElement decode latency (~50-150ms on Safari).
+      const CUE_LEAD_MS = 80;
       
       const updateBreathingState = () => {
         // Apply multiplier to this cycle's pattern
@@ -563,8 +579,41 @@ export function SessionEngineModal({
         const effCycle = effInhale + effHoldIn + effExhale + effHoldOut;
 
         const elapsed = (Date.now() - cycleStartTime) / 1000;
+        const elapsedMs = elapsed * 1000;
         currentCyclePosition = elapsed;
         effectiveEndOfExhalePos = effInhale + effHoldIn + effExhale;
+
+        // ── Lookahead cue pre-fire ────────────────────────────────────────
+        // Fire audio cue CUE_LEAD_MS before the visual phase transition so
+        // sound and animation appear simultaneous on mobile.
+        const holdInStartMs  = effInhale * 1000;
+        const exhaleStartMs  = (effInhale + effHoldIn) * 1000;
+        const holdOutStartMs = (effInhale + effHoldIn + effExhale) * 1000;
+
+        const timeToHoldIn  = holdInStartMs  - elapsedMs;
+        const timeToExhale  = exhaleStartMs  - elapsedMs;
+        const timeToHoldOut = holdOutStartMs - elapsedMs;
+
+        // Pre-fire inhale cue: only at cycle START (elapsed close to 0) 
+        if (elapsedMs >= -CUE_LEAD_MS && elapsedMs < CUE_LEAD_MS && cueFiredForInstruction !== 'NÁDECH-pre') {
+          cueFiredForInstruction = 'NÁDECH-pre';
+          try { breathingCues.playCue('inhale'); haptics.trigger('inhale'); } catch { /* ignore */ }
+        }
+        // Pre-fire hold-in cue
+        if (effHoldIn > 0 && timeToHoldIn >= -CUE_LEAD_MS && timeToHoldIn < CUE_LEAD_MS && cueFiredForInstruction !== 'ZADRŽ-pre') {
+          cueFiredForInstruction = 'ZADRŽ-pre';
+          try { breathingCues.playCue('hold'); haptics.trigger('hold'); } catch { /* ignore */ }
+        }
+        // Pre-fire exhale cue
+        if (timeToExhale >= -CUE_LEAD_MS && timeToExhale < CUE_LEAD_MS && cueFiredForInstruction !== 'VÝDECH-pre') {
+          cueFiredForInstruction = 'VÝDECH-pre';
+          try { breathingCues.playCue('exhale'); haptics.trigger('exhale'); } catch { /* ignore */ }
+        }
+        // Pre-fire hold-out cue
+        if (effHoldOut > 0 && timeToHoldOut >= -CUE_LEAD_MS && timeToHoldOut < CUE_LEAD_MS && cueFiredForInstruction !== 'ZADRŽ2-pre') {
+          cueFiredForInstruction = 'ZADRŽ2-pre';
+          try { breathingCues.playCue('hold'); haptics.trigger('hold'); } catch { /* ignore */ }
+        }
 
         // Cycle boundary: promote pending multiplier and reset cycle clock
         if (elapsed >= effCycle) {
@@ -572,6 +621,8 @@ export function SessionEngineModal({
           localMultiplier = intensityControl.pendingMultiplierRef.current;
           intensityControl.multiplierRef.current = localMultiplier;
           currentCyclePosition = 0;
+          lastInstruction = '';       // reset so visual block re-fires on new cycle
+          cueFiredForInstruction = ''; // reset so lookahead pre-fires on new cycle
 
           // If phase timer already expired and we were waiting for the natural breath end,
           // advance NOW — 100ms precision vs relying on 1s timer hitting a 0.5s window.
@@ -596,11 +647,7 @@ export function SessionEngineModal({
         if (elapsed < effInhale) {
           newInstruction = 'NÁDECH';
           if (lastInstruction !== 'NÁDECH') {
-            try {
-              haptics.trigger('inhale');
-              breathingCues.playCue('inhale');
-            } catch { /* ignore audio/haptics errors during breathing */ }
-
+            // Audio/haptics pre-fired via lookahead above — only visual changes here
             animateBreathingCircle('inhale', effInhale * 1000);
 
             if (circleRef.current) {
@@ -608,25 +655,21 @@ export function SessionEngineModal({
               circleRef.current.classList.add('breathing-circle--inhale');
             }
             lastInstruction = 'NÁDECH';
+            cueFiredForInstruction = 'NÁDECH-pre'; // mark as handled
           }
         } else if (elapsed < effInhale + effHoldIn) {
           newInstruction = effHoldIn > 0 ? 'ZADRŽ' : '';
           if (lastInstruction !== 'ZADRŽ' && effHoldIn > 0) {
-            haptics.trigger('hold');
-            breathingCues.playCue('hold');
-
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--exhale');
               circleRef.current.classList.add('breathing-circle--hold');
             }
             lastInstruction = 'ZADRŽ';
+            cueFiredForInstruction = 'ZADRŽ-pre';
           }
         } else if (elapsed < effectiveEndOfExhalePos) {
           newInstruction = 'VÝDECH';
           if (lastInstruction !== 'VÝDECH') {
-            haptics.trigger('exhale');
-            breathingCues.playCue('exhale');
-
             animateBreathingCircle('exhale', effExhale * 1000);
 
             if (circleRef.current) {
@@ -634,18 +677,17 @@ export function SessionEngineModal({
               circleRef.current.classList.add('breathing-circle--exhale');
             }
             lastInstruction = 'VÝDECH';
+            cueFiredForInstruction = 'VÝDECH-pre';
           }
         } else {
           newInstruction = effHoldOut > 0 ? 'ZADRŽ' : '';
           if (lastInstruction !== 'ZADRŽ' && effHoldOut > 0) {
-            haptics.trigger('hold');
-            breathingCues.playCue('hold');
-
             if (circleRef.current) {
               circleRef.current.classList.remove('breathing-circle--inhale', 'breathing-circle--exhale');
               circleRef.current.classList.add('breathing-circle--hold');
             }
             lastInstruction = 'ZADRŽ';
+            cueFiredForInstruction = 'ZADRŽ2-pre';
           }
         }
 

@@ -142,7 +142,8 @@ function resolveDuration(
   // High streak → longer end
   if (streak >= 7) fraction = Math.min(1, fraction + 0.25);
 
-  return Math.round(rangeMin + (rangeMax - rangeMin) * fraction / 60) * 60;
+  const rawSeconds = rangeMin + (rangeMax - rangeMin) * fraction;
+  return Math.round(rawSeconds / 60) * 60;
 }
 
 // =====================================================
