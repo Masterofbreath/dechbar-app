@@ -250,6 +250,32 @@ export function SessionEngineModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState, backgroundMusicEnabled, smartMusicEnabled]); // backgroundMusic deliberately excluded
+
+  // Pre-load SMART music track as soon as prep screen appears so it's ready at session start.
+  // This eliminates the "music starts late without fade-in" issue caused by lazy audio loading.
+  useEffect(() => {
+    if (sessionState !== 'smart-prep') return;
+    const isSmartSession = sessionTypeRef.current === 'smart';
+    if (!isSmartSession || !smartMusicEnabled) return;
+
+    const randomEnabled = smartMusicRandomEnabled;
+    const fixedSlug = smartMusicSlug;
+
+    if (randomEnabled && backgroundMusic.tracks.length > 0) {
+      const TIER_LEVEL: Record<string, number> = { ZDARMA: 0, SMART: 1, AI_COACH: 2 };
+      const userLevel = TIER_LEVEL[userTier] ?? 0;
+      const accessible = backgroundMusic.tracks.filter(
+        t => (TIER_LEVEL[t.required_tier] ?? 0) <= userLevel
+      );
+      if (accessible.length > 0) {
+        const random = accessible[Math.floor(Math.random() * accessible.length)];
+        void backgroundMusic.setTrack(random.slug); // pre-load only, don't play yet
+      }
+    } else if (fixedSlug) {
+      void backgroundMusic.setTrack(fixedSlug); // pre-load only, don't play yet
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState]); // only react to smart-prep state entry
   
   // ✅ NEW: Walking mode display dimming
   useEffect(() => {
@@ -290,11 +316,15 @@ export function SessionEngineModal({
       setCountdownNumber(count);
 
       if (count === 2) {
-        // First bell at 33% — gentle warning
-        breathingCues.playBell('start', 0.33).catch(() => null);
+        // First bell at 33% — gentle warning (only if cues are preloaded)
+        if (breathingCues.isReady) {
+          breathingCues.playBell('start', 0.33).catch(() => null);
+        }
       } else if (count === 1) {
         // Second bell at 66% — building up
-        breathingCues.playBell('start', 0.66).catch(() => null);
+        if (breathingCues.isReady) {
+          breathingCues.playBell('start', 0.66).catch(() => null);
+        }
       } else if (count === 0) {
         // Session starts — NO bell here, first inhale cue takes over immediately
         window.clearInterval(countdownInterval);
@@ -707,6 +737,8 @@ export function SessionEngineModal({
         await incrementSmartCount.mutateAsync({
           wasCompleted: sessionState === 'completed',
           newLevel: smartConfigAdjusted?.level,
+          recommendedInhale: smartConfigAdjusted?.basePattern.inhale_seconds,
+          recommendedExhale: smartConfigAdjusted?.basePattern.exhale_seconds,
         });
         await queryClient.invalidateQueries({ queryKey: smartKeys.history(user.id) });
         await queryClient.invalidateQueries({ queryKey: smartKeys.recommendation(user.id) });
@@ -765,6 +797,7 @@ export function SessionEngineModal({
               unlockAudio();
               breathingCues.playBell('start', volume).catch(() => null);
             }}
+            onUnlockAudio={unlockAudio}
             onAdjustDuration={(delta) => {
               setSmartDurationAdjust((prev) => prev + delta);
             }}

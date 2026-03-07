@@ -453,13 +453,25 @@ export function useIncrementSmartSessionCount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ wasCompleted, newLevel }: { wasCompleted: boolean; newLevel?: number }) => {
+    mutationFn: async ({
+      wasCompleted,
+      newLevel,
+      recommendedInhale,
+      recommendedExhale,
+    }: {
+      wasCompleted: boolean;
+      newLevel?: number;
+      /** Inhale seconds from the BIE-computed config — required by NOT NULL DB constraint */
+      recommendedInhale?: number;
+      /** Exhale seconds from the BIE-computed config — required by NOT NULL DB constraint */
+      recommendedExhale?: number;
+    }) => {
       if (!user || !wasCompleted) return;
 
       // Use upsert: if row exists, increment; if not, create with count=1
       const { data: existing } = await supabase
         .from('smart_exercise_recommendations')
-        .select('session_count_smart, current_level')
+        .select('session_count_smart, current_level, recommended_inhale_s, recommended_exhale_s')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -469,6 +481,11 @@ export function useIncrementSmartSessionCount() {
       const recalculateAfter = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       const now = new Date().toISOString();
 
+      // Resolve recommended rhythm — use provided values or fall back to existing DB values.
+      // These columns have NOT NULL constraint, so a value is always required on INSERT.
+      const inhaleValue = recommendedInhale ?? (existing?.recommended_inhale_s as number | undefined) ?? 4;
+      const exhaleValue = recommendedExhale ?? (existing?.recommended_exhale_s as number | undefined) ?? 6;
+
       const { error } = await supabase
         .from('smart_exercise_recommendations')
         .upsert(
@@ -476,6 +493,8 @@ export function useIncrementSmartSessionCount() {
             user_id: user.id,
             session_count_smart: newCount,
             recalculate_after: recalculateAfter,
+            recommended_inhale_s: inhaleValue,
+            recommended_exhale_s: exhaleValue,
             ...(levelChanged ? {
               current_level: newLevel,
               last_level_change_at: now,

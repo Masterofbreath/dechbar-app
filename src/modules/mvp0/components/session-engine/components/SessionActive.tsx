@@ -39,12 +39,19 @@ export function SessionActive({
   };
 
   // Detect special phases
+  // 'Doznění' in SMART sessions is still a guided breathing phase (not free-flow).
+  // Only the 'Ticho' silence phase should be treated as final/free-flow.
+  const isSilencePhase = currentPhase.type === 'silence';
   const isFinalPhase = 
-    currentPhase.name === 'Doznění' || 
-    currentPhase.name.toLowerCase().includes('doznění');
+    isSilencePhase ||
+    currentPhase.name === 'Ticho' || 
+    currentPhase.name.toLowerCase() === 'ticho';
   const isBuzzingPhase = 
     currentPhase.name === 'Nosní bzučení' || 
     currentPhase.name === 'Bzučení';
+  const isDozneniFase =
+    currentPhase.name === 'Doznění' ||
+    currentPhase.name.toLowerCase().includes('doznění');
 
   return (
     <div className={`session-active${showIntensityControls ? ' session-active--with-intensity' : ''}`}>
@@ -89,7 +96,12 @@ export function SessionActive({
               Dýchej volně ve svém rytmu
             </p>
           )}
-          {currentPhase.instructions && !isBuzzingPhase && !isFinalPhase && (
+          {isDozneniFase && !isFinalPhase && (
+            <p className="session-active__phase-hint">
+              Návrat k základnímu rytmu
+            </p>
+          )}
+          {currentPhase.instructions && !isBuzzingPhase && !isFinalPhase && !isDozneniFase && (
             <p className="session-active__phase-hint">
               {currentPhase.instructions}
             </p>

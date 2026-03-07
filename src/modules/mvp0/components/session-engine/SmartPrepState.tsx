@@ -28,6 +28,8 @@ export interface SmartPrepStateProps {
   hasNoKP?: boolean;
   /** Play a start bell at a given volume — called at countdown 2s and 1s */
   onPlayBell?: (volume: number) => void;
+  /** Unlock Web Audio pipeline — must be called on any user gesture before audio */
+  onUnlockAudio?: () => void;
 }
 
 // Fallback cold-start config used when BIE fails and config is null
@@ -112,6 +114,7 @@ export function SmartPrepState({
   onClose,
   hasNoKP = false,
   onPlayBell,
+  onUnlockAudio,
 }: SmartPrepStateProps) {
   // Tiché použití fallback konfigurace pokud BIE selže
   const smartConfig = smartConfigProp ?? FALLBACK_CONFIG;
@@ -126,8 +129,9 @@ export function SmartPrepState({
     startedRef.current = true;
     setStarted(true);
     if (timerRef.current) window.clearInterval(timerRef.current);
+    onUnlockAudio?.(); // Unlock Web Audio before any playback
     onStart();
-  }, [onStart]);
+  }, [onStart, onUnlockAudio]);
 
   // Auto-countdown — plays bells at 2s and 1s, triggers start at 0
   useEffect(() => {
@@ -135,6 +139,7 @@ export function SmartPrepState({
       setCountdown((prev) => {
         const next = prev - 1;
         if (next === 2) {
+          onUnlockAudio?.(); // unlock before bell
           onPlayBell?.(0.5);
         } else if (next === 1) {
           onPlayBell?.(1.0);
@@ -150,7 +155,7 @@ export function SmartPrepState({
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
-  }, [triggerStart, onPlayBell]);
+  }, [triggerStart, onPlayBell, onUnlockAudio]);
 
   const handleScreenTap = useCallback(() => {
     triggerStart();
