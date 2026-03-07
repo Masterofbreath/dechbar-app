@@ -232,6 +232,13 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     if (effectiveVolume < 0.01) return;
 
     try {
+      // Prefer Web Audio for cues — reliable on Safari PWA without per-play gesture
+      if (cue.generate_hz) {
+        playSharedTone(cue.generate_hz, 1.5, effectiveVolume);
+        return;
+      }
+
+      // CDN cue — HTMLAudioElement
       if (cue.cdn_url) {
         const audio = getAudioElement(cue.cdn_url);
         if (!audio.src || audio.src === window.location.href) return;
@@ -239,8 +246,6 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
         audio.playbackRate = cue.playback_rate;
         audio.currentTime = 0;
         await audio.play();
-      } else if (cue.generate_hz) {
-        playSharedTone(cue.generate_hz, 1.5, effectiveVolume);
       }
     } catch (error) {
       // NotSupportedError / NotAllowedError → fallback to shared Web Audio
@@ -258,6 +263,11 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
    * Bells play relative to audioCueVolume × volumeScale.
    * start_bell: caller passes 0.33 / 0.66 / 1.0 for the countdown ramp.
    * end_bell: defaults to 0.5 × audioCueVolume (calm, not startling).
+   *
+   * Strategy: prefer Web Audio API (playSharedTone) when generate_hz is available
+   * because Web Audio bypasses Safari's per-play autoplay restriction — once
+   * AudioContext is unlocked by a user gesture it stays active for the session.
+   * Fall back to HTMLAudioElement for CDN-only bells.
    */
   const playBell = useCallback(async (type: 'start' | 'end', volumeScale?: number) => {
     if (!effectiveBellsEnabled) return;
@@ -269,29 +279,37 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     const phase = type === 'start' ? 'start_bell' : 'end_bell';
     const cue = cueDataRef.current.get(phase);
 
+    if (!cue) {
+      // No cue data yet — generate_hz fallback with reasonable defaults
+      const hz = type === 'start' ? 528 : 396; // solfeggio defaults
+      const bellDuration = type === 'start' ? 2.5 : 3.5;
+      playSharedTone(hz, bellDuration, volume, true);
+      return;
+    }
+
     try {
-      if (cue?.cdn_url) {
+      // Prefer Web Audio (generate_hz) — works reliably on Safari PWA without per-play gesture
+      if (cue.generate_hz) {
+        const bellDuration = type === 'start' ? 2.5 : 3.5;
+        playSharedTone(cue.generate_hz, bellDuration, volume, true);
+        return;
+      }
+
+      // CDN bell — attempt HTMLAudioElement
+      if (cue.cdn_url) {
         const audio = getAudioElement(cue.cdn_url);
         if (!audio.src || audio.src === window.location.href) return;
         audio.volume = volume;
         audio.playbackRate = cue.playback_rate;
         audio.currentTime = 0;
         await audio.play();
-      } else if (cue?.generate_hz) {
-        const bellDuration = type === 'start' ? 2.5 : 3.5;
-        playSharedTone(cue.generate_hz, bellDuration, volume, true);
       } else {
         console.warn(`[BreathingCues] Bell (${type}) has no audio source configured`);
       }
     } catch (error) {
       if (error instanceof DOMException && (error.name === 'NotSupportedError' || error.name === 'NotAllowedError')) {
-        // HTMLAudioElement blocked by autoplay policy → fallback to shared Web Audio
-        if (cue?.generate_hz) {
-          const bellDuration = type === 'start' ? 2.5 : 3.5;
-          playSharedTone(cue.generate_hz, bellDuration, volume, true);
-        } else {
-          console.warn(`[BreathingCues] Bell (${type}) blocked and no fallback hz`);
-        }
+        // HTMLAudioElement blocked — already no generate_hz to fall back to (handled above)
+        console.warn(`[BreathingCues] Bell (${type}) CDN blocked, no hz fallback`);
       } else {
         console.error(`[BreathingCues] Bell error (${type}):`, error);
       }

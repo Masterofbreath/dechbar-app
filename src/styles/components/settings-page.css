@@ -51,8 +51,13 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
+
+  /* overflow: hidden is intentionally removed — it clips the track-selector dropdown.
+     Rounded corners are maintained via border-radius on direct children. */
+  overflow: visible;
 }
+
+/* Clip only the header (for rounded top corners visual) and the collapsed state */
 
 /* Header — clickable accordion trigger */
 .settings-card__header {
@@ -65,8 +70,14 @@
   border: none;
   cursor: pointer;
   text-align: left;
+  border-radius: var(--radius-xl);
   -webkit-tap-highlight-color: transparent;
   transition: background 0.15s ease;
+}
+
+.settings-card--open .settings-card__header {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -359,16 +370,19 @@
   top: 100%;
   left: 0;
   right: 0;
-  z-index: 200;
+  z-index: 500;
   background: var(--color-surface-elevated, #1e1e1e);
   border: 1px solid rgb(248 202 0 / 50%);
   border-top: none;
   border-bottom-left-radius: var(--radius-lg);
   border-bottom-right-radius: var(--radius-lg);
-  max-height: 300px;
-  overflow-y: auto;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+  max-height: 280px;
+  overflow: hidden auto;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
   scrollbar-width: thin;
+
+  /* Ensure dropdown is never clipped by parent overflow */
+  -webkit-overflow-scrolling: touch;
 }
 
 .track-selector__dropdown::-webkit-scrollbar {
@@ -846,7 +860,6 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 

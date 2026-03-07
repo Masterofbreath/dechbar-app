@@ -217,23 +217,31 @@ export function SessionEngineModal({
   useEffect(() => {
     breathingCues.preloadAll();
     vocalGuidance.preloadSnippets();
+    // Pre-fetch track list so random selection works even if SettingsPage was never opened
+    void backgroundMusic.fetchTracks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // intentional empty deps — run once on mount only
 
   // Background music lifecycle:
   // ONLY react to 'active' — don't pause on 'countdown' or 'idle' (music isn't playing yet anyway).
   // SMART sessions use their own music settings (smartMusicEnabled/smartMusicSlug/smartMusicVolume).
+  //
+  // NOTE: play() is also called synchronously in startCountdown/startSmartSession gesture handlers
+  // to satisfy Safari's autoplay policy (token must be acquired within the gesture call stack).
+  // This useEffect is the fallback path (e.g. skipFlow protocols, or if gesture path missed).
   useEffect(() => {
     const isSmartSession = sessionTypeRef.current === 'smart';
     const musicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
     const randomEnabled = isSmartSession ? smartMusicRandomEnabled : backgroundMusicRandomEnabled;
-    // For normal sessions, fixed slug comes from selectedTrackSlug (user's track selection).
-    // For SMART sessions, it comes from smartMusicSlug setting.
     const fixedSlug = isSmartSession ? smartMusicSlug : selectedTrackSlug;
 
     if (!musicEnabled) return;
 
     if (sessionState === 'active') {
+      // If already playing or loading/pending (started from gesture handler), skip.
+      // 'loading' means setTrack() is in progress — play() will be auto-called when done.
+      if (backgroundMusic.state === 'playing' || backgroundMusic.state === 'loading') return;
+
       if (randomEnabled && backgroundMusic.tracks.length > 0) {
         const TIER_LEVEL: Record<string, number> = { ZDARMA: 0, SMART: 1, AI_COACH: 2 };
         const userLevel = TIER_LEVEL[userTier] ?? 0;
@@ -253,8 +261,8 @@ export function SessionEngineModal({
         void backgroundMusic.setTrack(fixedSlug).then(() => backgroundMusic.play());
         return;
       }
-      // No track configured — play() will use whatever was auto-loaded by useBackgroundMusic
-      backgroundMusic.play();
+      // No specific track — play() uses whatever was auto-loaded (selectedTrackSlug effect in hook)
+      void backgroundMusic.play();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState, backgroundMusicEnabled, smartMusicEnabled]); // backgroundMusic deliberately excluded
@@ -311,11 +319,52 @@ export function SessionEngineModal({
   }, [unlockAudio]); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Start countdown after mood selection (or skip)
+  // ─── Music trigger helper ───────────────────────────────────────────────
+  // Called synchronously from user gesture handlers (startCountdown, startSmartSession)
+  // so that audio.play() is invoked within the gesture call chain → Safari autoplay passes.
+  const triggerMusicForSession = useCallback(() => {
+    const isSmartSession = sessionTypeRef.current === 'smart';
+    const musicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
+    if (!musicEnabled) return;
+
+    const randomEnabled = isSmartSession ? smartMusicRandomEnabled : backgroundMusicRandomEnabled;
+    const fixedSlug = isSmartSession ? smartMusicSlug : selectedTrackSlug;
+
+    const TIER_LEVEL: Record<string, number> = { ZDARMA: 0, SMART: 1, AI_COACH: 2 };
+    const userLevel = TIER_LEVEL[userTier] ?? 0;
+
+    if (randomEnabled && backgroundMusic.tracks.length > 0) {
+      const accessible = backgroundMusic.tracks.filter(
+        t => (TIER_LEVEL[t.required_tier] ?? 0) <= userLevel
+          && (isSmartSession || !t.smart_only)
+      );
+      if (accessible.length > 0) {
+        const random = accessible[Math.floor(Math.random() * accessible.length)];
+        // setTrack().then(play) — play() is a microtask within the gesture chain → Safari OK
+        void backgroundMusic.setTrack(random.slug).then(() => backgroundMusic.play());
+        return;
+      }
+    }
+
+    if (fixedSlug) {
+      void backgroundMusic.setTrack(fixedSlug).then(() => backgroundMusic.play());
+      return;
+    }
+
+    // Fallback: play without setTrack (uses whatever track was preloaded)
+    void backgroundMusic.play();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [smartMusicEnabled, backgroundMusicEnabled, smartMusicRandomEnabled, backgroundMusicRandomEnabled, smartMusicSlug, selectedTrackSlug, userTier]);
+
   const startCountdown = useCallback(() => {
     unlockAudio();
 
     setSessionState('countdown');
     setCountdownNumber(5);
+
+    // Pre-trigger music synchronously within the gesture so Safari grants autoplay token.
+    // setTrack().then(play) chain runs as microtask — still within gesture context on Safari.
+    triggerMusicForSession();
 
     let count = 5;
 
@@ -343,7 +392,7 @@ export function SessionEngineModal({
         intensityControl.notifySessionStart();
       }
     }, 1000);
-  }, [breathingCues, playBell, unlockAudio]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [breathingCues, playBell, unlockAudio, triggerMusicForSession]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // SMART: skip countdown entirely — bells are played inside SmartPrepState at 2s/1s
   const startSmartSession = useCallback(() => {
@@ -354,7 +403,10 @@ export function SessionEngineModal({
     setSessionStartTime(new Date());
     setCurrentPhaseIndex(0);
     intensityControl.notifySessionStart();
-  }, [unlockAudio, intensityControl]);  
+
+    // Trigger music synchronously within the gesture so Safari grants autoplay token.
+    triggerMusicForSession();
+  }, [unlockAudio, intensityControl, triggerMusicForSession]);  
   
   // Complete exercise
   const completeExercise = useCallback(() => {
