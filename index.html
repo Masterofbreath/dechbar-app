@@ -74,36 +74,21 @@
     <title>DechBar - Dech je nový kofein</title>
   </head>
   <body>
-    <!-- iOS PWA fix: nastav --app-height PŘED prvním render pasem.
-         OPRAVA: používáme vv.height + vv.offsetTop (offsetTop je záporný na iOS PWA —
-         iOS posouvá visual viewport nahoru o safe-area-inset-bottom).
-         Správná použitelná výška = height + offsetTop, ne jen height. -->
+    <!-- iOS PWA fix: nastav --app-height = window.innerHeight PŘED prvním render pasem.
+         innerHeight = layout viewport výška = kde sedí position:fixed elementy (BottomNav).
+         vv.height a vv.offsetTop se mění při iOS toolbar animaci — není spolehlivé.
+         Listener na vv resize + orientationchange udržuje hodnotu aktuální. -->
     <script>
       (function() {
-        var vv = window.visualViewport;
-        // vv.offsetTop je záporný na iOS PWA (např. -34px pro home indicator).
-        // height + offsetTop = skutečná použitelná výška bez iOS chrome.
-        var h = vv
-          ? Math.round(vv.height + (vv.offsetTop || 0))
-          : window.innerHeight;
-        document.documentElement.style.setProperty('--app-height', h + 'px');
-
-        var isPwa = window.navigator.standalone === true ||
-                    window.matchMedia('(display-mode: standalone)').matches;
-        console.group('[AppHeight] inline script');
-        console.log('vv.height    :', vv ? vv.height : 'N/A');
-        console.log('vv.offsetTop :', vv ? (vv.offsetTop || 0) : 'N/A');
-        console.log('--app-height :', h + 'px  (height + offsetTop)');
-        console.log('screen.height:', screen.height);
-        console.log('isPWA        :', isPwa);
-        console.groupEnd();
-
-        if (vv) {
-          vv.addEventListener('resize', function() {
-            var h2 = Math.round(vv.height + (vv.offsetTop || 0));
-            document.documentElement.style.setProperty('--app-height', h2 + 'px');
-          });
+        function setH() {
+          var h = window.innerHeight;
+          document.documentElement.style.setProperty('--app-height', h + 'px');
         }
+        setH();
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', setH);
+        }
+        window.addEventListener('resize', setH);
       })();
     </script>
     <div id="root"></div>

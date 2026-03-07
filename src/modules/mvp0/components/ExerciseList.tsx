@@ -11,6 +11,8 @@
  */
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/platform/api/supabase';
 import { ExerciseCard } from './ExerciseCard';
 import { LockedFeatureModal } from './LockedFeatureModal';
 import { Button, LoadingSkeleton, EmptyState, NavIcon, Tooltip, EnergeticIcon, CalmIcon, TiredIcon, StressedIcon } from '@/platform/components';
@@ -49,7 +51,7 @@ export interface ExerciseListProps {
 }
 
 type PresetFilter = 'all' | 'protocols' | 'exercises';
-type HistoryFilter = 'all' | 'audio' | 'protocols' | 'exercises' | 'smart';
+type HistoryFilter = 'all' | 'audio' | 'exercises_and_protocols' | 'smart';
 
 /**
  * Vrátí délku cvičení v minutách (z nastavení cvičení).
@@ -158,6 +160,7 @@ export function ExerciseList({
   const { plan } = useMembership();
   const { openExerciseCreator } = useNavigation();
   const userCreatedAt = useAuthStore((s) => s.user?.created_at);
+  const userId = useAuthStore((s) => s.user?.id);
   
   // Mood labels Czech mapping
   const moodLabels: Record<MoodType, string> = {
@@ -182,6 +185,23 @@ export function ExerciseList({
   const { data: sessions, isLoading: sessionsLoading } = useExerciseSessions();
   const { data: audioSessions, isLoading: audioLoading } = useAudioSessions();
   const deleteExercise = useDeleteExercise();
+
+  // Fetch reset_at to badge pre-reset SMART sessions in history
+  const { data: smartRec } = useQuery({
+    queryKey: ['smart-recommendation', userId ?? ''],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data } = await supabase
+        .from('smart_exercise_recommendations')
+        .select('reset_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+  });
+  const smartResetAt = smartRec?.reset_at ?? null;
   
   // All presets (protocols + exercises) — filter applied per user selection
   const allPresets = exercises?.filter((ex) => ex.category === 'preset') ?? [];
@@ -453,16 +473,16 @@ export function ExerciseList({
               </div>
             )}
 
-            {/* History filter: Vše / Audio / Protokoly / Cvičení / SMART */}
+            {/* History filter: Vše / Audio / Cvičení & Protokoly / SMART */}
             <div className="exercise-list__filter" role="group" aria-label="Filtrovat historii">
-              {(['all', 'audio', 'protocols', 'exercises', 'smart'] as HistoryFilter[]).map((f) => (
+              {(['all', 'audio', 'exercises_and_protocols', 'smart'] as HistoryFilter[]).map((f) => (
                 <button
                   key={f}
                   type="button"
                   className={`exercise-list__filter-btn${historyFilter === f ? ' exercise-list__filter-btn--active' : ''}`}
                   onClick={() => setHistoryFilter(f)}
                 >
-                  {f === 'all' ? 'Vše' : f === 'audio' ? 'Audio' : f === 'protocols' ? 'Protokoly' : f === 'smart' ? 'SMART' : 'Cvičení'}
+                  {f === 'all' ? 'Vše' : f === 'audio' ? 'Audio' : f === 'exercises_and_protocols' ? 'Cvičení & Protokoly' : 'SMART'}
                 </button>
               ))}
             </div>
@@ -483,10 +503,11 @@ export function ExerciseList({
                   if (historyFilter === 'all') return true;
                   if (historyFilter === 'audio') return false;
                   if (historyFilter === 'smart') return (session as { session_type?: string }).session_type === 'smart';
-                  // Guard: SMART sessions have no exercise (null) — exclude from protocol/exercise filters
-                  if (!session.exercise) return false;
-                  if (historyFilter === 'protocols') return isProtocol(session.exercise);
-                  if (historyFilter === 'exercises') return !isProtocol(session.exercise) && (session as { session_type?: string }).session_type !== 'smart';
+                  if (historyFilter === 'exercises_and_protocols') {
+                    // Zahrnout protokoly i cvičení, ale ne SMART
+                    if ((session as { session_type?: string }).session_type === 'smart') return false;
+                    return !!session.exercise;
+                  }
                   return true;
                 });
 
@@ -547,6 +568,11 @@ export function ExerciseList({
                         ? 'SMART CVIČENÍ'
                         : session.exercise?.name || 'Cvičení';
 
+                      // Mark SMART sessions from before the last reset as previous epoch
+                      const isPreResetSmart = isSmartSession &&
+                        smartResetAt !== null &&
+                        session.started_at < smartResetAt;
+
                       // Duration: SMART uses actual elapsed time (no exercise row)
                       const durationLabel = isSmartSession
                         ? getSessionActualDuration(session.started_at, (session as { completed_at?: string }).completed_at)
@@ -562,10 +588,15 @@ export function ExerciseList({
                         : null;
 
                       return (
-                        <div key={session.id} className="session-card">
+                        <div key={session.id} className={`session-card${isPreResetSmart ? ' session-card--pre-reset' : ''}`}>
                           <div className="session-card__header">
                             <h4 className="session-card__title">
                               {sessionTitle}
+                              {isPreResetSmart && (
+                                <span className="badge badge--muted" style={{ marginLeft: 6, fontSize: '0.65rem', verticalAlign: 'middle' }}>
+                                  Nepočítá se
+                                </span>
+                              )}
                             </h4>
                             <span className="session-card__date">
                               {new Date(session.started_at).toLocaleDateString('cs-CZ', {

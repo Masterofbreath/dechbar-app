@@ -574,6 +574,20 @@
   letter-spacing: 0.04em;
 }
 
+/* Pre-reset SMART session badge — muted, clearly historical */
+.badge--muted {
+  background: rgb(255 255 255 / 5%);
+  color: rgb(255 255 255 / 30%);
+  border: 1px solid rgb(255 255 255 / 10%);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Pre-reset session card — slightly dimmed */
+.session-card--pre-reset {
+  opacity: 0.55;
+}
+
 /* ============================================================
    CvicitPage — Page layout
    exercise-list__tabs je pod page headerem (nescrolluje — bez sticky)

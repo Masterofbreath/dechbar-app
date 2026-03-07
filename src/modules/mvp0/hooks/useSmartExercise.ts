@@ -150,27 +150,51 @@ export function useSmartExercise(): UseSmartExerciseReturn {
       throw new Error('Authentication required');
     }
 
-    // Check cache validity (recalculate_after > now)
+    // Check cache validity:
+    // - recalculate_after > now (TTL not expired)
+    // - session_count_smart > 0 (not a fresh reset — after soft-reset this is 0)
+    // After a soft-reset, cachedRec exists but session_count_smart=0 and
+    // recalculate_after=now (expired), so we always fall through to fresh compute → cold start.
     const now = new Date().toISOString();
     const cacheHit =
       cachedRec !== null &&
       cachedRec !== undefined &&
       cachedRec.recalculate_after !== null &&
-      cachedRec.recalculate_after > now;
+      cachedRec.recalculate_after > now &&
+      (cachedRec.session_count_smart ?? 0) > 0;
 
     let config: SmartSessionConfig;
 
     if (cacheHit && cachedRec) {
-      // Reconstruct SmartSessionConfig from cached DB row
-      config = reconstructConfigFromCache(cachedRec, smartDurationMode);
-    } else {
-      // Compute fresh
-      const prevLevel = cachedRec?.current_level ?? 3;
+      // Level + session count from cache — but always recompute basePattern via BIE
+      // because time context (night/day) changes dynamically throughout the day.
       const input: BIEInput = {
         safetyFlags: safetyFlags ?? null,
         latestKP: currentKP ?? null,
         smartHistory: smartHistory ?? [],
-        sessionCountSmart: cachedRec?.session_count_smart ?? 0,
+        sessionCountSmart: cachedRec.session_count_smart ?? 0,
+        currentLevel: cachedRec.current_level ?? 3,
+        lastLevelChangeAt: cachedRec.last_level_change_at ?? null,
+        streak: currentStreak ?? 0,
+        smartDurationMode,
+      };
+      const freshConfig = computeSmartSession(input);
+      // Override level back to cached value — only pattern + context gets refreshed
+      config = {
+        ...freshConfig,
+        level: cachedRec.current_level ?? freshConfig.level,
+        cacheValid: true,
+      };
+    } else {
+      // Compute fresh — either cache expired, first run, or after soft-reset (session_count=0)
+      // After soft-reset: cachedRec.current_level=3 and session_count_smart=0 → BIE cold start
+      const prevLevel = cachedRec?.current_level ?? 3;
+      const prevSessionCount = cachedRec?.session_count_smart ?? 0;
+      const input: BIEInput = {
+        safetyFlags: safetyFlags ?? null,
+        latestKP: currentKP ?? null,
+        smartHistory: smartHistory ?? [],
+        sessionCountSmart: prevSessionCount,
         currentLevel: prevLevel,
         lastLevelChangeAt: cachedRec?.last_level_change_at ?? null,
         streak: currentStreak ?? 0,
@@ -180,15 +204,14 @@ export function useSmartExercise(): UseSmartExerciseReturn {
       config = computeSmartSession(input);
 
       // Persist computed config to cache (upsert)
+      // IMPORTANT: current_level is NOT updated here — level changes only after a completed session.
+      // This prevents level from jumping just by opening the SMART exercise screen.
+      // Level is applied in DB by updateSmartLevelAfterSession() called from SessionEngineModal.
       try {
-        const level = config.level;
-        // Track when level actually changed — used by Tier 5 Progression Gate
-        const levelChanged = level !== prevLevel;
-        // Always persist base rhythm from BREATH_LEVELS — not the session/night-overridden pattern.
-        // Session-specific rhythm (e.g. night override) lives only in smart_context JSONB.
-        const baseLevelData = getBreathLevel(level);
+        // Always persist base rhythm from BREATH_LEVELS for the *current* (unchanged) level.
+        const baseLevelData = getBreathLevel(prevLevel);
 
-        await supabase.from('smart_exercise_recommendations').upsert({
+        const { error: upsertError } = await supabase.from('smart_exercise_recommendations').upsert({
           user_id: user.id,
           recommended_inhale_s: baseLevelData.inhale,
           recommended_hold_after_inhale_s: 0,
@@ -199,13 +222,13 @@ export function useSmartExercise(): UseSmartExerciseReturn {
           is_ready: config.confidenceScore >= 0.7,
           recalculate_after: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           last_calculated_at: now,
-          current_level: level,
-          session_count_smart: config.sessionCountSmart,
-          preferred_duration_seconds: config.totalDurationSeconds,
+          current_level: prevLevel,
+          session_count_smart: config.sessionCountSmart,          preferred_duration_seconds: config.totalDurationSeconds,
           time_context: config.timeContext,
           phase_profile: config.phaseProfile,
-          ...(levelChanged ? { last_level_change_at: now } : {}),
         }, { onConflict: 'user_id' });
+
+        if (upsertError) throw upsertError;
 
         // Invalidate cache queries to reflect new data
         await queryClient.invalidateQueries({
@@ -231,28 +254,3 @@ export function useSmartExercise(): UseSmartExerciseReturn {
 // HELPERS
 // =====================================================
 
-function reconstructConfigFromCache(
-  row: SmartRecommendationRow,
-  _smartDurationMode: import('../types/exercises').SmartDurationMode,
-): SmartSessionConfig {
-  const sessionCountSmart = row.session_count_smart ?? 0;
-  const timeContext = (row.time_context as SmartSessionConfig['timeContext']) ?? 'day';
-  const phaseProfile = (row.phase_profile as SmartSessionConfig['phaseProfile']) ?? 'standard';
-
-  return {
-    level: row.current_level ?? 3,
-    basePattern: {
-      inhale_seconds: row.recommended_inhale_s ?? 4,
-      hold_after_inhale_seconds: 0,
-      exhale_seconds: row.recommended_exhale_s ?? 6,
-      hold_after_exhale_seconds: row.recommended_hold_after_exhale_s ?? 0,
-    },
-    totalDurationSeconds: row.preferred_duration_seconds ?? 420,
-    phaseProfile,
-    timeContext,
-    sessionCountSmart,
-    confidenceScore: row.confidence_score ?? 0,
-    isCalibrating: sessionCountSmart < 10,
-    cacheValid: true,
-  };
-}

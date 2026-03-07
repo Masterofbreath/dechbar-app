@@ -68,7 +68,15 @@ function formatDate(isoString: string | null): string {
 // SUB-COMPONENTS
 // =====================================================
 
-// Level bar with milestone markers — matches KPSection milestone visual language
+// Milestone colors — identical pattern to LungProgress:
+// markerColor = tlumená (vždy viditelná), glowColor = plná sytost při dosažení
+const MILESTONE_DEFS = [
+  { markerColor: 'rgba(200,200,220,0.45)', glowColor: 'rgba(200,200,220,0.9)' },   // Průměr — silver
+  { markerColor: 'rgba(56,189,248,0.5)',   glowColor: 'rgba(56,189,248,1)' },       // Funkčnost — sky blue
+  { markerColor: 'rgba(248,202,0,0.55)',   glowColor: 'rgba(248,202,0,1)' },        // Tvůj cíl — gold
+] as const;
+
+// Level bar with milestone markers — matches LungProgress milestone visual language exactly
 function LevelBarWithMilestones({ currentLevel }: { currentLevel: number }) {
   return (
     <div className="smart-widget__level-bar-wrap">
@@ -89,10 +97,13 @@ function LevelBarWithMilestones({ currentLevel }: { currentLevel: number }) {
         ))}
       </div>
 
-      {/* Milestone markers — positioned absolutely over bar, same style as KPSection */}
-      {LEVEL_MILESTONES.map((m) => {
+      {/* Milestone markers — always colored (like LungProgress), full saturation when reached */}
+      {LEVEL_MILESTONES.map((m, idx) => {
         const pct = ((m.level - 1) / 20) * 100;
         const reached = currentLevel >= m.level;
+        const { markerColor, glowColor } = MILESTONE_DEFS[idx];
+        const tickColor = reached ? glowColor : markerColor;
+        const labelColor = reached ? glowColor : markerColor;
         return (
           <div
             key={m.level}
@@ -100,8 +111,19 @@ function LevelBarWithMilestones({ currentLevel }: { currentLevel: number }) {
             style={{ left: `${pct}%` }}
             aria-label={`Milník ${m.label} — level ${m.level}`}
           >
-            <div className="smart-widget__milestone-tick" />
-            <span className="smart-widget__milestone-label">{m.label}</span>
+            <div
+              className="smart-widget__milestone-tick"
+              style={{
+                background: tickColor,
+                boxShadow: reached ? `0 0 4px ${glowColor}` : 'none',
+              }}
+            />
+            <span
+              className="smart-widget__milestone-label"
+              style={{ color: labelColor }}
+            >
+              {m.label}
+            </span>
           </div>
         );
       })}
@@ -132,7 +154,7 @@ export function SmartSection({ userId, latestKP, onStartSmart, onMeasureKP }: Sm
       if (!userId) return null;
       const { data } = await supabase
         .from('smart_exercise_recommendations')
-        .select('current_level, session_count_smart, last_calculated_at')
+        .select('current_level, session_count_smart, last_calculated_at, reset_at')
         .eq('user_id', userId)
         .maybeSingle();
       return data;
@@ -140,12 +162,12 @@ export function SmartSection({ userId, latestKP, onStartSmart, onMeasureKP }: Sm
     enabled: !!userId,
   });
 
-  // Fetch first SMART session date + level history from smart_context
+  // Fetch SMART sessions — only after the last reset_at (current epoch)
   const { data: sessions, isLoading: sessionsLoading } = useQuery({
-    queryKey: ['smart-history-full', userId ?? ''],
+    queryKey: ['smart-history-full', userId ?? '', recRow?.reset_at ?? null],
     queryFn: async () => {
       if (!userId) return [];
-      const { data } = await supabase
+      let query = supabase
         .from('exercise_sessions')
         .select('started_at, smart_context')
         .eq('user_id', userId)
@@ -153,6 +175,13 @@ export function SmartSection({ userId, latestKP, onStartSmart, onMeasureKP }: Sm
         .eq('was_completed', true)
         .order('started_at', { ascending: true })
         .limit(50);
+
+      // Filter to current epoch only — sessions before reset_at belong to previous epoch
+      if (recRow?.reset_at) {
+        query = query.gte('started_at', recRow.reset_at);
+      }
+
+      const { data } = await query;
       return data ?? [];
     },
     enabled: !!userId,
@@ -160,7 +189,9 @@ export function SmartSection({ userId, latestKP, onStartSmart, onMeasureKP }: Sm
 
   const isLoading = recLoading || sessionsLoading;
 
-  const sessionCount = sessions ? sessions.length : (recRow?.session_count_smart ?? 0);
+  // Session count for display = sessions in current epoch (after last reset_at)
+  // recRow.session_count_smart is the BIE internal counter — may differ after soft-reset
+  const sessionCount = sessions ? sessions.length : 0;
   const currentLevel = recRow?.current_level ?? 3;
   const firstDate = sessions && sessions.length > 0 ? sessions[0]?.started_at ?? null : null;
 
@@ -228,30 +259,33 @@ export function SmartSection({ userId, latestKP, onStartSmart, onMeasureKP }: Sm
 
   return (
     <div className="smart-widget">
-      {/* Label — absolute top-left, teal, matches KPSection */}
-      <span className="smart-widget__label">Smart cvičení</span>
-
-      {/* KP limit badge — absolute top-right */}
-      {showKPBadge && onMeasureKP && (
-        <button
-          className="smart-widget__kp-badge"
-          onClick={onMeasureKP}
-          type="button"
-          aria-label="Změř si KP pro odemčení dalšího levelu"
-        >
-          Chceš růst? Změř si KP →
-        </button>
-      )}
-
-      {/* Base rhythm — padded top for label */}
-      <div className="smart-widget__rhythm-wrap">
-        <div
-          className="smart-widget__rhythm"
-          aria-label={`Základní rytmus: ${rhythm}`}
-        >
-          {rhythm}
+      {/* Header row: label vlevo, rhythm (hero) vpravo — identická struktura jako KPSection */}
+      <div className="smart-widget__hero-wrap">
+        <div className="smart-widget__hero-left">
+          <span className="smart-widget__label">Smart cvičení</span>
+          {/* KP limit badge — pod labelem vlevo */}
+          {showKPBadge && onMeasureKP && (
+            <button
+              className="smart-widget__kp-badge"
+              onClick={onMeasureKP}
+              type="button"
+              aria-label="Změř si KP pro odemčení dalšího levelu"
+            >
+              Chceš růst? Změř si KP →
+            </button>
+          )}
         </div>
-        <span className="smart-widget__rhythm-sublabel">základní rytmus</span>
+
+        {/* Rhythm vpravo — jako velká hodnota "38s" v KPSection */}
+        <div className="smart-widget__hero-right">
+          <div
+            className="smart-widget__rhythm"
+            aria-label={`Základní rytmus: ${rhythm}`}
+          >
+            {rhythm}
+          </div>
+          <span className="smart-widget__rhythm-sublabel">tvůj základní rytmus</span>
+        </div>
       </div>
 
       {/* Level section with milestone bar */}
@@ -281,16 +315,15 @@ export function SmartSection({ userId, latestKP, onStartSmart, onMeasureKP }: Sm
         </div>
       )}
 
-      {/* Info row */}
+      {/* Info row — jeden řádek: datum zahájení + počet cvičení */}
       <div className="smart-widget__info-row">
-        <div className="smart-widget__info-item">
-          <span className="smart-widget__info-label">Zahájil</span>
-          <span className="smart-widget__info-value">{formatDate(firstDate)}</span>
-        </div>
-        <div className="smart-widget__info-item">
-          <span className="smart-widget__info-label">Celkem</span>
-          <span className="smart-widget__info-value">{sessionCount} cvičení</span>
-        </div>
+        <span className="smart-widget__info-inline">
+          Zahájeno {formatDate(firstDate)}
+        </span>
+        <span className="smart-widget__info-sep" aria-hidden="true">·</span>
+        <span className="smart-widget__info-inline">
+          {sessionCount} cvičení
+        </span>
       </div>
 
       {/* CTA */}

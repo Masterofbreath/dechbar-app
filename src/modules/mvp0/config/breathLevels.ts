@@ -96,7 +96,7 @@ export function formatBreathRhythm(
   exhale: number,
   holdExhale: number,
 ): string {
-  return `${inhale} · ${holdInhale} · ${exhale} · ${holdExhale}`;
+  return `${inhale} | ${holdInhale} | ${exhale} | ${holdExhale}`;
 }
 
 /**

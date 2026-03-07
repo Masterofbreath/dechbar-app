@@ -50,15 +50,34 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  padding: var(--spacing-5);
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
+/* Header — clickable accordion trigger */
 .settings-card__header {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
-  margin-bottom: var(--spacing-4);
+  width: 100%;
+  padding: var(--spacing-4) var(--spacing-5);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .settings-card__header:hover {
+    background: rgb(255 255 255 / 3%);
+  }
+}
+
+.settings-card__header:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 .settings-card__icon {
@@ -79,12 +98,42 @@
   color: var(--color-text-primary);
   letter-spacing: var(--letter-spacing-tight);
   margin: 0;
+  flex: 1;
+}
+
+/* Chevron rotate animation */
+.settings-card__chevron {
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.settings-card__chevron--open {
+  transform: rotate(180deg);
 }
 
 .settings-card__content {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
+  padding: 0 var(--spacing-5) var(--spacing-5);
+
+  /* Smooth accordion entry on mobile */
+  animation: settings-card-open 0.2s ease forwards;
+}
+
+@keyframes settings-card-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .settings-card__section {
@@ -603,8 +652,12 @@
 @media (prefers-reduced-motion: reduce) {
   .settings-reset-button,
   .intensity-selector__option,
-  .track-selector__item {
+  .track-selector__item,
+  .settings-card__chevron,
+  .settings-card__header,
+  .settings-card__content {
     transition: none;
+    animation: none;
   }
 }
 
@@ -633,12 +686,10 @@
 
 .settings-card--locked {
   opacity: 0.7;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
 }
 
-.settings-card--locked:hover {
-  opacity: 0.85;
+.settings-card--locked .settings-card__header {
+  cursor: not-allowed;
 }
 
 .settings-card__lock {
@@ -646,10 +697,11 @@
   color: var(--color-text-secondary, rgb(255 255 255 / 40%));
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .settings-card__locked-content {
-  padding: var(--spacing-3) 0 var(--spacing-1);
+  padding: 0 var(--spacing-5) var(--spacing-3);
 }
 
 .settings-card__locked-tooltip {
@@ -657,12 +709,6 @@
   color: var(--color-gold, #D6A23A);
   margin: 0;
   line-height: 1.4;
-}
-
-.settings-card__locked-hint {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
-  margin: 0;
 }
 
 /* ============================================================
@@ -753,3 +799,111 @@
   color: var(--color-text-secondary, rgb(255 255 255 / 50%));
   margin-bottom: 4px;
 }
+
+/* ============================================================
+   Správa dat — danger zone card + confirm modal
+   ============================================================ */
+
+.settings-card--danger-zone .settings-card__icon {
+  color: #FF453A;
+  background: rgb(255 69 58 / 10%);
+}
+
+/* Reset data button — subtle destructive style */
+.settings-data-reset-btn {
+  width: 100%;
+  padding: 11px 16px;
+  background: rgb(255 69 58 / 6%);
+  border: 1px solid rgb(255 69 58 / 25%);
+  border-radius: var(--radius-lg);
+  color: #FF6B63;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
+  min-height: 44px;
+}
+
+.settings-data-reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-data-reset-btn:hover:not(:disabled) {
+  background: rgb(255 69 58 / 12%);
+  border-color: rgb(255 69 58 / 45%);
+}
+
+/* Confirm overlay */
+.settings-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10100;
+  background: rgb(0 0 0 / 60%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.settings-confirm-modal {
+  background: var(--color-surface-elevated, #1e1e1e);
+  border: 1px solid var(--color-border, rgb(255 255 255 / 10%));
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 60%);
+}
+
+.settings-confirm-modal__text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.settings-confirm-modal__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.settings-confirm-modal__btn {
+  height: 44px;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease;
+  border: none;
+}
+
+.settings-confirm-modal__btn--cancel {
+  background: var(--color-surface, rgb(255 255 255 / 8%));
+  color: var(--color-text-primary);
+}
+
+.settings-confirm-modal__btn--cancel:hover {
+  background: rgb(255 255 255 / 12%);
+}
+
+.settings-confirm-modal__btn--confirm {
+  background: #FF453A;
+  color: #fff;
+}
+
+.settings-confirm-modal__btn--confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.settings-confirm-modal__btn--confirm:hover:not(:disabled) {
+  background: #FF6B63;
+}
+

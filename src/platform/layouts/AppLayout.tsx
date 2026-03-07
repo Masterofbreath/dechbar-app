@@ -77,55 +77,41 @@ export function AppLayout({
   // visualViewport API vrací OKAMŽITĚ správnou výšku bez toolbarů (=skutečná dostupná výška).
   // Tuto proměnnou pak používáme místo 100dvh/100vh na .app-layout.
   // Při každé změně viewportu (rotace, keyboard) hodnotu aktualizujeme.
+  // iOS PWA fix: --app-height = window.innerHeight, aktualizováno při každé změně.
+  // BottomNav (position:fixed; bottom:0) sedí vždy na spodku innerHeight.
+  // .app-layout potřebuje min-height = innerHeight aby nevznikal prázdný pruh.
+  // Na iOS PWA se innerHeight mění při toolbar animaci → trackujeme maximum.
   useEffect(() => {
-    const snap = (label: string) => {
-      const vv = window.visualViewport;
-      // vv.offsetTop je záporný na iOS PWA (viewport posunutý nahoru o safe-area-inset-bottom).
-      // Správná použitelná výška = height + offsetTop.
-      const h = vv
-        ? Math.round(vv.height + (vv.offsetTop ?? 0))
-        : window.innerHeight;
-      const prev = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue('--app-height') || '0'
-      );
-      document.documentElement.style.setProperty('--app-height', `${h}px`);
+    let maxH = window.innerHeight;
 
+    const update = () => {
+      const h = window.innerHeight;
+      // Zachovej maximum — iOS toolbar animace přechodně sníží innerHeight,
+      // nechceme layout zmenšovat a pak zvětšovat (flicker).
+      if (h > maxH) maxH = h;
+      document.documentElement.style.setProperty('--app-height', `${maxH}px`);
+
+      // Diagnostika — odstraň až bug vyřešen
       const nav = document.querySelector<HTMLElement>('.bottom-nav');
-      const navRect = nav?.getBoundingClientRect();
-      const gap = navRect ? window.innerHeight - navRect.bottom : null;
-
-      console.group(`[AppHeight] ${label}`);
-      console.log('vv.height    :', vv?.height ?? 'N/A');
-      console.log('vv.offsetTop :', vv?.offsetTop ?? 'N/A');
-      console.log('--app-height :', `${h}px  (delta: ${Math.round((h - prev) * 10) / 10}px)`);
-      console.log('innerHeight  :', window.innerHeight);
-      console.log('screen.h     :', screen.height);
-      if (navRect) {
-        console.log('nav.bottom   :', Math.round(navRect.bottom), `gap: ${Math.round(gap ?? 0)}px`);
-        if (gap !== null && Math.abs(gap) > 2) {
-          console.warn(`⚠️  gap ${Math.round(gap)}px`);
-        } else {
-          console.log('✅ BottomNav OK');
-        }
-      }
-      console.groupEnd();
+      const rect = nav?.getBoundingClientRect();
+      const gap = rect ? h - rect.bottom : null;
+      console.log(`[AppHeight] innerH=${h} maxH=${maxH} navBottom=${rect ? Math.round(rect.bottom) : 'N/A'} gap=${gap !== null ? Math.round(gap) : 'N/A'}px`);
     };
 
-    snap('① mount');
-    requestAnimationFrame(() => snap('② rAF'));
-    requestAnimationFrame(() => requestAnimationFrame(() => snap('③ rAF×2')));
-    const t300 = setTimeout(() => snap('④ 300ms'), 300);
-    const t800 = setTimeout(() => snap('⑤ 800ms'), 800);
+    update();
+    requestAnimationFrame(update);
 
     const vv = window.visualViewport;
-    const onChange = () => snap('🔄 vv resize');
-    vv?.addEventListener('resize', onChange);
-    window.addEventListener('orientationchange', () => snap('↩️ orientation'));
+    vv?.addEventListener('resize', update);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', () => {
+      maxH = 0; // Reset max při rotaci — nová orientace = nové dimenze
+      update();
+    });
 
     return () => {
-      clearTimeout(t300);
-      clearTimeout(t800);
-      vv?.removeEventListener('resize', onChange);
+      vv?.removeEventListener('resize', update);
+      window.removeEventListener('resize', update);
     };
   }, []);
 

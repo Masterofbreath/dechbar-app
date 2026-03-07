@@ -702,8 +702,12 @@ export function SessionEngineModal({
 
       // Invalidate SMART recommendation cache so next BIE run gets fresh data
       if (sessionTypeRef.current === 'smart' && user?.id) {
-        // Increment session_count_smart — drives calibration progress & BIE confidence
-        await incrementSmartCount.mutateAsync(sessionState === 'completed');
+        // Increment session_count_smart and apply level change if BIE computed one.
+        // Level is only applied here (after session), never during computeAndBuild().
+        await incrementSmartCount.mutateAsync({
+          wasCompleted: sessionState === 'completed',
+          newLevel: smartConfigAdjusted?.level,
+        });
         await queryClient.invalidateQueries({ queryKey: smartKeys.history(user.id) });
         await queryClient.invalidateQueries({ queryKey: smartKeys.recommendation(user.id) });
       }
@@ -957,7 +961,7 @@ export function SessionEngineModal({
               ? 'Probíhá kalibrace SMART CVIČENÍ. Nedokončené cvičení se do kalibrace nepočítá.'
               : 'Progres nebude uložen.'
           }
-          confirmText="Přesto odejít"
+          confirmText="Odejít"
           cancelText="Pokračovat"
           variant="warning"
         />
