@@ -86,6 +86,10 @@ export function SessionEngineModal({
   // Guard: prevents double-save on rapid taps (iOS touchscreen sends multiple events)
   const isSavingRef = useRef(false);
 
+  // Captured exactly when completeExercise() fires — used as completed_at in saveSession().
+  // Using new Date() in saveSession() would include time spent on the post-session form.
+  const sessionCompletedAtRef = useRef<Date | null>(null);
+
   // Snapshot of session total duration + silence duration captured at session start.
   // Used by the fade OUT timer useEffect so it never re-computes with a shifted Date.now().
   // Values are set once in startSmartSession / startCountdown and never change mid-session.
@@ -183,6 +187,7 @@ export function SessionEngineModal({
     if (isOpen && !prevIsOpenRef.current) {
       setSmartDurationAdjust(0);
       isSavingRef.current = false;
+      sessionCompletedAtRef.current = null;
     }
     prevIsOpenRef.current = isOpen;
   }, [isOpen]);
@@ -443,12 +448,6 @@ export function SessionEngineModal({
       ? Math.max(MIN_SILENCE, Math.round(totalSec * 0.05))
       : 0;
     sessionDurationSnapshotRef.current = { totalSec, silenceSec: silSec };
-    console.log('[startSmartSession] Snapshot set', {
-      totalSec,
-      silenceSec: silSec,
-      smartConfigAdjustedTotal: smartConfigAdjusted?.totalDurationSeconds,
-      startedAt: new Date().toISOString(),
-    });
 
     // Trigger music synchronously within the gesture so Safari grants autoplay token.
     triggerMusicForSession();
@@ -456,6 +455,7 @@ export function SessionEngineModal({
   
   // Complete exercise
   const completeExercise = useCallback(() => {
+    sessionCompletedAtRef.current = new Date(); // capture exact end time before any UI delays
     setSessionState('completed');
     
     // Play end bell (use new breathingCues or fallback to legacy)
@@ -564,13 +564,6 @@ export function SessionEngineModal({
 
     if (phaseTimeRemaining === fadeOutSec) {
       bgFadeOutStartedRef.current = true;
-      console.log('[FadeOut] FIRE (phaseTimeRemaining-anchored)', {
-        firedAtISO: new Date().toISOString(),
-        phaseTimeRemaining,
-        fadeOutSec,
-        phaseIndex: currentPhaseIndex,
-        note: 'fade OUT starts now — will complete exactly when silence phase begins',
-      });
       backgroundMusic.startFadeOut();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -581,15 +574,6 @@ export function SessionEngineModal({
     if (sessionState !== 'active' || !currentPhase) {
       return;
     }
-
-    const phaseStartedAt = new Date();
-    console.log('[PhaseTimer] START', {
-      phaseIndex: currentPhaseIndex,
-      phaseType: currentPhase.type,
-      phaseName: (currentPhase as { name?: string }).name,
-      durationSec: currentPhase.duration_seconds,
-      startedAt: phaseStartedAt.toISOString(),
-    });
 
     setPhaseTimeRemaining(currentPhase.duration_seconds);
     
@@ -829,10 +813,6 @@ export function SessionEngineModal({
     }, 1000);
     
     return () => {
-      console.log('[PhaseTimer] CLEANUP', {
-        phaseIndex: currentPhaseIndex,
-        cleanedAt: new Date().toISOString(),
-      });
       if (timerRef.current) window.clearInterval(timerRef.current);
       if (breathingIntervalId) window.clearInterval(breathingIntervalId);
       // Breathing interval and animation cleanup only — bgFadeOut has no timer to clear.
@@ -905,7 +885,7 @@ export function SessionEngineModal({
       const session = await completeSession.mutateAsync({
         exercise_id: exerciseId,
         started_at: startTime,
-        completed_at: new Date(),
+        completed_at: sessionCompletedAtRef.current ?? new Date(),
         was_completed: sessionState === 'completed',
         mood_before: moodBefore || undefined,
         mood_after: moodAfter || undefined,
