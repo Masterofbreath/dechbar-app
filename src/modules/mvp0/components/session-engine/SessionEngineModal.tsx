@@ -86,6 +86,11 @@ export function SessionEngineModal({
   // Guard: prevents double-save on rapid taps (iOS touchscreen sends multiple events)
   const isSavingRef = useRef(false);
 
+  // Snapshot of session total duration + silence duration captured at session start.
+  // Used by the fade OUT timer useEffect so it never re-computes with a shifted Date.now().
+  // Values are set once in startSmartSession / startCountdown and never change mid-session.
+  const sessionDurationSnapshotRef = useRef<{ totalSec: number; silenceSec: number } | null>(null);
+
   // SMART: adjusted duration state (changed via ±1 min buttons in SmartPrepState)
   const [smartDurationAdjust, setSmartDurationAdjust] = useState(0);
 
@@ -413,6 +418,9 @@ export function SessionEngineModal({
         setSessionStartTime(new Date());
         setCurrentPhaseIndex(0);
         intensityControl.notifySessionStart();
+        // Snapshot duration for fade OUT timer (regular session — no silence phase)
+        const totalSec = exercise.breathing_pattern.phases.reduce((sum, p) => sum + p.duration_seconds, 0);
+        sessionDurationSnapshotRef.current = { totalSec, silenceSec: 0 };
       }
     }, 1000);
   }, [breathingCues, playBell, unlockAudio]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -427,9 +435,18 @@ export function SessionEngineModal({
     setCurrentPhaseIndex(0);
     intensityControl.notifySessionStart();
 
+    // Snapshot duration values at session start — fade OUT timer reads these, never re-computes.
+    // This prevents the timer from resetting and shortening when re-renders change smartConfigAdjusted.
+    const totalSec = smartConfigAdjusted?.totalDurationSeconds
+      ?? exercise.breathing_pattern.phases.reduce((sum, p) => sum + p.duration_seconds, 0);
+    const silSec = smartConfigAdjusted
+      ? Math.max(MIN_SILENCE, Math.round(totalSec * 0.05))
+      : 0;
+    sessionDurationSnapshotRef.current = { totalSec, silenceSec: silSec };
+
     // Trigger music synchronously within the gesture so Safari grants autoplay token.
     triggerMusicForSession();
-  }, [unlockAudio, intensityControl, triggerMusicForSession]);  
+  }, [unlockAudio, intensityControl, triggerMusicForSession, smartConfigAdjusted, exercise]);  
   
   // Complete exercise
   const completeExercise = useCallback(() => {
@@ -496,21 +513,17 @@ export function SessionEngineModal({
   // Trigger background music fade OUT so it ends exactly at the start of the final silence phase.
   //
   // DESIGN:
-  //   SMART exercises always end with a 'silence' phase (Ticho).
-  //   silenceSec is computed from totalDurationSeconds using the same formula as BIE —
-  //   this avoids reading exercise.breathing_pattern.phases (stale closure risk in useEffect).
+  //   totalSec and silenceSec are snapshotted into sessionDurationSnapshotRef at session start
+  //   (in startSmartSession / startCountdown). This ensures the timer is set ONCE with correct
+  //   values and never re-computes with a shifted Date.now() due to re-renders.
   //
-  // Formula (all values from live refs — no stale closure):
-  //   silenceSec   = Math.max(MIN_SILENCE, Math.round(totalDuration * 0.05))
-  //   fadeOutAt    = sessionStart + totalDuration - silenceSec - fadeOutSec
-  //   → music volume reaches 0 exactly when silence phase starts
-  //
-  // Dynamic: changing MIN_SILENCE, FADE_OUT_DURATION_MS, or the ±1min buttons in SmartPrepState
-  //          all propagate automatically (smartConfigAdjusted is in the dependency array).
+  // Formula:
+  //   fadeOutAt = sessionStart + totalSec - silenceSec - fadeOutSec
+  //   → music volume reaches 0 exactly when silence phase (Ticho) starts
   const bgFadeOutStartedRef = useRef(false);
   const bgFadeOutTimerRef   = useRef<number | null>(null);
   useEffect(() => {
-    // Clear any previous timer when session state or config changes
+    // Clear any previous timer when session state changes
     if (bgFadeOutTimerRef.current) {
       window.clearTimeout(bgFadeOutTimerRef.current);
       bgFadeOutTimerRef.current = null;
@@ -523,26 +536,19 @@ export function SessionEngineModal({
     // Reset flag for new session
     bgFadeOutStartedRef.current = false;
 
-    // Total duration: for SMART use the adjusted value (user may have changed ±1min in SmartPrep).
-    // For regular exercises: sum phases from the exercise template.
-    const totalDuration = smartConfigAdjusted?.totalDurationSeconds
-      ?? exercise.breathing_pattern.phases.reduce(
-        (sum, phase) => sum + phase.duration_seconds,
-        0
-      );
-
-    // Silence duration: computed from totalDuration using the same formula as BIE.
-    // Does NOT read exercise.phases — avoids stale closure bug where phases array
-    // captured at effect creation time could differ from phases at actual playback time.
-    const silenceSec = smartConfigAdjusted
-      ? Math.max(MIN_SILENCE, Math.round(totalDuration * 0.05))
-      : 0; // Regular exercises have no guaranteed silence phase — skip offset
-
-    const fadeOutSec  = FADE_OUT_DURATION_MS / 1000;
+    // Read snapshotted values — set once at session start, never shift with re-renders.
+    // Fallback: compute from current values if snapshot somehow missing (edge case).
+    const snapshot = sessionDurationSnapshotRef.current;
+    const totalSec = snapshot?.totalSec
+      ?? (smartConfigAdjusted?.totalDurationSeconds
+        ?? exercise.breathing_pattern.phases.reduce((sum, p) => sum + p.duration_seconds, 0));
+    const silenceSec = snapshot?.silenceSec
+      ?? (smartConfigAdjusted ? Math.max(MIN_SILENCE, Math.round(totalSec * 0.05)) : 0);
+    const fadeOutSec = FADE_OUT_DURATION_MS / 1000;
 
     // Fade OUT fires so that music volume reaches 0 exactly when silence phase begins.
     // Math.max(1000, ...) guards against negative values on edge-case timing glitches.
-    const sessionEndMs = sessionStartTime.getTime() + totalDuration * 1000;
+    const sessionEndMs = sessionStartTime.getTime() + totalSec * 1000;
     const fadeOutAtMs  = sessionEndMs - (silenceSec * 1000) - (fadeOutSec * 1000);
     const delayMs      = Math.max(1000, fadeOutAtMs - Date.now());
 
@@ -560,7 +566,9 @@ export function SessionEngineModal({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState, smartMusicEnabled, backgroundMusicEnabled, sessionStartTime, smartConfigAdjusted]);
+  }, [sessionState, smartMusicEnabled, backgroundMusicEnabled, sessionStartTime]);
+  // NOTE: smartConfigAdjusted intentionally NOT in deps — duration is snapshotted at session
+  // start into sessionDurationSnapshotRef. Adding it would reset the timer on every re-render.
 
   // Run current phase
   useEffect(() => {
