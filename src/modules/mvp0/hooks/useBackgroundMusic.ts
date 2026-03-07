@@ -395,26 +395,50 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       // Starting rampVolume immediately causes fade IN to complete before audio actually plays
       // → user hears music "jump" to full volume when it finally buffers.
       // Fix: wait for 'canplay' if audio isn't ready yet, then start the ramp.
+      // Fallback: if canplay never fires within 600ms (iOS can drop events in background tab),
+      // start the ramp anyway — better than staying silent.
       // On desktop Safari / Chrome, readyState is typically 4 (HAVE_ENOUGH_DATA) already —
-      // the canplay event fires instantly or the condition is true immediately → no delay.
+      // the condition is true immediately → no delay.
       if (primary.readyState >= 3) {
         // Audio is ready — start fade IN immediately (desktop Safari / cached audio path)
-        rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
-      } else {
-        // Audio not yet buffered — wait for canplay then fade IN (iOS PWA / slow network path)
-        console.log('[BackgroundMusic] readyState < 3, waiting for canplay before fade IN', {
+        console.log('[BackgroundMusic] readyState ready — starting fade IN immediately', {
           platform: getPlatformLabel(),
           readyState: primary.readyState,
         });
-        const onCanPlay = () => {
+        rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+      } else {
+        // Audio not yet buffered — wait for canplay then fade IN (iOS PWA / slow network path)
+        console.log('[BackgroundMusic] readyState < 3 — waiting for canplay before fade IN', {
+          platform: getPlatformLabel(),
+          readyState: primary.readyState,
+        });
+        let canPlayFired = false;
+
+        const startRamp = (trigger: 'canplay' | 'timeout') => {
+          if (canPlayFired) return; // deduplicate — only start ramp once
+          canPlayFired = true;
           primary.removeEventListener('canplay', onCanPlay);
-          // Only ramp if we're still playing (not stopped/paused while waiting)
+          console.log(`[BackgroundMusic] fade IN ramp triggered by: ${trigger}`, {
+            platform: getPlatformLabel(),
+            readyState: primary.readyState,
+            paused: primary.paused,
+          });
           if (stateRef.current === 'playing') {
             rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
-            console.log('[BackgroundMusic] canplay received — starting fade IN', { platform: getPlatformLabel() });
+          } else {
+            console.warn('[BackgroundMusic] fade IN ramp skipped — state changed before trigger', {
+              platform: getPlatformLabel(),
+              state: stateRef.current,
+            });
           }
         };
+
+        const onCanPlay = () => startRamp('canplay');
         primary.addEventListener('canplay', onCanPlay);
+
+        // Safety fallback: if canplay never fires (iOS can suppress events in PWA),
+        // start ramp after 600ms anyway — audio is likely playing even without the event.
+        window.setTimeout(() => startRamp('timeout'), 600);
       }
       scheduleCrossfade(primary);
 

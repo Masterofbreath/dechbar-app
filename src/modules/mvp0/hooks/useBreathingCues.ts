@@ -28,7 +28,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
-import { playSharedTone, scheduleSharedTone } from '../utils/sharedAudioContext';
+import { playSharedTone, scheduleSharedTone, getSharedAudioContext } from '../utils/sharedAudioContext';
 import { getPlatformLabel } from '../utils/sharedAudioContext';
 import type { BreathingPhaseAudio } from '../types/audio';
 
@@ -398,6 +398,12 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
    * MUST be called synchronously from a user gesture handler (e.g. button click)
    * AFTER unlockSharedAudioContext() so that AudioContext.state === 'running'.
    *
+   * On iOS, ctx.resume() is async and may not have resolved by the time scheduleBells
+   * is called synchronously. We handle this by:
+   *   1. If ctx is already running → schedule immediately (desktop / fast iOS path)
+   *   2. If ctx is suspended → await resume() Promise, then schedule with adjusted delays
+   *      (iOS slow resume path — adjusts for elapsed time so bells still fire at correct time)
+   *
    * AudioNodes are created immediately (within the gesture stack) and will fire
    * automatically when ctx.currentTime reaches the scheduled offset — no gesture
    * token is needed at the moment of playback. This is the correct solution for
@@ -420,16 +426,77 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     const vol1   = volume * 0.5;
     const vol2   = volume * 1.0;
 
+    const ctx = getSharedAudioContext();
+    const ctxState = ctx?.state ?? 'none';
+
     console.log('[BreathingCues] scheduleBells', {
       platform: getPlatformLabel(),
       hz, vol1, vol2, delay1Sec, delay2Sec,
       cueLoaded: !!cue,
+      ctxState,
     });
 
-    const cancel1 = scheduleSharedTone(hz, 2.5, vol1, delay1Sec, true);
-    const cancel2 = scheduleSharedTone(hz, 2.5, vol2, delay2Sec, true);
+    // Mutable cancel refs — filled once scheduling actually happens
+    let cancel1: (() => void) | null = null;
+    let cancel2: (() => void) | null = null;
+    let cancelled = false;
+
+    const doSchedule = (adjustedDelay1: number, adjustedDelay2: number) => {
+      if (cancelled) {
+        console.log('[BreathingCues] scheduleBells: cancelled before scheduling — skipping', { platform: getPlatformLabel() });
+        return;
+      }
+      console.log('[BreathingCues] scheduleBells: scheduling now', {
+        platform: getPlatformLabel(),
+        adjustedDelay1, adjustedDelay2,
+        ctxState: ctx?.state ?? 'none',
+        ctxCurrentTime: ctx?.currentTime ?? 0,
+      });
+      cancel1 = scheduleSharedTone(hz, 2.5, vol1, Math.max(0.05, adjustedDelay1), true);
+      cancel2 = scheduleSharedTone(hz, 2.5, vol2, Math.max(0.05, adjustedDelay2), true);
+    };
+
+    if (!ctx) {
+      console.warn('[BreathingCues] scheduleBells: no AudioContext — bells cannot be scheduled', { platform: getPlatformLabel() });
+    } else if (ctx.state === 'running') {
+      // Happy path — context already running (desktop Safari / fast iOS)
+      console.log('[BreathingCues] scheduleBells: ctx already running — scheduling immediately', { platform: getPlatformLabel() });
+      doSchedule(delay1Sec, delay2Sec);
+    } else if (ctx.state === 'suspended') {
+      // iOS slow path — resume() hasn't resolved yet. Await it, then schedule.
+      // We capture scheduledAt to compute elapsed time during resume wait,
+      // so bells still fire at the correct absolute time after the delay.
+      const scheduledAt = performance.now();
+      console.log('[BreathingCues] scheduleBells: ctx suspended — awaiting resume()', {
+        platform: getPlatformLabel(),
+        scheduledAt,
+        delay1Sec, delay2Sec,
+      });
+      void ctx.resume().then(() => {
+        const elapsedSec = (performance.now() - scheduledAt) / 1000;
+        const adj1 = delay1Sec - elapsedSec;
+        const adj2 = delay2Sec - elapsedSec;
+        console.log('[BreathingCues] scheduleBells: resume() resolved', {
+          platform: getPlatformLabel(),
+          elapsedSec,
+          adj1, adj2,
+          ctxState: ctx.state,
+          ctxCurrentTime: ctx.currentTime,
+        });
+        doSchedule(adj1, adj2);
+      }).catch((err) => {
+        console.warn('[BreathingCues] scheduleBells: resume() failed — bells cannot be scheduled', {
+          platform: getPlatformLabel(), err: String(err),
+        });
+      });
+    } else {
+      console.warn('[BreathingCues] scheduleBells: unexpected ctx state — bells cannot be scheduled', {
+        platform: getPlatformLabel(), ctxState,
+      });
+    }
 
     return () => {
+      cancelled = true;
       cancel1?.();
       cancel2?.();
     };
