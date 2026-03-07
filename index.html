@@ -74,6 +74,16 @@
     <title>DechBar - Dech je nový kofein</title>
   </head>
   <body>
+    <!-- iOS PWA fix: nastav --app-height PŘED prvním render pasem.
+         visualViewport.height = správná výška okamžitě (bez safe-area-inset-bottom).
+         Fallback na innerHeight pokud visualViewport není dostupný (starší prohlížeče).
+         useEffect v AppLayout.tsx pak hodnotu udržuje aktuální (rotace, keyboard). -->
+    <script>
+      (function() {
+        var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+        document.documentElement.style.setProperty('--app-height', h + 'px');
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
