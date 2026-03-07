@@ -161,6 +161,9 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     try {
       console.log('[BreathingCues] Fetching cues from DB...');
 
+      // NOTE: CueSoundSelector (smartCueSoundSlug/Variant) is currently not applied here.
+      // All active cues are loaded regardless of pack selection — intentional because only
+      // one cue pack exists in DB. When multiple packs are added, filter by slug/variant here.
       const { data, error } = await supabase
         .from('breathing_cues')
         .select('id, phase, cdn_url, generate_hz, playback_rate, duration_ms')

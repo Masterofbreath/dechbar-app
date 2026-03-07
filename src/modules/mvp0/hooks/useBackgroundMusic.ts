@@ -494,7 +494,8 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
   // ─── Start Fade OUT (pre-emptive, 9s before session end) ─────────────────
 
   const startFadeOut = useCallback(() => {
-    if (!backgroundMusicEnabled) return;
+    // No toggle check here — caller (SessionEngineModal) decides whether music is enabled.
+    // backgroundMusicEnabled guard was wrong for SMART sessions which use smartMusicEnabled.
     if (stateRef.current !== 'playing') {
       console.log('[BackgroundMusic] startFadeOut skipped — not playing, state:', stateRef.current);
       return;
@@ -522,7 +523,7 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
     });
 
     console.log('[BackgroundMusic] Pre-emptive fade OUT started (9s)');
-  }, [backgroundMusicEnabled, clearRamps, rampVolume]);
+  }, [clearRamps, rampVolume]);
 
   // ─── Volume sync (user slider change) ────────────────────────────────────
 
