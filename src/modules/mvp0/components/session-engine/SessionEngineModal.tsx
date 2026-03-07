@@ -686,17 +686,10 @@ export function SessionEngineModal({
           lastInstruction = '';       // reset so visual block re-fires on new cycle
           cueFiredForInstruction = ''; // reset so lookahead pre-fires on new cycle
 
-          // Fire inhale cue immediately at cycle boundary — same as at phase start.
-          // The lookahead window (0..CUE_LEAD_MS) would be missed if the next tick
-          // arrives at ~100ms (past the window). Firing here guarantees every cycle.
-          try {
-            breathingCues.playCue('inhale');
-            haptics.trigger('inhale');
-          } catch { /* ignore */ }
-          cueFiredForInstruction = 'NÁDECH-pre';
-
           // If phase timer already expired and we were waiting for the natural breath end,
-          // advance NOW — 100ms precision vs relying on 1s timer hitting a 0.5s window.
+          // advance NOW — skip inhale cue (we're transitioning to the next phase, not
+          // starting a new cycle). Firing inhale here would sound like it belongs to the
+          // next phase (e.g. Ticho), confusing the user.
           if (isWaitingForCycleEnd) {
             isWaitingForCycleEnd = false;
             setCurrentInstruction('');
@@ -708,9 +701,17 @@ export function SessionEngineModal({
             } else {
               completeExercise();
             }
+            return;
           }
 
-          return; // Skip rendering this tick — fresh cycle starts on next tick
+          // Fire inhale cue immediately at cycle boundary — same as at phase start.
+          // The lookahead window (0..CUE_LEAD_MS) would be missed if the next tick
+          // arrives at ~100ms (past the window). Firing here guarantees every cycle.
+          try {
+            breathingCues.playCue('inhale');
+            haptics.trigger('inhale');
+          } catch { /* ignore */ }
+          cueFiredForInstruction = 'NÁDECH-pre';
         }
 
         let newInstruction = '';
