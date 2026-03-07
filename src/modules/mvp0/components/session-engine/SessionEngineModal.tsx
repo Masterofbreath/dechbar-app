@@ -443,6 +443,12 @@ export function SessionEngineModal({
       ? Math.max(MIN_SILENCE, Math.round(totalSec * 0.05))
       : 0;
     sessionDurationSnapshotRef.current = { totalSec, silenceSec: silSec };
+    console.log('[startSmartSession] Snapshot set', {
+      totalSec,
+      silenceSec: silSec,
+      smartConfigAdjustedTotal: smartConfigAdjusted?.totalDurationSeconds,
+      startedAt: new Date().toISOString(),
+    });
 
     // Trigger music synchronously within the gesture so Safari grants autoplay token.
     triggerMusicForSession();
@@ -552,6 +558,18 @@ export function SessionEngineModal({
     const fadeOutAtMs  = sessionEndMs - (silenceSec * 1000) - (fadeOutSec * 1000);
     const delayMs      = Math.max(1000, fadeOutAtMs - Date.now());
 
+    console.log('[FadeOutTimer] SETUP', {
+      snapshotPresent: !!snapshot,
+      totalSec,
+      silenceSec,
+      fadeOutSec,
+      sessionStartISO: sessionStartTime.toISOString(),
+      nowISO: new Date().toISOString(),
+      elapsedSinceStartSec: (Date.now() - sessionStartTime.getTime()) / 1000,
+      delayMs,
+      fadeOutFiresAtISO: new Date(fadeOutAtMs).toISOString(),
+    });
+
     bgFadeOutTimerRef.current = window.setTimeout(() => {
       if (!bgFadeOutStartedRef.current) {
         bgFadeOutStartedRef.current = true;
@@ -575,8 +593,15 @@ export function SessionEngineModal({
     if (sessionState !== 'active' || !currentPhase) {
       return;
     }
-    
-    
+
+    console.log('[PhaseTimer] START', {
+      phaseIndex: currentPhaseIndex,
+      phaseType: currentPhase.type,
+      phaseName: (currentPhase as { name?: string }).name,
+      durationSec: currentPhase.duration_seconds,
+      startedAt: new Date().toISOString(),
+    });
+
     setPhaseTimeRemaining(currentPhase.duration_seconds);
     
     
@@ -814,6 +839,10 @@ export function SessionEngineModal({
     }, 1000);
     
     return () => {
+      console.log('[PhaseTimer] CLEANUP', {
+        phaseIndex: currentPhaseIndex,
+        cleanedAt: new Date().toISOString(),
+      });
       if (timerRef.current) window.clearInterval(timerRef.current);
       if (breathingIntervalId) window.clearInterval(breathingIntervalId);
       cleanupAnimation();
