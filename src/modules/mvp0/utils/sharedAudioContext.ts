@@ -114,9 +114,31 @@ export function playSharedTone(
     const ctx = getSharedAudioContext();
     if (!ctx) return;
 
-    // If still suspended after unlock attempt, silently skip
-    if (ctx.state === 'suspended') return;
+    // If suspended, attempt resume and schedule the tone for after resume.
+    // (unlockSharedAudioContext should have been called from the gesture handler,
+    //  but the resume() Promise may not have resolved yet — race condition on Safari.)
+    if (ctx.state === 'suspended') {
+      void ctx.resume().then(() => {
+        // ctx.state should be 'running' now — schedule tone
+        playToneOnContext(ctx, hz, duration, volume, isBell);
+      });
+      return;
+    }
 
+    playToneOnContext(ctx, hz, duration, volume, isBell);
+  } catch {
+    // Web Audio not supported — silent skip
+  }
+}
+
+function playToneOnContext(
+  ctx: AudioContext,
+  hz: number,
+  duration: number,
+  volume: number,
+  isBell: boolean,
+): void {
+  try {
     const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
 

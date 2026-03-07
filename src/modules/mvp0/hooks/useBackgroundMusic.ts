@@ -47,12 +47,15 @@ interface BackgroundMusicAPI {
   state: MusicPlaybackState;
   currentTrack: BackgroundTrack | null;
   tracks: BackgroundTrack[];
-}
+}// ─── Hook ─────────────────────────────────────────────────────────────────────
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
-
-export function useBackgroundMusic(options?: { volumeOverride?: number }): BackgroundMusicAPI {
+export function useBackgroundMusic(options?: { volumeOverride?: number; isActive?: boolean }): BackgroundMusicAPI {
   const { backgroundMusicEnabled, backgroundMusicVolume, selectedTrackSlug } = useSessionSettings();
+
+  // isActive: when false (modal not open), suppress auto-load and audio operations.
+  // This prevents multiple mounted SessionEngineModal instances (tab carousel)
+  // from fighting over the _isAnyInstancePlaying singleton lock.
+  const isActive = options?.isActive ?? true;
 
   // Allow caller to override volume (e.g. SMART session uses smartMusicVolume)
   const effectiveVolume = options?.volumeOverride ?? backgroundMusicVolume;
@@ -539,6 +542,8 @@ export function useBackgroundMusic(options?: { volumeOverride?: number }): Backg
 
   useEffect(() => {
     const unsub = onAudioUnlock(() => {
+      // Only retry play if this modal instance is the active one
+      if (!isActive) return;
       if (pendingPlayRef.current && stateRef.current === 'idle') {
         pendingPlayRef.current = false;
         // Ensure volume is reset to 0 before retry so fade IN always starts from silence
@@ -547,11 +552,15 @@ export function useBackgroundMusic(options?: { volumeOverride?: number }): Backg
       }
     });
     return unsub;
-  }, [playInternal]);
+  }, [playInternal, isActive]);
 
   // ─── Auto-load on track selection ────────────────────────────────────────
 
   useEffect(() => {
+    // Only auto-load when modal is open — prevents multiple SessionEngineModal instances
+    // (tab carousel pre-renders all pages) from all loading tracks and fighting over
+    // the singleton lock.
+    if (!isActive) return;
     if (selectedTrackSlug) {
       const currentSlug = currentTrack?.slug;
       if (currentSlug !== selectedTrackSlug) {
@@ -559,7 +568,7 @@ export function useBackgroundMusic(options?: { volumeOverride?: number }): Backg
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTrackSlug]);
+  }, [selectedTrackSlug, isActive]);
 
   // ─── Auto-pause when music disabled in settings ───────────────────────────
   // Note: only reacts to backgroundMusicEnabled — SMART sessions manage their
