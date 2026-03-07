@@ -80,8 +80,38 @@
          useEffect v AppLayout.tsx pak hodnotu udržuje aktuální (rotace, keyboard). -->
     <script>
       (function() {
-        var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+        var t0 = performance.now();
+        var vv = window.visualViewport;
+        var h = vv ? vv.height : window.innerHeight;
         document.documentElement.style.setProperty('--app-height', h + 'px');
+
+        // DIAGNOSTIKA — viditelné v Safari DevTools: Develop → [iPhone] → Console
+        var isPwa = window.navigator.standalone === true ||
+                    window.matchMedia('(display-mode: standalone)').matches;
+        console.group('[AppHeight diag] inline script (HTML parse)');
+        console.log('T (ms since nav)    :', Math.round(t0));
+        console.log('--app-height set to :', h + 'px');
+        console.log('visualViewport.h    :', vv ? vv.height : 'N/A (API unavailable)');
+        console.log('window.innerHeight  :', window.innerHeight);
+        console.log('screen.height       :', screen.height);
+        console.log('isPWA standalone    :', isPwa);
+        console.log('CSS 100dvh fallback : would have been used BEFORE this script ran');
+        console.groupEnd();
+
+        // Zachyť jak se visualViewport změní po finalizaci safe-area
+        if (vv) {
+          vv.addEventListener('resize', function onFirstResize() {
+            var h2 = vv.height;
+            var t2 = performance.now();
+            document.documentElement.style.setProperty('--app-height', h2 + 'px');
+            console.group('[AppHeight diag] visualViewport resize (safe-area finalized?)');
+            console.log('T (ms since nav)    :', Math.round(t2));
+            console.log('--app-height updated:', h2 + 'px');
+            console.log('delta from inline   :', (h2 - h) + 'px  ← if nonzero, inline had wrong value!');
+            console.groupEnd();
+            // Nechej listener běžet — chceme vidět všechny změny
+          });
+        }
       })();
     </script>
     <div id="root"></div>

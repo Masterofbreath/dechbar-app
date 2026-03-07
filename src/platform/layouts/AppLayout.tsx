@@ -78,21 +78,49 @@ export function AppLayout({
   // Tuto proměnnou pak používáme místo 100dvh/100vh na .app-layout.
   // Při každé změně viewportu (rotace, keyboard) hodnotu aktualizujeme.
   useEffect(() => {
-    const setAppHeight = () => {
+    const setAppHeight = (label: string) => {
       const h = window.visualViewport?.height ?? window.innerHeight;
+      const prev = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue('--app-height') || '0'
+      );
       document.documentElement.style.setProperty('--app-height', `${h}px`);
+
+      // DIAGNOSTIKA
+      const nav = document.querySelector<HTMLElement>('.bottom-nav');
+      const navRect = nav?.getBoundingClientRect();
+      const vv = window.visualViewport;
+      console.group(`[AppHeight diag] useEffect → ${label}`);
+      console.log('T (ms since nav)       :', Math.round(performance.now()));
+      console.log('--app-height set to    :', `${h}px`);
+      console.log('delta from inline/prev :', `${Math.round((h - prev) * 10) / 10}px ← if nonzero, timing issue!`);
+      console.log('visualViewport.height  :', vv?.height ?? 'N/A');
+      console.log('window.innerHeight     :', window.innerHeight);
+      console.log('isPWA standalone       :', window.matchMedia('(display-mode: standalone)').matches);
+      if (nav && navRect) {
+        const gap = window.innerHeight - navRect.bottom;
+        console.log('BottomNav rect.bottom  :', Math.round(navRect.bottom), `(gap below: ${Math.round(gap)}px) ← should be ~0`);
+        console.log('BottomNav rect.height  :', Math.round(navRect.height));
+        if (Math.abs(gap) > 2) {
+          console.warn('⚠️  BottomNav gap DETECTED:', Math.round(gap) + 'px below viewport bottom!');
+        } else {
+          console.log('✅ BottomNav position OK');
+        }
+      } else {
+        console.log('BottomNav DOM          : not found yet');
+      }
+      console.groupEnd();
     };
 
-    setAppHeight();
-    requestAnimationFrame(setAppHeight);
+    setAppHeight('mount (sync)');
+    requestAnimationFrame(() => setAppHeight('rAF after mount'));
 
     const vv = window.visualViewport;
-    vv?.addEventListener('resize', setAppHeight);
-    window.addEventListener('orientationchange', setAppHeight);
+    vv?.addEventListener('resize', () => setAppHeight('visualViewport resize'));
+    window.addEventListener('orientationchange', () => setAppHeight('orientationchange'));
 
     return () => {
-      vv?.removeEventListener('resize', setAppHeight);
-      window.removeEventListener('orientationchange', setAppHeight);
+      vv?.removeEventListener('resize', () => setAppHeight('visualViewport resize'));
+      window.removeEventListener('orientationchange', () => setAppHeight('orientationchange'));
     };
   }, []);
 
