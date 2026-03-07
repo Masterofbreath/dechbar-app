@@ -11,16 +11,16 @@
   display: flex;
   flex-direction: column;
 
-  /* iOS PWA fix: --app-height = window.innerHeight (nastaveno inline scriptem v index.html
-     a udržováno v AppLayout.tsx). BottomNav (position:fixed; bottom:0) sedí vždy na
-     spodku innerHeight — app-layout musí mít přesně tuto výšku, jinak vznikne prázdný
-     pruh pod layoutem. height (ne min-height) zajistí přesnou shodu s viewport výškou. */
-  height: var(--app-height, 100dvh);
-  background: var(--color-background); /* #121212 */
+  /* 100svh = "small viewport height" = výška viewportu při NEJMENŠÍ možné viewportu
+     (= s viditelným iOS Safari toolbar, adresním řádkem apod.).
+     Na iOS PWA cold-start je toolbar dočasně viditelný → layout = 100svh = toolbar-aware.
+     Po schování toolbaru (scroll) se layout přirozeně prodlouží přes min-height.
+     100dvh (dynamic) nefunguje spolehlivě na cold-start — mění se asynchronně. */
+  min-height: 100svh;
+  background: var(--color-background);
 
-  /* overflow: clip — nevytváří scroll container (na rozdíl od hidden), čímž se
-     předchází bugu kde iOS WebKit pozicuje position:fixed potomky relativně
-     k overflow containeru místo viewportu. */
+  /* overflow: clip — nevytváří scroll container na rozdíl od overflow:hidden,
+     takže iOS WebKit správně pozicuje position:fixed potomky (BottomNav) vůči viewportu. */
   overflow: hidden;
   overflow: clip;
 }

@@ -16,7 +16,7 @@
  */
 
 import { createPortal } from 'react-dom';
-import { useEffect, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { TopNav } from '../components/navigation/TopNav';
 import { BottomNav } from '../components/navigation/BottomNav';
 import { StickyAudioPlayer } from '../components/AudioPlayer';
@@ -68,52 +68,9 @@ export function AppLayout({
   // Synchronizace přehrávače mezi záložkami ve stejném browseru (BroadcastChannel)
   usePlayerBroadcast();
 
-  // iOS PWA fix: při cold-start PWA iOS WebKit nejprve renderuje layout s "large viewport"
-  // (safe-area insets = 0), teprve po chvíli finalizuje skutečné hodnoty safe-area.
-  // Výsledek: celý .app-layout je o ~safe-area-inset-bottom (34px) kratší než displej
-  // a BottomNav visí výše. Po prvním scrollu iOS přepočítá → bug zmizí.
-  //
-  // Fix: --app-height CSS proměnná nastavená ze window.visualViewport.height.
-  // visualViewport API vrací OKAMŽITĚ správnou výšku bez toolbarů (=skutečná dostupná výška).
-  // Tuto proměnnou pak používáme místo 100dvh/100vh na .app-layout.
-  // Při každé změně viewportu (rotace, keyboard) hodnotu aktualizujeme.
-  // iOS PWA fix: --app-height = window.innerHeight, aktualizováno při každé změně.
-  // BottomNav (position:fixed; bottom:0) sedí vždy na spodku innerHeight.
-  // .app-layout potřebuje min-height = innerHeight aby nevznikal prázdný pruh.
-  // Na iOS PWA se innerHeight mění při toolbar animaci → trackujeme maximum.
-  useEffect(() => {
-    let maxH = window.innerHeight;
 
-    const update = () => {
-      const h = window.innerHeight;
-      // Zachovej maximum — iOS toolbar animace přechodně sníží innerHeight,
-      // nechceme layout zmenšovat a pak zvětšovat (flicker).
-      if (h > maxH) maxH = h;
-      document.documentElement.style.setProperty('--app-height', `${maxH}px`);
-
-      // Diagnostika — odstraň až bug vyřešen
-      const nav = document.querySelector<HTMLElement>('.bottom-nav');
-      const rect = nav?.getBoundingClientRect();
-      const gap = rect ? h - rect.bottom : null;
-      console.log(`[AppHeight] innerH=${h} maxH=${maxH} navBottom=${rect ? Math.round(rect.bottom) : 'N/A'} gap=${gap !== null ? Math.round(gap) : 'N/A'}px`);
-    };
-
-    update();
-    requestAnimationFrame(update);
-
-    const vv = window.visualViewport;
-    vv?.addEventListener('resize', update);
-    window.addEventListener('resize', update);
-    window.addEventListener('orientationchange', () => {
-      maxH = 0; // Reset max při rotaci — nová orientace = nové dimenze
-      update();
-    });
-
-    return () => {
-      vv?.removeEventListener('resize', update);
-      window.removeEventListener('resize', update);
-    };
-  }, []);
+  // Žádný JS viewport hack — layout používá čistě CSS 100svh.
+  // Viz src/styles/layouts/app-layout.css.
 
   return (
     <div className={`app-layout${hasPlayer ? ' app-layout--has-player' : ''}`}>
