@@ -190,6 +190,27 @@ export function playSharedTone(
       return;
     }
 
+    // iOS-specific: AudioContext can enter 'interrupted' state (phone call, lock screen, app switch).
+    // On desktop Safari this state never occurs. When interrupted, we force-recreate the context
+    // by nulling _ctx — getSharedAudioContext() will create a fresh one on next call.
+    // We then attempt to play the tone on the new context after a short delay.
+    if (ctx.state === ('interrupted' as AudioContextState)) {
+      console.warn(`[SharedAudio] playSharedTone: ctx interrupted — recreating context for hz=${hz}`, { platform: getPlatformLabel() });
+      _ctx = null; // force recreation on next getSharedAudioContext() call
+      // Small delay to let iOS finalize the interruption before creating new context
+      window.setTimeout(() => {
+        const freshCtx = getSharedAudioContext();
+        if (freshCtx && freshCtx.state === 'running') {
+          playToneOnContext(freshCtx, hz, duration, volume, isBell, 0.015);
+        } else if (freshCtx && freshCtx.state === 'suspended') {
+          void freshCtx.resume().then(() => {
+            playToneOnContext(freshCtx, hz, duration, volume, isBell, 0.015);
+          });
+        }
+      }, 300);
+      return;
+    }
+
     if (ctx.state !== 'running') {
       console.warn(`[SharedAudio] playSharedTone: ctx state=${ctx.state}, skipping hz=${hz}`);
       return;

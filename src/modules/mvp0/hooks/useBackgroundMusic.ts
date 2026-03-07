@@ -391,7 +391,31 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
 
       await primary.play();
 
-      rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+      // iOS PWA fix: on iOS, play() resolves but audio may not be buffered yet (readyState < 3).
+      // Starting rampVolume immediately causes fade IN to complete before audio actually plays
+      // → user hears music "jump" to full volume when it finally buffers.
+      // Fix: wait for 'canplay' if audio isn't ready yet, then start the ramp.
+      // On desktop Safari / Chrome, readyState is typically 4 (HAVE_ENOUGH_DATA) already —
+      // the canplay event fires instantly or the condition is true immediately → no delay.
+      if (primary.readyState >= 3) {
+        // Audio is ready — start fade IN immediately (desktop Safari / cached audio path)
+        rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+      } else {
+        // Audio not yet buffered — wait for canplay then fade IN (iOS PWA / slow network path)
+        console.log('[BackgroundMusic] readyState < 3, waiting for canplay before fade IN', {
+          platform: getPlatformLabel(),
+          readyState: primary.readyState,
+        });
+        const onCanPlay = () => {
+          primary.removeEventListener('canplay', onCanPlay);
+          // Only ramp if we're still playing (not stopped/paused while waiting)
+          if (stateRef.current === 'playing') {
+            rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
+            console.log('[BackgroundMusic] canplay received — starting fade IN', { platform: getPlatformLabel() });
+          }
+        };
+        primary.addEventListener('canplay', onCanPlay);
+      }
       scheduleCrossfade(primary);
 
       // Resume automatically when OS pauses audio due to device switch
