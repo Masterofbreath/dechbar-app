@@ -20,6 +20,7 @@ import { useMembership } from '@/platform/membership';
 import { useUserState } from '@/platform/user/userStateStore';
 import { LockedFeatureModal } from './LockedFeatureModal';
 import { useSmartExercise } from '../hooks/useSmartExercise';
+import { unlockSharedAudioContext } from '../utils/sharedAudioContext';
 import type { SmartSessionConfig } from '../types/exercises';
 import type { Exercise } from '../types/exercises';
 
@@ -58,6 +59,11 @@ export function SmartExerciseButton({ onSmartStart }: SmartExerciseButtonProps) 
     }
 
     if (isComputing) return;
+
+    // Unlock Web Audio API synchronously BEFORE any await — Safari loses the
+    // gesture token after the first await, so AudioContext.resume() must be
+    // called here while we are still inside the synchronous gesture handler.
+    unlockSharedAudioContext();
 
     setIsComputing(true);
     setComputeError(null);

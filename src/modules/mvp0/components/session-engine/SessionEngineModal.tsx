@@ -569,6 +569,15 @@ export function SessionEngineModal({
       // How many ms before the visual phase change to fire the audio cue.
       // Compensates for HTMLAudioElement decode latency (~50-150ms on Safari).
       const CUE_LEAD_MS = 80;
+
+      // Fire inhale cue immediately at session/phase start — before the first 100ms tick.
+      // Without this, the first cue is missed: the lookahead window (0..CUE_LEAD_MS)
+      // closes before the interval fires its first tick (~100ms after start).
+      try {
+        breathingCues.playCue('inhale');
+        haptics.trigger('inhale');
+      } catch { /* ignore */ }
+      cueFiredForInstruction = 'NÁDECH-pre';
       
       const updateBreathingState = () => {
         // Apply multiplier to this cycle's pattern

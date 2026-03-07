@@ -134,20 +134,25 @@ export function SmartPrepState({
   }, [onStart, onUnlockAudio]);
 
   // Auto-countdown — plays bells at 2s and 1s, triggers start at 0
+  // All side effects are scheduled via setTimeout(fn, 0) to run AFTER the
+  // current render — avoids "setState during render" React/ESLint errors.
   useEffect(() => {
     timerRef.current = window.setInterval(() => {
       setCountdown((prev) => {
-        const next = prev - 1;
+        const next = prev <= 1 ? 0 : prev - 1;
+
         if (next === 2) {
-          onUnlockAudio?.(); // unlock before bell
-          onPlayBell?.(0.5);
+          window.setTimeout(() => {
+            onUnlockAudio?.();
+            onPlayBell?.(0.5);
+          }, 0);
         } else if (next === 1) {
-          onPlayBell?.(1.0);
-        } else if (next <= 0) {
+          window.setTimeout(() => { onPlayBell?.(1.0); }, 0);
+        } else if (next === 0) {
           window.clearInterval(timerRef.current!);
-          triggerStart();
-          return 0;
+          window.setTimeout(() => { triggerStart(); }, 0);
         }
+
         return next;
       });
     }, 1000);
@@ -155,7 +160,8 @@ export function SmartPrepState({
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
-  }, [triggerStart, onPlayBell, onUnlockAudio]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleScreenTap = useCallback(() => {
     triggerStart();
