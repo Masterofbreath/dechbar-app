@@ -21,7 +21,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
-import { onAudioUnlock, acquirePlayback, releasePlayback, getPlatformLabel } from '../utils/sharedAudioContext';
+import { onAudioUnlock, acquirePlayback, releasePlayback, getPlatformLabel, unlockSharedAudioContext } from '../utils/sharedAudioContext';
 import type { BackgroundTrack, MusicPlaybackState } from '../types/audio';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -511,9 +511,15 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
           volumeAtCheck: primary.volume,
         });
         window.setTimeout(() => {
-          console.log('[BackgroundMusic] setTimeout(0) fired', {
+          // iOS fix: re-assert volume=0 here inside the macrotask.
+          // iOS resets primary.volume to 1.0 asynchronously after play() resolves
+          // (confirmed: volume is 0 right after play(), but 1 by the time setTimeout(0) fires).
+          // Setting it to 0 again here, immediately before rampVolume starts, ensures the
+          // fade IN ramp always begins from silence. On desktop, volume is already 0 — no-op.
+          primary.volume = 0;
+          console.log('[BackgroundMusic] setTimeout(0) fired — re-asserted volume=0', {
             platform: getPlatformLabel(),
-            volume: primary.volume,  // DIAG: when exactly does iOS reset to 1?
+            volume: primary.volume,
             paused: primary.paused,
             msElapsed: Date.now() - playCalledAt,
           });
@@ -539,7 +545,9 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
             msElapsed: Date.now() - playCalledAt,
           });
           window.setTimeout(() => {
-            console.log('[BackgroundMusic] setTimeout(0) fired (canplay path)', {
+            // Re-assert volume=0 here too — same iOS async reset applies on canplay path
+            primary.volume = 0;
+            console.log('[BackgroundMusic] setTimeout(0) fired (canplay path) — re-asserted volume=0', {
               platform: getPlatformLabel(),
               volume: primary.volume,
               paused: primary.paused,
@@ -603,22 +611,16 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
           });
           navigator.mediaSession.playbackState = 'playing';
 
-          // iOS fix: after activating mediaSession, play a 0-volume silent HTMLAudio element.
-          // This "re-anchors" the iOS audio session (including Web Audio API / AudioContext)
-          // to the active MediaSession playback category — making it immune to the hardware
-          // ringer switch. Without this, AudioContext tones (bells, cues) may still be routed
-          // to the ringer/notification category and get muted by the switch.
-          // The silent buffer is imperceptible and safe on all platforms.
-          try {
-            const silentAudio = new Audio();
-            // Minimal valid silent MP3 (44 bytes, 0.02s, 44.1kHz, silence)
-            silentAudio.src = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhgCenp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6e////////////////////////////////////////////////////////////////AAAAAExhdmM1OC41AAAAAAAAAAAAAAAA//tQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQZB4P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
-            silentAudio.volume = 0;
-            void silentAudio.play().catch(() => null);
-            console.log('[BackgroundMusic] Silent buffer played to anchor AudioContext to MediaSession', { platform: getPlatformLabel() });
-          } catch {
-            // silent skip — non-critical
-          }
+          // iOS fix: after activating mediaSession, call unlockSharedAudioContext() to
+          // re-anchor the Web Audio API AudioContext to the active MediaSession playback
+          // category — making bells/cues immune to the hardware ringer switch.
+          // unlockSharedAudioContext() plays a silent 1-frame Web Audio buffer which
+          // is enough to re-associate the context with the current audio session.
+          // NOTE: we do NOT call play() on a new HTMLAudioElement here — doing so would
+          // trigger iOS to reinitialise the audio session and reset primary.volume to 1.0,
+          // destroying the fade IN ramp (confirmed by volumechange diagnostics).
+          unlockSharedAudioContext();
+          console.log('[BackgroundMusic] Unlocked shared AudioContext to anchor to MediaSession', { platform: getPlatformLabel() });
         } catch {
           // mediaSession not fully supported — silent skip
         }
