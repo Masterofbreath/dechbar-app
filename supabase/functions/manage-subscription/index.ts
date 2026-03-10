@@ -76,8 +76,8 @@ serve(async (req: Request) => {
     }
 
     const action = body?.action;
-    if (!action || !['cancel', 'reactivate', 'get_invoices'].includes(action)) {
-      return jsonResponse({ error: 'Invalid action. Must be: cancel, reactivate, get_invoices' }, 400);
+    if (!action || !['cancel', 'reactivate', 'get_invoices', 'change_interval'].includes(action)) {
+      return jsonResponse({ error: 'Invalid action. Must be: cancel, reactivate, get_invoices, change_interval' }, 400);
     }
 
     console.log(`[manage-subscription] action=${action}, userId=${userId}`);
@@ -125,10 +125,10 @@ serve(async (req: Request) => {
       }
     }
 
-    // ── cancel / reactivate: fetch subscription IDs ────────────────────
+    // ── cancel / reactivate / change_interval: fetch subscription IDs ─
     const { data: membership, error: fetchError } = await adminClient
       .from('memberships')
-      .select('stripe_subscription_id, status, plan')
+      .select('stripe_subscription_id, status, plan, billing_interval')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -194,6 +194,66 @@ serve(async (req: Request) => {
       }
 
       return jsonResponse({ success: true, newStatus: 'active' });
+    }
+
+    // ── change_interval ────────────────────────────────────────────────
+    // Přepne předplatné z monthly na annual (nebo naopak).
+    // Stripe okamžitě vystaví poměrnou fakturu (proration_behavior: 'always_invoice').
+    if (action === 'change_interval') {
+      const newInterval: string | undefined = (body as any)?.new_interval;
+      if (!newInterval || !['monthly', 'annual'].includes(newInterval)) {
+        return jsonResponse({ error: 'Chybí nebo neplatný parametr new_interval (monthly | annual)' }, 400);
+      }
+
+      if (membership.status !== 'active') {
+        return jsonResponse({ error: 'Předplatné není aktivní' }, 400);
+      }
+
+      if (membership.billing_interval === newInterval) {
+        return jsonResponse({ error: `Předplatné je již na intervalu ${newInterval}` }, 400);
+      }
+
+      // Hardcoded SMART price IDs — stejné jako v create-checkout-session subscriptionPriceMap
+      const SMART_PRICE_IDS: Record<string, string> = {
+        monthly: Deno.env.get('STRIPE_PRICE_SMART_MONTHLY') || 'price_1T2S3eK0OYr7u1q9W5ZW042C',
+        annual:  Deno.env.get('STRIPE_PRICE_SMART_ANNUAL')  || 'price_1T2S3dK0OYr7u1q9bwA0cNS8',
+      };
+
+      const newPriceId = SMART_PRICE_IDS[newInterval];
+      if (!newPriceId) {
+        return jsonResponse({ error: 'Nenalezeno Price ID pro nový interval' }, 400);
+      }
+
+      // Načti aktuální subscription item ID
+      const subscription = await stripe.subscriptions.retrieve(membership.stripe_subscription_id);
+      const itemId = subscription.items.data[0]?.id;
+      if (!itemId) {
+        return jsonResponse({ error: 'Stripe subscription neobsahuje žádné položky' }, 500);
+      }
+
+      // Aktualizuj subscription — Stripe vystaví poměrnou fakturu okamžitě
+      await stripe.subscriptions.update(membership.stripe_subscription_id, {
+        items: [{ id: itemId, price: newPriceId }],
+        proration_behavior: 'always_invoice',
+      });
+      console.log(`[manage-subscription] change_interval: ${membership.billing_interval} → ${newInterval} (${newPriceId})`);
+
+      // DB update — non-blocking
+      const { error: dbError } = await adminClient
+        .from('memberships')
+        .update({
+          billing_interval: newInterval,
+          stripe_price_id: newPriceId,
+        })
+        .eq('user_id', userId);
+
+      if (dbError) {
+        console.error('[manage-subscription] change_interval: DB update failed (non-blocking):', dbError.message);
+      } else {
+        console.log('[manage-subscription] change_interval: DB billing_interval updated');
+      }
+
+      return jsonResponse({ success: true, newInterval });
     }
 
     return jsonResponse({ error: 'Unknown action' }, 400);

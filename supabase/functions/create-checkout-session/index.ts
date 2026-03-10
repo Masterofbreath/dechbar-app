@@ -138,7 +138,8 @@ serve(async (req) => {
     const paymentMode = priceObject.type === 'recurring' ? 'subscription' : 'payment';
 
     // ── URL defaults ──────────────────────────────────────────────
-    const baseUrl = Deno.env.get('VITE_APP_URL') || 'https://app.dechbar.cz';
+    // APP_BASE_URL (bez VITE_ prefixu — nefunguje v Deno Edge Runtime)
+    const baseUrl = Deno.env.get('APP_BASE_URL') || Deno.env.get('VITE_APP_URL') || 'https://www.dechbar.cz';
     const isEmbedded = uiMode === 'embedded';
 
     // ── Session config ────────────────────────────────────────────
@@ -170,7 +171,10 @@ serve(async (req) => {
       sessionConfig.customer_email = userEmail;
     }
 
-    // Subscription-specific data (3-day free trial, then first charge)
+    // Subscription-specific data:
+    // - trial_period_days: 3 → uživatel má 3 dny zdarma
+    // - payment_method_collection: 'always' → karta povinná hned při checkoutu,
+    //   platba proběhne až po uplynutí trialu (ne při registraci)
     if (paymentMode === 'subscription') {
       sessionConfig.subscription_data = {
         trial_period_days: 3,
@@ -181,6 +185,7 @@ serve(async (req) => {
           is_guest: userId ? 'false' : 'true',
         },
       };
+      sessionConfig.payment_method_collection = 'always';
     }
 
     // Default return/success path per module (no query params — prevents double-? in URL)

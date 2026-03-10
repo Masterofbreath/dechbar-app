@@ -7,11 +7,11 @@
  */
 
 // Stripe Price IDs — SMART Membership
-// TEST:  prod_U4qpPAli4NkHwK  (test mode — sk_test_...)
-// LIVE:  nastavit VITE_STRIPE_PRICE_SMART_MONTHLY / VITE_STRIPE_PRICE_SMART_ANNUAL v .env.production
+// LIVE: prod_U0SzbyNG0vrzZ0 (acct_1S3eJ5K0OYr7u1q9)
+// Env override: VITE_STRIPE_PRICE_SMART_MONTHLY / VITE_STRIPE_PRICE_SMART_ANNUAL v .env.production
 export const PRICE_IDS_SMART = {
-  monthly: import.meta.env.VITE_STRIPE_PRICE_SMART_MONTHLY ?? 'price_1T6h8FK0OYr7u1q9UEwOhdjW',
-  annual: import.meta.env.VITE_STRIPE_PRICE_SMART_ANNUAL ?? 'price_1T6hANK0OYr7u1q9W0p4EZix',
+  monthly: import.meta.env.VITE_STRIPE_PRICE_SMART_MONTHLY ?? 'price_1T2S3eK0OYr7u1q9W5ZW042C',
+  annual: import.meta.env.VITE_STRIPE_PRICE_SMART_ANNUAL ?? 'price_1T2S3dK0OYr7u1q9bwA0cNS8',
 } as const;
 
 // AI COACH (pro Můj účet a budoucí rozšíření)

@@ -50,6 +50,7 @@ interface MembershipFull {
   plan: 'ZDARMA' | 'SMART' | 'AI_COACH';
   status: 'active' | 'cancelled' | 'expired';
   type: 'lifetime' | 'subscription';
+  billingInterval: 'monthly' | 'annual' | null;
   purchasedAt: string;
   expiresAt: string | null;
   metadata: Record<string, unknown> | null;
@@ -60,7 +61,8 @@ type NicknameEditState = 'idle' | 'editing' | 'checking' | 'saving' | 'success' 
 type EmailChangeState = 'idle' | 'expanded' | 'loading' | 'success' | 'error';
 type PasswordState = 'idle' | 'loading' | 'success' | 'error';
 type DeleteState = 'idle' | 'confirm' | 'loading' | 'error';
-type CancelSubState = 'idle' | 'confirm' | 'loading' | 'error';
+  type CancelSubState = 'idle' | 'confirm' | 'loading' | 'error';
+  type ChangeIntervalState = 'idle' | 'confirm' | 'loading' | 'error';
 
 // ============================================================
 // Helpers
@@ -97,16 +99,15 @@ function getModuleDeepLink(moduleId: string): string {
 }
 
 function getBillingLabel(membership: MembershipFull | null): string {
-  if (!membership || membership.type !== 'subscription' || !membership.expiresAt) return '';
+  if (!membership || membership.type !== 'subscription') return '';
 
   if (isMembershipTrial(membership)) {
     return `${getPlanLabel(membership.plan)} · Speciální akce – zdarma`;
   }
 
-  const msToExpiry = new Date(membership.expiresAt).getTime() - Date.now();
-  const daysToExpiry = msToExpiry / (1000 * 60 * 60 * 24);
+  const isAnnual = membership.billingInterval === 'annual';
 
-  if (daysToExpiry > 35) {
+  if (isAnnual) {
     const monthlyEq = membership.plan === 'SMART' ? '125 Kč/měsíc' : '245 Kč/měsíc';
     const annual = membership.plan === 'SMART' ? '1 500 Kč' : '2 940 Kč';
     return `${getPlanLabel(membership.plan)} · ${monthlyEq} · účtováno ročně (${annual})`;
@@ -123,7 +124,7 @@ function getBillingLabel(membership: MembershipFull | null): string {
 async function fetchMembershipFull(userId: string): Promise<MembershipFull | null> {
   const { data, error } = await supabase
     .from('memberships')
-    .select('plan, status, type, purchased_at, expires_at, metadata')
+    .select('plan, status, type, billing_interval, purchased_at, expires_at, metadata')
     .eq('user_id', userId)
     .in('status', ['active', 'cancelled'])
     .order('created_at', { ascending: false })
@@ -137,6 +138,7 @@ async function fetchMembershipFull(userId: string): Promise<MembershipFull | nul
     plan: data.plan,
     status: data.status,
     type: data.type,
+    billingInterval: (data.billing_interval as 'monthly' | 'annual' | null) ?? null,
     purchasedAt: data.purchased_at,
     expiresAt: data.expires_at ?? null,
     metadata: (data.metadata as Record<string, unknown> | null) ?? null,
@@ -155,11 +157,13 @@ export function MujUcetPage() {
   const {
     cancelSubscription,
     reactivateSubscription,
+    changeInterval,
     invoices,
     isLoadingInvoices,
     fetchInvoices,
     cancelState,
     reactivateState,
+    changeIntervalState,
     error: subError,
     clearError: clearSubError,
   } = useManageSubscription();
@@ -186,6 +190,7 @@ export function MujUcetPage() {
   const [passwordState, setPasswordState] = useState<PasswordState>('idle');
   const [deleteState, setDeleteState] = useState<DeleteState>('idle');
   const [cancelSubState, setCancelSubState] = useState<CancelSubState>('idle');
+  const [changeIntervalConfirm, setChangeIntervalConfirm] = useState<ChangeIntervalState>('idle');
 
   // Sdílený checkout pro SMART (stejný flow jako na landing; uživatel je vždy přihlášen → bez email modalu)
   const {
@@ -330,6 +335,17 @@ export function MujUcetPage() {
       setCancelSubState('idle');
     }
   }, [cancelSubscription, clearSubError, subError]);
+
+  const handleChangeToAnnual = useCallback(async () => {
+    setChangeIntervalConfirm('loading');
+    clearSubError();
+    await changeInterval('annual');
+    if (changeIntervalState === 'error') {
+      setChangeIntervalConfirm('error');
+    } else {
+      setChangeIntervalConfirm('idle');
+    }
+  }, [changeInterval, changeIntervalState, clearSubError]);
 
   if (!user) return null;
 
@@ -784,7 +800,70 @@ export function MujUcetPage() {
 
                 {/* "Zrušit předplatné" skryto pro trial — uživatel nic neplatí */}
                 {!trial && (
-                  <div className="muj-ucet-plan__actions">
+                  <>
+                    {/* ── Upgrade monthly → annual ── */}
+                    {membership.billingInterval === 'monthly' && (
+                      <div className="muj-ucet-plan__interval-upgrade">
+                        <hr className="muj-ucet-section__divider" />
+                        <p className="muj-ucet-plan__upgrade-label">
+                          Přejít na roční platbu a ušetřit 50 %?
+                        </p>
+                        <p className="muj-ucet-plan__detail">
+                          Roční plán vychází na 125 Kč/měsíc místo 249 Kč/měsíc. Rozdíl ti bude
+                          automaticky zohledněn na příští faktuře.
+                        </p>
+
+                        {changeIntervalConfirm === 'idle' && (
+                          <button
+                            type="button"
+                            className="muj-ucet-btn muj-ucet-btn--primary muj-ucet-btn--sm"
+                            style={{ marginTop: '12px' }}
+                            onClick={() => setChangeIntervalConfirm('confirm')}
+                          >
+                            Přejít na roční plán →
+                          </button>
+                        )}
+
+                        {(changeIntervalConfirm === 'confirm' || changeIntervalConfirm === 'loading' || changeIntervalConfirm === 'error') && (
+                          <div className="muj-ucet-cancel-confirm" role="alertdialog" style={{ marginTop: '12px' }}>
+                            <p className="muj-ucet-cancel-confirm__title">
+                              Potvrdit přechod na roční plán?
+                            </p>
+                            <p className="muj-ucet-cancel-confirm__text">
+                              Poměrná část tvého aktuálního měsíčního tarifu bude odečtena od roční ceny.
+                              Platba za roční plán proběhne okamžitě.
+                            </p>
+                            {(changeIntervalConfirm === 'error' || (changeIntervalState === 'error' && subError)) && (
+                              <p className="muj-ucet-feedback muj-ucet-feedback--error" role="alert">
+                                {subError ?? 'Nepodařilo se změnit plán. Zkus to znovu.'}
+                              </p>
+                            )}
+                            <div className="muj-ucet-cancel-confirm__actions">
+                              <button
+                                type="button"
+                                className="muj-ucet-btn muj-ucet-btn--ghost muj-ucet-btn--sm"
+                                onClick={() => { setChangeIntervalConfirm('idle'); clearSubError(); }}
+                                disabled={changeIntervalConfirm === 'loading' || changeIntervalState === 'loading'}
+                              >
+                                Zpět
+                              </button>
+                              <button
+                                type="button"
+                                className="muj-ucet-btn muj-ucet-btn--primary muj-ucet-btn--sm"
+                                onClick={handleChangeToAnnual}
+                                disabled={changeIntervalConfirm === 'loading' || changeIntervalState === 'loading'}
+                              >
+                                {changeIntervalConfirm === 'loading' || changeIntervalState === 'loading'
+                                  ? 'Přepínám...'
+                                  : 'Potvrdit přechod'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                      <div className="muj-ucet-plan__actions">
                     {cancelSubState === 'idle' && (
                       <button
                         type="button"
@@ -833,6 +912,7 @@ export function MujUcetPage() {
                       </div>
                     )}
                   </div>
+                  </>
                 )}
               </>
             )}

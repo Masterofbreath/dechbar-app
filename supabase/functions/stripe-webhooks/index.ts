@@ -1046,7 +1046,7 @@ serve(async (req) => {
             if (email) {
               const priceId = subscription.items.data[0].price.id;
               const moduleInfo = await getModuleFromPriceId(supabase, priceId);
-              const productConfig = getProductConfig(moduleInfo?.id ?? 'smart');
+              const productConfig = getProductConfig(moduleInfo?.module_id ?? 'membership-smart');
 
               const appBaseUrl = Deno.env.get('APP_BASE_URL') || 'https://www.dechbar.cz';
               const deepLinkTarget = `${appBaseUrl}${productConfig.deepLinkPath}`;

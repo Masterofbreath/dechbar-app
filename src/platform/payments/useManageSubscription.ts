@@ -37,11 +37,13 @@ export type ActionState = 'idle' | 'loading' | 'success' | 'error';
 export interface UseManageSubscriptionReturn {
   cancelSubscription: () => Promise<void>;
   reactivateSubscription: () => Promise<void>;
+  changeInterval: (newInterval: 'monthly' | 'annual') => Promise<void>;
   invoices: Invoice[];
   isLoadingInvoices: boolean;
   fetchInvoices: () => Promise<void>;
   cancelState: ActionState;
   reactivateState: ActionState;
+  changeIntervalState: ActionState;
   error: string | null;
   clearError: () => void;
 }
@@ -61,6 +63,7 @@ export function useManageSubscription(): UseManageSubscriptionReturn {
 
   const [cancelState, setCancelState] = useState<ActionState>('idle');
   const [reactivateState, setReactivateState] = useState<ActionState>('idle');
+  const [changeIntervalState, setChangeIntervalState] = useState<ActionState>('idle');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,6 +136,37 @@ export function useManageSubscription(): UseManageSubscriptionReturn {
     }
   }, [userId, queryClient]);
 
+  // ── Change billing interval (monthly ↔ annual) ───────────
+  const changeInterval = useCallback(async (newInterval: 'monthly' | 'annual') => {
+    setChangeIntervalState('loading');
+    setError(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke<{
+        success: boolean;
+        newInterval: string;
+        error?: string;
+      }>('manage-subscription', {
+        body: { action: 'change_interval', new_interval: newInterval },
+      });
+
+      if (fnError) throw new Error(fnError.message || 'Nepodařilo se změnit interval předplatného');
+      if (!data?.success) throw new Error(data?.error || 'Nepodařilo se změnit interval předplatného');
+
+      setChangeIntervalState('success');
+
+      // Sync global state + local query
+      await useUserState.getState().refreshMembership();
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: MEMBERSHIP_QUERY_KEY(userId) });
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Nepodařilo se změnit interval předplatného';
+      setError(message);
+      setChangeIntervalState('error');
+    }
+  }, [userId, queryClient]);
+
   // ── Fetch invoices (lazy — called explicitly) ─────────────
   const fetchInvoices = useCallback(async () => {
     if (isLoadingInvoices) return;
@@ -164,11 +198,13 @@ export function useManageSubscription(): UseManageSubscriptionReturn {
   return {
     cancelSubscription,
     reactivateSubscription,
+    changeInterval,
     invoices,
     isLoadingInvoices,
     fetchInvoices,
     cancelState,
     reactivateState,
+    changeIntervalState,
     error,
     clearError,
   };
