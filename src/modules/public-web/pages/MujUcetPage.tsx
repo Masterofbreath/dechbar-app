@@ -235,6 +235,18 @@ export function MujUcetPage() {
     }
   }, [profile?.nickname, nicknameEditState]);
 
+  // Synchronizuj cancelSubState s výsledkem hooku — hook neháže exception, error ukládá do 'error' state
+  useEffect(() => {
+    if (cancelState === 'error') setCancelSubState('error');
+    if (cancelState === 'success') setCancelSubState('idle');
+  }, [cancelState]);
+
+  // Synchronizuj changeIntervalConfirm s výsledkem hooku
+  useEffect(() => {
+    if (changeIntervalState === 'error') setChangeIntervalConfirm('error');
+    if (changeIntervalState === 'success') setChangeIntervalConfirm('idle');
+  }, [changeIntervalState]);
+
   // Fetch invoices when subscription section is visible
   const isPremiumSubscription =
     membership?.type === 'subscription' &&
@@ -343,23 +355,15 @@ export function MujUcetPage() {
     setCancelSubState('loading');
     clearSubError();
     await cancelSubscription();
-    if (subError) {
-      setCancelSubState('error');
-    } else {
-      setCancelSubState('idle');
-    }
-  }, [cancelSubscription, clearSubError, subError]);
+    // výsledek zpracuje useEffect sledující cancelState z hooku
+  }, [cancelSubscription, clearSubError]);
 
   const handleChangeToAnnual = useCallback(async () => {
     setChangeIntervalConfirm('loading');
     clearSubError();
     await changeInterval('annual');
-    if (changeIntervalState === 'error') {
-      setChangeIntervalConfirm('error');
-    } else {
-      setChangeIntervalConfirm('idle');
-    }
-  }, [changeInterval, changeIntervalState, clearSubError]);
+    // výsledek zpracuje useEffect sledující changeIntervalState z hooku
+  }, [changeInterval, clearSubError]);
 
   if (!user) return null;
 

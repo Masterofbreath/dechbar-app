@@ -147,26 +147,35 @@ serve(async (req: Request) => {
         return jsonResponse({ error: 'Předplatné již není aktivní' }, 400);
       }
 
-      // Stripe update — blocking error
-      await stripe.subscriptions.update(membership.stripe_subscription_id, {
+      // Stripe update — blocking error; cancel_at_period_end=true = zruší se na konci periody
+      const updatedSub = await stripe.subscriptions.update(membership.stripe_subscription_id, {
         cancel_at_period_end: true,
         metadata: { cancellation_source: 'user_self_service' },
       });
       console.log(`[manage-subscription] cancel: Stripe scheduled cancellation for ${membership.stripe_subscription_id}`);
 
-      // DB update — non-blocking
+      // Stripe vrátí cancel_at = timestamp konce periody — uložíme jako expires_at do DB
+      const cancelAt = updatedSub.cancel_at
+        ? new Date(updatedSub.cancel_at * 1000).toISOString()
+        : null;
+
+      // DB update — non-blocking; filtrujeme na stripe_subscription_id abychom nepřepsali historické záznamy
       const { error: dbError } = await adminClient
         .from('memberships')
-        .update({ status: 'cancelled' })
-        .eq('user_id', userId);
+        .update({
+          status: 'cancelled',
+          ...(cancelAt ? { expires_at: cancelAt } : {}),
+        })
+        .eq('user_id', userId)
+        .eq('stripe_subscription_id', membership.stripe_subscription_id);
 
       if (dbError) {
         console.error('[manage-subscription] cancel: DB update failed (non-blocking):', dbError.message);
       } else {
-        console.log('[manage-subscription] cancel: DB status updated to cancelled');
+        console.log('[manage-subscription] cancel: DB status=cancelled, expires_at=', cancelAt);
       }
 
-      return jsonResponse({ success: true, newStatus: 'cancelled' });
+      return jsonResponse({ success: true, newStatus: 'cancelled', expiresAt: cancelAt });
     }
 
     // ── reactivate ─────────────────────────────────────────────────────
@@ -181,11 +190,12 @@ serve(async (req: Request) => {
       });
       console.log(`[manage-subscription] reactivate: Stripe reactivated ${membership.stripe_subscription_id}`);
 
-      // DB update — non-blocking
+      // DB update — non-blocking; filtrujeme na stripe_subscription_id
       const { error: dbError } = await adminClient
         .from('memberships')
         .update({ status: 'active' })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('stripe_subscription_id', membership.stripe_subscription_id);
 
       if (dbError) {
         console.error('[manage-subscription] reactivate: DB update failed (non-blocking):', dbError.message);
@@ -249,14 +259,15 @@ serve(async (req: Request) => {
       });
       console.log(`[manage-subscription] change_interval: ${membership.billing_interval} → ${newInterval} (${newPriceId})`);
 
-      // DB update — non-blocking
+      // DB update — non-blocking; filtrujeme na stripe_subscription_id
       const { error: dbError } = await adminClient
         .from('memberships')
         .update({
           billing_interval: newInterval,
           stripe_price_id: newPriceId,
         })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('stripe_subscription_id', membership.stripe_subscription_id);
 
       if (dbError) {
         console.error('[manage-subscription] change_interval: DB update failed (non-blocking):', dbError.message);
