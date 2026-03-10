@@ -73,10 +73,6 @@ interface NavigationState {
   isFeedbackOpen: boolean;
   openFeedback: () => void;
   closeFeedback: () => void;
-
-  // PokrokPage reset signal — inkrementuje se při re-tapu Pokrok z BottomNav
-  pokrokResetSignal: number;
-  triggerPokrokReset: () => void;
   
   // Global modal actions (NEW - close all modals)
   closeAllModals: () => void;
@@ -174,10 +170,6 @@ export const useNavigation = create<NavigationState>((set) => ({
     isKPDetailOpen: false,
   }),
   closeFeedback: () => set({ isFeedbackOpen: false }),
-
-  // PokrokPage reset signal
-  pokrokResetSignal: 0,
-  triggerPokrokReset: () => set((s) => ({ pokrokResetSignal: s.pokrokResetSignal + 1 })),
   
   // Close all modals (NEW - for emergency situations)
   closeAllModals: () => set({

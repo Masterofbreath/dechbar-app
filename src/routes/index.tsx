@@ -101,7 +101,6 @@ const PaymentsAdmin  = lazy(() => import('@/platform/pages/admin/PaymentsAdmin/P
  */
 function TabCarousel() {
   const { currentTab, setCurrentTab } = useNavigation();
-  const pokrokResetSignal = useNavigation((s) => s.pokrokResetSignal);
   const [searchParams, setSearchParams] = useSearchParams();
   const { ref, dragOffset, isDragging } = useSwipeNavigation<HTMLDivElement>();
   const pageRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
@@ -161,7 +160,7 @@ function TabCarousel() {
         <div className="tab-carousel__page" ref={el => { pageRefs.current[0] = el; }}><DnesPage /></div>
         <div className="tab-carousel__page" ref={el => { pageRefs.current[1] = el; }}><CvicitPage /></div>
         <div className="tab-carousel__page" ref={el => { pageRefs.current[2] = el; }}><AkademiePage /></div>
-        <div className="tab-carousel__page" ref={el => { pageRefs.current[3] = el; }}><PokrokPage key={pokrokResetSignal} /></div>
+        <div className="tab-carousel__page" ref={el => { pageRefs.current[3] = el; }}><PokrokPage /></div>
       </div>
     </div>
   );
