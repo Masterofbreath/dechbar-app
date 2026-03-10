@@ -71,6 +71,7 @@ export function SafetyQuestionnaire({
     cardiovascular: false,
     asthma: false,
   });
+  const [noneApply, setNoneApply] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
 
@@ -80,6 +81,18 @@ export function SafetyQuestionnaire({
 
   const hasSafetyConcerns =
     answers.epilepsy || answers.pregnancy || answers.cardiovascular || answers.asthma;
+
+  function handleConditionChange(field: keyof SafetyQuestionnaireAnswers, checked: boolean) {
+    setAnswers((prev) => ({ ...prev, [field]: checked }));
+    if (checked) setNoneApply(false);
+  }
+
+  function handleNoneApply(checked: boolean) {
+    setNoneApply(checked);
+    if (checked) {
+      setAnswers({ epilepsy: false, pregnancy: false, cardiovascular: false, asthma: false });
+    }
+  }
 
   async function handleSubmit() {
     try {
@@ -120,23 +133,31 @@ export function SafetyQuestionnaire({
               <Checkbox
                 label="Mám epilepsii nebo jsem prodělal/a záchvaty"
                 checked={answers.epilepsy}
-                onChange={(e) => setAnswers({ ...answers, epilepsy: e.target.checked })}
+                onChange={(e) => handleConditionChange('epilepsy', e.target.checked)}
               />
               <Checkbox
                 label="Jsem těhotná"
                 checked={answers.pregnancy}
-                onChange={(e) => setAnswers({ ...answers, pregnancy: e.target.checked })}
+                onChange={(e) => handleConditionChange('pregnancy', e.target.checked)}
               />
               <Checkbox
                 label="Mám kardiovaskulární onemocnění (srdeční potíže)"
                 checked={answers.cardiovascular}
-                onChange={(e) => setAnswers({ ...answers, cardiovascular: e.target.checked })}
+                onChange={(e) => handleConditionChange('cardiovascular', e.target.checked)}
               />
               <Checkbox
                 label="Mám astma nebo jiné dechové problémy"
                 checked={answers.asthma}
-                onChange={(e) => setAnswers({ ...answers, asthma: e.target.checked })}
+                onChange={(e) => handleConditionChange('asthma', e.target.checked)}
               />
+              <div className="sq-questions__divider" aria-hidden="true" />
+              <div className={`sq-none-apply ${noneApply ? 'sq-none-apply--checked' : ''}`}>
+                <Checkbox
+                  label="Žádná z výše uvedených se mě netýká"
+                  checked={noneApply}
+                  onChange={(e) => handleNoneApply(e.target.checked)}
+                />
+              </div>
             </div>
 
             {/* Disclaimer */}
