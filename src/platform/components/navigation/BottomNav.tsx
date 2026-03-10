@@ -50,6 +50,7 @@ const NAV_ITEMS: NavItem[] = [
 export function BottomNav() {
   const { currentTab, setCurrentTab } = useNavigation();
   const resetAkademie = useAkademieNav((s) => s.reset);
+  const resetPokrok = useNavigation((s) => s.resetPokrok);
   const { prefetchAll } = useAkademiePrefetch();
   const { user } = useAuth();
 
@@ -57,12 +58,17 @@ export function BottomNav() {
     if (tabId === currentTab) {
       // Re-tap aktivního tabu: reset vnitřní navigace
       if (tabId === 'akademie') resetAkademie();
+      if (tabId === 'pokrok') resetPokrok();
       return;
     }
     // Přechod na Akademii: vždy reset + prefetch
     if (tabId === 'akademie') {
       resetAkademie();
       prefetchAll(user?.id);
+    }
+    // Přechod na Pokrok: vždy reset na Přehled tab
+    if (tabId === 'pokrok') {
+      resetPokrok();
     }
     setCurrentTab(tabId);
   }

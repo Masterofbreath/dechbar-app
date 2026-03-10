@@ -73,6 +73,11 @@ interface NavigationState {
   isFeedbackOpen: boolean;
   openFeedback: () => void;
   closeFeedback: () => void;
+
+  // PokrokPage sub-tab (Přehled / Komunita / TOP10)
+  pokrokSubTab: 'prehled' | 'komunita' | 'top10';
+  setPokrokSubTab: (tab: 'prehled' | 'komunita' | 'top10') => void;
+  resetPokrok: () => void;
   
   // Global modal actions (NEW - close all modals)
   closeAllModals: () => void;
@@ -170,6 +175,11 @@ export const useNavigation = create<NavigationState>((set) => ({
     isKPDetailOpen: false,
   }),
   closeFeedback: () => set({ isFeedbackOpen: false }),
+
+  // PokrokPage sub-tab
+  pokrokSubTab: 'prehled',
+  setPokrokSubTab: (tab) => set({ pokrokSubTab: tab }),
+  resetPokrok: () => set({ pokrokSubTab: 'prehled' }),
   
   // Close all modals (NEW - for emergency situations)
   closeAllModals: () => set({

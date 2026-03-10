@@ -248,17 +248,20 @@ function formatStreak(days: number): string | null {
 
 export function PokrokPage() {
   const [period, setPeriod] = useState<ActivityPeriod>('day');
-  const [pokrokTab, setPokrokTab] = useState<'prehled' | 'komunita' | 'top10'>('prehled');
+  const pokrokTab = useNavigation((s) => s.pokrokSubTab);
+  const setPokrokTab = useNavigation((s) => s.setPokrokSubTab);
+  const resetPokrok = useNavigation((s) => s.resetPokrok);
   const userId = useAuthStore((s) => s.user?.id);
   const { currentTab } = useNavigation();
   const { openKPDetail } = useNavigation();
 
-  // Reset period na 'week' pokaždé, když uživatel přejde na tab "pokrok"
+  // Reset pokrokTab + period pokaždé, když uživatel přejde na tab "pokrok"
   const [prevTab, setPrevTab] = useState(currentTab);
   if (prevTab !== currentTab) {
     setPrevTab(currentTab);
-    if (currentTab === 'pokrok' && period !== 'day') {
-      setPeriod('day');
+    if (currentTab === 'pokrok') {
+      if (period !== 'day') setPeriod('day');
+      resetPokrok();
     }
   }
 
