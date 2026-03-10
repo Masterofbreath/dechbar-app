@@ -324,7 +324,14 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', ca
   const dailyMinutes = program.daily_minutes ?? null
 
   // Postupné odemykání dnů — nový den začíná ve 4:00 ráno CET
+  // Pokud jde o aktivní program tohoto uživatele, použijeme daysElapsed přímo z hooku —
+  // ten správně zohledňuje MAX(created_at, launch_date, activated_at, reset_at).
+  // Pro neaktivní / prohlížený program fallback na globální launch_date výpočet.
   const { launchDate, daysElapsed } = useMemo(() => {
+    if (isActiveProgram && activeProgram != null) {
+      const ld = program.launch_date ? new Date(program.launch_date) : null
+      return { launchDate: ld, daysElapsed: activeProgram.daysElapsed }
+    }
     const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000
     const ld = program.launch_date ? new Date(program.launch_date) : null
     const now = new Date()
@@ -337,7 +344,7 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', ca
         )
       : Infinity
     return { launchDate: ld, daysElapsed: elapsed }
-  }, [program.launch_date])
+  }, [isActiveProgram, activeProgram, program.launch_date])
 
   return (
     <div>

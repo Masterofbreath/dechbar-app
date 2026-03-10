@@ -99,6 +99,7 @@ export interface UseActiveDailyProgramReturn {
 interface RawActiveRecord {
   module_id: string;
   challenge_reset_at: string | null;
+  activated_at: string | null;
 }
 
 interface RawLesson {
@@ -129,18 +130,18 @@ async function fetchActiveProgram(
   userId: string,
   userCreatedAt?: string,
 ): Promise<ActiveDailyProgramData | null> {
-  // 1. Zjisti module_id + challenge_reset_at z user_active_program
+  // 1. Zjisti module_id + challenge_reset_at + activated_at z user_active_program
   const { data: activeRec, error: activeErr } = await supabase
     .from('user_active_program')
-    .select('module_id, challenge_reset_at')
+    .select('module_id, challenge_reset_at, activated_at')
     .eq('user_id', userId)
     .maybeSingle();
 
   if (activeErr) throw activeErr;
   if (!activeRec) return null;
 
-  const { module_id: activeModuleId, challenge_reset_at: challengeResetAt } =
-    activeRec as Pick<RawActiveRecord, 'module_id' | 'challenge_reset_at'>;
+  const { module_id: activeModuleId, challenge_reset_at: challengeResetAt, activated_at: activatedAt } =
+    activeRec as Pick<RawActiveRecord, 'module_id' | 'challenge_reset_at' | 'activated_at'>;
 
   // 2. Načti kompletní data programu (JOIN modules + akademie_categories)
   const { data: prog, error: progErr } = await supabase
@@ -187,22 +188,27 @@ async function fetchActiveProgram(
   // 3. Výpočet postupného odemykání
   // Nový den začíná ve 4:00 ráno CET — posuneme osu o 4 hodiny dozadu.
   //
-  // effectiveStartDate = MAX(user.created_at, program.launch_date, challenge_reset_at)
-  //   → challenge_reset_at: uživatel restartoval výzvu → počítáme od resetu
-  //   → Registroval se před globálním startem → sleduje globální start.
-  //   → Registroval se po globálním startu → sleduje svůj datum registrace.
-  //
-  // DŮLEŽITÉ: pinnutí (activated_at) start NERESETUJE — jde jen o UI preferenci.
+  // effectiveStartDate = MAX(user.created_at, program.launch_date, activated_at, challenge_reset_at)
+  //   → activated_at: datum aktivace programu (koupě předplatného / první spuštění).
+  //     Nový placený zákazník vidí jen D1 v den aktivace, ne všechny dosud uplynuté dny.
+  //   → challenge_reset_at: uživatel restartoval výzvu → počítáme od resetu.
+  //   → Registroval se před globálním startem → sleduje globální start (launch_date).
+  //   → Registroval se po globálním startu → sleduje svůj datum registrace (created_at).
   const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
   const launchDate = r.launch_date ? new Date(r.launch_date) : null;
   const userCreatedAtDate = userCreatedAt ? new Date(userCreatedAt) : null;
   const challengeResetAtDate = challengeResetAt ? new Date(challengeResetAt) : null;
+  const activatedAtDate = activatedAt ? new Date(activatedAt) : null;
 
-  // effectiveStartDate = MAX(user.created_at, launch_date)
-  const baseStartDate =
-    userCreatedAtDate && launchDate && userCreatedAtDate > launchDate
-      ? userCreatedAtDate
-      : launchDate;
+  // effectiveStartDate = MAX(user.created_at, program.launch_date, activated_at, challenge_reset_at)
+  //   → activated_at: datum kdy uživatel poprvé spustil/pinnul program (koupě předplatného).
+  //     Nový placený zákazník tak vidí jen D1 v den aktivace, ne všechny dosud uplynuté dny.
+  //   → challenge_reset_at: uživatel restartoval výzvu → počítáme od resetu.
+  //   → Registroval se před globálním startem → sleduje globální start.
+  //   → Registroval se po globálním startu → sleduje svůj datum registrace.
+  const baseStartDate = [launchDate, userCreatedAtDate, activatedAtDate]
+    .filter((d): d is Date => d !== null)
+    .reduce<Date | null>((max, d) => (max === null || d > max ? d : max), null);
 
   // Pokud byl reset proveden PO base start → použij reset date
   const effectiveStartDate =
