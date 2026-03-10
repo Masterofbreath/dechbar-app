@@ -707,6 +707,10 @@
 }
 
 /* Coming soon placeholder */
+.pokrok-page__tab-panel--hidden {
+  display: none;
+}
+
 .pokrok-page__coming-soon {
   display: flex;
   flex-direction: column;

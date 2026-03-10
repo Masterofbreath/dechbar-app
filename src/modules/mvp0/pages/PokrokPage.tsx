@@ -368,10 +368,13 @@ export function PokrokPage() {
         </div>
       </div>
 
-      {/* Komunita / TOP10 — coming soon */}
-      {(pokrokTab === 'komunita' || pokrokTab === 'top10') && (
-        <ComingSoonSection tab={pokrokTab} />
-      )}
+      {/* Komunita / TOP10 — coming soon (vždy v DOM, viditelnost přes CSS) */}
+      <div className={pokrokTab === 'komunita' ? undefined : 'pokrok-page__tab-panel--hidden'}>
+        <ComingSoonSection tab="komunita" />
+      </div>
+      <div className={pokrokTab === 'top10' ? undefined : 'pokrok-page__tab-panel--hidden'}>
+        <ComingSoonSection tab="top10" />
+      </div>
 
       {pokrokTab === 'prehled' && (
       <div className="pokrok-page">
