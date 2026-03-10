@@ -35,6 +35,30 @@ function formatDate(dateString: string | null): string {
   return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
 }
 
+/**
+ * Datum "Aktivní od" pro trial membership.
+ * Speciální akce byla spuštěna 1. 3. 2026 — uživatelé registrovaní před tímto datem
+ * by viděli matoucí starší datum. Zobrazíme MAX(purchasedAt, 2026-03-01).
+ * Platící uživatelé (non-trial) dostanou vždy reálný datum platby.
+ */
+const TRIAL_LAUNCH_DATE = new Date('2026-03-01T00:00:00+01:00');
+
+function getDisplayActiveSince(purchasedAt: string, isTrial: boolean): string {
+  if (!isTrial) return formatDate(purchasedAt);
+  const purchased = new Date(purchasedAt);
+  const effective = purchased < TRIAL_LAUNCH_DATE ? TRIAL_LAUNCH_DATE : purchased;
+  return formatDate(effective.toISOString());
+}
+
+/**
+ * Text pro řádek "Přístup do" u admin/CEO uživatelů.
+ * Místo expiračního data zobrazíme větu odpovídající jejich roli.
+ */
+function getAdminAccessLabel(roles: string[]): string {
+  if (roles.includes('ceo')) return 'Aktivní po dobu tvého působení v DechBaru jako CEO';
+  return 'Aktivní po dobu tvého působení v DechBaru jako administrátor';
+}
+
 /** Czech declension: 1 den / 2–4 dny / 5+ dní */
 function formatDaysRemaining(days: number): string {
   if (days <= 0) return 'dnes vyprší';
@@ -87,7 +111,7 @@ function getPlanInfo(plan: string, trial = false): PlanInfo {
 export function UcetPage() {
   const navigate = useNavigate();
   const { user, resetPassword, deleteAccount } = useAuthStore();
-  const { membership } = useUserState();
+  const { membership, roles } = useUserState();
   const { ownedModules, isLoading: modulesLoading } = useAccountData();
 
   const [passwordState, setPasswordState] = useState<PasswordState>('idle');
@@ -201,7 +225,7 @@ export function UcetPage() {
                 )}
                 {membership.purchasedAt && (
                   <p className="ucet-plan-card__detail">
-                    Aktivní od: {formatDate(membership.purchasedAt)}
+                    Aktivní od: {getDisplayActiveSince(membership.purchasedAt, trial)}
                   </p>
                 )}
                 {membership.type === 'subscription' && membership.expiresAt && !trial && (
@@ -213,7 +237,9 @@ export function UcetPage() {
                 )}
                 {trial && membership.expiresAt && membership.status !== 'cancelled' && (
                   <p className="ucet-plan-card__detail">
-                    Přístup do: {formatDate(membership.expiresAt)}
+                    {roles.includes('admin') || roles.includes('ceo')
+                      ? getAdminAccessLabel(roles)
+                      : `Přístup do: ${formatDate(membership.expiresAt)}`}
                   </p>
                 )}
               </div>
