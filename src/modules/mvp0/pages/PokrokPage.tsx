@@ -232,20 +232,11 @@ function WeeklyDots({ days }: { days: ActivityDayData[] }) {
   );
 }
 
-// ── Coming Soon Section — s diagnostickými logy ──
+// ── Coming Soon Section ──
 
 type ComingSoonTab = 'komunita' | 'top10';
 
 function ComingSoonSection({ tab }: { tab: ComingSoonTab }) {
-  console.log(`[PokrokPage] ComingSoonSection RENDER — tab="${tab}"`);
-
-  useEffect(() => {
-    console.log(`[PokrokPage] ComingSoonSection MOUNT — tab="${tab}"`);
-    return () => {
-      console.log(`[PokrokPage] ComingSoonSection UNMOUNT — tab="${tab}"`);
-    };
-  }, [tab]);
-
   return (
     <div className="pokrok-page">
       <div className="pokrok-page__coming-soon">
@@ -292,26 +283,9 @@ function formatStreak(days: number): string | null {
 
 export function PokrokPage() {
   const [period, setPeriod] = useState<ActivityPeriod>('day');
-  const pokrokTab = useNavigation((s) => s.pokrokSubTab);
-  const setPokrokTab = useNavigation((s) => s.setPokrokSubTab);
-  const resetPokrok = useNavigation((s) => s.resetPokrok);
+  const [pokrokTab, setPokrokTab] = useState<'prehled' | 'komunita' | 'top10'>('prehled');
   const userId = useAuthStore((s) => s.user?.id);
-  const { currentTab } = useNavigation();
   const { openKPDetail } = useNavigation();
-
-  // 🔍 DIAGNOSTIKA — loguj každý render s aktuálním stavem
-  console.log(`[PokrokPage] RENDER — pokrokTab="${pokrokTab}" currentTab="${currentTab}" period="${period}"`);
-
-  // Reset pokrokTab + period pokaždé, když uživatel přejde na tab "pokrok"
-  const [prevTab, setPrevTab] = useState(currentTab);
-  if (prevTab !== currentTab) {
-    console.log(`[PokrokPage] TAB CHANGE: "${prevTab}" → "${currentTab}" — volám reset pokrokTab`);
-    setPrevTab(currentTab);
-    if (currentTab === 'pokrok') {
-      if (period !== 'day') setPeriod('day');
-      resetPokrok();
-    }
-  }
 
   // Real-time invalidace při změně session
   usePokrokRealtime(userId);
@@ -381,7 +355,6 @@ export function PokrokPage() {
               className={`pokrok-page__tab${pokrokTab === tab.key ? ' pokrok-page__tab--active' : ''}`}
               onClick={() => {
                 setPokrokTab(tab.key as 'prehled' | 'komunita' | 'top10');
-                console.log(`[PokrokPage] TAB CLICK: "${tab.key}" — pokrokTab před=${pokrokTab}`);
                 // Scroll na vrch obsahu při přepnutí tabu
                 document.querySelector('.app-layout__content')?.scrollTo({ top: 0, behavior: 'instant' });
               }}

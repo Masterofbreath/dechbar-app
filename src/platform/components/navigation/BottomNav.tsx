@@ -50,7 +50,7 @@ const NAV_ITEMS: NavItem[] = [
 export function BottomNav() {
   const { currentTab, setCurrentTab } = useNavigation();
   const resetAkademie = useAkademieNav((s) => s.reset);
-  const resetPokrok = useNavigation((s) => s.resetPokrok);
+  const triggerPokrokReset = useNavigation((s) => s.triggerPokrokReset);
   const { prefetchAll } = useAkademiePrefetch();
   const { user } = useAuth();
 
@@ -58,7 +58,7 @@ export function BottomNav() {
     if (tabId === currentTab) {
       // Re-tap aktivního tabu: reset vnitřní navigace
       if (tabId === 'akademie') resetAkademie();
-      if (tabId === 'pokrok') resetPokrok();
+      if (tabId === 'pokrok') triggerPokrokReset();
       return;
     }
     // Přechod na Akademii: vždy reset + prefetch
@@ -66,9 +66,9 @@ export function BottomNav() {
       resetAkademie();
       prefetchAll(user?.id);
     }
-    // Přechod na Pokrok: vždy reset na Přehled tab
+    // Přechod na Pokrok: trigger reset (useEffect v PokrokPage se postará)
     if (tabId === 'pokrok') {
-      resetPokrok();
+      triggerPokrokReset();
     }
     setCurrentTab(tabId);
   }
