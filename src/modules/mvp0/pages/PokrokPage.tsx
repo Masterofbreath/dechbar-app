@@ -367,15 +367,20 @@ export function PokrokPage() {
         </div>
       </div>
 
-      {/* Komunita / TOP10 — coming soon (vždy v DOM, viditelnost přes CSS) */}
-      <div className={pokrokTab === 'komunita' ? undefined : 'pokrok-page__tab-panel--hidden'}>
+      {/* Všechny 3 taby vždy v DOM — přepínání jen přes CSS (stejná logika jako ExerciseList) */}
+
+      {/* Komunita — coming soon */}
+      <div className={pokrokTab !== 'komunita' ? 'pokrok-page__tab-panel--hidden' : undefined}>
         <ComingSoonSection tab="komunita" />
       </div>
-      <div className={pokrokTab === 'top10' ? undefined : 'pokrok-page__tab-panel--hidden'}>
+
+      {/* TOP10 — coming soon */}
+      <div className={pokrokTab !== 'top10' ? 'pokrok-page__tab-panel--hidden' : undefined}>
         <ComingSoonSection tab="top10" />
       </div>
 
-      {pokrokTab === 'prehled' && (
+      {/* Přehled — hlavní obsah */}
+      <div className={pokrokTab !== 'prehled' ? 'pokrok-page__tab-panel--hidden' : undefined}>
       <div className="pokrok-page">
 
         {/* 1. KP Sekce */}
@@ -519,7 +524,7 @@ export function PokrokPage() {
         <CommunityMilestone />
 
       </div>
-      )} {/* end pokrokTab === 'prehled' */}
+      </div> {/* end prehled tab panel */}
     </>
   );
 }
