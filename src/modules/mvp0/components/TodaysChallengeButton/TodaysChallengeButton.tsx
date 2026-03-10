@@ -151,7 +151,110 @@ function ProgramCard({
 }
 
 // --------------------------------------------------
-// Completed state
+// Completed state — dnešní lekce hotova, čeká se na zítřek
+// --------------------------------------------------
+
+interface TodayDoneStateProps {
+  program: ActiveDailyProgramInfo;
+  lesson: import('@/modules/akademie/types').AkademieLesson;
+  onClick: () => void;
+  className?: string;
+}
+
+function TodayDoneState({ program, lesson, onClick, className }: TodayDoneStateProps) {
+  const durationMin = program.daily_minutes
+    ? program.daily_minutes
+    : lesson.duration_seconds > 0
+      ? Math.round(lesson.duration_seconds / 60)
+      : null;
+
+  const subtitle = ['Dnes: ' + lesson.title, durationMin ? `${durationMin} min` : null]
+    .filter(Boolean)
+    .join(' · ');
+
+  return (
+    <button
+      className={`todays-challenge-button todays-challenge-button--active ${className || ''}`}
+      onClick={onClick}
+      type="button"
+      aria-label={`Přehrát znovu ${lesson.title} z programu ${program.name}`}
+    >
+      <div className="todays-challenge-button__cover" aria-hidden="true">
+        {program.cover_image_url ? (
+          <img src={program.cover_image_url} alt="" className="todays-challenge-button__cover-img" />
+        ) : (
+          <div className="todays-challenge-button__cover-placeholder">
+            <CheckCircleIcon />
+          </div>
+        )}
+      </div>
+
+      <div className="todays-challenge-button__content">
+        <h3 className="todays-challenge-button__title">{program.name}</h3>
+        <p className="todays-challenge-button__subtitle">{subtitle}</p>
+      </div>
+
+      <div className="todays-challenge-button__cta">
+        <PlayArrowIcon />
+        <span>Přehrát znovu</span>
+      </div>
+    </button>
+  );
+}
+
+// --------------------------------------------------
+// Program finished state — celý program dokončen, nabídni restart
+// --------------------------------------------------
+
+interface ProgramFinishedStateProps {
+  program: ActiveDailyProgramInfo;
+  onReset: () => void;
+  onClear: () => void;
+  className?: string;
+}
+
+function ProgramFinishedState({ program, onReset, onClear, className }: ProgramFinishedStateProps) {
+  return (
+    <div className={`todays-challenge-button todays-challenge-button--completed ${className || ''}`}>
+      <div className="todays-challenge-button__cover" aria-hidden="true">
+        {program.cover_image_url ? (
+          <img src={program.cover_image_url} alt="" className="todays-challenge-button__cover-img" />
+        ) : (
+          <div className="todays-challenge-button__cover-placeholder">
+            <CheckCircleIcon />
+          </div>
+        )}
+      </div>
+
+      <div className="todays-challenge-button__content">
+        <h3 className="todays-challenge-button__title">{program.name}</h3>
+        <p className="todays-challenge-button__subtitle">Program dokončen</p>
+      </div>
+
+      <div className="todays-challenge-button__actions">
+        <button
+          className="todays-challenge-button__cta-secondary todays-challenge-button__cta-secondary--primary"
+          onClick={(e) => { e.stopPropagation(); onReset(); }}
+          type="button"
+          aria-label="Začít výzvu znovu od 1. dne"
+        >
+          Začít znovu
+        </button>
+        <button
+          className="todays-challenge-button__cta-secondary"
+          onClick={(e) => { e.stopPropagation(); onClear(); }}
+          type="button"
+          aria-label="Změnit denní program"
+        >
+          Změnit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// --------------------------------------------------
+// Completed state (legacy — pinned program, všechny dostupné lekce hotovy ale program nekončí)
 // --------------------------------------------------
 
 interface CompletedStateProps {
@@ -406,35 +509,56 @@ export function TodaysChallengeButton({ className }: TodaysChallengeButtonProps)
 
   // --- State 1: User has a pinned program ---
   if (userProgram.data) {
-    const { program, nextLesson } = userProgram.data;
+    const { program, nextLesson, todayLesson, isProgramFinished } = userProgram.data;
 
-    // State 1b: All lessons completed
-    if (!nextLesson) {
+    // State 1c: Celý program dokončen (všechny lekce, ne jen dnešek)
+    // → nabídni "Začít znovu" nebo "Změnit program"
+    if (isProgramFinished) {
       return (
-        <CompletedState
+        <ProgramFinishedState
           program={program}
+          onReset={userProgram.resetChallenge}
           onClear={userProgram.clearActiveProgram}
           className={className}
         />
       );
     }
 
-    // State 1a: Has next lesson to play
-    const lessonSubtitle = buildLessonSubtitle(nextLesson, program.daily_minutes);
-
-    function handleUserProgramClick() {
-      if (!nextLesson) return;
-      playLesson(nextLesson); // CRITICAL: synchronous — iOS Safari
+    // State 1b: Dnešní lekce splněna, ale zítra ještě není odemčena (čeká se na 4:00)
+    // nextLesson === null znamená, že žádná dostupná lekce není nesplněna.
+    // todayLesson existuje → můžeme nabídnout "Přehrát znovu"
+    if (!nextLesson && todayLesson) {
+      return (
+        <TodayDoneState
+          program={program}
+          lesson={todayLesson}
+          onClick={() => playLesson(todayLesson)}
+          className={className}
+        />
+      );
     }
 
+    // State 1a: Má nesplněnou dostupnou lekci → přehrát
+    if (nextLesson) {
+      const lessonSubtitle = buildLessonSubtitle(nextLesson, program.daily_minutes);
+      return (
+        <ProgramCard
+          program={program}
+          subtitle={lessonSubtitle}
+          ctaLabel="Přehrát"
+          ctaAriaLabel={`Spustit ${nextLesson.title} z programu ${program.name}`}
+          modifier=""
+          onClick={() => playLesson(nextLesson)} // CRITICAL: synchronous — iOS Safari
+          className={className}
+        />
+      );
+    }
+
+    // Fallback: program bez lekcí nebo nezačal → "Změnit program"
     return (
-      <ProgramCard
+      <CompletedState
         program={program}
-        subtitle={lessonSubtitle}
-        ctaLabel="Přehrát"
-        ctaAriaLabel={`Spustit ${nextLesson.title} z programu ${program.name}`}
-        modifier=""
-        onClick={handleUserProgramClick}
+        onClear={userProgram.clearActiveProgram}
         className={className}
       />
     );
