@@ -197,6 +197,13 @@
   color: var(--color-primary, #2CBEC6);
 }
 
+.feedback-modal__upload-btn--dragover {
+  border-color: var(--color-primary, #2CBEC6);
+  color: var(--color-primary, #2CBEC6);
+  background: rgb(44 190 198 / 10%);
+  border-style: solid;
+}
+
 /* Image preview */
 .feedback-modal__image-preview {
   display: flex;

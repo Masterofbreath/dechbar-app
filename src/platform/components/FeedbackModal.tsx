@@ -53,6 +53,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   const [imageUploading, setImageUploading] = useState(false);
   const [imageProgress, setImageProgress]   = useState(0);
   const [errorMsg, setErrorMsg]       = useState('');
+  const [isDragOver, setIsDragOver]   = useState(false);
   const imageInputRef                 = useRef<HTMLInputElement>(null);
 
   const submitMutation = useSubmitFeedback();
@@ -66,6 +67,7 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setImageUploading(false);
     setImageProgress(0);
     setErrorMsg('');
+    setIsDragOver(false);
     onClose();
   };
 
@@ -93,6 +95,50 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setImageUrl(null);
     setImageProgress(0);
     if (imageInputRef.current) imageInputRef.current.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!imageUploading && !imageUrl) setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    if (imageUploading || imageUrl) return;
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      setErrorMsg('Nepodporovaný formát. Použij JPG, PNG nebo WebP.');
+      return;
+    }
+
+    setImageUploading(true);
+    setImageProgress(0);
+    setErrorMsg('');
+
+    try {
+      const url = await uploadService.uploadFeedbackImage(file, ({ percent }) => {
+        setImageProgress(percent);
+      });
+      setImageUrl(url);
+    } catch {
+      setErrorMsg('Nepodařilo se nahrát obrázek. Zkus to znovu.');
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -185,7 +231,12 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                     </button>
                   </div>
                 ) : (
-                  <label className="feedback-modal__upload-label">
+                  <label className="feedback-modal__upload-label"
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
                     <input
                       ref={imageInputRef}
                       type="file"
@@ -194,10 +245,12 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                       onChange={handleImageSelect}
                       disabled={imageUploading}
                     />
-                    <span className="feedback-modal__upload-btn">
+                    <span className={`feedback-modal__upload-btn${isDragOver ? ' feedback-modal__upload-btn--dragover' : ''}`}>
                       {imageUploading
                         ? `Nahrávám... ${imageProgress} %`
-                        : 'Přilož screenshot (volitelné)'}
+                        : isDragOver
+                          ? 'Pusť screenshot sem'
+                          : 'Přilož screenshot (nebo sem přetáhni)'}
                     </span>
                   </label>
                 )}

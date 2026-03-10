@@ -223,6 +223,7 @@ export function FeedbackCard({ item, isDragging = false }: FeedbackCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [lightbox, setLightbox] = useState(false);
   const [priority, setPriority] = useState<1 | 2 | 3 | null>(item.priority);
+  const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
 
   const statusMutation = useMutation({
@@ -233,6 +234,31 @@ export function FeedbackCard({ item, isDragging = false }: FeedbackCardProps) {
 
   const isShortText = item.message.length <= 180;
   const isLocked    = item.status === 'done';
+
+  const handleCopy = async () => {
+    const version = item.app_version ? ` | v${item.app_version}` : '';
+    const text = [
+      `#${item.feedback_number} ${item.user_name ?? item.user_email ?? 'Neznámý'} | ${formattedDate} | ${CATEGORY_LABELS[item.category]}${version}`,
+      item.message,
+    ].join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback — execCommand je deprecated ale funguje ve starých prohlížečích
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const formattedDate = new Intl.DateTimeFormat('cs-CZ', {
     day: '2-digit', month: '2-digit', year: 'numeric',
@@ -326,6 +352,29 @@ export function FeedbackCard({ item, isDragging = false }: FeedbackCardProps) {
       )}
 
       <div className="feedback-admin__card-footer">
+        <button
+          type="button"
+          className={`feedback-admin__copy-btn ${copied ? 'feedback-admin__copy-btn--copied' : ''}`}
+          onClick={handleCopy}
+          title="Zkopírovat text podnětu"
+        >
+          {copied ? (
+            <>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Zkopírováno
+            </>
+          ) : (
+            <>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              Kopírovat
+            </>
+          )}
+        </button>
         {item.status === 'new' && (
           <button
             type="button"

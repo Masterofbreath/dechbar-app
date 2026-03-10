@@ -540,8 +540,37 @@
 
 .feedback-admin__card-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 8px;
+}
+
+/* Copy button — vlevo od akčních tlačítek */
+.feedback-admin__copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: none;
+  border: 1px solid var(--color-border, #2A2A2A);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--color-text-tertiary, #707070);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+  flex-shrink: 0;
+}
+
+.feedback-admin__copy-btn:hover {
+  border-color: var(--color-text-secondary, #A0A0A0);
+  color: var(--color-text-secondary, #A0A0A0);
+}
+
+.feedback-admin__copy-btn--copied {
+  border-color: #5CB87A;
+  color: #5CB87A;
+  background: rgb(92 184 122 / 8%);
 }
 
 .feedback-admin__action-btn {
