@@ -252,21 +252,62 @@ async function fetchActiveProgram(
     (progress ?? []).forEach((row: { lesson_id: string }) => completedIds.add(row.lesson_id));
   }
 
-  // 6. Dostupné lekce (odemčené dle daysElapsed)
+  // 6. Dostupné lekce — kombinace časového odemykání + podmínky dokončení předchozího dne.
+  //
+  // Den N se odemkne pouze pokud:
+  //   a) daysElapsed >= N  (čas uplynul — nový den od 4:00 ráno)
+  //   b) VŠECHNY lekce dne N-1 jsou dokončeny (uživatel si musí projít bezpečnostní info v D1
+  //      a každou lekci celé série před odemčením dalšího dne)
+  //
+  // D1 je vždy dostupný bez podmínky dokončení (nemá předchozí den).
+  // Infinity = program bez launch_date → vše odemčeno (admin, CEO, legacy data).
+
+  // Seskup lekce podle day_number pro efektivní lookup
+  const lessonsByDay = new Map<number, RawLesson[]>();
+  for (const l of lessons) {
+    const arr = lessonsByDay.get(l.day_number) ?? [];
+    arr.push(l);
+    lessonsByDay.set(l.day_number, arr);
+  }
+
+  // Zjisti nejvyšší odemčený den (gating: den N vyžaduje všechny lekce dne N-1 hotové)
+  function computeMaxUnlockedDay(): number {
+    if (daysElapsed === Infinity) return Infinity;
+    let maxDay = 0;
+    const allDays = [...lessonsByDay.keys()].sort((a, b) => a - b);
+    for (const day of allDays) {
+      if (day > daysElapsed) break; // čas ještě nedošel
+      if (day === 1) {
+        // D1 je vždy odemčen (pokud čas nastal)
+        maxDay = 1;
+        continue;
+      }
+      // D(N) vyžaduje, aby všechny lekce D(N-1) byly hotové
+      const prevDayLessons = lessonsByDay.get(day - 1) ?? [];
+      const prevDayAllDone = prevDayLessons.length > 0
+        && prevDayLessons.every((l) => completedIds.has(l.id));
+      if (!prevDayAllDone) break; // řetězec se přerušil — dál se nezkoumá
+      maxDay = day;
+    }
+    return maxDay;
+  }
+
+  const maxUnlockedDay = computeMaxUnlockedDay();
+
   const availableLessons = lessons.filter(
-    (l) => daysElapsed === Infinity || l.day_number <= daysElapsed,
+    (l) => maxUnlockedDay === Infinity || l.day_number <= maxUnlockedDay,
   );
 
   // 7. Najdi první dostupnou nesplněnou lekci (catch-up logika)
   const nextLesson = availableLessons.find((l) => !completedIds.has(l.id)) ?? null;
 
   // 8. Dnešní lekce — lekce pro aktuální den (i pokud je splněna)
-  // "Dnes" = lekce s nejvyšším day_number <= daysElapsed (poslední odemčená).
+  // "Dnes" = lekce s nejvyšším day_number <= maxUnlockedDay (poslední odemčená).
   // Slouží pro "Přehrát znovu" když je nextLesson === null ale program ještě neskončil.
   const todayLesson =
-    daysElapsed === Infinity
+    maxUnlockedDay === Infinity
       ? (availableLessons[availableLessons.length - 1] ?? null)
-      : (availableLessons.filter((l) => l.day_number === daysElapsed)[0] ??
+      : (availableLessons.filter((l) => l.day_number === maxUnlockedDay)[0] ??
          availableLessons[availableLessons.length - 1] ??
          null);
 
@@ -288,7 +329,7 @@ async function fetchActiveProgram(
   return {
     program: programInfo,
     moduleId: activeModuleId,
-    daysElapsed,
+    daysElapsed: maxUnlockedDay,
     notStartedYet,
     startDate: effectiveStartDate,
     nextLesson,
