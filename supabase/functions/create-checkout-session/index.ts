@@ -198,10 +198,16 @@ serve(async (req) => {
     // Embedded vs Hosted checkout
     if (isEmbedded) {
       sessionConfig.ui_mode = 'embedded';
-      // 'if_required' = platba proběhne v embedded checkoutu, redirect jen pokud platební metoda vyžaduje
-      sessionConfig.redirect_on_completion = 'if_required';
-      sessionConfig.return_url = successUrl
-        ?? `${baseUrl}${moduleReturnPath}?session_id={CHECKOUT_SESSION_ID}`;
+      // Subscription mode s triialem: 'never' — žádný redirect, Stripe potvrdí přímo v embedded formuláři.
+      //   V tomto případě NESMÍ být return_url (Stripe to odmítne).
+      // Payment mode: 'if_required' — redirect jen pokud platební metoda vyžaduje (3DS apod.)
+      //   V tomto případě return_url potřebujeme.
+      const redirectMode = paymentMode === 'subscription' ? 'never' : 'if_required';
+      sessionConfig.redirect_on_completion = redirectMode;
+      if (redirectMode !== 'never') {
+        sessionConfig.return_url = successUrl
+          ?? `${baseUrl}${moduleReturnPath}?session_id={CHECKOUT_SESSION_ID}`;
+      }
     } else {
       sessionConfig.success_url = successUrl
         ?? `${baseUrl}${moduleReturnPath}?session_id={CHECKOUT_SESSION_ID}`;
@@ -257,12 +263,16 @@ serve(async (req) => {
     }
 
   } catch (error: unknown) {
-    const errMsg = (error as Error).message || 'Failed to create checkout session';
-    const errStack = (error as Error).stack || '';
+    const errMsg = (error as any)?.message || 'Failed to create checkout session';
+    const errType = (error as any)?.type || '';
+    const errCode = (error as any)?.code || '';
+    const errParam = (error as any)?.param || '';
+    const errStack = (error as any)?.stack || '';
     console.error('❌ Checkout session error:', errMsg);
+    console.error('❌ Stripe type:', errType, '| code:', errCode, '| param:', errParam);
     console.error('❌ Stack:', errStack);
     return new Response(
-      JSON.stringify({ error: errMsg, stack: errStack }),
+      JSON.stringify({ error: errMsg, stripe_type: errType, stripe_code: errCode, stripe_param: errParam }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
