@@ -711,6 +711,12 @@
   display: none;
 }
 
+/* Izolace compositing layers — zabrání backdrop-filter z KPSection
+   aby se přelíval do sousedních tab panelů (Safari repaint bug) */
+.pokrok-page__tab-panel {
+  isolation: isolate;
+}
+
 .pokrok-page__coming-soon {
   display: flex;
   flex-direction: column;

@@ -78,8 +78,10 @@
   align-items: center;
   gap: 4px;
   padding: 6px 10px 8px;
-  background: rgb(0 0 0 / 40%);
-  backdrop-filter: blur(12px);
+
+  /* backdrop-filter odstraněn — způsoboval Safari compositing bug
+     (GPU layer přesahoval přes display:none bariéru sousedních tab panelů) */
+  background: rgb(0 0 0 / 75%);
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 16px;
   pointer-events: none;

@@ -370,17 +370,17 @@ export function PokrokPage() {
       {/* Všechny 3 taby vždy v DOM — přepínání jen přes CSS (stejná logika jako ExerciseList) */}
 
       {/* Komunita — coming soon */}
-      <div className={pokrokTab !== 'komunita' ? 'pokrok-page__tab-panel--hidden' : undefined}>
+      <div className={`pokrok-page__tab-panel${pokrokTab !== 'komunita' ? ' pokrok-page__tab-panel--hidden' : ''}`}>
         <ComingSoonSection tab="komunita" />
       </div>
 
       {/* TOP10 — coming soon */}
-      <div className={pokrokTab !== 'top10' ? 'pokrok-page__tab-panel--hidden' : undefined}>
+      <div className={`pokrok-page__tab-panel${pokrokTab !== 'top10' ? ' pokrok-page__tab-panel--hidden' : ''}`}>
         <ComingSoonSection tab="top10" />
       </div>
 
       {/* Přehled — hlavní obsah */}
-      <div className={pokrokTab !== 'prehled' ? 'pokrok-page__tab-panel--hidden' : undefined}>
+      <div className={`pokrok-page__tab-panel${pokrokTab !== 'prehled' ? ' pokrok-page__tab-panel--hidden' : ''}`}>
       <div className="pokrok-page">
 
         {/* 1. KP Sekce */}
