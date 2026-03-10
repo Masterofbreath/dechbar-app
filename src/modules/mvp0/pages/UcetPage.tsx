@@ -96,9 +96,9 @@ function getModuleDeepLink(moduleId: string): string {
 function getPlanInfo(plan: string, trial = false): PlanInfo {
   switch (plan) {
     case 'SMART':
-      return { label: 'SMART', subtitle: trial ? 'Speciální akce' : '249 Kč / měsíc', modifier: 'smart' };
+      return { label: 'SMART', subtitle: trial ? 'Speciální akce' : 'Předplatné', modifier: 'smart' };
     case 'AI_COACH':
-      return { label: 'AI COACH', subtitle: trial ? 'Speciální akce' : '490 Kč / měsíc', modifier: 'ai-coach' };
+      return { label: 'AI COACH', subtitle: trial ? 'Speciální akce' : 'Předplatné', modifier: 'ai-coach' };
     default:
       return { label: 'Zdarma', subtitle: 'Základní přístup', modifier: 'zdarma' };
   }
