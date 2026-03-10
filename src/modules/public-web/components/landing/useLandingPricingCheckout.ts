@@ -10,7 +10,8 @@
  * 3. Host → otevře EmailInputModal → po zadání emailu → PaymentModal (spinner)
  * 4. Edge function vrátí clientSecret → spinner přepne na Stripe formulář
  * 5. Platba proběhne → handlePaymentComplete():
- *    - Přihlášený: přesměrování na dechbar.cz/app
+ *    - Přihlášený: zavře modal, čeká na Supabase real-time update membership (max 5s),
+ *      pak naviguje na /app bez tvrdého refreshe stránky
  *    - Host: modal s poděkováním (email s potvrzením + magic link už odeslán webhookem)
  *
  * @package DechBar_App
@@ -18,10 +19,10 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/platform/api/supabase';
+import { useUserState } from '@/platform/user/userStateStore';
 import type { BillingInterval } from './BillingToggle';
-
-const APP_URL = 'https://app.dechbar.cz';
 
 export interface CheckoutTarget {
   priceId: string;
@@ -38,6 +39,10 @@ export function useLandingPricingCheckout() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [error, setError] = useState('');
+
+  const navigate = useNavigate();
+  const refreshMembership = useUserState((s) => s.refreshMembership);
+  const refreshModules = useUserState((s) => s.refreshModules);
 
   const pendingTarget = useRef<CheckoutTarget | null>(null);
   /** Platbu zahájil host (bez přihlášení) → po dokončení zobrazíme poděkování, ne redirect */
@@ -81,15 +86,19 @@ export function useLandingPricingCheckout() {
     setClientSecret(null);
   }, []);
 
-  const handlePaymentComplete = useCallback(() => {
+  const handlePaymentComplete = useCallback(async () => {
     setPaymentOpen(false);
     setClientSecret(null);
     if (isGuestCheckoutRef.current) {
       setThankYouModalOpen(true);
     } else {
-      window.location.href = `${APP_URL}/app`;
+      // Okamžitě refresh membership + modules z DB — nezávisíme jen na Supabase real-time timing.
+      // Real-time listener to stejně zachytí, ale manuální refresh zaručí okamžitou změnu UI.
+      await Promise.all([refreshMembership(), refreshModules()]);
+      navigate('/app');
     }
-  }, []);
+   
+  }, [refreshMembership, refreshModules, navigate]);
 
   const closeThankYouModal = useCallback(() => {
     setThankYouModalOpen(false);
