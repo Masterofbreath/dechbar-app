@@ -530,14 +530,55 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
 
       // Resume automatically when OS pauses audio due to device switch
       // (e.g. headphones connected/disconnected). Without this, music stops silently.
+      //
+      // iOS PWA issue: iOS fires a 'pause' event immediately after play() as part of
+      // its internal audio session initialisation. If we call play() again in response,
+      // iOS reinitialises the session and resets volume to 1.0 — destroying the fade IN
+      // ramp that starts from 0. Fix: record the play() timestamp and ignore any pause
+      // event that arrives within 800ms of it (that's the iOS init pause, not a real
+      // external pause). Real headphones-disconnect pauses arrive later.
+      const playStartedAt = Date.now();
+      const INIT_PAUSE_GRACE_MS = 800;
+
       const handleExternalPause = () => {
+        const msSincePlay = Date.now() - playStartedAt;
+        if (msSincePlay < INIT_PAUSE_GRACE_MS) {
+          // iOS initialisation pause — ignore, do NOT re-play() (would reset volume to 1)
+          console.log('[BackgroundMusic] Ignoring early pause event (iOS session init)', {
+            platform: getPlatformLabel(),
+            msSincePlay,
+          });
+          return;
+        }
         if (stateRef.current === 'playing' && crossfadeEnabledRef.current) {
+          console.log('[BackgroundMusic] External pause detected — resuming', {
+            platform: getPlatformLabel(),
+            msSincePlay,
+          });
           primary.play().catch(() => null);
         }
       };
       primary.addEventListener('pause', handleExternalPause);
 
       console.log('[BackgroundMusic] Playing with fade IN');
+
+      // Inform iOS that this is a media playback session (not a notification/ringer sound).
+      // Without this, iOS PWA may classify the audio as "ambient" and allow the hardware
+      // ringer switch to mute it. Setting mediaSession.metadata + playbackState tells iOS
+      // to treat it as active media → immune to the ringer switch.
+      // Safe on desktop — mediaSession is a no-op or supported enhancement.
+      if ('mediaSession' in navigator) {
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: currentTrack?.name ?? 'DechBar',
+            artist: 'DechBar',
+            album: 'Dechová cvičení',
+          });
+          navigator.mediaSession.playbackState = 'playing';
+        } catch {
+          // mediaSession not fully supported — silent skip
+        }
+      }
     } catch (err) {
       releasePlayback();
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
@@ -619,6 +660,9 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       secondary?.pause();
       releasePlayback();
       setStateAndRef('paused');
+      if ('mediaSession' in navigator) {
+        try { navigator.mediaSession.playbackState = 'paused'; } catch { /* silent */ }
+      }
       console.log('[BackgroundMusic] Paused');
     });
   }, [clearRamps, rampVolumeInterval, setStateAndRef]);
@@ -640,6 +684,10 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       if (secondary) { secondary.pause(); secondary.currentTime = 0; secondary.volume = 0; }
       releasePlayback();
       setStateAndRef('idle');
+      // Inform iOS the media session is no longer active
+      if ('mediaSession' in navigator) {
+        try { navigator.mediaSession.playbackState = 'none'; } catch { /* silent */ }
+      }
     };
 
     if (fadeOutStartedRef.current) {
