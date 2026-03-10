@@ -670,11 +670,15 @@
    Pokrok page — top-level tabs (Přehled / Komunita / TOP10)
    ============================================================ */
 
-/* Sticky wrapper — odstraněno na žádost uživatele (scrolluje s obsahem) */
+/* Sticky wrapper */
 .pokrok-page__sticky-header {
-  max-width: 600px;
-  margin: 0 auto;
   width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  /* Plné neprůhledné pozadí — záměrně BEZ backdrop-filter (Safari compositing bug) */
+  background: var(--color-background, #121212);
 }
 
 .pokrok-page__tabs {
