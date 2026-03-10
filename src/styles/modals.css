@@ -48,7 +48,7 @@
   padding: 1rem;
   background: var(--modal-overlay-bg);  /* Dark semi-transparent */
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   animation: modal-fade-in var(--modal-transition-duration) var(--modal-transition-timing);
 }
 
@@ -75,6 +75,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -89,10 +90,10 @@
   z-index: 1;
   width: 100%;
   max-width: var(--modal-max-width);
-  background: var(--modal-card-bg);  /* Dark elevated #2A2A2A */
+  background: var(--modal-card-bg, #2A2A2A);  /* Dark elevated #2A2A2A */
   backdrop-filter: blur(20px);       /* Subtle glassmorphism */
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--modal-border);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--modal-border, rgb(255 255 255 / 5%));
   border-radius: 1.5rem;
   padding: var(--modal-padding);
   box-shadow: 
@@ -101,10 +102,11 @@
   animation: 
     modal-slide-up var(--modal-transition-duration) var(--modal-transition-timing),
     modal-breathe 4s ease-in-out infinite 0.5s;  /* Breathing starts after slide-up */
+
   overflow: hidden;
   
   /* Text color */
-  color: var(--color-text-primary);  /* Off-white #E0E0E0 */
+  color: var(--color-text-primary, #E0E0E0);  /* Off-white #E0E0E0 */
 }
 
 @keyframes modal-slide-up {
@@ -112,6 +114,7 @@
     opacity: 0;
     transform: translateY(20px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -123,6 +126,7 @@
   0%, 100% { 
     transform: scale(1); 
   }
+
   50% { 
     transform: scale(1.005);  /* 0.5% - very subtle */
   }
@@ -144,7 +148,7 @@
   color: var(--color-text-primary);     /* #E0E0E0 */
   letter-spacing: -0.03em;  /* Tighter for premium feel */
   line-height: 1.2;  /* Tighter line-height */
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.5rem;
 }
 
 .modal-subtitle {
@@ -218,7 +222,7 @@
    RESPONSIVE - Mobile
    =================================== */
 
-@media (max-width: 390px) {
+@media (width <= 390px) {
   .modal-overlay {
     padding: 0.5rem;
   }
@@ -244,7 +248,7 @@
 }
 
 /* Tablet adjustments */
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .modal-card {
     min-width: 400px;
   }
@@ -255,7 +259,7 @@
    =================================== */
 
 /* Small height screens (landscape phones, small tablets) */
-@media (max-height: 600px) and (orientation: landscape) {
+@media (height <= 600px) and (orientation: landscape) {
   .modal-card {
     max-height: 90vh;
     overflow-y: auto;
@@ -358,7 +362,7 @@
   font-weight: var(--font-weight-bold); /* 700 */
   color: var(--color-accent);   /* Gold #D6A23A */
   letter-spacing: -0.05em;      /* Tight letter-spacing for premium feel */
-  margin: 0 0 1.5rem 0;         /* 24px bottom margin */
+  margin: 0 0 1.5rem;         /* 24px bottom margin */
   word-break: break-word;       /* Prevent overflow on long emails */
   text-align: center;           /* Centered for success modals */
 }
@@ -367,7 +371,7 @@
 .success-instruction {
   font-size: var(--font-size-base); /* 16px */
   color: var(--color-text-secondary); /* #A0A0A0 */
-  margin: 0 0 1rem 0;           /* 16px bottom margin */
+  margin: 0 0 1rem;           /* 16px bottom margin */
   text-align: center;           /* Centered for success modals */
 }
 
@@ -453,6 +457,7 @@ Premium Modal (with gold accent):
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }
@@ -463,6 +468,7 @@ Premium Modal (with gold accent):
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+
   to {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
@@ -474,7 +480,7 @@ Premium Modal (with gold accent):
    Affects ALL modals in application
    ============================================ */
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .modal-overlay {
     align-items: center;  /* ✅ Centered for confirm modals (was: flex-end) */
     justify-content: center;  /* ✅ Ensure perfect centering */
@@ -530,6 +536,7 @@ Premium Modal (with gold accent):
   from {
     transform: translateY(100%);
   }
+
   to {
     transform: translateY(0);
   }
