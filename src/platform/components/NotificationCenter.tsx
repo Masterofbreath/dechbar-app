@@ -235,7 +235,7 @@ function NotificationItem({
 export function NotificationCenter() {
   const navigate = useNavigate();
   const { isNotificationsOpen, closeNotifications } = useNavigation();
-  const { notifications, unreadCount, isLoading, markAsRead, deleteNotification, markCtaClicked } =
+  const { notifications, unreadCount, isLoading, markAsRead, deleteNotification, markCtaClicked, markAllAsRead, markAllAsReadPending } =
     useNotifications();
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -292,9 +292,29 @@ export function NotificationCenter() {
 
         <div className="notification-center__header">
           <h2>Notifikace</h2>
-          {unreadCount > 0 && (
-            <span className="notification-center__badge">{unreadCount}</span>
-          )}
+          <div className="notification-center__header-right">
+            {unreadCount > 0 && (
+              <>
+                <span className="notification-center__badge">{unreadCount}</span>
+                <button
+                  type="button"
+                  className="notification-center__mark-all-btn"
+                  onClick={() => markAllAsRead()}
+                  disabled={markAllAsReadPending}
+                  title="Označit vše jako přečtené"
+                >
+                  {markAllAsReadPending ? (
+                    <span className="notification-center__mark-all-spinner" aria-hidden="true" />
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                  Vše přečteno
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="notification-center__list">

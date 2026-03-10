@@ -145,12 +145,43 @@ export function useNotifications() {
     },
   });
 
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('user_notifications')
+        .update({ read: true, read_at: new Date().toISOString() })
+        .eq('user_id', userId!)
+        .eq('read', false)
+        .is('deleted_at', null);
+      if (error) throw error;
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: notificationKeys.list(userId ?? '') });
+      const snapshot = queryClient.getQueryData<Notification[]>(notificationKeys.list(userId ?? ''));
+      queryClient.setQueryData(
+        notificationKeys.list(userId ?? ''),
+        (old: Notification[] | undefined) => (old ?? []).map((n) => ({ ...n, read: true })),
+      );
+      return { snapshot };
+    },
+    onError: (_err, _vars, context: { snapshot?: Notification[] } | undefined) => {
+      if (context?.snapshot) {
+        queryClient.setQueryData(notificationKeys.list(userId ?? ''), context.snapshot);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: notificationKeys.list(userId ?? '') });
+    },
+  });
+
   return {
     notifications: query.data ?? [],
     unreadCount,
     isLoading: query.isLoading,
     error: query.error,
     markAsRead: markAsReadMutation.mutate,
+    markAllAsRead: markAllAsReadMutation.mutate,
+    markAllAsReadPending: markAllAsReadMutation.isPending,
     deleteNotification: deleteNotificationMutation.mutate,
     markCtaClicked: markCtaClickedMutation.mutate,
   };

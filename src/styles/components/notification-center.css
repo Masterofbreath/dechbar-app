@@ -33,12 +33,20 @@
 .notification-center__header h2 {
   font-size: var(--font-size-xl);
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-text-primary, #E0E0E0);
   letter-spacing: -0.01em;
 }
 
+/* Badge + mark-all-btn sdílejí pravou stranu headeru */
+.notification-center__header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
 .notification-center__badge {
-  background: var(--color-primary);
+  background: var(--color-primary, #2CBEC6);
   color: #000;
   font-size: 11px;
   font-weight: 700;
@@ -49,6 +57,48 @@
   align-items: center;
   justify-content: center;
   padding: 0 6px;
+}
+
+/* Tlačítko "Vše přečteno" */
+.notification-center__mark-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: none;
+  border: 1px solid var(--color-border, #2A2A2A);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--color-text-tertiary, #707070);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.notification-center__mark-all-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.notification-center__mark-all-btn:hover:not(:disabled) {
+  border-color: var(--color-primary, #2CBEC6);
+  color: var(--color-primary, #2CBEC6);
+}
+
+/* Spinner uvnitř tlačítka při pending stavu */
+.notification-center__mark-all-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgb(255 255 255 / 15%);
+  border-top-color: var(--color-primary, #2CBEC6);
+  border-radius: 50%;
+  animation: nc-spin 0.6s linear infinite;
+}
+
+@keyframes nc-spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes badge-pulse {
