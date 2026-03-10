@@ -472,23 +472,33 @@ async function getModuleFromPriceId(
   ecomail_list_in?: string | null;
   ecomail_list_before?: string | null;
 } | null> {
-  // 1. Zkus DB lookup (platí pro all-time produkty vytvořené přes admin panel)
+  // 1. DB lookup — hledá ve všech třech price ID sloupcích
+  // stripe_price_id: lifetime produkty (one-time)
+  // stripe_price_id_monthly / stripe_price_id_annual: subscription produkty
   const { data: moduleRow, error } = await supabase
     .from('modules')
-    .select('id, ecomail_list_in, ecomail_list_before, price_type')
-    .eq('stripe_price_id', priceId)
+    .select('id, ecomail_list_in, ecomail_list_before, price_type, stripe_price_id_monthly, stripe_price_id_annual')
+    .or(`stripe_price_id.eq.${priceId},stripe_price_id_monthly.eq.${priceId},stripe_price_id_annual.eq.${priceId}`)
     .maybeSingle();
 
   if (!error && moduleRow) {
+    const interval: 'monthly' | 'annual' | undefined =
+      moduleRow.stripe_price_id_monthly === priceId ? 'monthly'
+      : moduleRow.stripe_price_id_annual === priceId ? 'annual'
+      : undefined;
+
     return {
       module_id: moduleRow.id,
       payment_type: moduleRow.price_type === 'lifetime' ? 'one_time' : 'subscription',
       ecomail_list_in: moduleRow.ecomail_list_in,
       ecomail_list_before: moduleRow.ecomail_list_before,
+      ...(interval ? { interval } : {}),
     };
   }
 
-  // 2. Fallback: hardcoded subscription price IDs (membership produkty nemají stripe_price_id v modules)
+  // 2. Emergency fallback: hardcoded subscription price IDs
+  // Tento fallback zůstává jako pojistka dokud není DB migrace ověřena na PROD.
+  // Po ověření (skupina D nasazena a fungující) odstraňte tento blok.
   const subscriptionPriceMap: Record<string, {
     module_id: string;
     plan: 'SMART' | 'AI_COACH';
@@ -586,7 +596,7 @@ async function grantModuleAccess(
       module_id: moduleId,
       purchased_at: new Date().toISOString(),
       purchase_type: 'lifetime',
-      subscription_status: null,
+      subscription_status: 'active',
       current_period_end: null,
       payment_id: sessionId,
       payment_provider: 'stripe',

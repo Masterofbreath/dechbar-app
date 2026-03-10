@@ -1,749 +1,495 @@
-# 🚀 DechBar App - React Native Mobile App
-# Version: 1.0
-# Last Updated: 2026-01-09
-# Purpose: AI Agent rules for React + TypeScript + Supabase + Capacitor
-
-## ⭐ FIRST TIME HERE? READ PROJECT_GUIDE.md!
-
-**Before reading this file, read:** [PROJECT_GUIDE.md](PROJECT_GUIDE.md)
-
-PROJECT_GUIDE.md is the master navigation file that explains:
-- Complete folder structure
-- Where to find everything
-- Where to add new code
-- How to use this project
-
-**This file (.cursorrules)** contains coding standards and best practices.
+# 🚀 DechBar App — React Native Mobile App
+# Last Updated: 2026-03-10
+# Review interval: 7 dní
 
 ---
 
-## ⚠️ CRITICAL: THIS IS NOT A WORDPRESS PROJECT!
-- This is a **standalone React app**
-- Do NOT use WordPress patterns, PHP, or WP-specific logic
-- Do NOT reference wp-content/ or WordPress plugins
-- This app communicates with Supabase, NOT WordPress
+## ⏰ LIVING RULES — PRAVIDLO AKTUÁLNOSTI
 
-## 📚 MANDATORY READING (Priority Order):
-1. `PROJECT_GUIDE.md` - Master navigation (START HERE!)
-2. **🤖 Agent Qualification System** ⭐ - **FOLLOW DECISION TREE IN PROJECT_GUIDE.md!**
-   - Find Study Guide for your task type
-   - Read relevant documentation
-   - Give feedback BEFORE implementing
-   - Wait for approval
-3. `WORKFLOW.md` ⭐ - **Git workflow (LOCAL → PREVIEW → PROD) - CRITICAL!**
-4. `docs/design-system/01_PHILOSOPHY.md` - UX philosophy (4 Temperaments - ALWAYS!)
-5. `docs/architecture/00_OVERVIEW.md` - System architecture
-6. `docs/api/PLATFORM_API.md` - Platform API reference
-7. This file - React-specific coding rules
+**Každý agent při startu konverzace zkontroluje datum:**
+
+```
+Dnešní datum − "Last Updated" výše = počet dní od poslední aktualizace
+```
+
+Pokud je rozdíl **7 nebo více dní**:
+→ Upozorni uživatele HNED na začátku: "⚠️ .cursorrules je X dní starý — doporučuji aktualizaci."
+→ Specificky zkontroluj: Supabase tabulky, Stripe Price IDs, CURRENT FOCUS sekci, počet uživatelů.
+
+**Co aktualizovat při update:**
+- Datum "Last Updated" na dnešek
+- CURRENT FOCUS — co je hotovo, co se právě dělá, co je planned
+- Existing Tables — přibyly nové migrace?
+- Počet uživatelů (PROD) — zkontroluj v Supabase PROD
 
 ---
 
-## 🤖 AGENT QUALIFICATION SYSTEM
+## ⚠️ TOTO NENÍ WORDPRESS PROJEKT
 
-**⚠️ MANDATORY FOR ALL NEW AGENTS!**
-
-### **Process:**
-```
-1. User gives you task
-2. Open PROJECT_GUIDE.md
-3. Find "🤖 FOR NEW AI AGENTS" section
-4. Use decision tree → find your Study Guide
-5. Read Study Guide
-6. Give feedback (návrh, plán)
-7. WAIT for approval
-8. THEN implement
-```
-
-### **Decision Tree (Quick Reference):**
-- `button`, `input`, `form` → UI_COMPONENTS.md
-- `card`, `modal`, `dialog` → LAYOUT_COMPONENTS.md
-- `table`, `list`, `chart` → DATA_DISPLAY.md
-- `audio`, `player`, `video` → MEDIA_COMPONENTS.md
-- `animation`, `transition` → ANIMATIONS.md
-- `navigation`, `menu`, `tabs` → NAVIGATION.md
-- `notification`, `toast`, `alert` → FEEDBACK.md
-- `heading`, `text`, `paragraph` → TYPOGRAPHY.md
-- `module`, `studio`, `challenges` → 03_MODULE_CREATION.md
-- `login`, `register`, `page` → 02_FEATURE_IMPLEMENTATION.md
-- `bug`, `fix`, `refactor` → 05_BUG_FIX_REFACTOR.md
-- **Not sure?** → 01_GENERAL_ONBOARDING.md
-
-### **Full docs:**
-- [Agent Tests README](docs/development/agent-tests/README.md)
-- [All Study Guides](docs/development/agent-tests/components/)
-
-### **⚠️ RULES:**
-```
-❌ NEVER implement before Study Guide
-❌ NEVER implement before user approval
-✅ ALWAYS give feedback first
-✅ ALWAYS wait for approval
-```
-
-## 🎯 PROJECT OVERVIEW
-- **Platform:** React 18 + TypeScript (Vite)
-- **Backend:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
-- **Styling:** Tailwind CSS + CSS Variables (from FOUNDATION)
-- **State:** Zustand
-- **Routing:** React Router v6
-- **Native:** Capacitor 6 (iOS + Android)
-- **Purpose:** Breathing exercises mobile app with modular architecture
-- **Philosophy:** Design for 4 temperaments (Sangvinik, Cholerik, Melancholik, Flegmatik)
-- **Language:** Czech (UI) + English (code/comments)
-
-## 🏗️ ARCHITECTURE: PLATFORM + MODULES
-
-### Concept:
-```
-PLATFORMA (Foundation Layer)
-  ├── Auth (login, registration)
-  ├── Membership (module ownership tracking)
-  ├── Design System (shared components)
-  └── Payments (GoPay, Stripe)
-
-MODULY (Feature Modules - independent products)
-  ├── Studio (exercise builder) - 990 Kč lifetime
-  ├── Challenges (21-day programs) - 490 Kč/pack lifetime
-  ├── Akademie (courses) - 1490 Kč lifetime
-  ├── Game (gamification) - 149 Kč/month subscription
-  └── AI Coach (chatbot) - 490 Kč/month subscription
-```
-
-### Module Communication:
-- Modules are **loosely coupled**
-- Communicate via **API calls** (not direct imports when possible)
-- Each module = **separate product** (can be sold independently)
-- User **purchases modules individually**
-
-## 🛠️ TECH STACK
-
-### Frontend:
-- **Framework:** React 18 + TypeScript
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS + CSS Variables (from FOUNDATION)
-- **State Management:** Zustand
-- **Routing:** React Router v6
-- **UI Components:** Custom (based on internal design system)
-
-### Backend:
-- **Database:** Supabase PostgreSQL
-- **Auth:** Supabase Auth (email, Google, Apple)
-- **Storage:** Supabase Storage (audio files, images) - HAS CDN!
-- **API:** Auto-generated REST + GraphQL
-- **Realtime:** Supabase Realtime subscriptions
-- **Functions:** Edge Functions (serverless)
-
-### Native:
-- **Wrapper:** Capacitor 6
-- **Platforms:** iOS + Android
-- **Bluetooth:** @capacitor-community/bluetooth-le (planned)
-- **Haptics:** @capacitor/haptics
-
-### Hosting & Services:
-- **App Hosting:** Vercel (FREE, auto-deploy from GitHub)
-- **Domain:** dechbar.cz (Wedos - DNS only!)
-- **CDN:** Supabase Storage (built-in CDN)
-- **Payments:** GoPay (CZ/SK, cheaper) + Stripe (international)
-- **Email:** Ecomail.cz
-- **Invoicing:** Vyfakturuj.cz
-
-## 🎨 DESIGN SYSTEM (Standalone)
-
-### Breakpoints (Mobile-First):
-```css
-320px  (xs) - Narrow Mobile (iPhone SE)
-480px  (sm) - Mobile
-768px  (md) - Tablet
-1024px (lg) - Desktop
-1440px (xl) - Wide Desktop
-```
-
-### Colors (CSS Variables):
-```css
-/* Brand Gold */
---color-gold: #F8CA00
-
-/* 4 Temperaments */
---color-sangvinik: #ff6b6b (fun, energy)
---color-cholerik: #2d3561 (power, efficiency)
---color-melancholik: #6c5ce7 (depth, quality)
---color-flegmatik: #74b9ff (calm, harmony)
-
-/* Semantic */
---color-success: #28a745
---color-info: #17a2b8
---color-warning: #ffc107
---color-danger: #dc3545
-```
-
-### Modern Effects (from modern-effects.css):
-```css
-/* Glassmorphism */
-.glass-card - iOS-style frosted glass
-.glass-card--subtle - Light glass
-.glass-card--strong - Strong blur
-
-/* Shadows */
---shadow-sm, --shadow-md, --shadow-lg, --shadow-xl
---shadow-gold (gold glow for premium)
---shadow-sangvinik, --shadow-cholerik, etc.
-
-/* Animations */
---spring-bounce (button press)
---apple-ease (iOS-like)
-```
-
-### Icons:
-- **ALWAYS custom SVG** (NEVER emoji 🎮 or Font Awesome)
-- Outline style, 2px stroke, currentColor
-- ViewBox: 24x24
-- Sizes: 16px, 20px, 24px (default), 32px, 48px
-
-### 4 Temperaments (MANDATORY):
-Every feature MUST satisfy ALL 4 personality types:
-- **Sangvinik:** Fun, playful, colorful, social features
-- **Cholerik:** Fast, efficient, goal-oriented, minimal clicks
-- **Melancholik:** Detailed info, depth, quality, reflection
-- **Flegmatik:** Simple, calm, no pressure, peaceful
-
-## 💻 CODING STANDARDS
-
-### 🔒 GIT WORKFLOW SECURITY (CRITICAL!)
-
-**⚠️ MANDATORY RULES FOR AI AGENTS:**
-
-```bash
-# ✅ DEFAULT BRANCH: Always work on 'test'
-git checkout test
-
-# ⚠️ BEFORE ANY GIT PUSH: ASK USER!
-# "Kam chceš poslat změny? (test/main)"
-
-# ❌ NEVER push to 'main' without explicit approval!
-# If user says "main" → WARN: "POZOR! Toto jde na PROD (dechbar.cz)!"
-# → Wait for confirmation
-
-# 🚨 PRODUCTION PUSH = ASK 2-3 TIMES!
-# "Opravdu chceš nasadit na PROD? (ano/ne)"
-# "Otestoval jsi to na PREVIEW? (ano/ne)"
-# "POSLEDNÍ KONTROLA: Jde to LIVE! Pokračovat? (ano/ne)"
-```
-
-**WHY:** Prevent accidental production deployments!
-
-**Process:**
-1. **LOCAL:** Develop (`npm run dev`)
-2. **PREVIEW:** Push to `test` branch (`git push origin test`)
-3. **PROD:** Merge to `main` ONLY after approval (`git push origin main`)
-
-**See:** [WORKFLOW.md](WORKFLOW.md) for complete guide.
+- Standalone React app — žádné PHP, WP hooky, jQuery, shortcodes
+- Komunikuje s Supabase, ne s WordPress
+- Workspace root obsahuje jen `dechbar-app/` a archív `BRAND/`
 
 ---
 
-### TypeScript:
-```typescript
-// ✅ DO:
-- Use `const` for everything (except let when needed)
-- Strict mode enabled
-- Explicit return types for functions
-- Interface for objects, Type for unions/primitives
-- No `any` (use `unknown` if needed)
-- Use optional chaining: user?.name
-- Use nullish coalescing: value ?? defaultValue
+## 🎯 PROJEKT — AKTUÁLNÍ STAV (březen 2026)
 
-// ❌ DON'T:
-- Never use `var`
-- Never use `any` type
-- Don't skip type definitions
-- Don't use `as` casting unless absolutely necessary
-```
+**Platform:** React 18 + TypeScript (Vite 7)
+**Backend:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+**Styling:** Tailwind CSS 4 + CSS Variables (`src/styles/design-tokens/`)
+**State:** Zustand + React Query
+**Routing:** React Router v7
+**Native:** Capacitor 6 (iOS + Android)
+**Hosting:** Vercel (auto-deploy z GitHub)
+**Platby:** Stripe (SMART, AI_COACH subscription plány)
+**Email:** Ecomail
 
-### React:
-```typescript
-// ✅ DO:
-- Functional components ONLY
-- Custom hooks for logic reuse (useAuth, useMembership)
-- Props validation with TypeScript interfaces
-- Export named exports (not default)
+**Uživatelé PROD:** ~451 reálných uživatelů (aktualizuj při update rules)
 
-// Example:
-export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary' }) => {
-  return <button className={`btn btn--${variant}`}>{children}</button>;
-};
+### ✅ Co je hotovo:
+- Auth (login, register, magic link)
+- Membership systém (ZDARMA, SMART, AI_COACH)
+- SMART Trial pro všechny uživatele (spuštěn 2. 3. 2026, expiruje 22. 3. 2026)
+- Stripe platby živé (checkout, webhooks, subscription lifecycle)
+- Akademie modul (programy, série, lekce, audio přehrávání, progress tracking)
+- Session engine (dechová cvičení, haptics, audio cues)
+- TrialExpiryModal (warning 3 dny před, expired stav)
+- UcetPage (mobil) + MujUcetPage (web) — trial vs. placená logika
 
-// ❌ DON'T:
-- No class components
-- No inline styles (use Tailwind)
-- No prop drilling (use Context/Zustand)
-- Don't mutate state directly
-```
+### 🔨 V progress:
+- Daily Program System (user_active_program, TodaysChallengeButton refactor)
+- Trial UI vizuální ladění (TrialExpiryModal)
+- Ecomail notifikace 7 dní před expirací trialu
 
-### File Naming:
-```
-Components:     PascalCase (Button.tsx, AudioPlayer.tsx)
-Hooks:          camelCase (useAuth.ts, useMembership.ts)
-Utils:          camelCase (formatDate.ts, validateEmail.ts)
-Types:          PascalCase (User.ts, Membership.ts)
-Constants:      UPPER_SNAKE_CASE (API_ENDPOINTS.ts)
-Pages:          PascalCase (LoginPage.tsx, Dashboard.tsx)
-```
+### 📋 Planned:
+- Výzvy modul
+- AI Coach modul
+- Native iOS/Android build (Capacitor)
 
-### Folder Structure (MANDATORY):
-```
-src/
-├── platform/              ← Shared infrastructure
-│   ├── auth/
-│   │   ├── AuthProvider.tsx
-│   │   ├── LoginPage.tsx
-│   │   ├── RegisterPage.tsx
-│   │   └── useAuth.ts
-│   │
-│   ├── components/        ← Design System components
-│   │   ├── Button.tsx
-│   │   ├── Card.tsx
-│   │   ├── Input.tsx
-│   │   ├── Modal.tsx
-│   │   ├── AudioPlayer.tsx
-│   │   └── index.ts
-│   │
-│   ├── layouts/
-│   │   ├── AppLayout.tsx
-│   │   ├── Header.tsx
-│   │   └── Sidebar.tsx
-│   │
-│   ├── membership/        ← Module ownership & access control
-│   │   ├── MembershipProvider.tsx
-│   │   ├── useMembership.ts
-│   │   ├── ModuleGuard.tsx
-│   │   └── types.ts
-│   │
-│   ├── payments/
-│   │   ├── CheckoutPage.tsx
-│   │   ├── gopay.ts
-│   │   └── stripe.ts
-│   │
-│   ├── api/
-│   │   ├── supabase.ts
-│   │   ├── profiles.ts
-│   │   └── memberships.ts
-│   │
-│   └── types/
-│       ├── index.ts
-│       ├── user.ts
-│       └── membership.ts
-│
-├── modules/               ← Feature modules (independent products)
-│   ├── studio/
-│   │   ├── module.config.ts    ← Module definition
-│   │   ├── routes.tsx
-│   │   ├── pages/
-│   │   ├── components/
-│   │   └── api/
-│   │
-│   ├── challenges/
-│   │   ├── module.config.ts
-│   │   └── ...
-│   │
-│   └── (other modules...)
-│
-├── app/                   ← App entry point
-│   ├── App.tsx
-│   ├── router.tsx         ← Dynamic routing
-│   └── moduleRegistry.ts  ← Module registration
-│
-├── styles/
-│   ├── globals.css        ← Tailwind imports + design tokens
-│   └── design-tokens/     ← All design tokens (standalone)
-│       ├── colors.css
-│       ├── typography.css
-│       ├── spacing.css
-│       ├── breakpoints.css
-│       ├── shadows.css
-│       └── effects.css
-│
-└── main.tsx
-```
+---
 
-## 🔐 SECURITY
+## 🤖 AGENT QUALIFICATION SYSTEM — POVINNÝ PROCES
 
-### Supabase RLS (Row Level Security):
-```sql
--- ALWAYS enable RLS on tables
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+**Uživatel používá preset šablony z `.cursor/commands/`. Každá šablona definuje přesný proces.**
+**Pokud šablonu nepoužil, řídi se tímto defaultním procesem:**
 
--- Example: User can only see own data
-CREATE POLICY "Users see own profile"
-ON profiles FOR SELECT
-USING (auth.uid() = user_id);
-```
-
-### Input Validation:
-```typescript
-// ✅ DO:
-- Validate all user input (Zod, Yup)
-- Sanitize before display
-- Use type-safe forms (React Hook Form + Zod)
-
-// Example with Zod:
-import { z } from 'zod';
-
-const LoginSchema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(8, 'Min 8 characters'),
-});
-
-type LoginFormData = z.infer<typeof LoginSchema>;
-```
-
-### Environment Variables:
-```bash
-# ✅ DO:
-- Use .env.local (NEVER commit!)
-- Prefix with VITE_ for client-side access
-- Store in 1Password/secure vault
-
-# Example .env.local:
-VITE_SUPABASE_URL=https://xyz.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...
-VITE_ENV=development
-```
-
-## 🗄️ SUPABASE DEV → PROD WORKFLOW (CRITICAL!)
-
-### Dva projekty — NIKDY je nezaměň!
+### Defaultní proces (2 kola otázek — POVINNÉ):
 
 ```
-DEV  project_id = nrlqzighwaeuxcicuhse   ← vždy první, localhost testování
-PROD project_id = iqyahebbteiwzwyrtmns   ← jen po ověření na DEV, 451 reálných uživatelů
+KOLO 1 — Pochopení záměru (VŽDY první krok):
+  → Polož 5–8 otázek k záměru, rozsahu, uživatelskému dopadu
+  → Čekej na odpovědi uživatele
+
+KOLO 2 — Upřesnění (po odpovědích z kola 1):
+  → Polož 2–4 doplňující otázky pokud vznikla nová témata
+  → Shrň pochopení jednou větou: "Rozumím tomu tak, že..."
+  → Čekej na potvrzení
+
+KOLO 3 — Návrh řešení:
+  → Napiš: CO JSEM ZJISTIL + NÁVRH + PLÁN + SOUBORY + RIZIKA
+  → Čekej na souhlas
+
+KOLO 4 — Implementace (až po souhlasu):
+  → Implementuj přesně podle schváleného plánu
 ```
 
-### Zlaté pravidlo (MANDATORY):
+**Proč 2 kola otázek?** Kolo 1 odhalí záměr, kolo 2 odhalí detaily které záměr skrývá. Bez obou kol agent optimalizuje špatnou věc.
 
+### Typy otázek v kole 1 — na co se ptát:
+- **Uživatelský dopad:** Co uživatel pocítí/získá? Kdo to použije nejvíc? (který temperament)
+- **Rozsah:** Kde přesně? Jen tato stránka nebo víc míst?
+- **Existující kód:** Existuje něco podobného co lze rozšířit?
+- **Závislosti:** Závisí to na Supabase datech, Stripe, jiném modulu?
+- **Definition of done:** Jak poznám, že je hotovo a správně?
+
+### Decision Tree (pokud jde o komponentu):
+| Klíčová slova | Study Guide |
+|---|---|
+| button, input, form, checkbox | `docs/development/agent-tests/components/UI_COMPONENTS.md` |
+| card, modal, dialog, drawer | `docs/development/agent-tests/components/LAYOUT_COMPONENTS.md` |
+| table, list, chart, progress | `docs/development/agent-tests/components/DATA_DISPLAY.md` |
+| audio, player, video | `docs/development/agent-tests/components/MEDIA_COMPONENTS.md` |
+| animation, transition, hover | `docs/development/agent-tests/components/ANIMATIONS.md` |
+| navigation, menu, tabs | `docs/development/agent-tests/components/NAVIGATION.md` |
+| toast, alert, notification | `docs/development/agent-tests/components/FEEDBACK.md` |
+| heading, text, typography | `docs/development/agent-tests/components/TYPOGRAPHY.md` |
+| module, studio, challenges | `docs/development/agent-tests/03_MODULE_CREATION.md` |
+| login, page, feature, auth | `docs/development/agent-tests/02_FEATURE_IMPLEMENTATION.md` |
+| bug, fix, refactor | `docs/development/agent-tests/05_BUG_FIX_REFACTOR.md` |
+| nevím | `docs/development/agent-tests/01_GENERAL_ONBOARDING.md` |
+
+### ❌ NIKDY:
+- Přeskočit kola otázek — 2 kola jsou minimum
+- Implementovat bez souhlasu uživatele
+- Předpokládat záměr bez ověření
+
+---
+
+## 🛠️ MCP NÁSTROJE — CO MÁŠ K DISPOZICI
+
+Agent má přímý přístup přes MCP. Používej je aktivně — neříkej uživateli "udělej to ručně" pokud to jde přes MCP.
+
+### Supabase MCP (`plugin-supabase-supabase`)
 ```
-1. Napiš migration soubor → supabase/migrations/YYYYMMDDHHMMSS_nazev.sql
-2. Spusť na DEV (MCP project_id = nrlqzighwaeuxcicuhse)
-3. Otestuj na localhost + DEV
-4. Commitni do gitu (git add + git commit)
-5. TEPRVE PAK spusť STEJNÝ soubor na PROD (MCP project_id = iqyahebbteiwzwyrtmns)
-6. Deployni edge functions: DEV první, pak PROD
+execute_sql(project_id, query)        — SELECT dotazy, debugging
+apply_migration(project_id, name, query) — DDL změny (CREATE, ALTER, DROP)
+list_tables(project_id)               — přehled tabulek
+list_migrations(project_id)           — přehled migrací
+deploy_edge_function(project_id, ...)  — deploy edge functions
+get_logs(project_id)                  — logy funkcí
+generate_typescript_types(project_id) — TypeScript typy z DB
+list_branches / create_branch / merge_branch — DB větve
 ```
 
-### Jak poznat, které migrace jít na PROD?
+### Stripe MCP (`plugin-stripe-stripe`)
+```
+Přístup přes MCP — pro čtení dat, zákazníků, subscriptions, produktů
+Před použitím: ověř autentizaci přes mcp_auth tool
+```
 
-Timestamp `YYYYMMDDHHMMSS` v názvu souboru = pořadí. Pokud PROD naposledy dostal
-migraci `20260302110000_fix_protocol_durations.sql`, pak **všechny soubory s vyšším
-timestampem** jsou nové pro PROD. Porovnej seznam v `supabase/migrations/` s tím,
-co je v `supabase_migrations.schema_migrations` na PROD.
+### Browser MCP (`cursor-ide-browser`)
+```
+browser_navigate, browser_click, browser_fill — automatizace prohlížeče
+browser_snapshot — screenshot/stav stránky
+Použití: vizuální testování UI na dev.dechbar.cz
+```
+
+### Vercel (Cursor plugin)
+```
+Přístup přes Cursor Vercel plugin (enabled v .cursor/settings.json)
+Použití: stav deploymentů, logy
+```
+
+### GitHub
+```
+Přístup přes git příkazy v terminálu
+```
+
+### Ecomail, Vercel deploy, GitHub Actions
+```
+Přes API volání nebo browser MCP
+```
+
+---
+
+## 🚨 BEZPEČNOSTNÍ PRAVIDLA — ABSOLUTNÍ ZÁKAZ PORUŠENÍ
+
+### Git workflow:
+```
+LOCAL (dev) → git push origin dev → Vercel DEV (automaticky)
+                                     ↓
+                              dev.dechbar.cz
+
+PROD (dechbar.cz) ← VÝHRADNĚ MANUÁLNĚ UŽIVATELEM
+```
+
+**⛔ Agent NESMÍ pushovat na `main` branch** — nikdy, za žádných okolností.
+**⛔ Agent NESMÍ deployovat na Vercel PROD** — to dělá výhradně uživatel ručně.
+
+Před JAKÝMKOLIV `git push`:
+```
+→ Zeptej se: "Kam pushnu? (dev / jiná větev)"
+→ Pokud zazní "main" nebo "prod" → ODMÍTNI a vysvětli pravidlo
+→ Výchozí větev: vždy dev
+```
+
+### Supabase — výchozí prostředí:
+```
+DEV  project_id = nrlqzighwaeuxcicuhse  ← VÝCHOZÍ pro vše
+PROD project_id = iqyahebbteiwzwyrtmns  ← JEN po výslovném "jdeme na PROD"
+```
+
+**Výchozí chování agenta:** Všechny MCP operace jdou na DEV, pokud uživatel explicitně neřekne jinak.
+
+**⛔ Na PROD Supabase NIKDY:**
+- `DELETE` bez výslovného písemného souhlasu uživatele v téže konverzaci
+- `DROP TABLE / DROP COLUMN` bez souhlasu
+- `UPDATE` velkého množství řádků bez souhlasu
+- Přímý SQL bez migration souboru (výjimka: SELECT pro debugging)
+
+### Stripe — výchozí prostředí:
+```
+DEV → Stripe TEST mode (sk_test_...) — výchozí
+PROD → Stripe LIVE mode (sk_live_...) — jen při explicitním "řešíme ostré platby"
+```
+
+**⛔ NIKDY nemíchat:** test klíče na PROD, live klíče na DEV.
+
+---
+
+## 🗄️ SUPABASE — WORKFLOW MIGRACÍ
+
+### Zlaté pravidlo:
+```
+1. Napiš SQL soubor → supabase/migrations/YYYYMMDDHHMMSS_nazev.sql
+2. apply_migration na DEV (project_id = nrlqzighwaeuxcicuhse)
+3. Otestuj funkčnost na localhost
+4. git commit migration souboru
+5. TEPRVE PAK apply_migration na PROD (jen po souhlasu uživatele)
+```
+
+### Jak poznat nové migrace pro PROD:
+Porovnej `supabase/migrations/` s `supabase_migrations.schema_migrations` na PROD přes:
+```
+execute_sql(PROD_ID, "SELECT version FROM supabase_migrations.schema_migrations ORDER BY version DESC LIMIT 5")
+```
 
 ### Příkazy pro edge functions:
-
 ```bash
 # Deploy na DEV:
 supabase functions deploy <nazev> --project-ref nrlqzighwaeuxcicuhse
 
-# Deploy na PROD (jen po DEV testu!):
+# Deploy na PROD (jen po DEV testu a souhlasu):
 supabase functions deploy <nazev> --project-ref iqyahebbteiwzwyrtmns
 ```
 
-### 🚨 ZAKÁZÁNO:
-- Nikdy nepsat SQL přes MCP přímo na PROD bez migration souboru
-- Nikdy přeskočit DEV a psát migraci rovnou na PROD
-- Nikdy deploynout edge function jen na PROD bez DEV
+### Migration checklist:
+- [ ] `public.` schema
+- [ ] UUID primary key s `gen_random_uuid()`
+- [ ] `ON DELETE CASCADE` u foreign keys
+- [ ] `IF NOT EXISTS` pro idempotenci
+- [ ] RLS enabled + policy
+- [ ] Index na foreign keys
+- [ ] `created_at`, `updated_at`
+- [ ] `COMMENT ON TABLE`
 
-### Tracking divergencí DEV ↔ PROD:
-Viz `supabase/SYNC_STATUS.md` — seznam zbývajících rozdílů a plán sjednocení.
+### Aktuální tabulky (aktualizuj při update rules):
+**Platform:** `profiles`, `roles`, `user_roles`, `memberships`, `modules`, `user_modules`
+**Akademie:** `akademie_programs`, `akademie_series`, `akademie_lessons`, `user_lesson_progress`, `user_active_program`
+**Exercises:** `exercises`, `exercise_sessions`, `protocols`
+**Marketing:** `ecomail_sync_queue`
+**Platby:** v `memberships` (Stripe data přes webhook)
+
+*Úplný aktuální seznam: `execute_sql(DEV, "SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")`*
 
 ---
 
-## 💳 STRIPE TESTING PRAVIDLA (CRITICAL!)
+## 💳 STRIPE — PRAVIDLA
 
-### Stripe mód podle prostředí:
-
+### Price IDs (PROD LIVE):
 ```
-DEV  (nrlqzighwaeuxcicuhse) → Stripe TEST mode (sk_test_...)
-                               Webhook secret: whsec_test_...
-                               Test eventy: cs_test_a1..., sub_test_...
-
-PROD (iqyahebbteiwzwyrtmns) → Stripe LIVE mode (sk_live_...)
-                               Webhook secret: whsec_live_...
-                               Reálné platby: cs_live_a1...
+SMART monthly:  price_1T2S3eK0OYr7u1q9W5ZW042C
+SMART annual:   price_1T2S3dK0OYr7u1q9bwA0cNS8
+AI_COACH annual: price_1SraIaK7en1dcW6HsYyN0Aj9
 ```
-
-### ⚠️ NIKDY nemíchat:
-- `sk_test_` klíče NESMÍ být v PROD Supabase secrets
-- `sk_live_` klíče NESMÍ být v DEV Supabase secrets
-- Test platby nezpracovávají se na PROD webhook endpointu (jiný webhook secret)
+*DEV TEST price IDs jsou jiné — generuj je ze Stripe TEST dashboardu.*
 
 ### Testovací karty (DEV pouze):
-
 ```
-Úspěšná platba:    4242 4242 4242 4242  | libovolný exp | libovolný CVC
-Odmítnutá karta:   4000 0000 0000 9995  | (insufficient_funds)
-3D Secure:         4000 0025 0000 3155  | (vyžaduje ověření)
-Subscription trial: 4242 4242 4242 4242 | funguje i pro recurring
+Úspěšná platba:  4242 4242 4242 4242
+Odmítnutá karta: 4000 0000 0000 9995
+3D Secure:       4000 0025 0000 3155
 ```
 
-### Testování webhooků na DEV:
-
+### Webhook testování:
 ```bash
-# Forward webhooků ze Stripe CLI na DEV:
 stripe listen --forward-to https://nrlqzighwaeuxcicuhse.supabase.co/functions/v1/stripe-webhooks
-
-# Trigger testovacího eventu:
 stripe trigger checkout.session.completed
-stripe trigger customer.subscription.created
-stripe trigger invoice.payment_succeeded
 ```
 
-### Stripe Price IDs — DEV vs PROD:
-
-```
-PROD LIVE price IDs (v subscriptionPriceMap v stripe-webhooks):
-  SMART monthly:    price_1T2S3eK0OYr7u1q9W5ZW042C
-  SMART annual:     price_1T2S3dK0OYr7u1q9bwA0cNS8
-  AI_COACH annual:  price_1SraIaK7en1dcW6HsYyN0Aj9
-
-DEV TEST price IDs: JINÉ — generované Stripe TEST modem.
-Při DEV testování subscription: musíš použít test price IDs z Stripe TEST dashboardu.
-Přidej je do modules.stripe_price_id v DEV DB pro testování.
-```
-
-### Zakázáno:
-- Nikdy neprovádět testovací platbu na PROD (reálné peníze!)
-- Nikdy deploy `stripe-webhooks` na PROD bez předchozího DEV testu
-- Nikdy manuálně upravovat `memberships` tabulku na PROD — vždy přes webhook
+### ⛔ Zakázáno:
+- Testovací platba na PROD (reálné peníze!)
+- `stripe-webhooks` deploy na PROD bez DEV testu
+- Manuální úprava `memberships` tabulky na PROD — vždy přes webhook
 
 ---
 
-## 🗄️ DATABASE MIGRATIONS (Supabase CLI)
+## 🏗️ ARCHITEKTURA: PLATFORM + MODULES
 
-### IMPORTANT: All DB changes go through migrations!
+```
+PLATFORMA (src/platform/)
+  ├── auth/          — Auth (useAuth, AuthProvider)
+  ├── user/          — UserState, Membership (useUserState, userStateStore)
+  ├── components/    — Sdílené UI komponenty (Button, Modal, AudioPlayer...)
+  ├── layouts/       — AppLayout, AppLayout s TrialExpiryModal
+  ├── payments/      — Stripe checkout (useCheckout, useManageSubscription)
+  └── api/           — Supabase client
 
-**DO NOT run SQL directly in Supabase Dashboard** (only for debugging).
+MODULY (src/modules/) — samostatné produkty, lazy loaded
+  ├── mvp0/          — Hlavní app (DnesPage, UcetPage, ProfilPage...)
+  ├── akademie/      — Akademie modul (programy, lekce, audio)
+  ├── studio/        — Studio modul (planned)
+  ├── challenges/    — Výzvy modul (planned)
+  └── public-web/    — Landing page, MujUcetPage (web)
+```
 
-### Creating a Migration:
-
-1. **Agent creates SQL file in `supabase/migrations/`:**
-   ```
-   supabase/migrations/YYYYMMDDHHMMSS_description.sql
-   ```
-
-2. **File format:**
-   ```sql
-   -- Migration: Add exercises table
-   -- Date: 2026-01-09
-   
-   CREATE TABLE IF NOT EXISTS public.exercises (
-     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-     name TEXT NOT NULL,
-     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-   );
-   
-   ALTER TABLE public.exercises ENABLE ROW LEVEL SECURITY;
-   
-   CREATE POLICY "Users can view own exercises"
-     ON public.exercises FOR SELECT
-     USING (auth.uid() = user_id);
-   
-   CREATE INDEX exercises_user_idx ON public.exercises(user_id);
-   
-   COMMENT ON TABLE public.exercises IS 'User-created breathing exercises';
-   ```
-
-3. **Developer applies:**
-   ```bash
-   cd /Users/DechBar/dechbar-app
-   supabase db push
-   ```
-
-### Migration Checklist (MANDATORY):
-- [ ] Table in `public.` schema
-- [ ] UUID primary key with `gen_random_uuid()`
-- [ ] Foreign keys with `ON DELETE CASCADE`
-- [ ] `IF NOT EXISTS` for idempotence
-- [ ] RLS enabled: `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
-- [ ] RLS policies (at minimum SELECT policy)
-- [ ] Indexes for foreign keys
-- [ ] Timestamps: `created_at`, `updated_at`
-- [ ] Comments: `COMMENT ON TABLE/COLUMN`
-
-### Reference:
-- **Full guide:** `supabase/migrations/README.md`
-- **DB schema:** `docs/DATABASE_SCHEMA.md`
-- **CLI guide:** `docs/SUPABASE_CLI.md`
-
-### Existing Tables:
-- `profiles` - User profiles
-- `modules` - Available products (5 seeded)
-- `user_modules` - User purchases
-- `memberships` - Membership plans (3 plans)
-- `roles` - User roles (6 seeded)
-- `user_roles` - User-role junction
+**Kde patří kód:**
+- Sdílené napříč moduly → `src/platform/`
+- Specifické pro jeden modul → `src/modules/{modul}/`
+- CSS pro platform komponentu → `src/styles/components/`
+- CSS pro modul → `src/modules/{modul}/styles/` nebo vedle komponenty
 
 ---
 
-## 📚 DOCUMENTATION
+## 💻 CODING STANDARDS
 
-Before implementing ANY feature:
-1. Create `docs/features/FEATURE_NAME.md`
-2. Define: PURPOSE, AUDIENCE, 4 TEMPERAMENTS, DEPENDENCIES
-3. Update module README.md
-4. THEN code
+### TypeScript:
+```typescript
+✅ const/let (no var), strict mode, explicit return types
+✅ Interface pro objects, Type pro unions
+✅ Optional chaining: user?.name
+✅ Nullish coalescing: value ?? default
+❌ No any — použij unknown
+❌ No as casting (jen pokud nutné)
+```
 
-## 🧪 TESTING
+### React:
+```typescript
+✅ Functional components only
+✅ Named exports (no default)
+✅ Custom hooks pro logiku (useAuth, useMembership)
+✅ TypeScript interfaces pro props
+❌ No class components
+❌ No inline styles — Tailwind třídy
+❌ No prop drilling — Context/Zustand
+```
 
-- [ ] TypeScript compiles (`npm run build`)
-- [ ] ESLint passes (`npm run lint`)
-- [ ] Works on mobile (375px viewport)
-- [ ] Works on tablet (768px viewport)
-- [ ] Works on desktop (1280px viewport)
-- [ ] No console errors/warnings
-- [ ] Satisfies all 4 temperaments
-- [ ] Tested on real device (iOS/Android via Capacitor)
+### File naming:
+```
+Components:  PascalCase (Button.tsx, AudioPlayer.tsx)
+Hooks:       camelCase (useAuth.ts, useMembership.ts)
+Utils:       camelCase (formatDate.ts)
+Types:       PascalCase (User.ts)
+CSS:         kebab-case (button.css, audio-player.css)
+```
+
+### CSS:
+```css
+✅ CSS Variables z src/styles/design-tokens/
+✅ Tailwind utility třídy
+✅ BEM naming pro vlastní třídy (.tem-modal__title--urgent)
+✅ Mobile-first media queries
+❌ No !important (jen výjimečně)
+❌ No inline styles
+```
+
+---
+
+## 🔐 SECURITY
+
+### Supabase RLS (povinné na každé tabulce):
+```sql
+ALTER TABLE public.my_table ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users see own data"
+  ON public.my_table FOR SELECT
+  USING (auth.uid() = user_id);
+```
+
+### Input validation:
+```typescript
+// Zod schema pro každý formulář
+const Schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+```
+
+### Env variables:
+```bash
+# .env.local (NIKDY necommitovat!)
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+VITE_ENV=development
+```
+
+---
+
+## 🧪 TESTING CHECKLIST
+
+Před každým push:
+- [ ] TypeScript kompiluje (`npm run build`)
+- [ ] ESLint prochází (`npm run lint`)
+- [ ] Funguje na mobile (375px)
+- [ ] Funguje na tablet (768px)
+- [ ] Funguje na desktop (1280px)
+- [ ] Žádné console errory
+- [ ] Splňuje 4 temperamenty
+- [ ] Otestováno na reálném zařízení (pokud nativní změna)
+
+---
+
+## 🎨 DESIGN SYSTEM & BRAND
+
+### Brand principy (Calm by Default):
+- **Inspirace: Apple Premium** — čistota, preciznost, každý detail záměrný. Pocit prémiovosti bez okázalosti.
+- **Minimální kognitivní zátěž** — uživatel přichází odpočinout a dýchat, ne přemýšlet. Žádné rušivé prvky, žádná vizuální soutěž. Každá obrazovka = jeden úkol.
+- **Calm by Default** — UI uklidňuje, nestimuluje. Tmavé pozadí (#121212), muted barvy, pomalé animace.
+- **One Strong CTA** — každá stránka má JEDNU primární akci. Ostatní jsou subdued.
+- **Less is More** — každý element musí mít důvod existovat. Odstraň co není nutné.
+- **Dark-first** — primární téma je tmavé, světlé je výjimka.
+
+### Tone of Voice (POVINNÉ pro veškerý UI text):
+- **Tykání VŽDY** — "Přihlaš se", "Tvoje heslo", "Vítej" (NIKDY vykání)
+- **Imperativ pro CTA** — "Začni", "Pokračuj", "Nastav" (NIKDY infinitiv "Přihlásit se")
+- **Dechový vibe** — klidný, povzbudivý, bez tlaku. Žádné "HURRY UP", žádné agresivní urgence.
+- **Přátelský ale věcný** — ne infantilní, ne korporátní
+- **Emoji** — NIKDY v UI textu. Jen v interní dokumentaci.
+- Plný Tone of Voice: `docs/design-system/TONE_OF_VOICE.md`
+- Brand Book: `docs/brand/VISUAL_BRAND_BOOK.md`
+
+### 4 Temperamenty (VŽDY u každé featury — všechny 4 musí být splněny):
+- 🎉 Sangvinik — fun, playful, social, vizuálně zajímavé
+- ⚡ Cholerik — fast, efficient, minimal clicks, jasný cíl
+- 📚 Melancholik — detailed info, quality, hloubka, vysvětlení proč
+- 🕊️ Flegmatik — calm, simple, no pressure, žádné blikání
+- Plná filosofie: `docs/design-system/01_PHILOSOPHY.md`
+
+### Design tokens (`src/styles/design-tokens/`):
+- `colors.css` — `--color-teal` (#2CBEC6 primární), `--color-gold` (#D6A23A akcent)
+- `typography.css` — Inter font, škála velikostí
+- `spacing.css` — 4px base unit (8, 16, 24, 32, 48px)
+- `shadows.css` — `--shadow-sm/md/lg/xl`, `--shadow-gold` pro premium
+- `effects.css` — glassmorphism `.glass-card`, spring animace
+
+### Breakpoints (mobile-first):
+```
+320px (xs) — Narrow Mobile | 480px (sm) — Mobile
+768px (md) — Tablet        | 1024px (lg) — Desktop | 1440px (xl) — Wide
+```
+
+### Ikony: VŽDY custom SVG — nikdy emoji, nikdy Font Awesome
+- Outline, 2px stroke, currentColor, viewBox 24x24
+
+---
 
 ## 🚫 NEVER DO
 
-- Don't push to `main` branch without asking 2-3 times! ⚠️
-- Don't skip PREVIEW testing before PROD
-- Don't use WordPress patterns (PHP, WP hooks, shortcodes)
-- Don't reference wp-content/ or WordPress plugins
-- Don't use jQuery (use vanilla JS or React)
-- Don't skip TypeScript types
-- Don't use `any` type
-- Don't ignore 4 temperaments in design
-- Don't hardcode values (use constants or .env)
-- Don't create inline styles (use Tailwind classes)
-- Don't use !important (except critical cases)
-- Don't skip RLS policies in Supabase
-- Don't commit .env.local or secrets
-- **🚨 NEVER INSERT/UPDATE/DELETE in Supabase Dashboard directly!** Every DB change MUST go through a migration file in `supabase/migrations/`. Direct dashboard edits bypass version control, destroy audit trails, and cannot be rolled back. This has already caused a serious incident (27.2.2026: protocols table overwritten without migration). See COMMON PITFALLS #5 in `docs/development/AI_AGENT_ONBOARDING.md`.
-- **🚨 NEVER change UI labels (durations, names, prices) without asking the user first!** These are product decisions, not technical ones.
+- **⛔ Push na `main` branch** — výhradně uživatel ručně
+- **⛔ DELETE/DROP na PROD Supabase bez souhlasu** — nenávratná ztráta dat
+- **⛔ SQL přímo v Supabase Dashboard bez migration souboru** — bypass version control
+  *(Incident 27.2.2026: protocols tabulka přepsána bez migrace → hodiny oprav)*
+- **⛔ Stripe LIVE operace bez "řešíme ostré platby"** — reálné peníze
+- **⛔ Míchat sk_test_ a sk_live_ klíče** — kritická bezpečnost
+- Měnit UI labely (ceny, délky, názvy) bez ptaní — produktová rozhodnutí
+- `any` TypeScript typ
+- Inline styles
+- WordPress patterns (PHP, WP hooky)
+- Hardcoded ceny v kódu — vždy z DB (`useModules()`)
 
 ## ✅ ALWAYS DO
 
-- **ASK before any git push!** (test vs main?) ⚠️
-- Work on `test` branch by default
-- Confirm 2-3 times before pushing to `main` (PROD)
-- Read [WORKFLOW.md](WORKFLOW.md) if unsure about Git
-- Use TypeScript strictly (no `any`)
-- Follow modular architecture (platform + modules)
-- Design for all 4 temperaments
-- Write semantic HTML
-- Use Tailwind CSS classes
-- Use CSS variables from design tokens (src/styles/design-tokens/)
-- Document complex logic with comments
-- Use Supabase RLS for security
-- Test on mobile devices first (mobile-first!)
-- Keep modules loosely coupled
-- Export named exports (not default)
-
-## 💡 MODULE DEVELOPMENT PATTERN
-
-When creating a new module:
-
-```typescript
-// 1. Create module.config.ts
-export const studioModuleConfig = {
-  id: 'studio',
-  name: 'DechBar STUDIO',
-  description: 'Vytvoř si vlastní dechová cvičení',
-  price: { czk: 990, type: 'lifetime' },
-  access: { requiresPurchase: true },
-  navigation: { 
-    title: 'Studio', 
-    icon: 'icon-studio',
-    path: '/studio' 
-  },
-};
-
-// 2. Create routes.tsx
-export const StudioRoutes = () => (
-  <Routes>
-    <Route path="/" element={<StudioDashboard />} />
-    <Route path="/exercise/:id" element={<ExerciseBuilder />} />
-  </Routes>
-);
-
-// 3. Register in app/moduleRegistry.ts
-import { studioModuleConfig } from '@/modules/studio/module.config';
-export const modules = [studioModuleConfig];
-
-// 4. Protect with ModuleGuard
-<ModuleGuard moduleId="studio">
-  <StudioRoutes />
-</ModuleGuard>
-```
-
-## 🎯 CURRENT FOCUS (MVP)
-
-**Phase 1: Foundation (NOW)**
-- [ ] Tailwind CSS setup
-- [ ] Folder structure
-- [ ] Supabase connection
-- [ ] Basic routing
-
-**Phase 2: Platform Core**
-- [ ] Auth (login, register)
-- [ ] Membership system
-- [ ] Supabase schema (4 tables: profiles, memberships, modules, user_modules)
-- [ ] Design system components
-
-**Phase 3: First Module - Studio**
-- [ ] Exercise builder
-- [ ] Audio player
-- [ ] Supabase tables (exercises, exercise_sessions)
-- [ ] Payment integration
-
-**Phase 4: Native**
-- [ ] Capacitor setup
-- [ ] iOS build
-- [ ] Android build
-
-## 📞 COMMUNICATION PROTOCOL
-
-- **Ask BEFORE destructive operations**
-- Use emoji for visual navigation (🎯 ✅ ❌ 🔧 💡 ⚠️)
-- Structure responses clearly (headings, bullet points)
-- Document WHY, not just HOW (explain reasoning)
-- Communicate in Czech (for user understanding)
-- Code comments in English (standard practice)
-- Suggest improvements proactively
-- Warn about risks and breaking changes
-
-## 🎓 BEST PRACTICES
-
-1. **Mobile-First** - Design for smallest screen first (375px)
-2. **Progressive Enhancement** - Basic functionality works everywhere
-3. **Accessibility** - ARIA labels, keyboard navigation, contrast
-4. **Performance** - Lazy load modules, optimize images, code splitting
-5. **Security** - RLS policies, input validation, secure storage
-6. **DRY** - Don't Repeat Yourself (reusable components/hooks)
-7. **KISS** - Keep It Simple, Stupid (simplest solution first)
-8. **4 Temperaments** - Every feature satisfies all 4 types
-
-## 💬 LANGUAGE
-
-- **UI text:** Czech (user-facing)
-- **Code:** English (variables, functions, comments)
-- **Documentation:** Czech (for team/stakeholders)
-- **Git commits:** English (standard practice)
+- ASK před git push (kam? dev nebo jiná větev?)
+- Výchozí branch: `dev`
+- Výchozí Supabase: DEV project
+- Výchozí Stripe: TEST mode
+- Design pro všechny 4 temperamenty
+- RLS na každé nové tabulce
+- Migration soubor pro každou DB změnu
+- Mobile-first (375px nejdřív)
+- Named exports
+- Feedback před implementací + čekej na souhlas
 
 ---
 
-**Remember:** You're building a NATIVE MOBILE APP, not a WordPress plugin!
+## 📞 KOMUNIKACE
 
-- React + TypeScript + Supabase (modern stack)
-- Modules communicate loosely (API-first)
-- Each module = independent product
-- Design for 4 temperaments ALWAYS
-- Mobile-first, native-ready (Capacitor)
-- Supabase Storage has CDN built-in!
-
-**Quality > Speed. Clean architecture now = faster features later!** 🚀
+- Komunikuj v češtině
+- Vysvětluj PROČ, ne jen JAK
+- Před destructive operací se vždy ptej
+- Dej feedback před implementací, čekej na souhlas
+- Varuj před riziky a breaking changes
 
 ---
 
-*Last updated: 2025-01-09*
-*Version: 1.0*
-*For parent workspace rules, see `../.cursorrules` (WordPress-specific, IGNORE for this project)*
+*Last updated: 2026-03-10*
+*Review: pokud je dnes více než 7 dní po tomto datu — upozorni uživatele!*

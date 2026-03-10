@@ -213,15 +213,26 @@ serve(async (req: Request) => {
         return jsonResponse({ error: `Předplatné je již na intervalu ${newInterval}` }, 400);
       }
 
-      // Hardcoded SMART price IDs — stejné jako v create-checkout-session subscriptionPriceMap
-      const SMART_PRICE_IDS: Record<string, string> = {
-        monthly: Deno.env.get('STRIPE_PRICE_SMART_MONTHLY') || 'price_1T2S3eK0OYr7u1q9W5ZW042C',
-        annual:  Deno.env.get('STRIPE_PRICE_SMART_ANNUAL')  || 'price_1T2S3dK0OYr7u1q9bwA0cNS8',
+      // Načti Price IDs z DB (single source of truth)
+      const { data: moduleData, error: moduleError } = await adminClient
+        .from('modules')
+        .select('stripe_price_id_monthly, stripe_price_id_annual')
+        .eq('id', membership.plan === 'AI_COACH' ? 'membership-ai-coach' : 'membership-smart')
+        .single();
+
+      if (moduleError || !moduleData) {
+        console.error('[manage-subscription] change_interval: DB lookup selhal:', moduleError?.message);
+        return jsonResponse({ error: 'Nelze načíst Price ID z databáze' }, 503);
+      }
+
+      const priceIdMap: Record<string, string | null> = {
+        monthly: moduleData.stripe_price_id_monthly,
+        annual:  moduleData.stripe_price_id_annual,
       };
 
-      const newPriceId = SMART_PRICE_IDS[newInterval];
+      const newPriceId = priceIdMap[newInterval];
       if (!newPriceId) {
-        return jsonResponse({ error: 'Nenalezeno Price ID pro nový interval' }, 400);
+        return jsonResponse({ error: 'Nenalezeno Price ID pro nový interval v DB' }, 400);
       }
 
       // Načti aktuální subscription item ID

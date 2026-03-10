@@ -21,7 +21,16 @@ import { EmailInputModal } from '@/platform';
 import { PaymentModal } from '@/platform/payments';
 import { useLandingPricingCheckout } from './useLandingPricingCheckout';
 import { CheckoutThankYouModal } from './CheckoutThankYouModal';
-import { PRICE_IDS, SMART_FEATURES } from './pricingConstants';
+import { useProductCatalog } from '@/platform/hooks/useProductCatalog';
+
+// UI copy — není z DB, hardcoded jako prezentační text
+const SMART_FEATURES = [
+  'SMART cvičení přesně pro tebe',
+  'Neomezená vlastní cvičení',
+  'Přístup k dechovým výzvám',
+  'Přístup k 150+ audio lekcím',
+  'Záznamy z pravidelných Online Session',
+] as const;
 
 // Pricing data with monthly/annual variants
 const PRICING_DATA = {
@@ -122,6 +131,9 @@ export function PricingSection() {
     handlePaymentComplete,
   } = useLandingPricingCheckout();
 
+  // Produktový katalog (DB jako source of truth pro Price IDs)
+  const { getPriceId: getCatalogPriceId } = useProductCatalog('homepage');
+
   // Meta Pixel: user scrolled to pricing section and saw the plans
   useEffect(() => {
     trackMetaEvent('ViewContent', {
@@ -132,14 +144,10 @@ export function PricingSection() {
 
   // Helper to get Price ID for a plan
   const getPriceId = (moduleId: 'smart' | 'ai-coach'): string => {
-    if (moduleId === 'smart') {
-      return billingInterval === 'monthly'
-        ? PRICE_IDS.smart.monthly
-        : PRICE_IDS.smart.annual;
-    }
-    return billingInterval === 'monthly'
-      ? PRICE_IDS.aiCoach.monthly
-      : PRICE_IDS.aiCoach.annual;
+    const dbId = moduleId === 'smart'
+      ? getCatalogPriceId('membership-smart', billingInterval)
+      : getCatalogPriceId('membership-ai-coach', billingInterval);
+    return dbId ?? '';
   };
 
   // Helper to get pricing data based on billing interval
