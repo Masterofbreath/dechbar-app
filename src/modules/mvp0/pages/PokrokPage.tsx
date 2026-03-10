@@ -13,7 +13,7 @@
  * @subpackage MVP0/Pages
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserPokrokStats, getDaysSinceRegistration, useAllTimeMinutes } from '@/platform/analytics';
 import { formatMinutes, getActivityLevel } from '@/platform/analytics';
 import { usePokrokRealtime } from '@/platform/analytics/hooks/usePokrokRealtime';
@@ -237,6 +237,11 @@ function WeeklyDots({ days }: { days: ActivityDayData[] }) {
 type ComingSoonTab = 'komunita' | 'top10';
 
 function ComingSoonSection({ tab }: { tab: ComingSoonTab }) {
+  useEffect(() => {
+    console.log(`[ComingSoonSection] MOUNT tab="${tab}"`);
+    return () => console.log(`[ComingSoonSection] UNMOUNT tab="${tab}"`);
+  }, [tab]);
+  console.log(`[ComingSoonSection] RENDER tab="${tab}"`);
   return (
     <div className="pokrok-page">
       <div className="pokrok-page__coming-soon">
@@ -286,6 +291,13 @@ export function PokrokPage() {
   const [pokrokTab, setPokrokTab] = useState<'prehled' | 'komunita' | 'top10'>('prehled');
   const userId = useAuthStore((s) => s.user?.id);
   const { openKPDetail } = useNavigation();
+
+  console.log(`[PokrokPage] RENDER pokrokTab="${pokrokTab}"`);
+
+  useEffect(() => {
+    console.log(`[PokrokPage] MOUNT`);
+    return () => console.log(`[PokrokPage] UNMOUNT`);
+  }, []);
 
   // Real-time invalidace při změně session
   usePokrokRealtime(userId);
@@ -354,8 +366,8 @@ export function PokrokPage() {
               key={tab.key}
               className={`pokrok-page__tab${pokrokTab === tab.key ? ' pokrok-page__tab--active' : ''}`}
               onClick={() => {
+                console.log(`[PokrokPage] TAB CLICK "${tab.key}" (bylo "${pokrokTab}")`);
                 setPokrokTab(tab.key as 'prehled' | 'komunita' | 'top10');
-                // Scroll na vrch obsahu při přepnutí tabu
                 document.querySelector('.app-layout__content')?.scrollTo({ top: 0, behavior: 'instant' });
               }}
               role="tab"
@@ -378,6 +390,7 @@ export function PokrokPage() {
 
       {pokrokTab === 'prehled' && (
       <div className="pokrok-page">
+        {/* 🔍 DEBUG */ (() => { console.log('[PrehledPanel] RENDERUJE SE'); return null; })()}
 
         {/* 1. KP Sekce */}
         <div className="pokrok-page__section-gap">
