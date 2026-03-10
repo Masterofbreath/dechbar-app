@@ -232,7 +232,9 @@ export function UcetPage() {
                   <p className={`ucet-plan-card__detail${membership.status === 'cancelled' ? ' ucet-plan-card__detail--cancelled' : ''}`}>
                     {membership.status === 'cancelled'
                       ? `Zrušeno, aktivní do: ${formatDate(membership.expiresAt)}`
-                      : `Další platba: ${formatDate(membership.expiresAt)}`}
+                      : membership.billingInterval === 'annual'
+                        ? `Roční předplatné, obnoví se: ${formatDate(membership.expiresAt)}`
+                        : `Další platba: ${formatDate(membership.expiresAt)}`}
                   </p>
                 )}
                 {trial && membership.expiresAt && membership.status !== 'cancelled' && (

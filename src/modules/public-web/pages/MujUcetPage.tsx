@@ -38,9 +38,18 @@ import { EmailInputModal } from '@/platform';
 import { PaymentModal } from '@/platform/payments';
 import { useLandingPricingCheckout } from '../components/landing/useLandingPricingCheckout';
 import { CheckoutThankYouModal } from '../components/landing/CheckoutThankYouModal';
-import { PRICE_IDS, SMART_FEATURES } from '../components/landing/pricingConstants';
+import { useProductCatalog } from '@/platform/hooks/useProductCatalog';
 import type { BillingInterval } from '../components/landing/BillingToggle';
 import './MujUcetPage.css';
+
+// UI copy — není z DB, hardcoded jako prezentační text
+const SMART_FEATURES = [
+  'SMART cvičení přesně pro tebe',
+  'Neomezená vlastní cvičení',
+  'Přístup k dechovým výzvám',
+  'Přístup k 150+ audio lekcím',
+  'Záznamy z pravidelných Online Session',
+] as const;
 
 // ============================================================
 // Types
@@ -53,6 +62,7 @@ interface MembershipFull {
   billingInterval: 'monthly' | 'annual' | null;
   purchasedAt: string;
   expiresAt: string | null;
+  stripeSubscriptionId: string | null;
   metadata: Record<string, unknown> | null;
 }
 
@@ -124,7 +134,7 @@ function getBillingLabel(membership: MembershipFull | null): string {
 async function fetchMembershipFull(userId: string): Promise<MembershipFull | null> {
   const { data, error } = await supabase
     .from('memberships')
-    .select('plan, status, type, billing_interval, purchased_at, expires_at, metadata')
+    .select('plan, status, type, billing_interval, purchased_at, expires_at, stripe_subscription_id, metadata')
     .eq('user_id', userId)
     .in('status', ['active', 'cancelled'])
     .order('created_at', { ascending: false })
@@ -141,6 +151,7 @@ async function fetchMembershipFull(userId: string): Promise<MembershipFull | nul
     billingInterval: (data.billing_interval as 'monthly' | 'annual' | null) ?? null,
     purchasedAt: data.purchased_at,
     expiresAt: data.expires_at ?? null,
+    stripeSubscriptionId: data.stripe_subscription_id ?? null,
     metadata: (data.metadata as Record<string, unknown> | null) ?? null,
   };
 }
@@ -206,6 +217,9 @@ export function MujUcetPage() {
     handlePaymentClose,
     handlePaymentComplete,
   } = useLandingPricingCheckout();
+
+  // Produktový katalog (DB jako source of truth pro Price IDs)
+  const { getPriceId } = useProductCatalog('homepage');
 
   // Sync name input when profile loads
   useEffect(() => {
@@ -658,7 +672,7 @@ export function MujUcetPage() {
                 <div className="muj-ucet-plan__upgrade-cards">
                   <PricingCard
                     moduleId="smart"
-                    priceId={billingInterval === 'annual' ? PRICE_IDS.smart.annual : PRICE_IDS.smart.monthly}
+                    priceId={getPriceId('membership-smart', billingInterval) ?? ''}
                     billingInterval={billingInterval}
                     title="SMART"
                     subtitle="Inteligentní doporučení"
@@ -667,7 +681,7 @@ export function MujUcetPage() {
                     period="měsíc"
                     priceAnnual={billingInterval === 'annual' ? '125 Kč/měsíc' : undefined}
                     savingsBadge={billingInterval === 'annual' ? 'Ušetříš 1 494 Kč ročně' : undefined}
-                    features={[...SMART_FEATURES]}
+                    features={SMART_FEATURES}
                     ctaText="Aktivovat →"
                     ctaVariant="primary"
                     highlighted
@@ -677,7 +691,7 @@ export function MujUcetPage() {
                   />
                   <PricingCard
                     moduleId="ai-coach"
-                    priceId={billingInterval === 'annual' ? PRICE_IDS.aiCoach.annual : PRICE_IDS.aiCoach.monthly}
+                    priceId={getPriceId('membership-ai-coach', billingInterval) ?? ''}
                     billingInterval={billingInterval}
                     title="AI COACH"
                     subtitle="Tvůj osobní AI trenér"
@@ -729,7 +743,9 @@ export function MujUcetPage() {
                     <p className="muj-ucet-plan__detail">
                       {trial
                         ? `Přístup aktivní do: ${formatDate(membership.expiresAt)}`
-                        : `Další platba: ${formatDate(membership.expiresAt)}`}
+                        : membership.billingInterval === 'annual'
+                          ? `Roční předplatné, obnoví se: ${formatDate(membership.expiresAt)}`
+                          : `Další platba: ${formatDate(membership.expiresAt)}`}
                     </p>
                   )}
                   {trial && (
@@ -754,7 +770,7 @@ export function MujUcetPage() {
                     <div className="muj-ucet-plan__upgrade-cards">
                       <PricingCard
                         moduleId="smart"
-                        priceId={billingInterval === 'annual' ? PRICE_IDS.smart.annual : PRICE_IDS.smart.monthly}
+                        priceId={getPriceId('membership-smart', billingInterval) ?? ''}
                         billingInterval={billingInterval}
                         title="SMART"
                         subtitle="Inteligentní doporučení"
@@ -763,7 +779,7 @@ export function MujUcetPage() {
                         period="měsíc"
                         priceAnnual={billingInterval === 'annual' ? '125 Kč/měsíc' : undefined}
                         savingsBadge={billingInterval === 'annual' ? 'Ušetříš 1 494 Kč ročně' : undefined}
-                        features={[...SMART_FEATURES]}
+                        features={SMART_FEATURES}
                         ctaText="Zachovat přístup →"
                         ctaVariant="primary"
                         highlighted
@@ -773,7 +789,7 @@ export function MujUcetPage() {
                       />
                       <PricingCard
                         moduleId="ai-coach"
-                        priceId={billingInterval === 'annual' ? PRICE_IDS.aiCoach.annual : PRICE_IDS.aiCoach.monthly}
+                        priceId={getPriceId('membership-ai-coach', billingInterval) ?? ''}
                         billingInterval={billingInterval}
                         title="AI COACH"
                         subtitle="Tvůj osobní AI trenér"

@@ -30,6 +30,8 @@ export interface UserMembership {
   type: 'lifetime' | 'subscription';
   purchasedAt: string;
   expiresAt: string | null;
+  billingInterval: 'monthly' | 'annual' | null;
+  stripeSubscriptionId: string | null;
   /** DB metadata — is_trial / was_zdarma flags set during special actions */
   metadata: Record<string, unknown> | null;
 }
@@ -37,9 +39,14 @@ export interface UserMembership {
 /**
  * Returns true if the membership was granted as a free trial / special action
  * (not a direct Stripe purchase).
+ *
+ * Uživatel s aktivním stripe_subscription_id je vždy platící zákazník,
+ * i pokud metadata obsahují is_trial/was_zdarma (přechod ze special akce na předplatné).
  */
-export function isMembershipTrial(m: Pick<UserMembership, 'metadata'> | null | undefined): boolean {
+export function isMembershipTrial(m: Pick<UserMembership, 'metadata' | 'stripeSubscriptionId'> | null | undefined): boolean {
   if (!m?.metadata) return false;
+  // Pokud má aktivní Stripe subscription → je to placené předplatné, ne trial
+  if (m.stripeSubscriptionId) return false;
   return m.metadata['is_trial'] === true || m.metadata['was_zdarma'] === true;
 }
 
@@ -171,6 +178,8 @@ export const useUserState = create<UserState>()(
               type: m.type,
               purchasedAt: m.purchased_at,
               expiresAt: m.expires_at,
+              billingInterval: m.billing_interval ?? null,
+              stripeSubscriptionId: m.stripe_subscription_id ?? null,
               metadata: (m.metadata as Record<string, unknown> | null) ?? null,
             });
           } else {
@@ -185,6 +194,8 @@ export const useUserState = create<UserState>()(
               type: 'lifetime',
               purchasedAt: new Date().toISOString(),
               expiresAt: null,
+              billingInterval: null,
+              stripeSubscriptionId: null,
               metadata: null,
             });
           }
@@ -265,6 +276,8 @@ export const useUserState = create<UserState>()(
               type: data.type,
               purchasedAt: data.purchased_at,
               expiresAt: data.expires_at,
+              billingInterval: data.billing_interval ?? null,
+              stripeSubscriptionId: data.stripe_subscription_id ?? null,
               metadata: (data.metadata as Record<string, unknown> | null) ?? null,
             });
             console.log('✅ Membership refreshed successfully');
@@ -276,6 +289,8 @@ export const useUserState = create<UserState>()(
               type: 'lifetime',
               purchasedAt: new Date().toISOString(),
               expiresAt: null,
+              billingInterval: null,
+              stripeSubscriptionId: null,
               metadata: null,
             });
           }
