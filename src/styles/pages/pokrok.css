@@ -716,6 +716,7 @@
   padding: 60px 24px;
   text-align: center;
   min-height: 200px;
+  color: #e0e0e0;
 }
 
 .pokrok-page__coming-soon-icon {
@@ -725,14 +726,14 @@
 }
 
 .pokrok-page__coming-soon-title {
-  color: #e0e0e0;
+  color: #e0e0e0 !important;
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
 }
 
 .pokrok-page__coming-soon-text {
-  color: rgb(255 255 255 / 50%);
+  color: rgb(255 255 255 / 50%) !important;
   font-size: 0.875rem;
   max-width: 280px;
   margin: 0;
