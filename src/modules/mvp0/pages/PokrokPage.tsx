@@ -232,6 +232,50 @@ function WeeklyDots({ days }: { days: ActivityDayData[] }) {
   );
 }
 
+// ── Coming Soon Section — s diagnostickými logy ──
+
+type ComingSoonTab = 'komunita' | 'top10';
+
+function ComingSoonSection({ tab }: { tab: ComingSoonTab }) {
+  console.log(`[PokrokPage] ComingSoonSection RENDER — tab="${tab}"`);
+
+  useEffect(() => {
+    console.log(`[PokrokPage] ComingSoonSection MOUNT — tab="${tab}"`);
+    return () => {
+      console.log(`[PokrokPage] ComingSoonSection UNMOUNT — tab="${tab}"`);
+    };
+  }, [tab]);
+
+  return (
+    <div className="pokrok-page">
+      <div className="pokrok-page__coming-soon">
+        <div className="pokrok-page__coming-soon-icon">
+          {tab === 'komunita' ? (
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          ) : (
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          )}
+        </div>
+        <p className="pokrok-page__coming-soon-title">
+          {tab === 'komunita' ? 'Komunita se rozdýchává' : 'Žebříček přichází'}
+        </p>
+        <p className="pokrok-page__coming-soon-text">
+          {tab === 'komunita'
+            ? 'Brzy se budeš moci porovnat a inspirovat ostatními DechBar uživateli.'
+            : 'Nejlepší dýchači DechBaru se brzy setkají na jednom místě.'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ──
 
 const SIMPLE_TABS: { key: ActivityPeriod; label: string }[] = [
@@ -255,9 +299,13 @@ export function PokrokPage() {
   const { currentTab } = useNavigation();
   const { openKPDetail } = useNavigation();
 
+  // 🔍 DIAGNOSTIKA — loguj každý render s aktuálním stavem
+  console.log(`[PokrokPage] RENDER — pokrokTab="${pokrokTab}" currentTab="${currentTab}" period="${period}"`);
+
   // Reset pokrokTab + period pokaždé, když uživatel přejde na tab "pokrok"
   const [prevTab, setPrevTab] = useState(currentTab);
   if (prevTab !== currentTab) {
+    console.log(`[PokrokPage] TAB CHANGE: "${prevTab}" → "${currentTab}" — volám reset pokrokTab`);
     setPrevTab(currentTab);
     if (currentTab === 'pokrok') {
       if (period !== 'day') setPeriod('day');
@@ -333,6 +381,7 @@ export function PokrokPage() {
               className={`pokrok-page__tab${pokrokTab === tab.key ? ' pokrok-page__tab--active' : ''}`}
               onClick={() => {
                 setPokrokTab(tab.key as 'prehled' | 'komunita' | 'top10');
+                console.log(`[PokrokPage] TAB CLICK: "${tab.key}" — pokrokTab před=${pokrokTab}`);
                 // Scroll na vrch obsahu při přepnutí tabu
                 document.querySelector('.app-layout__content')?.scrollTo({ top: 0, behavior: 'instant' });
               }}
@@ -348,32 +397,7 @@ export function PokrokPage() {
 
       {/* Komunita / TOP10 — coming soon */}
       {(pokrokTab === 'komunita' || pokrokTab === 'top10') && (
-        <div className="pokrok-page">
-          <div className="pokrok-page__coming-soon">
-            <div className="pokrok-page__coming-soon-icon">
-              {pokrokTab === 'komunita' ? (
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              ) : (
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-              )}
-            </div>
-            <p className="pokrok-page__coming-soon-title">
-              {pokrokTab === 'komunita' ? 'Komunita se rozdýchává' : 'Žebříček přichází'}
-            </p>
-            <p className="pokrok-page__coming-soon-text">
-              {pokrokTab === 'komunita'
-                ? 'Brzy se budeš moci porovnat a inspirovat ostatními DechBar uživateli.'
-                : 'Nejlepší dýchači DechBaru se brzy setkají na jednom místě.'}
-            </p>
-          </div>
-        </div>
+        <ComingSoonSection tab={pokrokTab} />
       )}
 
       {pokrokTab === 'prehled' && (
