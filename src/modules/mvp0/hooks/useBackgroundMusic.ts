@@ -445,7 +445,28 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       // We set volume=0 AFTER play() resolves, when the audio session is active and
       // JS volume changes are honoured. See comment below.
 
+      // DIAG: track volumechange events to catch when/who resets volume back to 1
+      const volumeChangeLog: { volume: number; msFromPlay: number }[] = [];
+      const playCalledAt = Date.now();
+      const handleVolumeChange = () => {
+        volumeChangeLog.push({ volume: primary.volume, msFromPlay: Date.now() - playCalledAt });
+        console.log('[BackgroundMusic] volumechange event', {
+          platform: getPlatformLabel(),
+          volume: primary.volume,
+          msFromPlay: Date.now() - playCalledAt,
+        });
+      };
+      primary.addEventListener('volumechange', handleVolumeChange);
+
       await primary.play();
+
+      console.log('[BackgroundMusic] post-play() resolved', {
+        platform: getPlatformLabel(),
+        volume: primary.volume,
+        paused: primary.paused,
+        readyState: primary.readyState,
+        msElapsed: Date.now() - playCalledAt,
+      });
 
       // iOS audio session fix: set volume to 0 AFTER play() resolves.
       // iOS initialises the audio session during play() and resets any pre-play volume=0
@@ -454,27 +475,16 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
       // so this is a harmless re-assignment.
       primary.volume = 0;
 
-      // iOS PWA fix: on iOS, play() resolves but audio may not be buffered yet (readyState < 3).
-      // Starting rampVolume immediately causes fade IN to complete before audio actually plays
-      // → user hears music "jump" to full volume when it finally buffers.
-      // Fix: wait for 'canplay' if audio isn't ready yet, then start the ramp.
-      // Fallback: if canplay never fires within 600ms (iOS can drop events in background tab),
-      // start the ramp anyway — better than staying silent.
-      // On desktop Safari / Chrome, readyState is typically 4 (HAVE_ENOUGH_DATA) already —
-      // the condition is true immediately → no delay.
-      // iOS audio session fix: even when readyState >= 3 (audio buffered), iOS needs a
-      // brief moment after play() resolves before it honours volume changes via JS.
-      // If we start rampVolume immediately after play(), iOS ignores the first few frames
-      // → volume stays at 0 → no fade IN heard, or volume "jumps" when session finally activates.
-      // Fix: always defer ramp start by one macrotask (setTimeout 0) on ALL platforms.
-      // On desktop Safari/Chrome this is imperceptible (~4ms = one rAF frame).
-      // On iOS this gives the audio session time to activate before we start changing volume.
-      //
-      // Additionally, on iOS PWA, readyState can be < 3 even after play() resolves (audio not
-      // yet fully buffered from CDN). In that case we also wait for canplay event, with a
-      // 600ms safety timeout in case the event never fires.
+      console.log('[BackgroundMusic] post-volume=0 assignment', {
+        platform: getPlatformLabel(),
+        volume: primary.volume,  // should be 0 — if iOS ignores it, it will show 1
+        msElapsed: Date.now() - playCalledAt,
+      });
 
       const startFadeInRamp = (trigger: string) => {
+        // Remove volumechange diagnostic listener — no longer needed after ramp starts
+        primary.removeEventListener('volumechange', handleVolumeChange);
+
         if (stateRef.current !== 'playing') {
           console.warn('[BackgroundMusic] fade IN ramp skipped — state changed before trigger', {
             platform: getPlatformLabel(),
@@ -486,44 +496,61 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
         console.log(`[BackgroundMusic] fade IN ramp starting (trigger: ${trigger})`, {
           platform: getPlatformLabel(),
           readyState: primary.readyState,
-          volume: primary.volume,
+          volume: primary.volume,   // DIAG: should be 0; if 1, iOS reset it between volume=0 and here
+          paused: primary.paused,
+          msElapsed: Date.now() - playCalledAt,
+          volumeChangeHistory: volumeChangeLog, // full history of all volumechange events
         });
         void rampVolume(primary, effectiveVolume, FADE_IN_DURATION_MS, fadeInRampRef);
       };
 
       if (primary.readyState >= 3) {
-        // Audio fully buffered — defer by one macrotask to let iOS audio session activate
         console.log('[BackgroundMusic] readyState ready — deferring fade IN by 1 tick', {
           platform: getPlatformLabel(),
           readyState: primary.readyState,
+          volumeAtCheck: primary.volume,
         });
-        window.setTimeout(() => startFadeInRamp('readyState-deferred'), 0);
+        window.setTimeout(() => {
+          console.log('[BackgroundMusic] setTimeout(0) fired', {
+            platform: getPlatformLabel(),
+            volume: primary.volume,  // DIAG: when exactly does iOS reset to 1?
+            paused: primary.paused,
+            msElapsed: Date.now() - playCalledAt,
+          });
+          startFadeInRamp('readyState-deferred');
+        }, 0);
       } else {
-        // Audio not yet buffered (iOS PWA / slow network) — wait for canplay event
         console.log('[BackgroundMusic] readyState < 3 — waiting for canplay before fade IN', {
           platform: getPlatformLabel(),
           readyState: primary.readyState,
+          volumeAtCheck: primary.volume,
         });
         let canPlayFired = false;
 
         const startRamp = (trigger: 'canplay' | 'timeout') => {
-          if (canPlayFired) return; // deduplicate — only start ramp once
+          if (canPlayFired) return;
           canPlayFired = true;
           primary.removeEventListener('canplay', onCanPlay);
           console.log(`[BackgroundMusic] fade IN ramp triggered by: ${trigger}`, {
             platform: getPlatformLabel(),
             readyState: primary.readyState,
+            volume: primary.volume,
             paused: primary.paused,
+            msElapsed: Date.now() - playCalledAt,
           });
-          // Extra defer here too — same iOS session activation issue applies
-          window.setTimeout(() => startFadeInRamp(trigger), 0);
+          window.setTimeout(() => {
+            console.log('[BackgroundMusic] setTimeout(0) fired (canplay path)', {
+              platform: getPlatformLabel(),
+              volume: primary.volume,
+              paused: primary.paused,
+              msElapsed: Date.now() - playCalledAt,
+            });
+            startFadeInRamp(trigger);
+          }, 0);
         };
 
         const onCanPlay = () => startRamp('canplay');
         primary.addEventListener('canplay', onCanPlay);
-
-        // Safety fallback: if canplay never fires (iOS can suppress events in PWA),
-        // start ramp after 600ms anyway — audio is likely playing even without the event.
         window.setTimeout(() => startRamp('timeout'), 600);
       }
       scheduleCrossfade(primary);
@@ -575,6 +602,23 @@ export function useBackgroundMusic(options?: { volumeOverride?: number; isActive
             album: 'Dechová cvičení',
           });
           navigator.mediaSession.playbackState = 'playing';
+
+          // iOS fix: after activating mediaSession, play a 0-volume silent HTMLAudio element.
+          // This "re-anchors" the iOS audio session (including Web Audio API / AudioContext)
+          // to the active MediaSession playback category — making it immune to the hardware
+          // ringer switch. Without this, AudioContext tones (bells, cues) may still be routed
+          // to the ringer/notification category and get muted by the switch.
+          // The silent buffer is imperceptible and safe on all platforms.
+          try {
+            const silentAudio = new Audio();
+            // Minimal valid silent MP3 (44 bytes, 0.02s, 44.1kHz, silence)
+            silentAudio.src = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhgCenp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6e////////////////////////////////////////////////////////////////AAAAAExhdmM1OC41AAAAAAAAAAAAAAAA//tQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQZB4P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+            silentAudio.volume = 0;
+            void silentAudio.play().catch(() => null);
+            console.log('[BackgroundMusic] Silent buffer played to anchor AudioContext to MediaSession', { platform: getPlatformLabel() });
+          } catch {
+            // silent skip — non-critical
+          }
         } catch {
           // mediaSession not fully supported — silent skip
         }
