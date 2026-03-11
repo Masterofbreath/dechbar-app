@@ -60,6 +60,16 @@
 }
 
 /* ============================================================
+   Main CTA Row — SMART CVIČENÍ + CESTA NA TRŮN side by side
+   ============================================================ */
+
+.dnes-page__main-cta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ============================================================
    SMART Exercise Button - Gold PRIMARY CTA (Always)
    ============================================================ */
 
@@ -88,7 +98,7 @@
 }
 
 .smart-exercise-button__title {
-  font-size: 22px; /* Bigger */
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-background); /* Dark text on gold */
   display: flex;
@@ -96,6 +106,7 @@
   gap: var(--spacing-2);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  line-height: 1.2;
 }
 
 .smart-exercise-button__lock {
@@ -114,6 +125,84 @@
 /* Active - press down */
 .smart-exercise-button:active {
   transform: translateY(-2px) scale(0.98);
+}
+
+/* ============================================================
+   Trůn Button — Teal secondary CTA (mirrors SMART layout)
+   ============================================================ */
+
+.tron-button {
+  width: 100%;
+  padding: var(--spacing-6);
+  background: transparent;
+  border: 1.5px solid var(--color-teal, #2CBEC6);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 8px 24px rgb(0 0 0 / 15%),
+    0 0 24px rgb(44 190 198 / 12%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 80px;
+}
+
+.tron-button__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-teal, #2CBEC6);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+.tron-button__lock {
+  color: var(--color-teal, #2CBEC6);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.tron-button--locked {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.tron-button--locked .tron-button__title {
+  color: rgb(44 190 198 / 70%);
+}
+
+.tron-button--loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.tron-button:active:not(.tron-button--locked) {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.tron-button:hover:not(.tron-button--locked, .tron-button--loading) {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 28px rgb(0 0 0 / 25%),
+    0 0 32px rgb(44 190 198 / 25%);
+  background: rgb(44 190 198 / 5%);
+}
+
+.tron-button__toast {
+  font-size: 11px;
+  color: var(--color-teal, #2CBEC6);
+  text-align: center;
+  margin-top: -6px;
+  opacity: 0.85;
+  line-height: 1.4;
+  grid-column: 2;
 }
 
 /* ============================================================
@@ -519,10 +608,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .smart-exercise-button,
+  .tron-button,
   .preset-protocol-button {
     transition: none;
   }
-  
+
   .smart-exercise-button:active,
   .preset-protocol-button:active {
     transform: none;

@@ -8,3 +8,6 @@
 export { SessionEngineModal } from './SessionEngineModal';
 export type { SessionEngineModalProps } from './SessionEngineModal';
 export type { SessionState } from './types';
+
+export { TronPrepState } from './TronPrepState';
+export type { TronPrepStateProps, TronPrepConfig } from './TronPrepState';

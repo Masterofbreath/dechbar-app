@@ -17,6 +17,7 @@ import { useAuth } from '@/platform/auth';
 import { 
   Greeting, 
   SmartExerciseButton,
+  TronButton,
   TodaysChallengeButton,
   PresetProtocolButton, 
   DailyTipWidget,
@@ -49,6 +50,9 @@ export function DnesPage() {
   const klidExercise = exercises?.find(ex => ex.name === 'KLID');
   const vecerExercise = exercises?.find(ex => ex.name === 'VEČER');
 
+  // Trůn session state
+  const [tronOpen, setTronOpen] = useState(false);
+
   // Called synchronously on SMART button click (within gesture stack) —
   // unlocks AudioContext BEFORE any await. Modal stays closed until config arrives.
   function handleSmartEarlyOpen() {
@@ -58,6 +62,14 @@ export function DnesPage() {
     setSkipFlow(false);
     // Do NOT open SessionEngineModal yet — it needs a real exercise with breathing_pattern.
     // SmartExerciseButton will call handleSmartStart when computeAndBuild resolves.
+  }
+
+  function handleTronEarlyOpen() {
+    unlockSharedAudioContext();
+  }
+
+  function handleTronStart() {
+    setTronOpen(true);
   }
 
   // Called after computeAndBuild resolves — opens modal with real exercise + config
@@ -104,11 +116,17 @@ export function DnesPage() {
 
       {/* Content — všechen obsah pod headerem */}
       <div className="dnes-page__content">
-        {/* 2. SMART Exercise Button (tier-aware) */}
-        <SmartExerciseButton
-          onSmartStart={handleSmartStart}
-          onEarlyOpen={handleSmartEarlyOpen}
-        />
+        {/* 2. Hlavní CTA dvojice — SMART CVIČENÍ + CESTA NA TRŮN */}
+        <div className="dnes-page__main-cta-row">
+          <SmartExerciseButton
+            onSmartStart={handleSmartStart}
+            onEarlyOpen={handleSmartEarlyOpen}
+          />
+          <TronButton
+            onEarlyOpen={handleTronEarlyOpen}
+            onTronStart={handleTronStart}
+          />
+        </div>
         
         {/* 2.5 Daily Program — section s diskrétním labelem */}
         <section className="dnes-page__section dnes-page__section--daily">
@@ -159,6 +177,11 @@ export function DnesPage() {
             <p className="smart-exercise-loading-overlay__text">Připravuji cvičení…</p>
           </div>
         </div>
+      )}
+
+      {/* Trůn placeholder — TronModal will be added in next iteration */}
+      {tronOpen && (
+        <div style={{ display: 'none' }} aria-hidden="true" />
       )}
 
       {/* Session Engine Modal — preset protocols and SMART sessions */}

@@ -1,0 +1,224 @@
+/* ============================================================
+   TronPrepState — Cesta na Trůn preparation screen
+   Teal color scheme (vs. gold for SmartPrepState).
+   Prefix: .tron-prep__*
+   ============================================================ */
+
+.tron-prep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px 24px 32px;
+  min-height: 100%;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+/* Top bar — identický pattern jako .smart-prep__top-bar */
+.tron-prep__top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(60px + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: env(safe-area-inset-top, 0) max(16px, env(safe-area-inset-right, 16px)) 8px max(16px, env(safe-area-inset-left, 16px));
+}
+
+.tron-prep__close {
+  position: static;
+  z-index: var(--fullscreen-modal-close-z, 20);
+}
+
+/* Header */
+.tron-prep__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.tron-prep__icon {
+  color: var(--color-teal, #2CBEC6);
+  opacity: 0.85;
+}
+
+.tron-prep__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-teal, #2CBEC6);
+  margin: 0;
+  text-shadow: 0 0 14px rgb(44 190 198 / 40%);
+}
+
+.tron-prep__subtitle {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgb(44 190 198 / 60%);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Recommendation card */
+.tron-prep__card {
+  background: rgb(44 190 198 / 5%);
+  border: 1px solid rgb(44 190 198 / 18%);
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 0 24px rgb(44 190 198 / 8%);
+}
+
+.tron-prep__rhythm-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary, rgb(255 255 255 / 50%));
+}
+
+/* Hero rhythm value — teal (vs. gold for SMART) */
+.tron-prep__rhythm {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-teal, #2CBEC6);
+  letter-spacing: 0.04em;
+  font-feature-settings: 'tnum';
+  text-shadow: 0 0 20px rgb(44 190 198 / 40%);
+}
+
+/* Phase labels below rhythm */
+.tron-prep__rhythm-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(255 255 255 / 30%);
+}
+
+.tron-prep__rhythm-hold {
+  color: var(--color-teal, #2CBEC6);
+  opacity: 0.8;
+}
+
+/* Duration row */
+.tron-prep__duration-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.tron-prep__duration {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-teal, #2CBEC6);
+  min-width: 60px;
+  text-align: center;
+}
+
+.tron-prep__duration-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid rgb(44 190 198 / 20%);
+  border-radius: 8px;
+  background: transparent;
+  color: rgb(44 190 198 / 60%);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.tron-prep__duration-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.tron-prep__duration-btn:hover:not(:disabled) {
+  border-color: rgb(44 190 198 / 35%);
+  color: var(--color-teal, #2CBEC6);
+  background: rgb(44 190 198 / 6%);
+}
+
+/* Calibration */
+.tron-prep__calibration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 300px;
+  text-align: center;
+}
+
+.tron-prep__calibration-text {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 55%));
+  margin: 0;
+  line-height: 1.4;
+}
+
+.tron-prep__dots {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tron-prep__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(44 190 198 / 15%);
+  transition: background 0.2s ease;
+}
+
+.tron-prep__dot--filled {
+  background: var(--color-teal, #2CBEC6);
+}
+
+/* No music notice */
+.tron-prep__silence-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: rgb(255 255 255 / 35%);
+  letter-spacing: 0.03em;
+}
+
+/* Auto-start hint */
+.tron-prep__hint {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, rgb(255 255 255 / 40%));
+  text-align: center;
+  line-height: 1.5;
+}
+
+.tron-prep__hint-count {
+  color: var(--color-teal, #2CBEC6);
+  font-weight: 600;
+}
+
+.tron-prep__hint-sub {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}

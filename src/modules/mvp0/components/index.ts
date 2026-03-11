@@ -13,6 +13,9 @@ export type { GreetingProps } from './Greeting';
 export { SmartExerciseButton } from './SmartExerciseButton';
 export type { SmartExerciseButtonProps } from './SmartExerciseButton';
 
+export { TronButton } from './TronButton';
+export type { TronButtonProps } from './TronButton';
+
 export { PresetProtocolButton } from './PresetProtocolButton';
 export type { PresetProtocolButtonProps } from './PresetProtocolButton';
 
