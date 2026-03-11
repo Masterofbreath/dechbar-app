@@ -147,12 +147,16 @@ export function useNotifications() {
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
+      // Pinnované notifikace záměrně vynecháváme — musí být odkliknuty manuálně
+      const nonPinnedIds = (query.data ?? [])
+        .filter((n) => !n.is_pinned && !n.read)
+        .map((n) => n.id);
+      if (nonPinnedIds.length === 0) return;
       const { error } = await supabase
         .from('user_notifications')
         .update({ read: true, read_at: new Date().toISOString() })
-        .eq('user_id', userId!)
-        .eq('read', false)
-        .is('deleted_at', null);
+        .in('id', nonPinnedIds)
+        .eq('user_id', userId!);
       if (error) throw error;
     },
     onMutate: async () => {
@@ -160,7 +164,40 @@ export function useNotifications() {
       const snapshot = queryClient.getQueryData<Notification[]>(notificationKeys.list(userId ?? ''));
       queryClient.setQueryData(
         notificationKeys.list(userId ?? ''),
-        (old: Notification[] | undefined) => (old ?? []).map((n) => ({ ...n, read: true })),
+        (old: Notification[] | undefined) =>
+          (old ?? []).map((n) => (n.is_pinned ? n : { ...n, read: true })),
+      );
+      return { snapshot };
+    },
+    onError: (_err, _vars, context: { snapshot?: Notification[] } | undefined) => {
+      if (context?.snapshot) {
+        queryClient.setQueryData(notificationKeys.list(userId ?? ''), context.snapshot);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: notificationKeys.list(userId ?? '') });
+    },
+  });
+
+  const deleteAllNotificationsMutation = useMutation({
+    mutationFn: async () => {
+      // Pinnované notifikace záměrně vynecháváme — musí být smazány manuálně
+      const nonPinnedIds = (query.data ?? [])
+        .filter((n) => !n.is_pinned)
+        .map((n) => n.id);
+      if (nonPinnedIds.length === 0) return;
+      await Promise.all(
+        nonPinnedIds.map((id) =>
+          supabase.rpc('soft_delete_user_notification', { p_id: id }),
+        ),
+      );
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: notificationKeys.list(userId ?? '') });
+      const snapshot = queryClient.getQueryData<Notification[]>(notificationKeys.list(userId ?? ''));
+      queryClient.setQueryData(
+        notificationKeys.list(userId ?? ''),
+        (old: Notification[] | undefined) => (old ?? []).filter((n) => n.is_pinned),
       );
       return { snapshot };
     },
@@ -183,6 +220,8 @@ export function useNotifications() {
     markAllAsRead: markAllAsReadMutation.mutate,
     markAllAsReadPending: markAllAsReadMutation.isPending,
     deleteNotification: deleteNotificationMutation.mutate,
+    deleteAllNotifications: deleteAllNotificationsMutation.mutate,
+    deleteAllNotificationsPending: deleteAllNotificationsMutation.isPending,
     markCtaClicked: markCtaClickedMutation.mutate,
   };
 }

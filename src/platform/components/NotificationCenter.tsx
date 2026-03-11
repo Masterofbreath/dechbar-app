@@ -235,7 +235,7 @@ function NotificationItem({
 export function NotificationCenter() {
   const navigate = useNavigate();
   const { isNotificationsOpen, closeNotifications } = useNavigation();
-  const { notifications, unreadCount, isLoading, markAsRead, deleteNotification, markCtaClicked, markAllAsRead, markAllAsReadPending } =
+  const { notifications, unreadCount, isLoading, markAsRead, deleteNotification, markCtaClicked, markAllAsRead, markAllAsReadPending, deleteAllNotifications, deleteAllNotificationsPending } =
     useNotifications();
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -283,8 +283,10 @@ export function NotificationCenter() {
 
   if (!isNotificationsOpen) return null;
 
-  const pinned  = notifications.filter((n) => n.is_pinned);
-  const regular = notifications.filter((n) => !n.is_pinned);
+  const pinned    = notifications.filter((n) => n.is_pinned);
+  const regular   = notifications.filter((n) => !n.is_pinned);
+  const hasRegular = regular.length > 0;
+  const unreadNonPinned = regular.filter((n) => !n.read).length;
 
   return (
     <div className="modal-overlay" onClick={closeNotifications}>
@@ -294,25 +296,46 @@ export function NotificationCenter() {
           <h2>Notifikace</h2>
           <div className="notification-center__header-right">
             {unreadCount > 0 && (
-              <>
-                <span className="notification-center__badge">{unreadCount}</span>
-                <button
-                  type="button"
-                  className="notification-center__mark-all-btn"
-                  onClick={() => markAllAsRead()}
-                  disabled={markAllAsReadPending}
-                  title="Označit vše jako přečtené"
-                >
-                  {markAllAsReadPending ? (
-                    <span className="notification-center__mark-all-spinner" aria-hidden="true" />
-                  ) : (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                  Vše přečteno
-                </button>
-              </>
+              <span className="notification-center__badge">{unreadCount}</span>
+            )}
+            {unreadNonPinned > 0 && (
+              <button
+                type="button"
+                className="notification-center__mark-all-btn"
+                onClick={() => markAllAsRead()}
+                disabled={markAllAsReadPending}
+                title="Označit vše jako přečtené (kromě pinnovaných)"
+              >
+                {markAllAsReadPending ? (
+                  <span className="notification-center__mark-all-spinner" aria-hidden="true" />
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+                Vše přečteno
+              </button>
+            )}
+            {hasRegular && (
+              <button
+                type="button"
+                className="notification-center__delete-all-btn"
+                onClick={() => deleteAllNotifications()}
+                disabled={deleteAllNotificationsPending}
+                title="Smazat vše (kromě pinnovaných)"
+              >
+                {deleteAllNotificationsPending ? (
+                  <span className="notification-center__mark-all-spinner" aria-hidden="true" />
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6M14 11v6" />
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                  </svg>
+                )}
+                Smazat vše
+              </button>
             )}
           </div>
         </div>

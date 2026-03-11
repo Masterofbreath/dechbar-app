@@ -86,7 +86,33 @@
   color: var(--color-primary, #2CBEC6);
 }
 
-/* Spinner uvnitř tlačítka při pending stavu */
+/* Tlačítko "Smazat vše" — červené, stejná výška jako mark-all */
+.notification-center__delete-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: none;
+  border: 1px solid var(--color-border, #2A2A2A);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--color-text-tertiary, #707070);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.notification-center__delete-all-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.notification-center__delete-all-btn:hover:not(:disabled) {
+  border-color: var(--color-error, #EF4444);
+  color: var(--color-error, #EF4444);
+}
+
 .notification-center__mark-all-spinner {
   display: inline-block;
   width: 12px;
