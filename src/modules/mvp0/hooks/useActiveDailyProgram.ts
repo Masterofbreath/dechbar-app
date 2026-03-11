@@ -57,28 +57,28 @@ export interface ActiveDailyProgramData {
   program: ActiveDailyProgramInfo;
   moduleId: string;
   /**
-   * Počet dní od launch_date (včetně dnešního).
-   * Infinity = program nemá launch_date → vše odemčeno.
+   * Nejvyšší odemčený den (completion-based).
+   * Infinity = program bez launch_date → vše odemčeno (admin/CEO).
    */
   daysElapsed: number;
   /** true pokud launch_date je v budoucnosti — program ještě nezačal */
   notStartedYet: boolean;
   startDate: Date | null;
   /**
-   * Nejbližší nesplněná dostupná lekce (catch-up logika).
+   * Nejbližší nesplněná dostupná lekce.
    * null = všechny dostupné lekce jsou splněny (nebo program ještě nezačal).
    * TodaysChallengeButton: pokud null, zkontroluj todayLesson pro "Přehrát znovu".
    */
   nextLesson: import('@/modules/akademie/types').AkademieLesson | null;
   /**
-   * Lekce pro DNEŠNÍ den (day_number === daysElapsed), i pokud je již splněna.
-   * Slouží pro stav "dnešní lekce hotova, zítřek ještě není odemčen" → "Přehrát znovu".
-   * null pokud program ještě nezačal nebo dnešní den nemá lekci.
+   * Poslední odemčená lekce (i pokud je splněna).
+   * Slouží pro stav "lekce hotova, další ještě není odemčena" → "Přehrát znovu".
+   * null pokud program ještě nezačal.
    */
   todayLesson: import('@/modules/akademie/types').AkademieLesson | null;
   /**
-   * true pokud uživatel splnil VŠECHNY lekce celého programu (ne jen dostupné).
-   * Odlišuje "dokončen celý program" od "dnešek hotov, čeká se na zítřek".
+   * true pokud uživatel splnil VŠECHNY lekce celého programu.
+   * Odlišuje "dokončen celý program" od "čeká se na odemčení dalšího dne".
    */
   isProgramFinished: boolean;
 }
@@ -99,7 +99,6 @@ export interface UseActiveDailyProgramReturn {
 interface RawActiveRecord {
   module_id: string;
   challenge_reset_at: string | null;
-  activated_at: string | null;
 }
 
 interface RawLesson {
@@ -128,20 +127,20 @@ interface RawProgramJoined {
 
 async function fetchActiveProgram(
   userId: string,
-  userCreatedAt?: string,
+  _userCreatedAt?: string,
 ): Promise<ActiveDailyProgramData | null> {
-  // 1. Zjisti module_id + challenge_reset_at + activated_at z user_active_program
+  // 1. Zjisti module_id + challenge_reset_at z user_active_program
   const { data: activeRec, error: activeErr } = await supabase
     .from('user_active_program')
-    .select('module_id, challenge_reset_at, activated_at')
+    .select('module_id, challenge_reset_at')
     .eq('user_id', userId)
     .maybeSingle();
 
   if (activeErr) throw activeErr;
   if (!activeRec) return null;
 
-  const { module_id: activeModuleId, challenge_reset_at: challengeResetAt, activated_at: activatedAt } =
-    activeRec as Pick<RawActiveRecord, 'module_id' | 'challenge_reset_at' | 'activated_at'>;
+  const { module_id: activeModuleId, challenge_reset_at: challengeResetAt } =
+    activeRec as Pick<RawActiveRecord, 'module_id' | 'challenge_reset_at'>;
 
   // 2. Načti kompletní data programu (JOIN modules + akademie_categories)
   const { data: prog, error: progErr } = await supabase
@@ -185,49 +184,11 @@ async function fetchActiveProgram(
     isFavorite: false,
   };
 
-  // 3. Výpočet postupného odemykání
-  // Nový den začíná ve 4:00 ráno CET — posuneme osu o 4 hodiny dozadu.
-  //
-  // effectiveStartDate = MAX(user.created_at, program.launch_date, activated_at, challenge_reset_at)
-  //   → activated_at: datum aktivace programu (koupě předplatného / první spuštění).
-  //     Nový placený zákazník vidí jen D1 v den aktivace, ne všechny dosud uplynuté dny.
-  //   → challenge_reset_at: uživatel restartoval výzvu → počítáme od resetu.
-  //   → Registroval se před globálním startem → sleduje globální start (launch_date).
-  //   → Registroval se po globálním startu → sleduje svůj datum registrace (created_at).
-  const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
-  const launchDate = r.launch_date ? new Date(r.launch_date) : null;
-  const userCreatedAtDate = userCreatedAt ? new Date(userCreatedAt) : null;
+  // 3. Metadata pro notStartedYet (launch_date v budoucnosti)
   const challengeResetAtDate = challengeResetAt ? new Date(challengeResetAt) : null;
-  const activatedAtDate = activatedAt ? new Date(activatedAt) : null;
-
-  // effectiveStartDate = MAX(user.created_at, program.launch_date, activated_at, challenge_reset_at)
-  //   → activated_at: datum kdy uživatel poprvé spustil/pinnul program (koupě předplatného).
-  //     Nový placený zákazník tak vidí jen D1 v den aktivace, ne všechny dosud uplynuté dny.
-  //   → challenge_reset_at: uživatel restartoval výzvu → počítáme od resetu.
-  //   → Registroval se před globálním startem → sleduje globální start.
-  //   → Registroval se po globálním startu → sleduje svůj datum registrace.
-  const baseStartDate = [launchDate, userCreatedAtDate, activatedAtDate]
-    .filter((d): d is Date => d !== null)
-    .reduce<Date | null>((max, d) => (max === null || d > max ? d : max), null);
-
-  // Pokud byl reset proveden PO base start → použij reset date
-  const effectiveStartDate =
-    challengeResetAtDate && baseStartDate && challengeResetAtDate > baseStartDate
-      ? challengeResetAtDate
-      : baseStartDate;
-
+  const launchDate = r.launch_date ? new Date(r.launch_date) : null;
   const now = new Date();
-
-  const daysElapsed = effectiveStartDate
-    ? Math.max(
-        0,
-        Math.floor(
-          ((now.getTime() - UNLOCK_HOUR_OFFSET_MS) - (effectiveStartDate.getTime() - UNLOCK_HOUR_OFFSET_MS)) / 86_400_000,
-        ) + 1,
-      )
-    : Infinity;
-
-  const notStartedYet = effectiveStartDate ? effectiveStartDate > now : false;
+  const notStartedYet = launchDate ? launchDate > now : false;
 
   // 4. Načti všechny lekce programu seřazené podle day_number
   const { data: lessonsRaw, error: lessonsErr } = await supabase
@@ -241,28 +202,25 @@ async function fetchActiveProgram(
 
   const lessons = (lessonsRaw ?? []) as RawLesson[];
 
-  // 5. Načti dokončené lekce uživatele
+  // 5. Načti dokončené lekce uživatele + completed_at pro každou
+  //    Potřebujeme completed_at pro výpočet odemykání (D(N+1) = 4:00 po D(N).completed_at)
   const completedIds = new Set<string>();
+  const completedAt = new Map<string, Date>(); // lesson_id → datum dokončení
   if (lessons.length > 0) {
     const { data: progress } = await supabase
       .from('user_lesson_progress')
-      .select('lesson_id')
+      .select('lesson_id, completed_at')
       .eq('user_id', userId)
       .in('lesson_id', lessons.map((l) => l.id));
-    (progress ?? []).forEach((row: { lesson_id: string }) => completedIds.add(row.lesson_id));
+    (progress ?? []).forEach((row: { lesson_id: string; completed_at: string | null }) => {
+      completedIds.add(row.lesson_id);
+      if (row.completed_at) {
+        completedAt.set(row.lesson_id, new Date(row.completed_at));
+      }
+    });
   }
 
-  // 6. Dostupné lekce — kombinace časového odemykání + podmínky dokončení předchozího dne.
-  //
-  // Den N se odemkne pouze pokud:
-  //   a) daysElapsed >= N  (čas uplynul — nový den od 4:00 ráno)
-  //   b) VŠECHNY lekce dne N-1 jsou dokončeny (uživatel si musí projít bezpečnostní info v D1
-  //      a každou lekci celé série před odemčením dalšího dne)
-  //
-  // D1 je vždy dostupný bez podmínky dokončení (nemá předchozí den).
-  // Infinity = program bez launch_date → vše odemčeno (admin, CEO, legacy data).
-
-  // Seskup lekce podle day_number pro efektivní lookup
+  // 6. Seskup lekce podle day_number pro efektivní lookup
   const lessonsByDay = new Map<number, RawLesson[]>();
   for (const l of lessons) {
     const arr = lessonsByDay.get(l.day_number) ?? [];
@@ -270,25 +228,84 @@ async function fetchActiveProgram(
     lessonsByDay.set(l.day_number, arr);
   }
 
-  // Zjisti nejvyšší odemčený den (gating: den N vyžaduje všechny lekce dne N-1 hotové)
+  // 7. Completion-based odemykání:
+  //
+  // Pravidlo: Den N se odemkne ve 4:00 ráno po dni, kdy byl D(N-1) splněn.
+  //   - D1 je vždy dostupný (bez podmínky)
+  //   - D(N) se zpřístupní = 4:00 ráno po D(N-1).completed_at
+  //   - Pokud je D(N) JIŽ splněno → unlock time se ignoruje, pokračujeme dál
+  //     (uživatel mohl splnit lekce v jiném pořadí nebo ve starém featured flow)
+  //   - Přeskakování není možné — nesplněná lekce vyžaduje splnění D(N-1) + čas
+  //
+  // Reset výzvy (challenge_reset_at): celý řetězec se přeruší, D1 je opět dostupný
+  //   ale STARÉ completed_at záznamy zůstávají → den D(N) splněný PŘED resetem se ignoruje.
+  //
+  // Speciální případ: program bez launch_date (admin/CEO) → Infinity = vše odemčeno.
+
+  const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
+
+  function isUnlockedAfterReset(lessonId: string): boolean {
+    // Pokud nebyl reset → vše platné
+    if (!challengeResetAtDate) return true;
+    const doneAt = completedAt.get(lessonId);
+    // Lekce splněná před resetem se pro účely gating řetězce ignoruje
+    return doneAt !== undefined && doneAt >= challengeResetAtDate;
+  }
+
   function computeMaxUnlockedDay(): number {
-    if (daysElapsed === Infinity) return Infinity;
-    let maxDay = 0;
+    // Program bez launch_date (admin/CEO) → vše odemčeno
+    if (!launchDate) return Infinity;
+    // Program ještě nezačal
+    if (notStartedYet) return 0;
+
     const allDays = [...lessonsByDay.keys()].sort((a, b) => a - b);
+    let maxDay = 0;
+
     for (const day of allDays) {
-      if (day > daysElapsed) break; // čas ještě nedošel
       if (day === 1) {
-        // D1 je vždy odemčen (pokud čas nastal)
+        // D1 je vždy dostupný (pokud program začal)
         maxDay = 1;
         continue;
       }
-      // D(N) vyžaduje, aby všechny lekce D(N-1) byly hotové
+
+      // D(N) = všechny lekce D(N-1) musí být splněny A odemykací čas musí nastat
       const prevDayLessons = lessonsByDay.get(day - 1) ?? [];
-      const prevDayAllDone = prevDayLessons.length > 0
-        && prevDayLessons.every((l) => completedIds.has(l.id));
-      if (!prevDayAllDone) break; // řetězec se přerušil — dál se nezkoumá
+      if (prevDayLessons.length === 0) break;
+
+      // Všechny lekce předchozího dne splněny (po případném resetu)
+      const prevDayAllDone = prevDayLessons.every(
+        (l) => completedIds.has(l.id) && isUnlockedAfterReset(l.id),
+      );
+      if (!prevDayAllDone) break;
+
+      // Nejpozdější completed_at z D(N-1) → z toho vypočítáme odemknutí D(N)
+      const lastCompletedAt = prevDayLessons.reduce<Date | null>((latest, l) => {
+        const done = completedAt.get(l.id);
+        if (!done) return latest;
+        return latest === null || done > latest ? done : latest;
+      }, null);
+
+      if (!lastCompletedAt) break;
+
+      // D(N) se odemkne ve 4:00 ráno po dni dokončení D(N-1)
+      const unlockTime = new Date(
+        Math.floor((lastCompletedAt.getTime() - UNLOCK_HOUR_OFFSET_MS) / 86_400_000 + 1) *
+          86_400_000 +
+          UNLOCK_HOUR_OFFSET_MS,
+      );
+
+      // Pokud D(N) je již splněno → unlock time ignorujeme (lekce byla dokončena dříve)
+      // Pokud D(N) ještě není splněno → čekáme na unlock time
+      const currentDayLessons = lessonsByDay.get(day) ?? [];
+      const currentDayAllDone = currentDayLessons.every(
+        (l) => completedIds.has(l.id) && isUnlockedAfterReset(l.id),
+      );
+
+      if (!currentDayAllDone && now < unlockTime) break; // čas ještě nenastal a lekce nesplněna
+
       maxDay = day;
     }
+
     return maxDay;
   }
 
@@ -298,12 +315,10 @@ async function fetchActiveProgram(
     (l) => maxUnlockedDay === Infinity || l.day_number <= maxUnlockedDay,
   );
 
-  // 7. Najdi první dostupnou nesplněnou lekci (catch-up logika)
+  // 8. Nejbližší nesplněná dostupná lekce
   const nextLesson = availableLessons.find((l) => !completedIds.has(l.id)) ?? null;
 
-  // 8. Dnešní lekce — lekce pro aktuální den (i pokud je splněna)
-  // "Dnes" = lekce s nejvyšším day_number <= maxUnlockedDay (poslední odemčená).
-  // Slouží pro "Přehrát znovu" když je nextLesson === null ale program ještě neskončil.
+  // 9. Dnešní lekce — poslední odemčená (i pokud splněna) — pro "Přehrát znovu"
   const todayLesson =
     maxUnlockedDay === Infinity
       ? (availableLessons[availableLessons.length - 1] ?? null)
@@ -311,27 +326,25 @@ async function fetchActiveProgram(
          availableLessons[availableLessons.length - 1] ??
          null);
 
-  // 9. Je celý program dokončen (VŠECHNY lekce, ne jen dostupné)?
-  // DŮLEŽITÉ: Po resetu (challenge_reset_at nastaven) zůstávají staré záznamy
-  // v completedIds. Abychom nezobrazili "Program dokončen" hned po resetu,
-  // považujeme program za dokončený pouze pokud:
-  //   a) Nebyl proveden reset → všechny lekce mají progress záznam
-  //   b) Byl proveden reset → všechny dostupné lekce (od dne 1 po reset) jsou splněny
-  //      A zároveň daysElapsed >= celkový počet dní programu (uživatel dočekal konce)
-  const wasPreviouslyReset = challengeResetAt !== null;
-  const totalDaysInProgram = r.duration_days ?? lessons.length;
-  const isProgramFinished = wasPreviouslyReset
-    ? daysElapsed >= totalDaysInProgram &&
-      availableLessons.length > 0 &&
-      availableLessons.every((l) => completedIds.has(l.id))
-    : lessons.length > 0 && lessons.every((l) => completedIds.has(l.id));
+  // 10. Je celý program dokončen?
+  // Po resetu: ignoruj lekce splněné před resetem — porovnáváme jen ty splněné po resetu.
+  const isProgramFinished = (() => {
+    if (lessons.length === 0) return false;
+    if (challengeResetAtDate) {
+      // Po resetu: všechny lekce musí být znovu splněny (completed_at >= challenge_reset_at)
+      return lessons.every(
+        (l) => completedIds.has(l.id) && isUnlockedAfterReset(l.id),
+      );
+    }
+    return lessons.every((l) => completedIds.has(l.id));
+  })();
 
   return {
     program: programInfo,
     moduleId: activeModuleId,
     daysElapsed: maxUnlockedDay,
     notStartedYet,
-    startDate: effectiveStartDate,
+    startDate: launchDate,
     nextLesson,
     todayLesson,
     isProgramFinished,

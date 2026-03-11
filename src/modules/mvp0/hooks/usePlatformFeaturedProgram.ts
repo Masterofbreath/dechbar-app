@@ -160,30 +160,16 @@ async function fetchFeaturedProgram(
 
   const r = prog as unknown as RawProgramJoined;
 
-  // 4. Per-user start date pro výpočet odemykání dnů.
-  //    effectiveStartDate = MAX(userCreatedAt, launch_date)
-  //    → zaregistrovaný před globálním startem → globální start
-  //    → zaregistrovaný po globálním startu → jeho vlastní registrace
-  const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
+  // 4. Metadata
   const launchDate = r.launch_date ? new Date(r.launch_date) : null;
-  const effectiveStartDate =
-    userCreatedAtDate && launchDate && userCreatedAtDate > launchDate
-      ? userCreatedAtDate
-      : launchDate;
-
   const nowDate = new Date();
-  const daysElapsed = effectiveStartDate
-    ? Math.max(
-        0,
-        Math.floor(
-          ((nowDate.getTime() - UNLOCK_HOUR_OFFSET_MS) -
-            (effectiveStartDate.getTime() - UNLOCK_HOUR_OFFSET_MS)) /
-            86_400_000,
-        ) + 1,
-      )
-    : Infinity;
+  const notStartedYet = launchDate ? launchDate > nowDate : false;
 
-  // 5. Načti lekce + progress pokud je přihlášen uživatel
+  // 5. Načti lekce + progress + completion-based odemykání (stejná logika jako pinnutý flow)
+  //
+  // Pravidlo: Den N se odemkne ve 4:00 ráno po dni, kdy byl D(N-1) splněn.
+  //   - D1 je vždy dostupný (bez podmínky)
+  //   - Program bez launch_date → vše odemčeno (admin/CEO)
   let nextLesson: AkademieLesson | null = null;
   let isAllCompleted = false;
 
@@ -198,23 +184,69 @@ async function fetchFeaturedProgram(
     const lessons = (lessonsRaw ?? []) as RawLesson[];
 
     const completedIds = new Set<string>();
+    const completedAt = new Map<string, Date>(); // lesson_id → datum dokončení
     if (lessons.length > 0) {
       const { data: progress } = await supabase
         .from('user_lesson_progress')
-        .select('lesson_id')
+        .select('lesson_id, completed_at')
         .eq('user_id', userId)
         .in('lesson_id', lessons.map((l) => l.id));
-      (progress ?? []).forEach((row: { lesson_id: string }) => completedIds.add(row.lesson_id));
+      (progress ?? []).forEach((row: { lesson_id: string; completed_at: string | null }) => {
+        completedIds.add(row.lesson_id);
+        if (row.completed_at) {
+          completedAt.set(row.lesson_id, new Date(row.completed_at));
+        }
+      });
     }
 
+    // Seskup lekce podle day_number
+    const lessonsByDay = new Map<number, RawLesson[]>();
+    for (const l of lessons) {
+      const arr = lessonsByDay.get(l.day_number) ?? [];
+      arr.push(l);
+      lessonsByDay.set(l.day_number, arr);
+    }
+
+    // Completion-based odemykání: stejná logika jako useActiveDailyProgram
+    const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000;
+
+    function computeMaxUnlockedDay(): number {
+      if (!launchDate) return Infinity; // admin/CEO — vše odemčeno
+      if (notStartedYet) return 0;
+      const allDays = [...lessonsByDay.keys()].sort((a, b) => a - b);
+      let maxDay = 0;
+      for (const day of allDays) {
+        if (day === 1) { maxDay = 1; continue; }
+        const prevDayLessons = lessonsByDay.get(day - 1) ?? [];
+        if (prevDayLessons.length === 0) break;
+        const prevDayAllDone = prevDayLessons.every((l) => completedIds.has(l.id));
+        if (!prevDayAllDone) break;
+        const lastCompletedAt = prevDayLessons.reduce<Date | null>((latest, l) => {
+          const done = completedAt.get(l.id);
+          if (!done) return latest;
+          return latest === null || done > latest ? done : latest;
+        }, null);
+        if (!lastCompletedAt) break;
+        const unlockTime = new Date(
+          Math.floor((lastCompletedAt.getTime() - UNLOCK_HOUR_OFFSET_MS) / 86_400_000 + 1) *
+            86_400_000 +
+            UNLOCK_HOUR_OFFSET_MS,
+        );
+        // Pokud D(N) je již splněno → unlock time ignorujeme
+        const currentDayLessons = lessonsByDay.get(day) ?? [];
+        const currentDayAllDone = currentDayLessons.every((l) => completedIds.has(l.id));
+        if (!currentDayAllDone && nowDate < unlockTime) break;
+        maxDay = day;
+      }
+      return maxDay;
+    }
+
+    const maxUnlockedDay = computeMaxUnlockedDay();
     const availableLessons = lessons.filter(
-      (l) => daysElapsed === Infinity || l.day_number <= daysElapsed,
+      (l) => maxUnlockedDay === Infinity || l.day_number <= maxUnlockedDay,
     );
 
-    // Nejbližší nesplněná dostupná lekce (catch-up logika)
     nextLesson = availableLessons.find((l) => !completedIds.has(l.id)) ?? null;
-
-    // Všechny dostupné lekce splněny?
     isAllCompleted =
       availableLessons.length > 0 && availableLessons.every((l) => completedIds.has(l.id));
   }

@@ -3,8 +3,13 @@ import { supabase } from '@/platform/api/supabase'
 import { akademieKeys } from './keys'
 
 // --------------------------------------------------
-// Mutation: mark lesson as completed (upsert)
-// Called after 80% playback threshold
+// Mutation: mark lesson as completed
+// Called after 80% playback threshold.
+//
+// Uses RPC record_lesson_completion instead of raw upsert to preserve
+// the original completed_at on repeated plays. This is critical:
+// the day-unlock algorithm reads completed_at to determine when the
+// next day becomes available — overwriting it would block future days.
 // --------------------------------------------------
 
 interface MarkCompleteParams {
@@ -15,17 +20,12 @@ interface MarkCompleteParams {
 }
 
 async function markLessonComplete(params: MarkCompleteParams): Promise<void> {
-  const { error } = await supabase
-    .from('user_lesson_progress')
-    .upsert(
-      {
-        user_id: params.userId,
-        lesson_id: params.lessonId,
-        completed_at: new Date().toISOString(),
-        play_duration_seconds: params.playDurationSeconds,
-      },
-      { onConflict: 'user_id,lesson_id' },
-    )
+  const { error } = await supabase.rpc('record_lesson_completion', {
+    p_user_id: params.userId,
+    p_lesson_id: params.lessonId,
+    p_series_id: params.seriesId,
+    p_duration: params.playDurationSeconds,
+  })
 
   if (error) throw error
 }
