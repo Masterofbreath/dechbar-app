@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useAkademieSeries, useAkademieLessons, useToggleLessonFavorite } from '../../api/useAkademieProgram'
 import { useAkademiePlayback } from '../../hooks/useAkademiePlayback'
 import { useActiveDailyProgram } from '@/modules/mvp0/hooks/useActiveDailyProgram'
+import { useProgramUnlockState } from '../../api/useProgramUnlockState'
 import { LockedFeatureModal } from '@/modules/mvp0/components'
 import type { AkademieProgramVM, AkademieSeries, LessonWithProgress } from '../../types'
 
@@ -59,8 +60,7 @@ function LessonHeartIcon({ filled }: { filled: boolean }) {
 }
 
 interface LessonRowPropsWithDays extends LessonRowProps {
-  daysElapsed: number
-  launchDate: Date | null
+  maxUnlockedDay: number
 }
 
 function DayLockIcon() {
@@ -72,25 +72,19 @@ function DayLockIcon() {
   )
 }
 
-function formatCzechDate(date: Date): string {
-  return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' })
-}
-
-function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, programId, categorySlug, programTitle, onLockedPlay, daysElapsed, launchDate }: LessonRowPropsWithDays) {
+function LessonRow({ lesson, seriesId, isSeriesLocked, userId, coverUrl, programId, categorySlug, programTitle, onLockedPlay, maxUnlockedDay }: LessonRowPropsWithDays) {
   const { playLesson, isCurrentlyPlaying } = useAkademiePlayback({ coverUrl, programId, categorySlug, programTitle })
   const toggleFavorite = useToggleLessonFavorite()
   const playing = isCurrentlyPlaying(lesson.id)
 
-  // Postupné odemykání: pokud je launch_date nastaveno a day_number překračuje daysElapsed
-  const isDayLocked = isFinite(daysElapsed) && lesson.day_number > daysElapsed
+  // Completion-based zamykání: D(N) je dostupný až po dokončení D(N-1)
+  const isDayLocked = isFinite(maxUnlockedDay) && lesson.day_number > maxUnlockedDay
 
-  // Tooltip pro zamčenou lekci — "Dostupné od D3 — 5. 3. 2026"
-  const dayLockTitle = isDayLocked && launchDate
-    ? (() => {
-        const unlockDate = new Date(launchDate)
-        unlockDate.setDate(unlockDate.getDate() + lesson.day_number - 1)
-        return `Dostupné od D${lesson.day_number} — ${formatCzechDate(unlockDate)}`
-      })()
+  // Tooltip: "Dostupné po dokončení D(N-1)"
+  const dayLockTitle = isDayLocked
+    ? lesson.day_number === 1
+      ? 'Program zatím nezačal'
+      : `Dostupné po dokončení D${lesson.day_number - 1}`
     : undefined
 
   function handleClick() {
@@ -196,8 +190,7 @@ interface AccordionSeriesProps {
   programTitle: string
   isOpen: boolean
   onToggle: () => void
-  daysElapsed: number
-  launchDate: Date | null
+  maxUnlockedDay: number
 }
 
 function LockIcon() {
@@ -217,7 +210,7 @@ function ChevronRightIcon() {
   )
 }
 
-function AccordionSeries({ series, seriesIndex, isOwned, userId, coverUrl, programId, categorySlug, programTitle, isOpen, onToggle, daysElapsed, launchDate }: AccordionSeriesProps) {
+function AccordionSeries({ series, seriesIndex, isOwned, userId, coverUrl, programId, categorySlug, programTitle, isOpen, onToggle, maxUnlockedDay }: AccordionSeriesProps) {
   const [lockedModalOpen, setLockedModalOpen] = useState(false)
 
   const { data: lessons, isLoading } = useAkademieLessons(
@@ -291,8 +284,7 @@ function AccordionSeries({ series, seriesIndex, isOwned, userId, coverUrl, progr
               categorySlug={categorySlug}
               programTitle={programTitle}
               onLockedPlay={() => setLockedModalOpen(true)}
-              daysElapsed={daysElapsed}
-              launchDate={launchDate}
+              maxUnlockedDay={maxUnlockedDay}
             />
           ))}
       </div>
@@ -316,35 +308,17 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', ca
   const { data: series, isLoading: seriesLoading } = useAkademieSeries(program.module_id)
   const [openSeriesId, setOpenSeriesId] = useState<string | null>(null)
 
-  const { data: activeProgram, setActiveProgram, clearActiveProgram } = useActiveDailyProgram(userId)
+  const { data: activeProgram, setActiveProgram, clearActiveProgram, resetChallenge } = useActiveDailyProgram(userId)
   const isActiveProgram = activeProgram?.program.module_id === program.module_id
+
+  // Completion-based odemykání — stejná logika jako TodaysChallengeButton
+  const { data: unlockState } = useProgramUnlockState(userId, program.module_id)
+  const maxUnlockedDay = unlockState?.maxUnlockedDay ?? Infinity
+  const isProgramFinished = unlockState?.isProgramFinished ?? false
 
   // Prefer DB value; fall back to computed from series count
   const durationDays = program.duration_days ?? (series?.length ?? 0) * 7
   const dailyMinutes = program.daily_minutes ?? null
-
-  // Postupné odemykání dnů — nový den začíná ve 4:00 ráno CET
-  // Pokud jde o aktivní program tohoto uživatele, použijeme daysElapsed přímo z hooku —
-  // ten správně zohledňuje MAX(created_at, launch_date, activated_at, reset_at).
-  // Pro neaktivní / prohlížený program fallback na globální launch_date výpočet.
-  const { launchDate, daysElapsed } = useMemo(() => {
-    if (isActiveProgram && activeProgram != null) {
-      const ld = program.launch_date ? new Date(program.launch_date) : null
-      return { launchDate: ld, daysElapsed: activeProgram.daysElapsed }
-    }
-    const UNLOCK_HOUR_OFFSET_MS = 4 * 60 * 60 * 1000
-    const ld = program.launch_date ? new Date(program.launch_date) : null
-    const now = new Date()
-    const elapsed = ld
-      ? Math.max(
-          0,
-          Math.floor(
-            ((now.getTime() - UNLOCK_HOUR_OFFSET_MS) - (ld.getTime() - UNLOCK_HOUR_OFFSET_MS)) / 86_400_000,
-          ) + 1,
-        )
-      : Infinity
-    return { launchDate: ld, daysElapsed: elapsed }
-  }, [isActiveProgram, activeProgram, program.launch_date])
 
   return (
     <div>
@@ -378,27 +352,38 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', ca
 
         {/* Info vpravo */}
         <div className="akademie-program-detail__info">
-          {/* Title row — název + pin button na stejné řádce */}
+          {/* Title row — název + akční tlačítka */}
           <div className="akademie-program-detail__title-row">
             <h1 className="akademie-program-detail__title">{program.name}</h1>
             {program.isOwned && (
-              <button
-                className={`akademie-program-detail__pin-btn${isActiveProgram ? ' akademie-program-detail__pin-btn--active' : ''}`}
-                onClick={isActiveProgram ? clearActiveProgram : () => setActiveProgram(program.module_id)}
-                type="button"
-                aria-label={isActiveProgram ? 'Odebrat z denního programu' : 'Nastavit jako denní program'}
-              >
-                {isActiveProgram ? (
-                  <>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Nastaveno
-                  </>
-                ) : (
-                  'Denní program'
-                )}
-              </button>
+              isProgramFinished ? (
+                <button
+                  className="akademie-program-detail__pin-btn"
+                  onClick={() => resetChallenge()}
+                  type="button"
+                  aria-label="Začít výzvu znovu od 1. dne"
+                >
+                  Začít znovu
+                </button>
+              ) : (
+                <button
+                  className={`akademie-program-detail__pin-btn${isActiveProgram ? ' akademie-program-detail__pin-btn--active' : ''}`}
+                  onClick={isActiveProgram ? clearActiveProgram : () => setActiveProgram(program.module_id)}
+                  type="button"
+                  aria-label={isActiveProgram ? 'Odebrat z denního programu' : 'Nastavit jako denní program'}
+                >
+                  {isActiveProgram ? (
+                    <>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Nastaveno
+                    </>
+                  ) : (
+                    'Denní program'
+                  )}
+                </button>
+              )
             )}
           </div>
           {durationDays > 0 && (
@@ -458,8 +443,7 @@ export function ProgramDetail({ program, userId, onBack, backLabel = 'Zpět', ca
               programTitle={program.name}
               isOpen={openSeriesId === s.id}
               onToggle={() => setOpenSeriesId((prev) => (prev === s.id ? null : s.id))}
-              daysElapsed={daysElapsed}
-              launchDate={launchDate}
+              maxUnlockedDay={maxUnlockedDay}
             />
           ))}
       </div>

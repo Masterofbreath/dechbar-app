@@ -43,4 +43,8 @@ export const akademieKeys = {
 
   nextLesson: (userId: string) =>
     [...akademieKeys.all, 'nextLesson', userId] as const,
+
+  // Completion-based unlock state pro daný program (Akademie detail view)
+  programUnlockState: (userId: string, moduleId: string) =>
+    [...akademieKeys.all, 'programUnlockState', userId, moduleId] as const,
 }
