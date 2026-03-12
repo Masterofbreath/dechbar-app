@@ -339,9 +339,10 @@ export function useAdminDashboard(
   // Historical live data (always queries raw tables, not cron cache)
   // For multi-day periods we fetch from period start to YESTERDAY — today is
   // always added separately from the live hook to avoid double-counting.
-  const histToDate = period === 'yesterday' ? daysBack(1) : daysBack(1);
+  const histToDate = daysBack(1);
   const { data: cronData, isLoading, error } = useQuery({
-    queryKey: analyticsKeys.dashboard(period),
+    // Include histToDate in key so cache invalidates when the calendar day changes
+    queryKey: [...analyticsKeys.dashboard(period), histToDate] as const,
     enabled: !isTodayPeriod,
     queryFn: () => fetchLiveKpisByRange(fromDate, histToDate),
     staleTime: 2 * 60 * 1000,
@@ -545,10 +546,6 @@ export function useTotalUsers(): { count: number; isLoading: boolean } {
 // useAllTimeMinutes — Total minutes breathed since launch
 // ============================================================
 
-// App launch date — used as start of "all time" queries for consistent calculation.
-// Must match APP_LAUNCH_DATE in useOnboardingFunnel.
-const ALL_TIME_FROM = '2026-02-28';
-
 /** Returns KPIs for the last 7 calendar days — used by BarChart for Dnes/Včera/Týden periods */
 export function useAdminLast7DaysKpis(): { kpis: DailyKpis[]; isLoading: boolean } {
   const { data, isLoading } = useQuery({
@@ -563,14 +560,15 @@ export function useAllTimeMinutes(): { minutes: number; isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ['analytics', 'allTimeMinutes'] as const,
     queryFn: async () => {
-      // Use the same fetchLiveKpisByRange as the dashboard KPI cards — ensures
-      // "Celkem od spuštění" and "Letos" values are calculated identically.
-      const todayStr = toIsoDateString(new Date());
-      const rows = await fetchLiveKpisByRange(ALL_TIME_FROM, todayStr);
-      const total = rows.reduce((s, r) => s + r.totalMinutesBeathed, 0);
-      return Math.round(total * 10) / 10;
+      // Uses SECURITY DEFINER RPC — bypasses RLS so ALL users' minutes are counted,
+      // not just the currently logged-in user's own data.
+      // fetchLiveKpisByRange would be filtered by RLS for non-admin users.
+      const { data, error } = await supabase.rpc('get_all_time_minutes');
+      if (error) throw new Error(error.message);
+      return Math.round((Number(data) || 0) * 10) / 10;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
   });
   return { minutes: data ?? 0, isLoading };
 }
