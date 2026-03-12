@@ -255,21 +255,31 @@ function applyTier4SessionIntelligence(
   return { levelDelta: 0, reason: 'stable' };
 }
 
-/** TIER 5: Progression Gate — require 3 consecutive high-performance sessions */
+/** TIER 5: Progression Gate — require consistent high-performance sessions */
 function applyTier5ProgressionGate(
   levelDelta: number,
   history: SmartSessionHistory[],
 ): number {
   if (levelDelta <= 0) return levelDelta; // decreases always pass immediately
 
-  // For level-up: require last 3 completed sessions to all qualify (high multiplier or easy)
   const last3Completed = history
     .filter((s) => s.was_completed)
     .slice(0, 3);
 
-  if (last3Completed.length < 3) {
-    return 0; // Not enough sessions yet to confirm consistent performance
+  if (last3Completed.length < 2) {
+    return 0; // Need at least 2 sessions to confirm consistent performance
   }
+
+  const last2 = last3Completed.slice(0, 2);
+
+  // Fast track: 2× max multiplier (1.50) = strong enough signal on its own
+  const bothMaxMultiplier = last2.every(
+    (s) => s.final_intensity_multiplier !== null && s.final_intensity_multiplier >= 1.50,
+  );
+  if (bothMaxMultiplier) return levelDelta;
+
+  // Standard track: 3 qualifying sessions (multiplier >= 1.25 or difficulty = easy)
+  if (last3Completed.length < 3) return 0;
 
   const allStrong = last3Completed.every(
     (s) =>
