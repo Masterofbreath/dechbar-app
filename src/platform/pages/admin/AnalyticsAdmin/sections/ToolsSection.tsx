@@ -1,13 +1,16 @@
 /**
- * ToolsSection — přehled využití nástrojů pro AnalyticsAdmin
+ * ToolsSection — přehled využití nástrojů pro AnalyticsAdmin (v2)
  *
  * Zobrazuje:
- *   - KPI grid (4 karty): SMART / Trůn / Preset / Audio — all-time + period čísla
- *   - Detail bloky 2×2: SMART detail, Trůn detail, Preset detail, Audio detail
- *
- * Data:
- *   - useToolsStats(period)      — počty sezení, completion rates, avg časy
- *   - useToolsLevelStats()       — all-time level distribuce, top preset cvičení
+ *   - KPI grid (4 karty): SMART / Trůn / Preset / Audio
+ *       all-time číslo + period číslo + delta vs. předchozí perioda + % podíl z celku
+ *   - Cross-tool banner: kolik uživatelů použilo 2+ nástroje
+ *   - SMART detail: aktivní uživatelé (2 metriky), completion rate, avg čas,
+ *       progression (% postoupili level za 14 dní), level distribuce
+ *   - Trůn detail: aktivní uživatelé, completion rate, avg čas, level distribuce
+ *       (guard když Trůn ještě nebyl spuštěn)
+ *   - Preset detail: completion rate, avg čas, Top 5 cvičení
+ *   - Audio detail: minuty, unikátní posluchači, completion rate
  *
  * @package DechBar_App
  * @subpackage Platform/Pages/Admin/AnalyticsAdmin/sections
@@ -15,7 +18,7 @@
 
 import { useToolsStats, useToolsLevelStats, formatMinutes } from '@/platform/analytics';
 import type { DashboardPeriod, LevelDistribution } from '@/platform/analytics';
-import { formatNumber } from '../utils/formatters';
+import { formatNumber, getDelta } from '../utils/formatters';
 
 interface ToolsSectionProps {
   period: DashboardPeriod;
@@ -28,6 +31,16 @@ const PERIOD_LABEL: Record<DashboardPeriod, string> = {
   month:     'tento měsíc',
   year:      'letos',
 };
+
+const PREV_PERIOD_LABEL: Record<DashboardPeriod, string> = {
+  today:     'včera',
+  yesterday: 'předevčírem',
+  week:      'min. týden',
+  month:     'min. měsíc',
+  year:      'min. rok',
+};
+
+// ── Sdílené sub-komponenty ──────────────────────────────────────────────────
 
 function CompletionBar({ rate }: { rate: number }) {
   return (
@@ -43,9 +56,39 @@ function CompletionBar({ rate }: { rate: number }) {
   );
 }
 
-function LevelTable({ levels, emptyLabel }: { levels: LevelDistribution[]; emptyLabel: string }) {
+function DeltaBadge({ delta }: { delta: ReturnType<typeof getDelta> }) {
+  if (!delta.label) return null;
+  return (
+    <span className={`analytics-admin__kpi-delta analytics-admin__kpi-delta--${delta.dir}`}>
+      {delta.label}
+    </span>
+  );
+}
+
+function ShareBadge({ pct }: { pct: number }) {
+  if (pct === 0) return null;
+  return (
+    <span className="analytics-admin__tools-share-badge">
+      {pct}% z celku
+    </span>
+  );
+}
+
+function LevelTable({ levels, emptyLabel, hasData }: {
+  levels: LevelDistribution[];
+  emptyLabel: string;
+  hasData?: boolean;
+}) {
+  if (hasData === false) {
+    return (
+      <div className="analytics-admin__tools-not-launched">
+        <span className="analytics-admin__tools-not-launched-icon">⏳</span>
+        <span>{emptyLabel}</span>
+      </div>
+    );
+  }
   if (levels.length === 0) {
-    return <div className="analytics-admin__empty" style={{ fontSize: 12 }}>{emptyLabel}</div>;
+    return <div className="analytics-admin__empty" style={{ fontSize: 12, padding: '12px 0' }}>{emptyLabel}</div>;
   }
   return (
     <table className="analytics-admin__level-table">
@@ -77,12 +120,27 @@ function LevelTable({ levels, emptyLabel }: { levels: LevelDistribution[]; empty
   );
 }
 
+// ── Hlavní komponenta ───────────────────────────────────────────────────────
+
 export function ToolsSection({ period }: ToolsSectionProps) {
-  const { smart, tron, preset, audio, isLoading: statsLoading } = useToolsStats(period);
-  const { smartActiveUsers, smartLevels, tronLevels, topPresetExercises, isLoading: levelsLoading } = useToolsLevelStats();
+  const {
+    smart, tron, preset, audio, crossToolUsers, isLoading: statsLoading,
+  } = useToolsStats(period);
+  const {
+    smartActiveUsers, smartActive7d, smartProgressedPct,
+    smartLevels, tronLevels, tronHasData, topPresetExercises,
+    isLoading: levelsLoading,
+  } = useToolsLevelStats();
 
   const periodLabel = PERIOD_LABEL[period];
-  const isLoading = statsLoading || levelsLoading;
+  const prevLabel   = PREV_PERIOD_LABEL[period];
+  const isLoading   = statsLoading || levelsLoading;
+
+  // Delta výpočty
+  const smartDelta  = getDelta(smart.periodCount,  smart.prevPeriodCount,  'count', prevLabel);
+  const tronDelta   = getDelta(tron.periodCount,   tron.prevPeriodCount,   'count', prevLabel);
+  const presetDelta = getDelta(preset.periodCount, preset.prevPeriodCount, 'count', prevLabel);
+  const audioDelta  = getDelta(audio.periodCount,  audio.prevPeriodCount,  'count', prevLabel);
 
   return (
     <div className="analytics-admin__tools-section">
@@ -94,16 +152,16 @@ export function ToolsSection({ period }: ToolsSectionProps) {
         {/* SMART */}
         <div className="analytics-admin__kpi-card">
           <div className="analytics-admin__kpi-label">SMART cvičení</div>
-          {isLoading ? (
-            <div className="analytics-admin__skeleton" />
-          ) : (
+          {isLoading ? <div className="analytics-admin__skeleton" /> : (
             <>
               <div className="analytics-admin__kpi-value">{formatNumber(smart.allTimeCount)}</div>
               <div className="analytics-admin__kpi-meta">
                 <span className="analytics-admin__kpi-sublabel">sezení celkem</span>
-                <span className="analytics-admin__kpi-sublabel" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <span className="analytics-admin__kpi-sublabel">
                   {formatNumber(smart.periodCount)} {periodLabel}
                 </span>
+                <DeltaBadge delta={smartDelta} />
+                <ShareBadge pct={smart.sharePct} />
               </div>
             </>
           )}
@@ -112,16 +170,16 @@ export function ToolsSection({ period }: ToolsSectionProps) {
         {/* Trůn */}
         <div className="analytics-admin__kpi-card">
           <div className="analytics-admin__kpi-label">Cesta na Trůn</div>
-          {isLoading ? (
-            <div className="analytics-admin__skeleton" />
-          ) : (
+          {isLoading ? <div className="analytics-admin__skeleton" /> : (
             <>
               <div className="analytics-admin__kpi-value">{formatNumber(tron.allTimeCount)}</div>
               <div className="analytics-admin__kpi-meta">
                 <span className="analytics-admin__kpi-sublabel">sezení celkem</span>
-                <span className="analytics-admin__kpi-sublabel" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <span className="analytics-admin__kpi-sublabel">
                   {formatNumber(tron.periodCount)} {periodLabel}
                 </span>
+                <DeltaBadge delta={tronDelta} />
+                <ShareBadge pct={tron.sharePct} />
               </div>
             </>
           )}
@@ -130,16 +188,16 @@ export function ToolsSection({ period }: ToolsSectionProps) {
         {/* Preset */}
         <div className="analytics-admin__kpi-card">
           <div className="analytics-admin__kpi-label">Cvičení & protokoly</div>
-          {isLoading ? (
-            <div className="analytics-admin__skeleton" />
-          ) : (
+          {isLoading ? <div className="analytics-admin__skeleton" /> : (
             <>
               <div className="analytics-admin__kpi-value">{formatNumber(preset.allTimeCount)}</div>
               <div className="analytics-admin__kpi-meta">
                 <span className="analytics-admin__kpi-sublabel">sezení celkem</span>
-                <span className="analytics-admin__kpi-sublabel" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <span className="analytics-admin__kpi-sublabel">
                   {formatNumber(preset.periodCount)} {periodLabel}
                 </span>
+                <DeltaBadge delta={presetDelta} />
+                <ShareBadge pct={preset.sharePct} />
               </div>
             </>
           )}
@@ -148,21 +206,37 @@ export function ToolsSection({ period }: ToolsSectionProps) {
         {/* Audio */}
         <div className="analytics-admin__kpi-card">
           <div className="analytics-admin__kpi-label">Akademie audio</div>
-          {isLoading ? (
-            <div className="analytics-admin__skeleton" />
-          ) : (
+          {isLoading ? <div className="analytics-admin__skeleton" /> : (
             <>
               <div className="analytics-admin__kpi-value">{formatNumber(audio.allTimeCount)}</div>
               <div className="analytics-admin__kpi-meta">
                 <span className="analytics-admin__kpi-sublabel">sezení celkem</span>
-                <span className="analytics-admin__kpi-sublabel" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <span className="analytics-admin__kpi-sublabel">
                   {formatNumber(audio.periodCount)} {periodLabel}
                 </span>
+                <DeltaBadge delta={audioDelta} />
+                <ShareBadge pct={audio.sharePct} />
               </div>
             </>
           )}
         </div>
       </div>
+
+      {/* ── Cross-tool banner ── */}
+      {!isLoading && (
+        <div className="analytics-admin__tools-cross-banner">
+          <span className="analytics-admin__tools-cross-icon">🔀</span>
+          <div>
+            <span className="analytics-admin__tools-cross-value">{formatNumber(crossToolUsers)}</span>
+            <span className="analytics-admin__tools-cross-label">
+              {' '}uživatelů použilo 2+ nástroje {periodLabel}
+            </span>
+          </div>
+          <span className="analytics-admin__tools-cross-hint">
+            Multi-tool uživatelé mají nižší churn risk
+          </span>
+        </div>
+      )}
 
       {/* ── Detail bloky řada 1: SMART + Trůn ── */}
       <div className="analytics-admin__tools-detail-grid">
@@ -173,19 +247,31 @@ export function ToolsSection({ period }: ToolsSectionProps) {
 
           <div className="analytics-admin__tools-stats-row">
             <div className="analytics-admin__tools-stat">
-              <span className="analytics-admin__tools-stat-label">Aktivní uživatelé</span>
+              <span className="analytics-admin__tools-stat-label">Aktivní uživatelé (is_ready)</span>
               <span className="analytics-admin__tools-stat-value">
                 {isLoading ? '—' : formatNumber(smartActiveUsers)}
               </span>
-              <span className="analytics-admin__tools-stat-sub">is_ready = true</span>
+              <span className="analytics-admin__tools-stat-sub">SMART engine konfigurovaný</span>
+            </div>
+            <div className="analytics-admin__tools-stat">
+              <span className="analytics-admin__tools-stat-label">Cvičili SMART (posl. 7 dní)</span>
+              <span className="analytics-admin__tools-stat-value">
+                {isLoading ? '—' : formatNumber(smartActive7d)}
+              </span>
+              <span className="analytics-admin__tools-stat-sub">reálná aktivita</span>
+            </div>
+            <div className="analytics-admin__tools-stat">
+              <span className="analytics-admin__tools-stat-label">Postoupili level (14 dní)</span>
+              <span className="analytics-admin__tools-stat-value">
+                {isLoading ? '—' : `${smartProgressedPct}%`}
+              </span>
+              <span className="analytics-admin__tools-stat-sub">z uživatelů se SMART</span>
             </div>
             <div className="analytics-admin__tools-stat">
               <span className="analytics-admin__tools-stat-label">Dokončení ({periodLabel})</span>
-              {isLoading ? (
-                <span className="analytics-admin__tools-stat-value">—</span>
-              ) : (
-                <CompletionBar rate={smart.completionRate} />
-              )}
+              {isLoading
+                ? <span className="analytics-admin__tools-stat-value">—</span>
+                : <CompletionBar rate={smart.completionRate} />}
             </div>
             <div className="analytics-admin__tools-stat">
               <span className="analytics-admin__tools-stat-label">Avg čas (dokončená)</span>
@@ -195,12 +281,10 @@ export function ToolsSection({ period }: ToolsSectionProps) {
             </div>
           </div>
 
-          <div className="analytics-admin__tools-detail-subtitle">Distribuce levelů</div>
-          {levelsLoading ? (
-            <div className="analytics-admin__skeleton" style={{ height: 80 }} />
-          ) : (
-            <LevelTable levels={smartLevels} emptyLabel="Zatím žádná SMART data" />
-          )}
+          <div className="analytics-admin__tools-detail-subtitle">Distribuce levelů (all-time)</div>
+          {levelsLoading
+            ? <div className="analytics-admin__skeleton" style={{ height: 80 }} />
+            : <LevelTable levels={smartLevels} emptyLabel="Zatím žádná SMART data" />}
         </div>
 
         {/* Trůn detail */}
@@ -217,11 +301,9 @@ export function ToolsSection({ period }: ToolsSectionProps) {
             </div>
             <div className="analytics-admin__tools-stat">
               <span className="analytics-admin__tools-stat-label">Dokončení ({periodLabel})</span>
-              {isLoading ? (
-                <span className="analytics-admin__tools-stat-value">—</span>
-              ) : (
-                <CompletionBar rate={tron.completionRate} />
-              )}
+              {isLoading
+                ? <span className="analytics-admin__tools-stat-value">—</span>
+                : <CompletionBar rate={tron.completionRate} />}
             </div>
             <div className="analytics-admin__tools-stat">
               <span className="analytics-admin__tools-stat-label">Avg čas (dokončená)</span>
@@ -231,12 +313,14 @@ export function ToolsSection({ period }: ToolsSectionProps) {
             </div>
           </div>
 
-          <div className="analytics-admin__tools-detail-subtitle">Distribuce levelů</div>
-          {levelsLoading ? (
-            <div className="analytics-admin__skeleton" style={{ height: 80 }} />
-          ) : (
-            <LevelTable levels={tronLevels} emptyLabel="Zatím žádná Trůn data" />
-          )}
+          <div className="analytics-admin__tools-detail-subtitle">Distribuce levelů (all-time)</div>
+          {levelsLoading
+            ? <div className="analytics-admin__skeleton" style={{ height: 80 }} />
+            : <LevelTable
+                levels={tronLevels}
+                emptyLabel="Trůn ještě nebyl spuštěn — žádná data"
+                hasData={tronHasData}
+              />}
         </div>
       </div>
 
@@ -250,11 +334,9 @@ export function ToolsSection({ period }: ToolsSectionProps) {
           <div className="analytics-admin__tools-stats-row">
             <div className="analytics-admin__tools-stat">
               <span className="analytics-admin__tools-stat-label">Dokončení ({periodLabel})</span>
-              {isLoading ? (
-                <span className="analytics-admin__tools-stat-value">—</span>
-              ) : (
-                <CompletionBar rate={preset.completionRate} />
-              )}
+              {isLoading
+                ? <span className="analytics-admin__tools-stat-value">—</span>
+                : <CompletionBar rate={preset.completionRate} />}
             </div>
             <div className="analytics-admin__tools-stat">
               <span className="analytics-admin__tools-stat-label">Avg čas (dokončená)</span>
@@ -264,35 +346,33 @@ export function ToolsSection({ period }: ToolsSectionProps) {
             </div>
           </div>
 
-          <div className="analytics-admin__tools-detail-subtitle">Top 5 cvičení (celkem)</div>
-          {levelsLoading ? (
-            <div className="analytics-admin__skeleton" style={{ height: 100 }} />
-          ) : topPresetExercises.length === 0 ? (
-            <div className="analytics-admin__empty" style={{ fontSize: 12 }}>Zatím žádná preset data</div>
-          ) : (
-            <table className="analytics-admin__table analytics-admin__level-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Cvičení</th>
-                  <th>Sezení</th>
-                  <th>Dokončení</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topPresetExercises.map((ex, i) => (
-                  <tr key={ex.exerciseId}>
-                    <td style={{ color: 'rgba(255,255,255,0.3)', width: 24 }}>{i + 1}</td>
-                    <td>{ex.name}</td>
-                    <td>{ex.count}</td>
-                    <td>
-                      <CompletionBar rate={ex.completionRate} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <div className="analytics-admin__tools-detail-subtitle">Top 5 cvičení (all-time)</div>
+          {levelsLoading
+            ? <div className="analytics-admin__skeleton" style={{ height: 100 }} />
+            : topPresetExercises.length === 0
+              ? <div className="analytics-admin__empty" style={{ fontSize: 12, padding: '12px 0' }}>Zatím žádná preset data</div>
+              : (
+                <table className="analytics-admin__table analytics-admin__level-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Cvičení</th>
+                      <th>Sezení</th>
+                      <th>Dokončení</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topPresetExercises.map((ex, i) => (
+                      <tr key={ex.exerciseId}>
+                        <td style={{ color: 'rgba(255,255,255,0.3)', width: 24 }}>{i + 1}</td>
+                        <td>{ex.name}</td>
+                        <td>{ex.count}</td>
+                        <td><CompletionBar rate={ex.completionRate} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
         </div>
 
         {/* Audio detail */}
@@ -301,21 +381,26 @@ export function ToolsSection({ period }: ToolsSectionProps) {
 
           <div className="analytics-admin__tools-stats-row">
             <div className="analytics-admin__tools-stat">
-              <span className="analytics-admin__tools-stat-label">Minuty poslech ({periodLabel})</span>
+              <span className="analytics-admin__tools-stat-label">Minuty poslechu ({periodLabel})</span>
               <span className="analytics-admin__tools-stat-value analytics-admin__tools-stat-value--gold">
                 {isLoading ? '—' : formatMinutes(audio.periodMinutes)}
               </span>
             </div>
             <div className="analytics-admin__tools-stat">
-              <span className="analytics-admin__tools-stat-label">Dokončení ({periodLabel})</span>
-              {isLoading ? (
-                <span className="analytics-admin__tools-stat-value">—</span>
-              ) : (
-                <CompletionBar rate={audio.completionRate} />
-              )}
+              <span className="analytics-admin__tools-stat-label">Unikátní posluchači ({periodLabel})</span>
+              <span className="analytics-admin__tools-stat-value">
+                {isLoading ? '—' : formatNumber(audio.uniqueListenersInPeriod)}
+              </span>
+              <span className="analytics-admin__tools-stat-sub">různých uživatelů</span>
             </div>
             <div className="analytics-admin__tools-stat">
-              <span className="analytics-admin__tools-stat-label" style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>
+              <span className="analytics-admin__tools-stat-label">Dokončení ({periodLabel})</span>
+              {isLoading
+                ? <span className="analytics-admin__tools-stat-value">—</span>
+                : <CompletionBar rate={audio.completionRate} />}
+            </div>
+            <div className="analytics-admin__tools-stat" style={{ opacity: 0.4 }}>
+              <span className="analytics-admin__tools-stat-label" style={{ fontSize: 11 }}>
                 Top lekce → viz sekce Obsah výše
               </span>
             </div>

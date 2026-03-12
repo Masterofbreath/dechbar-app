@@ -1389,13 +1389,21 @@ function getPreviousPeriodRange(period: ActivityPeriod): { start: string; end: s
 
 // ============================================================
 // useToolsStats — per-tool session counts + completion + avg time
+//
+// Rozšířená verze v2:
+//   - delta vs. předchozí perioda pro každý nástroj
+//   - % podíl nástrojů z celkového počtu sezení
+//   - unikátní audio posluchači za periodu
+//   - cross-tool uživatelé (2+ nástroje v periodě)
 // ============================================================
 
 export interface ToolSessionGroup {
   allTimeCount: number;
   periodCount: number;
+  prevPeriodCount: number;      // pro delta výpočet
   completionRate: number;       // z period dat (was_completed / total), 0–100
   avgMinutesCompleted: number;  // avg trvání dokončených sezení (completed_at - started_at)
+  sharePct: number;             // % podíl z celkového počtu sezení v periodě (všechny typy)
 }
 
 export interface ToolsStats {
@@ -1405,9 +1413,12 @@ export interface ToolsStats {
   audio: {
     allTimeCount: number;
     periodCount: number;
+    prevPeriodCount: number;
     periodMinutes: number;
     completionRate: number;
+    uniqueListenersInPeriod: number; // COUNT DISTINCT user_id
   };
+  crossToolUsers: number;            // uživatelé s 2+ nástroji v periodě
   isLoading: boolean;
 }
 
@@ -1417,53 +1428,92 @@ export function useToolsStats(period: DashboardPeriod): ToolsStats {
     ? todayStart()
     : `${periodStart}T00:00:00.000Z`;
 
+  // Předchozí perioda pro delta
+  const prevRange = getAdminPrevPeriodRange(period);
+  const prevFromISO = prevRange ? `${prevRange.from}T00:00:00.000Z` : null;
+  const prevToISO   = prevRange ? `${prevRange.to}T23:59:59.999Z`   : null;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['analytics', 'toolsStats', period, periodStartISO] as const,
+    queryKey: ['analytics', 'toolsStats', period, periodStartISO, prevFromISO] as const,
     queryFn: async () => {
-      // 5 parallel queries
-      const [exAllTime, exPeriod, audioAllTime, audioPeriod] = await Promise.all([
-        // exercise_sessions — all-time
+      const queries: Promise<unknown>[] = [
+        // [0] exercise_sessions — all-time
         supabase
           .from('exercise_sessions')
           .select('session_type, was_completed, started_at, completed_at, user_id')
           .in('session_type', ['smart', 'tron', 'preset'])
           .limit(20000),
-        // exercise_sessions — period
+        // [1] exercise_sessions — current period
         supabase
           .from('exercise_sessions')
           .select('session_type, was_completed, started_at, completed_at, user_id')
           .in('session_type', ['smart', 'tron', 'preset'])
           .gte('started_at', periodStartISO)
           .limit(10000),
-        // audio_sessions — all-time
+        // [2] audio_sessions — all-time
         supabase
           .from('audio_sessions')
-          .select('is_completed, unique_listen_seconds, started_at')
+          .select('is_completed, unique_listen_seconds, started_at, user_id')
           .limit(20000),
-        // audio_sessions — period
+        // [3] audio_sessions — current period
         supabase
           .from('audio_sessions')
-          .select('is_completed, unique_listen_seconds, started_at')
+          .select('is_completed, unique_listen_seconds, started_at, user_id')
           .gte('started_at', periodStartISO)
           .limit(10000),
-      ]);
+      ];
 
-      if (exAllTime.error) throw new Error(exAllTime.error.message);
-      if (exPeriod.error) throw new Error(exPeriod.error.message);
+      // [4] předchozí perioda exercise_sessions (podmíněně)
+      if (prevFromISO && prevToISO) {
+        queries.push(
+          supabase
+            .from('exercise_sessions')
+            .select('session_type, user_id')
+            .in('session_type', ['smart', 'tron', 'preset'])
+            .gte('started_at', prevFromISO)
+            .lte('started_at', prevToISO)
+            .limit(10000),
+          // [5] předchozí perioda audio_sessions
+          supabase
+            .from('audio_sessions')
+            .select('started_at, user_id')
+            .gte('started_at', prevFromISO)
+            .lte('started_at', prevToISO)
+            .limit(10000),
+        );
+      }
 
-      const allRows = exAllTime.data ?? [];
-      const periodRows = exPeriod.data ?? [];
+      const results = await Promise.all(queries);
+      const exAllTime  = results[0] as Awaited<ReturnType<typeof supabase.from<'exercise_sessions', never>>['select']>;
+      const exPeriod   = results[1] as typeof exAllTime;
+      const audioAllTime = results[2] as Awaited<ReturnType<typeof supabase.from<'audio_sessions', never>>['select']>;
+      const audioPeriod  = results[3] as typeof audioAllTime;
+      const exPrev     = results[4] as typeof exAllTime | undefined;
+      const audioPrev  = results[5] as typeof audioAllTime | undefined;
+
+      if ((exAllTime as { error: unknown }).error) throw new Error(String((exAllTime as { error: { message: string } }).error.message));
+      if ((exPeriod as { error: unknown }).error)  throw new Error(String((exPeriod as { error: { message: string } }).error.message));
+
+      const allRows    = (exAllTime as { data: Array<{ session_type: string; was_completed: boolean; started_at: string; completed_at: string | null; user_id: string }> }).data ?? [];
+      const periodRows = (exPeriod  as { data: typeof allRows }).data ?? [];
+      const prevRows   = (exPrev    as { data: Array<{ session_type: string; user_id: string }> } | undefined)?.data ?? [];
+      const audioAll   = (audioAllTime as { data: Array<{ is_completed: boolean; unique_listen_seconds: number | null; started_at: string; user_id: string }> }).data ?? [];
+      const audioPer   = (audioPeriod  as { data: typeof audioAll }).data ?? [];
+      const audioPrevRows = (audioPrev as { data: Array<{ started_at: string; user_id: string }> } | undefined)?.data ?? [];
+
+      // Celkový počet sezení v periodě (všechny nástroje) — pro % podíl
+      const totalPeriodSessions = periodRows.length + audioPer.length;
 
       function buildGroup(type: string): ToolSessionGroup {
-        const allForType = allRows.filter((r) => r.session_type === type);
+        const allForType    = allRows.filter((r) => r.session_type === type);
         const periodForType = periodRows.filter((r) => r.session_type === type);
+        const prevForType   = prevRows.filter((r) => r.session_type === type);
         const periodCompleted = periodForType.filter((r) => r.was_completed);
 
         const completionRate = periodForType.length > 0
           ? Math.round((periodCompleted.length / periodForType.length) * 100)
           : 0;
 
-        // avg minutes — only completed sessions with both timestamps
         const completedWithTime = periodCompleted.filter((r) => r.completed_at && r.started_at);
         const avgMinutesCompleted = completedWithTime.length > 0
           ? Math.round(
@@ -1474,48 +1524,82 @@ export function useToolsStats(period: DashboardPeriod): ToolsStats {
             ) / 10
           : 0;
 
+        const sharePct = totalPeriodSessions > 0
+          ? Math.round((periodForType.length / totalPeriodSessions) * 100)
+          : 0;
+
         return {
           allTimeCount: allForType.length,
           periodCount: periodForType.length,
+          prevPeriodCount: prevForType.length,
           completionRate,
           avgMinutesCompleted,
+          sharePct,
         };
       }
 
-      const tronPeriodRows = periodRows.filter((r) => r.session_type === 'tron');
+      const tronPeriodRows      = periodRows.filter((r) => r.session_type === 'tron');
       const activeUsersInPeriod = new Set(tronPeriodRows.map((r) => r.user_id)).size;
 
-      const audioAll = audioAllTime.data ?? [];
-      const audioPer = audioPeriod.data ?? [];
       const audioPeriodCompleted = audioPer.filter((r) => r.is_completed);
       const periodMinutes = audioPer.reduce(
-        (sum, r) => sum + secondsToMinutes(r.unique_listen_seconds ?? 0), 0
+        (sum, r) => sum + secondsToMinutes(r.unique_listen_seconds ?? 0), 0,
       );
+      const uniqueListenersInPeriod = new Set(audioPer.map((r) => r.user_id)).size;
+      const audioSharePct = totalPeriodSessions > 0
+        ? Math.round((audioPer.length / totalPeriodSessions) * 100)
+        : 0;
+
+      // Cross-tool uživatelé: počet uživatelů kteří použili 2+ různé nástroje v periodě
+      // Nástroje = smart, tron, preset, audio → mapujeme user_id na sadu nástrojů
+      const userToolsMap = new Map<string, Set<string>>();
+      for (const r of periodRows) {
+        const set = userToolsMap.get(r.user_id) ?? new Set<string>();
+        set.add(r.session_type);
+        userToolsMap.set(r.user_id, set);
+      }
+      for (const r of audioPer) {
+        const set = userToolsMap.get(r.user_id) ?? new Set<string>();
+        set.add('audio');
+        userToolsMap.set(r.user_id, set);
+      }
+      const crossToolUsers = Array.from(userToolsMap.values()).filter((s) => s.size >= 2).length;
 
       return {
-        smart: buildGroup('smart'),
-        tron: { ...buildGroup('tron'), activeUsersInPeriod },
+        smart:  buildGroup('smart'),
+        tron:   { ...buildGroup('tron'), activeUsersInPeriod },
         preset: buildGroup('preset'),
         audio: {
           allTimeCount: audioAll.length,
           periodCount: audioPer.length,
+          prevPeriodCount: audioPrevRows.length,
           periodMinutes: Math.round(periodMinutes * 10) / 10,
           completionRate: audioPer.length > 0
             ? Math.round((audioPeriodCompleted.length / audioPer.length) * 100)
             : 0,
-        },
+          uniqueListenersInPeriod,
+          sharePct: audioSharePct,
+        } as ToolsStats['audio'],
+        crossToolUsers,
       };
     },
     staleTime: period === 'today' ? 60 * 1000 : 2 * 60 * 1000,
     refetchInterval: period === 'today' ? 2 * 60 * 1000 : undefined,
   });
 
-  const empty: ToolSessionGroup = { allTimeCount: 0, periodCount: 0, completionRate: 0, avgMinutesCompleted: 0 };
+  const empty: ToolSessionGroup = {
+    allTimeCount: 0, periodCount: 0, prevPeriodCount: 0,
+    completionRate: 0, avgMinutesCompleted: 0, sharePct: 0,
+  };
   return {
-    smart: data?.smart ?? empty,
-    tron: data?.tron ?? { ...empty, activeUsersInPeriod: 0 },
+    smart:  data?.smart  ?? empty,
+    tron:   data?.tron   ?? { ...empty, activeUsersInPeriod: 0 },
     preset: data?.preset ?? empty,
-    audio: data?.audio ?? { allTimeCount: 0, periodCount: 0, periodMinutes: 0, completionRate: 0 },
+    audio:  data?.audio  ?? {
+      allTimeCount: 0, periodCount: 0, prevPeriodCount: 0,
+      periodMinutes: 0, completionRate: 0, uniqueListenersInPeriod: 0, sharePct: 0,
+    },
+    crossToolUsers: data?.crossToolUsers ?? 0,
     isLoading,
   };
 }
@@ -1538,9 +1622,12 @@ export interface TopExercise {
 }
 
 export interface ToolsLevelStats {
-  smartActiveUsers: number;
+  smartActiveUsers: number;        // is_ready = true (konfigurace)
+  smartActive7d: number;           // cvičili SMART v posledních 7 dnech (reálná aktivita)
+  smartProgressedPct: number;      // % kteří postoupili level v posledních 14 dnech
   smartLevels: LevelDistribution[];
   tronLevels: LevelDistribution[];
+  tronHasData: boolean;            // false = Trůn feature ještě nebyla spuštěna
   topPresetExercises: TopExercise[];
   isLoading: boolean;
 }
@@ -1549,10 +1636,13 @@ export function useToolsLevelStats(): ToolsLevelStats {
   const { data, isLoading } = useQuery({
     queryKey: ['analytics', 'toolsLevelStats'] as const,
     queryFn: async () => {
-      const [smartRec, tronRec, presetSessions] = await Promise.all([
+      const fourteenDaysAgo = `${daysBack(14)}T00:00:00.000Z`;
+      const sevenDaysAgo = `${daysBack(7)}T00:00:00.000Z`;
+
+      const [smartRec, tronRec, presetSessions, smartActive7dRes] = await Promise.all([
         supabase
           .from('smart_exercise_recommendations')
-          .select('current_level, is_ready'),
+          .select('current_level, is_ready, last_level_change_at'),
         supabase
           .from('tron_recommendations')
           .select('current_level'),
@@ -1561,11 +1651,30 @@ export function useToolsLevelStats(): ToolsLevelStats {
           .select('exercise_id, was_completed')
           .eq('session_type', 'preset')
           .limit(5000),
+        // Unikátní uživatelé kteří cvičili SMART v posledních 7 dnech
+        supabase
+          .from('exercise_sessions')
+          .select('user_id')
+          .eq('session_type', 'smart')
+          .gte('started_at', sevenDaysAgo)
+          .limit(5000),
       ]);
 
       // SMART level distribution
       const smartRows = smartRec.data ?? [];
       const smartActiveUsers = smartRows.filter((r) => r.is_ready).length;
+
+      // SMART active 7d — unikátní uživatelé
+      const smartActive7d = new Set((smartActive7dRes.data ?? []).map((r) => r.user_id)).size;
+
+      // SMART progression — % uživatelů kteří postoupili level v posledních 14 dnech
+      const smartProgressed = smartRows.filter((r) =>
+        r.last_level_change_at && r.last_level_change_at >= fourteenDaysAgo
+      ).length;
+      const smartProgressedPct = smartRows.length > 0
+        ? Math.round((smartProgressed / smartRows.length) * 100)
+        : 0;
+
       const smartLevelMap = new Map<number, number>();
       for (const r of smartRows) {
         const lvl = r.current_level ?? 1;
@@ -1582,6 +1691,7 @@ export function useToolsLevelStats(): ToolsLevelStats {
 
       // Trůn level distribution
       const tronRows = tronRec.data ?? [];
+      const tronHasData = tronRows.length > 0;
       const tronLevelMap = new Map<number, number>();
       for (const r of tronRows) {
         const lvl = r.current_level ?? 1;
@@ -1607,13 +1717,11 @@ export function useToolsLevelStats(): ToolsLevelStats {
         exMap.set(r.exercise_id, existing);
       }
 
-      // Sort by count, take top 5
       const top5Ids = Array.from(exMap.entries())
         .sort(([, a], [, b]) => b.count - a.count)
         .slice(0, 5)
         .map(([id]) => id);
 
-      // Fetch exercise names
       const exerciseNames = new Map<string, string>();
       if (top5Ids.length > 0) {
         const { data: exercises } = await supabase
@@ -1637,15 +1745,26 @@ export function useToolsLevelStats(): ToolsLevelStats {
         };
       });
 
-      return { smartActiveUsers, smartLevels, tronLevels, topPresetExercises };
+      return {
+        smartActiveUsers,
+        smartActive7d,
+        smartProgressedPct,
+        smartLevels,
+        tronLevels,
+        tronHasData,
+        topPresetExercises,
+      };
     },
     staleTime: 10 * 60 * 1000,
   });
 
   return {
     smartActiveUsers: data?.smartActiveUsers ?? 0,
+    smartActive7d: data?.smartActive7d ?? 0,
+    smartProgressedPct: data?.smartProgressedPct ?? 0,
     smartLevels: data?.smartLevels ?? [],
     tronLevels: data?.tronLevels ?? [],
+    tronHasData: data?.tronHasData ?? false,
     topPresetExercises: data?.topPresetExercises ?? [],
     isLoading,
   };
