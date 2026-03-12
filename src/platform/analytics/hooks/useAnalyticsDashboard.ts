@@ -1387,6 +1387,270 @@ function getPreviousPeriodRange(period: ActivityPeriod): { start: string; end: s
   }
 }
 
+// ============================================================
+// useToolsStats — per-tool session counts + completion + avg time
+// ============================================================
+
+export interface ToolSessionGroup {
+  allTimeCount: number;
+  periodCount: number;
+  completionRate: number;       // z period dat (was_completed / total), 0–100
+  avgMinutesCompleted: number;  // avg trvání dokončených sezení (completed_at - started_at)
+}
+
+export interface ToolsStats {
+  smart: ToolSessionGroup;
+  tron: ToolSessionGroup & { activeUsersInPeriod: number };
+  preset: ToolSessionGroup;
+  audio: {
+    allTimeCount: number;
+    periodCount: number;
+    periodMinutes: number;
+    completionRate: number;
+  };
+  isLoading: boolean;
+}
+
+export function useToolsStats(period: DashboardPeriod): ToolsStats {
+  const periodStart = getAdminPeriodStart(period);
+  const periodStartISO = period === 'today'
+    ? todayStart()
+    : `${periodStart}T00:00:00.000Z`;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['analytics', 'toolsStats', period, periodStartISO] as const,
+    queryFn: async () => {
+      // 5 parallel queries
+      const [exAllTime, exPeriod, audioAllTime, audioPeriod] = await Promise.all([
+        // exercise_sessions — all-time
+        supabase
+          .from('exercise_sessions')
+          .select('session_type, was_completed, started_at, completed_at, user_id')
+          .in('session_type', ['smart', 'tron', 'preset'])
+          .limit(20000),
+        // exercise_sessions — period
+        supabase
+          .from('exercise_sessions')
+          .select('session_type, was_completed, started_at, completed_at, user_id')
+          .in('session_type', ['smart', 'tron', 'preset'])
+          .gte('started_at', periodStartISO)
+          .limit(10000),
+        // audio_sessions — all-time
+        supabase
+          .from('audio_sessions')
+          .select('is_completed, unique_listen_seconds, started_at')
+          .limit(20000),
+        // audio_sessions — period
+        supabase
+          .from('audio_sessions')
+          .select('is_completed, unique_listen_seconds, started_at')
+          .gte('started_at', periodStartISO)
+          .limit(10000),
+      ]);
+
+      if (exAllTime.error) throw new Error(exAllTime.error.message);
+      if (exPeriod.error) throw new Error(exPeriod.error.message);
+
+      const allRows = exAllTime.data ?? [];
+      const periodRows = exPeriod.data ?? [];
+
+      function buildGroup(type: string): ToolSessionGroup {
+        const allForType = allRows.filter((r) => r.session_type === type);
+        const periodForType = periodRows.filter((r) => r.session_type === type);
+        const periodCompleted = periodForType.filter((r) => r.was_completed);
+
+        const completionRate = periodForType.length > 0
+          ? Math.round((periodCompleted.length / periodForType.length) * 100)
+          : 0;
+
+        // avg minutes — only completed sessions with both timestamps
+        const completedWithTime = periodCompleted.filter((r) => r.completed_at && r.started_at);
+        const avgMinutesCompleted = completedWithTime.length > 0
+          ? Math.round(
+              completedWithTime.reduce((sum, r) => {
+                const dur = (new Date(r.completed_at!).getTime() - new Date(r.started_at).getTime()) / 1000;
+                return sum + secondsToMinutes(Math.max(0, dur));
+              }, 0) / completedWithTime.length * 10
+            ) / 10
+          : 0;
+
+        return {
+          allTimeCount: allForType.length,
+          periodCount: periodForType.length,
+          completionRate,
+          avgMinutesCompleted,
+        };
+      }
+
+      const tronPeriodRows = periodRows.filter((r) => r.session_type === 'tron');
+      const activeUsersInPeriod = new Set(tronPeriodRows.map((r) => r.user_id)).size;
+
+      const audioAll = audioAllTime.data ?? [];
+      const audioPer = audioPeriod.data ?? [];
+      const audioPeriodCompleted = audioPer.filter((r) => r.is_completed);
+      const periodMinutes = audioPer.reduce(
+        (sum, r) => sum + secondsToMinutes(r.unique_listen_seconds ?? 0), 0
+      );
+
+      return {
+        smart: buildGroup('smart'),
+        tron: { ...buildGroup('tron'), activeUsersInPeriod },
+        preset: buildGroup('preset'),
+        audio: {
+          allTimeCount: audioAll.length,
+          periodCount: audioPer.length,
+          periodMinutes: Math.round(periodMinutes * 10) / 10,
+          completionRate: audioPer.length > 0
+            ? Math.round((audioPeriodCompleted.length / audioPer.length) * 100)
+            : 0,
+        },
+      };
+    },
+    staleTime: period === 'today' ? 60 * 1000 : 2 * 60 * 1000,
+    refetchInterval: period === 'today' ? 2 * 60 * 1000 : undefined,
+  });
+
+  const empty: ToolSessionGroup = { allTimeCount: 0, periodCount: 0, completionRate: 0, avgMinutesCompleted: 0 };
+  return {
+    smart: data?.smart ?? empty,
+    tron: data?.tron ?? { ...empty, activeUsersInPeriod: 0 },
+    preset: data?.preset ?? empty,
+    audio: data?.audio ?? { allTimeCount: 0, periodCount: 0, periodMinutes: 0, completionRate: 0 },
+    isLoading,
+  };
+}
+
+// ============================================================
+// useToolsLevelStats — all-time stavová data (level distribuce + top cvičení)
+// ============================================================
+
+export interface LevelDistribution {
+  level: number;
+  count: number;
+  pct: number;
+}
+
+export interface TopExercise {
+  exerciseId: string;
+  name: string;
+  count: number;
+  completionRate: number;
+}
+
+export interface ToolsLevelStats {
+  smartActiveUsers: number;
+  smartLevels: LevelDistribution[];
+  tronLevels: LevelDistribution[];
+  topPresetExercises: TopExercise[];
+  isLoading: boolean;
+}
+
+export function useToolsLevelStats(): ToolsLevelStats {
+  const { data, isLoading } = useQuery({
+    queryKey: ['analytics', 'toolsLevelStats'] as const,
+    queryFn: async () => {
+      const [smartRec, tronRec, presetSessions] = await Promise.all([
+        supabase
+          .from('smart_exercise_recommendations')
+          .select('current_level, is_ready'),
+        supabase
+          .from('tron_recommendations')
+          .select('current_level'),
+        supabase
+          .from('exercise_sessions')
+          .select('exercise_id, was_completed')
+          .eq('session_type', 'preset')
+          .limit(5000),
+      ]);
+
+      // SMART level distribution
+      const smartRows = smartRec.data ?? [];
+      const smartActiveUsers = smartRows.filter((r) => r.is_ready).length;
+      const smartLevelMap = new Map<number, number>();
+      for (const r of smartRows) {
+        const lvl = r.current_level ?? 1;
+        smartLevelMap.set(lvl, (smartLevelMap.get(lvl) ?? 0) + 1);
+      }
+      const smartTotal = smartRows.length;
+      const smartLevels: LevelDistribution[] = Array.from(smartLevelMap.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([level, count]) => ({
+          level,
+          count,
+          pct: smartTotal > 0 ? Math.round((count / smartTotal) * 100) : 0,
+        }));
+
+      // Trůn level distribution
+      const tronRows = tronRec.data ?? [];
+      const tronLevelMap = new Map<number, number>();
+      for (const r of tronRows) {
+        const lvl = r.current_level ?? 1;
+        tronLevelMap.set(lvl, (tronLevelMap.get(lvl) ?? 0) + 1);
+      }
+      const tronTotal = tronRows.length;
+      const tronLevels: LevelDistribution[] = Array.from(tronLevelMap.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([level, count]) => ({
+          level,
+          count,
+          pct: tronTotal > 0 ? Math.round((count / tronTotal) * 100) : 0,
+        }));
+
+      // Top preset exercises — client-side GROUP BY exercise_id
+      const presetRows = presetSessions.data ?? [];
+      const exMap = new Map<string, { count: number; completed: number }>();
+      for (const r of presetRows) {
+        if (!r.exercise_id) continue;
+        const existing = exMap.get(r.exercise_id) ?? { count: 0, completed: 0 };
+        existing.count++;
+        if (r.was_completed) existing.completed++;
+        exMap.set(r.exercise_id, existing);
+      }
+
+      // Sort by count, take top 5
+      const top5Ids = Array.from(exMap.entries())
+        .sort(([, a], [, b]) => b.count - a.count)
+        .slice(0, 5)
+        .map(([id]) => id);
+
+      // Fetch exercise names
+      const exerciseNames = new Map<string, string>();
+      if (top5Ids.length > 0) {
+        const { data: exercises } = await supabase
+          .from('exercises')
+          .select('id, name')
+          .in('id', top5Ids);
+        for (const e of exercises ?? []) {
+          exerciseNames.set(e.id, (e as { id: string; name: string }).name ?? e.id);
+        }
+      }
+
+      const topPresetExercises: TopExercise[] = top5Ids.map((id) => {
+        const stats = exMap.get(id)!;
+        return {
+          exerciseId: id,
+          name: exerciseNames.get(id) ?? id,
+          count: stats.count,
+          completionRate: stats.count > 0
+            ? Math.round((stats.completed / stats.count) * 100)
+            : 0,
+        };
+      });
+
+      return { smartActiveUsers, smartLevels, tronLevels, topPresetExercises };
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  return {
+    smartActiveUsers: data?.smartActiveUsers ?? 0,
+    smartLevels: data?.smartLevels ?? [],
+    tronLevels: data?.tronLevels ?? [],
+    topPresetExercises: data?.topPresetExercises ?? [],
+    isLoading,
+  };
+}
+
 // getPrevPeriodDays removed — after fixing getPreviousPeriodRange to use equivalent elapsed
 // periods, both current and previous always have the same number of elapsed days.
 // prevAverageMinutesPerDay now uses periodDays (current elapsed) as divisor for both.

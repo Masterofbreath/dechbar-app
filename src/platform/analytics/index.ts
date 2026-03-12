@@ -14,10 +14,12 @@ export {
   usePersonalRecords, useRetention, useOnboardingFunnel,
   useUniqueActiveUsers, useAvgMinutesPerActiveUserDay,
   getDaysSinceRegistration, analyticsKeys,
+  useToolsStats, useToolsLevelStats,
 } from './hooks/useAnalyticsDashboard';
 export type {
   DashboardPeriod, PrimeTimeSlot, DayOfWeekSlot, ProtocolStat, ChurnRiskUser,
   PersonalRecords, RetentionStats, RetentionBucket, OnboardingFunnel,
+  ToolsStats, ToolsLevelStats, ToolSessionGroup, LevelDistribution, TopExercise,
 } from './hooks/useAnalyticsDashboard';
 
 export type { AudioSessionContext, UserPokrokStats, AdminDashboardData, ActivityPeriod, ActivityStreakState } from './types';

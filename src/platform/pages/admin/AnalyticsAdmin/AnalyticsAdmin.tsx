@@ -20,6 +20,7 @@ import { KpiSection } from './sections/KpiSection';
 import { ActivityChartsSection } from './sections/ActivityChartsSection';
 import { ContentSection } from './sections/ContentSection';
 import { KPDistributionBlock } from './KPDistributionBlock';
+import { ToolsSection } from './sections/ToolsSection';
 import './AnalyticsAdmin.css';
 
 const PERIODS: { key: DashboardPeriod; label: string }[] = [
@@ -76,6 +77,9 @@ export default function AnalyticsAdmin() {
 
       {/* KP Distribuce */}
       <KPDistributionBlock distribution={kpDistribution} coverage={kpCoverage} isLoading={kpLoading} />
+
+      {/* Nástroje */}
+      <ToolsSection period={period} />
 
     </div>
   );

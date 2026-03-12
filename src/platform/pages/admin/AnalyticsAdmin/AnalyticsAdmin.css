@@ -861,3 +861,152 @@
     border-right: none;
   }
 }
+
+/* ============================================================
+   Tools Section
+   ============================================================ */
+
+.analytics-admin__tools-section {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+/* ── Detail grid — 2 sloupce vedle sebe ── */
+.analytics-admin__tools-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (width <= 768px) {
+  .analytics-admin__tools-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Detail blok — karta s tabulkou / statistikami ── */
+.analytics-admin__tools-detail-block {
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 16px;
+  padding: 20px 20px 16px;
+  margin-bottom: 0;
+}
+
+.analytics-admin__tools-detail-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgb(255 255 255 / 55%);
+  margin-bottom: 16px;
+}
+
+.analytics-admin__tools-detail-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgb(255 255 255 / 30%);
+  margin-top: 16px;
+  margin-bottom: 10px;
+}
+
+/* ── Stats row — 3 statistiky vedle sebe ── */
+.analytics-admin__tools-stats-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.analytics-admin__tools-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.analytics-admin__tools-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgb(255 255 255 / 35%);
+}
+
+.analytics-admin__tools-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.analytics-admin__tools-stat-value--gold {
+  color: var(--dechbar-gold, #F8CA00);
+}
+
+.analytics-admin__tools-stat-sub {
+  font-size: 11px;
+  color: rgb(255 255 255 / 30%);
+}
+
+/* ── Level table — kompaktní tabulka distribuce levelů ── */
+.analytics-admin__level-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.analytics-admin__level-table th {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgb(255 255 255 / 30%);
+  padding: 0 6px 6px;
+  text-align: left;
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
+}
+
+.analytics-admin__tools-detail-block .analytics-admin__level-table tbody td {
+  padding: 6px;
+  color: rgb(255 255 255 / 75%);
+  border-bottom: 1px solid rgb(255 255 255 / 4%);
+  vertical-align: middle;
+}
+
+.analytics-admin__tools-detail-block .analytics-admin__level-table tbody td:first-child {
+  font-weight: 600;
+  color: rgb(255 255 255 / 55%);
+  width: 48px;
+}
+
+.analytics-admin__tools-detail-block .analytics-admin__level-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Level bar — vizuální lišta pro % ── */
+.analytics-admin__level-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+}
+
+.analytics-admin__level-bar-fill {
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 20%);
+  min-width: 2px;
+  max-width: 60px;
+  flex-shrink: 0;
+}
+
+.analytics-admin__level-bar-wrap span {
+  font-size: 12px;
+  color: rgb(255 255 255 / 50%);
+  white-space: nowrap;
+}
+
