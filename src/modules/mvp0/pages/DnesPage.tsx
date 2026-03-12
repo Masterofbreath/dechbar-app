@@ -25,7 +25,7 @@ import {
 } from '../components';
 import { useExercises } from '../api/exercises';
 import { unlockSharedAudioContext } from '../utils/sharedAudioContext';
-import type { Exercise, SmartSessionConfig } from '../types/exercises';
+import type { Exercise, SmartSessionConfig, TronSessionConfig } from '../types/exercises';
 
 /**
  * Převede sekundy na "X min" label.
@@ -51,7 +51,8 @@ export function DnesPage() {
   const vecerExercise = exercises?.find(ex => ex.name === 'VEČER');
 
   // Trůn session state
-  const [tronOpen, setTronOpen] = useState(false);
+  const [tronExercise, setTronExercise] = useState<Exercise | null>(null);
+  const [tronConfig, setTronConfig] = useState<TronSessionConfig | undefined>(undefined);
 
   // Called synchronously on SMART button click (within gesture stack) —
   // unlocks AudioContext BEFORE any await. Modal stays closed until config arrives.
@@ -68,8 +69,9 @@ export function DnesPage() {
     unlockSharedAudioContext();
   }
 
-  function handleTronStart() {
-    setTronOpen(true);
+  function handleTronStart(config: TronSessionConfig, exercise: Exercise) {
+    setTronConfig(config);
+    setTronExercise(exercise);
   }
 
   // Called after computeAndBuild resolves — opens modal with real exercise + config
@@ -179,9 +181,17 @@ export function DnesPage() {
         </div>
       )}
 
-      {/* Trůn placeholder — TronModal will be added in next iteration */}
-      {tronOpen && (
-        <div style={{ display: 'none' }} aria-hidden="true" />
+      {/* Trůn Session Engine Modal */}
+      {tronExercise && (
+        <SessionEngineModal
+          exercise={tronExercise}
+          skipFlow={false}
+          tronConfig={tronConfig}
+          onClose={() => {
+            setTronExercise(null);
+            setTronConfig(undefined);
+          }}
+        />
       )}
 
       {/* Session Engine Modal — preset protocols and SMART sessions */}

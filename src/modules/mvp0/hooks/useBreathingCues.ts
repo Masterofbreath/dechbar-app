@@ -72,8 +72,9 @@ const CYCLE_RAMP_STEPS = [0.25, 0.50, 0.75, 1.0];
  */
 const END_RAMP_SCALES = [0, 0.25, 0.50, 0.75]; // index = cyclesRemaining
 
-export function useBreathingCues(options?: { isSmartSession?: boolean }): BreathingCuesAPI {
+export function useBreathingCues(options?: { isSmartSession?: boolean; isTronSession?: boolean }): BreathingCuesAPI {
   const isSmartSession = options?.isSmartSession ?? false;
+  const isTronSession  = options?.isTronSession  ?? false;
 
   const {
     audioCuesEnabled,
@@ -84,10 +85,13 @@ export function useBreathingCues(options?: { isSmartSession?: boolean }): Breath
     smartBellsEnabled,
   } = useSessionSettings();
 
-  // Effective settings — SMART sessions use their own toggles/volume
-  const effectiveCuesEnabled = isSmartSession ? smartCuesEnabled : audioCuesEnabled;
-  const effectiveCueVolume   = isSmartSession ? smartCueVolume   : audioCueVolume;
-  const effectiveBellsEnabled = isSmartSession ? smartBellsEnabled : bellsEnabled;
+  // Effective settings:
+  // - SMART sessions → smart toggles/volume
+  // - Trůn sessions  → smart cue settings (shared — no separate toggles; Trůn = cues always on)
+  // - Regular        → standard toggles/volume
+  const effectiveCuesEnabled  = (isSmartSession || isTronSession) ? smartCuesEnabled  : audioCuesEnabled;
+  const effectiveCueVolume    = (isSmartSession || isTronSession) ? smartCueVolume    : audioCueVolume;
+  const effectiveBellsEnabled = (isSmartSession || isTronSession) ? smartBellsEnabled : bellsEnabled;
 
   const [isReady, setIsReady] = useState(false);
 

@@ -179,8 +179,9 @@ export interface CompleteSessionPayload {
   quality_rating?: number; // 1-5
   notes?: string;
   final_intensity_multiplier?: number; // 0.50–1.50, default 1.0 (intensity control)
-  session_type?: 'preset' | 'custom' | 'smart';
+  session_type?: 'preset' | 'custom' | 'smart' | 'tron';
   smart_context?: SmartContextSnapshot;
+  tron_context?: TronContextSnapshot;
 }
 
 /**
@@ -271,6 +272,42 @@ export interface SmartContextSnapshot {
     multiplier: number;
     type?: 'silence';
   }>;
+}
+
+// =====================================================
+// TRON — CESTA NA TRŮN TYPES
+// =====================================================
+
+/**
+ * Trůn session configuration — passed from TronButton → DnesPage → SessionEngineModal.
+ */
+export interface TronSessionConfig {
+  /** Level index 1–21 into TRON_LEVELS scale */
+  level: number;
+  /** holdExhale duration in seconds (base, before intensity multiplier) */
+  holdExhaleSeconds: number;
+  /** Total session duration in seconds (5–15 min) */
+  totalDurationSeconds: number;
+  /** Number of completed Trůn sessions (for calibration UI) */
+  sessionCount: number;
+  /** True if sessionCount < 10 */
+  isCalibrating: boolean;
+}
+
+/**
+ * Trůn context snapshot saved into exercise_sessions.tron_context JSONB.
+ * Analogous to SmartContextSnapshot.
+ */
+export interface TronContextSnapshot {
+  level: number;
+  /** Base holdExhale in seconds (before multiplier) */
+  hold_exhale_base: number;
+  /** Final intensity multiplier applied to holdExhale (0.5–1.5) */
+  final_multiplier: number;
+  /** Total session duration in seconds */
+  duration_seconds: number;
+  /** Session count at session start (for calibration tracking) */
+  session_count_at_start: number;
 }
 
 // =====================================================

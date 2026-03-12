@@ -29,12 +29,15 @@ import { useSafetyFlags } from '../api/exercises';
 import { LockedFeatureModal } from './LockedFeatureModal';
 import { unlockSharedAudioContext } from '../utils/sharedAudioContext';
 import { TRON_MIN_KP } from '../config/tronLevels';
+import { useTronSession, buildTronExercise } from '../hooks/useTronSession';
+import type { TronSessionConfig } from '../types/exercises';
+import type { Exercise } from '../types/exercises';
 
 export interface TronButtonProps {
   /** Called synchronously on click — unlock AudioContext in gesture stack */
   onEarlyOpen?: () => void;
-  /** Called after session config is ready */
-  onTronStart?: () => void;
+  /** Called after session config is ready — passes config + ephemeral Exercise */
+  onTronStart?: (config: TronSessionConfig, exercise: Exercise) => void;
 }
 
 type LockReason = 'tier' | 'kp_missing' | 'kp_low' | 'safety' | null;
@@ -45,6 +48,7 @@ export function TronButton({ onEarlyOpen, onTronStart }: TronButtonProps) {
   const { isAdmin } = useUserState();
   const { currentKP, isLoading: kpLoading } = useKPMeasurements();
   const safetyFlags = useSafetyFlags();
+  const { config: tronConfig } = useTronSession();
 
   const [showLockedModal, setShowLockedModal] = useState(false);
   const [showSafetyToast, setShowSafetyToast] = useState(false);
@@ -85,10 +89,11 @@ export function TronButton({ onEarlyOpen, onTronStart }: TronButtonProps) {
       return;
     }
 
-    // Unlocked — start session
+    // Unlocked — build exercise and start session
     unlockSharedAudioContext();
     onEarlyOpen?.();
-    onTronStart?.();
+    const exercise = buildTronExercise(tronConfig);
+    onTronStart?.(tronConfig, exercise);
   }
 
   function getLockMessage(): string {

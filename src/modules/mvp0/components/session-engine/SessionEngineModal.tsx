@@ -34,10 +34,14 @@ import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
 import { isProtocol } from '@/utils/exerciseHelpers';
 import { SmartPrepState } from './SmartPrepState';
+import { TronPrepState } from './TronPrepState';
 import { buildSmartExercise, buildSmartContextSnapshot, MIN_SILENCE } from '../../engine/BreathIntelligenceEngine';
 import { smartKeys } from '../../hooks/useSmartExercise';
+import { tronKeys } from '../../api/tron';
+import { useCompleteTronSession } from '../../api/tron';
 import { updateStreakOnActivity } from '@/platform/analytics';
 import { useQueryClient } from '@tanstack/react-query';
+import { buildTronExercise } from '../../hooks/useTronSession';
 import {
   SessionStartScreen,
   SessionCountdown,
@@ -45,7 +49,7 @@ import {
   SessionCompleted,
   MoodBeforePick,
 } from './components';
-import type { Exercise, MoodType, SmartSessionConfig } from '../../types/exercises';
+import type { Exercise, MoodType, SmartSessionConfig, TronSessionConfig, TronContextSnapshot } from '../../types/exercises';
 import type { SessionState } from './types';
 
 export interface SessionEngineModalProps {
@@ -54,6 +58,7 @@ export interface SessionEngineModalProps {
   onClose: () => void;
   skipFlow?: boolean; // Skip SessionStartScreen + MoodBeforePick
   smartConfig?: SmartSessionConfig; // Present for SMART sessions
+  tronConfig?: TronSessionConfig;   // Present for Trůn sessions
 }
 
 /**
@@ -65,6 +70,7 @@ export function SessionEngineModal({
   onClose,
   skipFlow = false,
   smartConfig,
+  tronConfig,
 }: SessionEngineModalProps) {
   // =====================================================
   // STATE
@@ -102,6 +108,9 @@ export function SessionEngineModal({
   // SMART: adjusted duration state (changed via ±1 min buttons in SmartPrepState)
   const [smartDurationAdjust, setSmartDurationAdjust] = useState(0);
 
+  // TRON: adjusted duration state (changed via ±1 min buttons in TronPrepState)
+  const [tronDurationAdjust, setTronDurationAdjust] = useState(0);
+
   // SMART: derive effective exercise (re-built when duration changes)
   const smartConfigAdjusted = useMemo<SmartSessionConfig | undefined>(
     () => smartConfig
@@ -109,20 +118,33 @@ export function SessionEngineModal({
       : undefined,
     [smartConfig, smartDurationAdjust],
   );
+
+  // TRON: derive effective config (re-built when duration changes)
+  const tronConfigAdjusted = useMemo<TronSessionConfig | undefined>(
+    () => tronConfig
+      ? { ...tronConfig, totalDurationSeconds: tronConfig.totalDurationSeconds + tronDurationAdjust }
+      : undefined,
+    [tronConfig, tronDurationAdjust],
+  );
+
   // useMemo ensures exercise has a stable object reference between re-renders.
   // Without memo, buildSmartExercise() runs on EVERY render → new object reference
   // every time → currentPhase useMemo recomputes → phase useEffect restarts the
   // phase timer → phases restart mid-session → session runs longer than set duration
   // (e.g. 5min appears as 9min in history) + fade OUT timer resets and fires early.
   const exercise: Exercise = useMemo(
-    () => smartConfigAdjusted
-      ? buildSmartExercise(smartConfigAdjusted)
-      : exerciseProp,
-    [smartConfigAdjusted, exerciseProp],
+    () => {
+      if (smartConfigAdjusted) return buildSmartExercise(smartConfigAdjusted);
+      if (tronConfigAdjusted) return buildTronExercise(tronConfigAdjusted);
+      return exerciseProp;
+    },
+    [smartConfigAdjusted, tronConfigAdjusted, exerciseProp],
   );
 
   // Session type ref (for saveSession)
-  const sessionTypeRef = useRef<'preset' | 'custom' | 'smart'>(smartConfig ? 'smart' : 'preset');
+  const sessionTypeRef = useRef<'preset' | 'custom' | 'smart' | 'tron'>(
+    tronConfig ? 'tron' : smartConfig ? 'smart' : 'preset',
+  );
 
   const timerRef = useRef<number | null>(null);
   const currentPhaseRef = useRef(currentPhaseIndex);
@@ -134,6 +156,7 @@ export function SessionEngineModal({
   const hasNoKP = currentKP === null || currentKP === undefined;
   const completeSession = useCompleteSession();
   const incrementSmartCount = useIncrementSmartSessionCount();
+  const completeTronSession = useCompleteTronSession();
   const intensityControl = useIntensityControl({ userId: user?.id });
   const { plan: userTier } = useMembership();
   
@@ -149,7 +172,7 @@ export function SessionEngineModal({
 
   // NEW: Audio & Haptics system
   const haptics = useHaptics();
-  const breathingCues = useBreathingCues({ isSmartSession: !!smartConfig });
+  const breathingCues = useBreathingCues({ isSmartSession: !!smartConfig, isTronSession: !!tronConfig });
   const backgroundMusic = useBackgroundMusic({
     volumeOverride: sessionTypeRef.current === 'smart' ? smartMusicVolume : undefined,
     isActive: isOpen,
@@ -190,6 +213,7 @@ export function SessionEngineModal({
   useEffect(() => {
     if (isOpen && !prevIsOpenRef.current) {
       setSmartDurationAdjust(0);
+      setTronDurationAdjust(0);
       isSavingRef.current = false;
       sessionCompletedAtRef.current = null;
       cancelScheduledBellsRef.current = null;
@@ -224,6 +248,13 @@ export function SessionEngineModal({
       setSessionState('smart-prep');
     }
   }, [smartConfig, sessionState]);
+
+  // Auto-switch to tron-prep state when tronConfig is provided
+  useEffect(() => {
+    if (tronConfig && sessionState === 'idle') {
+      setSessionState('tron-prep');
+    }
+  }, [tronConfig, sessionState]);
 
   // Auto-start countdown for direct protocol start (skipFlow).
   // Note: skipFlow sessions are initiated by a user tap in the parent component,
@@ -333,6 +364,8 @@ export function SessionEngineModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState]); // only react to smart-prep state entry
   
+  // Tron sessions never use background music — no pre-load needed for tron-prep.
+  
   // ✅ NEW: Walking mode display dimming
   useEffect(() => {
     if (sessionState === 'active' && walkingModeEnabled) {
@@ -364,6 +397,11 @@ export function SessionEngineModal({
   // so that audio.play() is invoked within the gesture call chain → Safari autoplay passes.
   const triggerMusicForSession = useCallback(() => {
     const isSmartSession = sessionTypeRef.current === 'smart';
+    const isTronSession = sessionTypeRef.current === 'tron';
+
+    // Trůn never plays music — cues only (maximum attention on breathing rhythm)
+    if (isTronSession) return;
+
     const musicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
 
     console.log('[Session] triggerMusicForSession', {
@@ -474,7 +512,33 @@ export function SessionEngineModal({
 
     // Trigger music synchronously within the gesture so Safari grants autoplay token.
     triggerMusicForSession();
-  }, [unlockAudio, intensityControl, triggerMusicForSession, smartConfigAdjusted, exercise]);  
+  }, [unlockAudio, intensityControl, triggerMusicForSession, smartConfigAdjusted, exercise]);
+
+  // TRON: skip countdown — bells are played inside TronPrepState. No background music.
+  const startTronSession = useCallback(() => {
+    unlockAudio();
+
+    console.log('[Session] startTronSession', {
+      platform: getPlatformLabel(),
+      level: tronConfigAdjusted?.level,
+      holdExhaleSeconds: tronConfigAdjusted?.holdExhaleSeconds,
+      totalDurationSeconds: tronConfigAdjusted?.totalDurationSeconds,
+    });
+
+    // Bells already fired in TronPrepState — go straight to active. No music for Trůn.
+    setSessionProgress(0);
+    setSessionState('active');
+    setSessionStartTime(new Date());
+    setCurrentPhaseIndex(0);
+    intensityControl.notifySessionStart();
+
+    // Single-phase Trůn session — no silence phase, simple snapshot
+    const totalSec = tronConfigAdjusted?.totalDurationSeconds
+      ?? exercise.breathing_pattern.phases.reduce((sum, p) => sum + p.duration_seconds, 0);
+    sessionDurationSnapshotRef.current = { totalSec, silenceSec: 0 };
+
+    // Trůn never plays music — intentionally no triggerMusicForSession() call
+  }, [unlockAudio, intensityControl, tronConfigAdjusted, exercise]);
   
   // Complete exercise
   const completeExercise = useCallback(() => {
@@ -622,6 +686,11 @@ export function SessionEngineModal({
       let cycleStartTime = Date.now();
       let localMultiplier = intensityControl.pendingMultiplierRef.current;
       
+      // TRON MODE: multiplier only affects holdExhale phase — inhale and exhale stay fixed at 3s
+      const isTronMode = sessionTypeRef.current === 'tron';
+      const baseInhale = inhale_seconds;
+      const baseExhale = exhale_seconds;
+      
       let lastInstruction = '';
       // Track which cues have already been pre-fired to avoid double-play
       let cueFiredForInstruction = '';
@@ -641,10 +710,13 @@ export function SessionEngineModal({
       
       const updateBreathingState = () => {
         // Apply multiplier to this cycle's pattern
-        const effInhale = inhale_seconds * localMultiplier;
-        const effHoldIn = hold_after_inhale_seconds * localMultiplier;
-        const effExhale = exhale_seconds * localMultiplier;
-        const effHoldOut = hold_after_exhale_seconds * localMultiplier;
+        // TRON: multiplier only affects holdExhale — inhale/exhale stay fixed at 3s
+        const effInhale = isTronMode ? baseInhale : inhale_seconds * localMultiplier;
+        const effHoldIn = isTronMode ? 0 : hold_after_inhale_seconds * localMultiplier;
+        const effExhale = isTronMode ? baseExhale : exhale_seconds * localMultiplier;
+        const effHoldOut = isTronMode
+          ? Math.max(1, Math.round(hold_after_exhale_seconds * localMultiplier * 10) / 10)
+          : hold_after_exhale_seconds * localMultiplier;
         const effCycle = effInhale + effHoldIn + effExhale + effHoldOut;
 
         const elapsed = (Date.now() - cycleStartTime) / 1000;
@@ -906,11 +978,24 @@ export function SessionEngineModal({
         : undefined;
 
       // Smart sessions use null exercise_id (ephemeral, no DB row in exercises table)
-      const exerciseId = sessionTypeRef.current === 'smart' ? null : exercise.id;
+      const exerciseId = (sessionTypeRef.current === 'smart' || sessionTypeRef.current === 'tron')
+        ? null
+        : exercise.id;
 
       // Build smart_context snapshot for SMART sessions
       const smartContextPayload = smartConfigAdjusted
         ? buildSmartContextSnapshot(smartConfigAdjusted, null, exercise)
+        : undefined;
+
+      // Build tron_context snapshot for Trůn sessions
+      const tronContextPayload: TronContextSnapshot | undefined = tronConfigAdjusted
+        ? {
+            level: tronConfigAdjusted.level,
+            hold_exhale_base: tronConfigAdjusted.holdExhaleSeconds,
+            final_multiplier: intensityControl.multiplierRef.current,
+            duration_seconds: tronConfigAdjusted.totalDurationSeconds,
+            session_count_at_start: tronConfigAdjusted.sessionCount,
+          }
         : undefined;
       
       const session = await completeSession.mutateAsync({
@@ -925,6 +1010,7 @@ export function SessionEngineModal({
         final_intensity_multiplier: intensityControl.multiplierRef.current,
         session_type: sessionTypeRef.current,
         smart_context: smartContextPayload,
+        tron_context: tronContextPayload,
       });
 
       // Flush intensity events after session_id is available (fire-and-forget)
@@ -946,6 +1032,19 @@ export function SessionEngineModal({
         await queryClient.invalidateQueries({ queryKey: smartKeys.recommendation(user.id) });
       }
 
+      // Invalidate Trůn recommendation cache after session
+      if (sessionTypeRef.current === 'tron' && user?.id && tronContextPayload) {
+        await completeTronSession.mutateAsync({
+          level: tronContextPayload.level,
+          final_multiplier: tronContextPayload.final_multiplier,
+          duration_seconds: tronContextPayload.duration_seconds,
+          started_at: startTime,
+          completed_at: sessionCompletedAtRef.current ?? new Date(),
+          was_completed: sessionState === 'completed',
+        });
+        await queryClient.invalidateQueries({ queryKey: tronKeys.recommendation(user.id) });
+      }
+
       intensityControl.reset();
       onClose();
     } catch (error) {
@@ -955,7 +1054,7 @@ export function SessionEngineModal({
       // Release guard so user can retry after fixing the error
       isSavingRef.current = false;
     }
-  }, [exercise, sessionStartTime, sessionState, moodBefore, moodAfter, difficultyRating, notes, completeSession, incrementSmartCount, onClose, smartConfigAdjusted, user?.id, queryClient, intensityControl]);
+  }, [exercise, sessionStartTime, sessionState, moodBefore, moodAfter, difficultyRating, notes, completeSession, incrementSmartCount, completeTronSession, onClose, smartConfigAdjusted, tronConfigAdjusted, user?.id, queryClient, intensityControl]);
   
   // =====================================================
   // RENDER: Safety Questionnaire (first-time)
@@ -1010,6 +1109,27 @@ export function SessionEngineModal({
             onUnlockAudio={unlockAudio}
             onAdjustDuration={(delta) => {
               setSmartDurationAdjust((prev) => prev + delta);
+            }}
+            onClose={handleClose}
+          />
+        )}
+
+        {/* TRON-PREP: Cesta na Trůn preparation screen */}
+        {sessionState === 'tron-prep' && (
+          <TronPrepState
+            config={tronConfigAdjusted ?? null}
+            onStart={() => {
+              startTronSession();
+            }}
+            onScheduleBells={(delay1Sec, delay2Sec) => {
+              return breathingCues.scheduleBells(delay1Sec, delay2Sec);
+            }}
+            onRegisterCancelBells={(cancelFn) => {
+              cancelScheduledBellsRef.current = cancelFn;
+            }}
+            onUnlockAudio={unlockAudio}
+            onAdjustDuration={(delta) => {
+              setTronDurationAdjust((prev) => prev + delta);
             }}
             onClose={handleClose}
           />
@@ -1202,6 +1322,8 @@ export function SessionEngineModal({
           message={
             sessionTypeRef.current === 'smart' && smartConfigAdjusted && smartConfigAdjusted.isCalibrating
               ? 'Probíhá kalibrace SMART CVIČENÍ. Nedokončené cvičení se do kalibrace nepočítá.'
+              : sessionTypeRef.current === 'tron' && tronConfigAdjusted && tronConfigAdjusted.isCalibrating
+              ? 'Probíhá kalibrace Cesty na trůn. Nedokončené cvičení se do kalibrace nepočítá.'
               : 'Progres nebude uložen.'
           }
           confirmText="Odejít"
