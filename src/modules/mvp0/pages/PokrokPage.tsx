@@ -297,12 +297,19 @@ export function PokrokPage() {
 
   const switchTab = useCallback((tab: 'prehled' | 'komunita' | 'top10') => {
     setPokrokTab(tab);
-    // scrollTop = 0 je synchronní a Safari ho respektuje ihned — lepší než scrollTo()
-    // RAF pojistka: Safari někdy přeskočí první frame při position:sticky reflow
     const scrollContainer = pageRef.current?.closest('.tab-carousel__page') as HTMLElement | null;
     if (scrollContainer) {
       scrollContainer.scrollTop = 0;
-      requestAnimationFrame(() => { scrollContainer.scrollTop = 0; });
+      // iOS Safari: prvky s CSS animacemi/will-change v Přehledu vytvářejí GPU compositing
+      // layers, které po display:none přepnutí blokují vykreslení sousedního panelu.
+      // Dvě-RAF sekvence + krátkodobý translateZ vynucuje GPU layer flush a repaint.
+      requestAnimationFrame(() => {
+        scrollContainer.scrollTop = 0;
+        (scrollContainer.style as CSSStyleDeclaration & { webkitTransform: string }).webkitTransform = 'translateZ(0)';
+        requestAnimationFrame(() => {
+          (scrollContainer.style as CSSStyleDeclaration & { webkitTransform: string }).webkitTransform = '';
+        });
+      });
     }
   }, []);
 
