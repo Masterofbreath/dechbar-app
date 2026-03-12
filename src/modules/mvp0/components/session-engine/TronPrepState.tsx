@@ -61,10 +61,13 @@ function formatDurationMin(seconds: number): string {
 
 function getCalibrationText(sessionCount: number): string {
   const remaining = 10 - sessionCount;
-  if (remaining <= 3) {
-    return `Ještě ${remaining} ${remaining === 1 ? 'procházka' : 'procházky'} a budu znát tvůj krok.`;
+  if (remaining === 1) {
+    return `Ještě poslední cestu a budu tě znát jako své boty.`;
   }
-  return `Absolvuj ještě ${remaining} procházek pro přesné doporučení rytmu.`;
+  if (remaining <= 4) {
+    return `Ještě ${remaining} cesty a budu tě znát jako své boty.`;
+  }
+  return `Absolvuj ještě ${remaining} ${remaining >= 5 ? 'cest' : 'cesty'} pro přesné doporučení.`;
 }
 
 // =====================================================
@@ -205,7 +208,7 @@ export function TronPrepState({
       onClick={handleScreenTap}
       role="button"
       tabIndex={0}
-      aria-label="Zahájit procházku"
+      aria-label="Zahájit cestu"
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') triggerStart(); }}
     >
       {/* Top bar */}
@@ -240,11 +243,11 @@ export function TronPrepState({
         <div className="tron-prep__rhythm-breakdown">
           <span>nádech</span>
           <span aria-hidden="true">·</span>
-          <span>zadrž</span>
+          <span aria-hidden="true">·</span>
           <span aria-hidden="true">·</span>
           <span>výdech</span>
           <span aria-hidden="true">·</span>
-          <span className="tron-prep__rhythm-hold">zádrž</span>
+          <span className="tron-prep__rhythm-hold">cesta</span>
         </div>
         <div className="tron-prep__duration-row">
           <button
@@ -283,7 +286,7 @@ export function TronPrepState({
             aria-valuenow={config.sessionCount}
             aria-valuemin={0}
             aria-valuemax={10}
-            aria-label={`Kalibrace: ${config.sessionCount} z 10 procházek`}
+            aria-label={`Kalibrace: ${config.sessionCount} z 10 cest`}
           >
             {Array.from({ length: 10 }, (_, i) => (
               <div
@@ -303,7 +306,7 @@ export function TronPrepState({
 
       {/* Auto-start hint */}
       <div className="tron-prep__hint">
-        Procházka začne za <span className="tron-prep__hint-count">{countdown}</span>s
+        Cesta začne za <span className="tron-prep__hint-count">{countdown}</span>s
         <br />
         <span className="tron-prep__hint-sub">nebo dotkni se obrazovky</span>
       </div>

@@ -1115,9 +1115,9 @@ export function SessionEngineModal({
         )}
 
         {/* TRON-PREP: Cesta na Trůn preparation screen */}
-        {sessionState === 'tron-prep' && (
+        {sessionState === 'tron-prep' && tronConfigAdjusted && (
           <TronPrepState
-            config={tronConfigAdjusted ?? null}
+            config={tronConfigAdjusted}
             onStart={() => {
               startTronSession();
             }}

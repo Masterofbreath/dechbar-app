@@ -1,6 +1,7 @@
 /* ============================================================
    TronPrepState — Cesta na Trůn preparation screen
-   Teal color scheme (vs. gold for SmartPrepState).
+   Design: title/icon/hold-label = teal (odlišení od SMART na DnesPage)
+           rhythm/duration/hint-count = gold (jednotný vizuální jazyk s SMART prep)
    Prefix: .tron-prep__*
    ============================================================ */
 
@@ -68,10 +69,10 @@
   margin: 0;
 }
 
-/* Recommendation card */
+/* Recommendation card — gold accent jako smart-prep */
 .tron-prep__card {
-  background: rgb(44 190 198 / 5%);
-  border: 1px solid rgb(44 190 198 / 18%);
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(248 202 0 / 18%);
   border-radius: 16px;
   padding: 24px 28px;
   display: flex;
@@ -80,7 +81,7 @@
   gap: 14px;
   width: 100%;
   max-width: 320px;
-  box-shadow: 0 0 24px rgb(44 190 198 / 8%);
+  box-shadow: 0 0 24px rgb(248 202 0 / 6%);
 }
 
 .tron-prep__rhythm-label {
@@ -91,17 +92,17 @@
   color: var(--color-text-secondary, rgb(255 255 255 / 50%));
 }
 
-/* Hero rhythm value — teal (vs. gold for SMART) */
+/* Hero rhythm value — gold (jednotný s SMART prep) */
 .tron-prep__rhythm {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-teal, #2CBEC6);
+  color: var(--color-accent, #F8CA00);
   letter-spacing: 0.04em;
   font-feature-settings: 'tnum';
-  text-shadow: 0 0 20px rgb(44 190 198 / 40%);
+  text-shadow: 0 0 16px rgb(248 202 0 / 35%);
 }
 
-/* Phase labels below rhythm */
+/* Phase labels below rhythm — teal highlight na "cesta" (zádrž po výdechu) */
 .tron-prep__rhythm-breakdown {
   display: flex;
   align-items: center;
@@ -115,7 +116,7 @@
 
 .tron-prep__rhythm-hold {
   color: var(--color-teal, #2CBEC6);
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 /* Duration row */
@@ -128,7 +129,7 @@
 .tron-prep__duration {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-teal, #2CBEC6);
+  color: var(--color-accent, #F8CA00);
   min-width: 60px;
   text-align: center;
 }
@@ -138,10 +139,10 @@
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border: 1px solid rgb(44 190 198 / 20%);
+  border: 1px solid rgb(255 255 255 / 15%);
   border-radius: 8px;
   background: transparent;
-  color: rgb(44 190 198 / 60%);
+  color: var(--color-text-secondary, rgb(255 255 255 / 60%));
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -154,9 +155,9 @@
 }
 
 .tron-prep__duration-btn:hover:not(:disabled) {
-  border-color: rgb(44 190 198 / 35%);
-  color: var(--color-teal, #2CBEC6);
-  background: rgb(44 190 198 / 6%);
+  border-color: rgb(248 202 0 / 30%);
+  color: var(--color-accent, #F8CA00);
+  background: rgb(248 202 0 / 5%);
 }
 
 /* Calibration */
@@ -187,7 +188,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgb(44 190 198 / 15%);
+  background: rgb(255 255 255 / 15%);
   transition: background 0.2s ease;
 }
 
@@ -214,7 +215,7 @@
 }
 
 .tron-prep__hint-count {
-  color: var(--color-teal, #2CBEC6);
+  color: var(--color-accent, #F8CA00);
   font-weight: 600;
 }
 
