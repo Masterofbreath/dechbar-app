@@ -13,11 +13,11 @@
  */
 
 import { useCallback } from 'react';
-import { useAuth } from '@/platform/auth';
 import { useTronRecommendation } from '../api/tron';
 import { getTronLevel } from '../config/tronLevels';
 import type { Exercise, TronSessionConfig } from '../types/exercises';
 import type { BreathingPattern, ExercisePhase } from '../types/exercises';
+import { useSessionSettings } from '../stores/sessionSettingsStore';
 
 // =====================================================
 // CONSTANTS
@@ -137,28 +137,37 @@ export interface UseTronSessionReturn {
 }
 
 export function useTronSession(): UseTronSessionReturn {
-  const { user } = useAuth();
   const { data: recommendation, isLoading } = useTronRecommendation();
+  const { tronDurationMode } = useSessionSettings();
+
+  // Resolve duration from settings (mirrors SMART logic)
+  const resolvedDuration = (() => {
+    if (tronDurationMode.type === 'fixed') {
+      return Math.max(TRON_MIN_DURATION, Math.min(TRON_MAX_DURATION, tronDurationMode.seconds));
+    }
+    const presetMap = { short: 360, medium: DEFAULT_DURATION_SECONDS, long: 720 } as const;
+    return presetMap[tronDurationMode.preset];
+  })();
 
   const config: TronSessionConfig = (() => {
     if (!recommendation) {
-      // Cold start — Level 1, 7 min
+      // Cold start — Level 3 (holdExhale=5s), aby měl uživatel adekvátní startovní výzvu
       return {
-        level: 1,
-        holdExhaleSeconds: getTronLevel(1).holdExhale,
-        totalDurationSeconds: DEFAULT_DURATION_SECONDS,
+        level: 3,
+        holdExhaleSeconds: getTronLevel(3).holdExhale,
+        totalDurationSeconds: resolvedDuration,
         sessionCount: 0,
         isCalibrating: true,
       };
     }
 
-    const level = recommendation.current_level ?? 1;
+    const level = recommendation.current_level ?? 3;
     const tronLevel = getTronLevel(level);
 
     return {
       level,
       holdExhaleSeconds: tronLevel.holdExhale,
-      totalDurationSeconds: DEFAULT_DURATION_SECONDS,
+      totalDurationSeconds: resolvedDuration,
       sessionCount: recommendation.session_count ?? 0,
       isCalibrating: (recommendation.session_count ?? 0) < 10,
     };
@@ -172,6 +181,6 @@ export function useTronSession(): UseTronSessionReturn {
   return {
     config,
     buildExercise,
-    isLoading: !user ? false : isLoading,
+    isLoading,
   };
 }

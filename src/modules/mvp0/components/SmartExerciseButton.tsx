@@ -74,8 +74,12 @@ export function SmartExerciseButton({ onSmartStart, onEarlyOpen }: SmartExercise
     setIsComputing(true);
     setComputeError(null);
     try {
-      const { config, exercise } = await computeAndBuild();
-      onSmartStart?.(config, exercise);
+      // Minimální delay 2s pro "Vypočítáváme…" — vytváří vnímanou hodnotu výpočtu
+      const [result] = await Promise.all([
+        computeAndBuild(),
+        new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+      ]);
+      onSmartStart?.(result.config, result.exercise);
     } catch {
       setComputeError('Nepodařilo se načíst doporučení, zkouším znovu...');
     } finally {
@@ -99,7 +103,7 @@ export function SmartExerciseButton({ onSmartStart, onEarlyOpen }: SmartExercise
           {isDataLoading ? (
             <span>Načítám...</span>
           ) : isComputing ? (
-            <span>Připravuji cvičení...</span>
+            <span>Vypočítáváme…</span>
           ) : (
             <span>SMART CVIČENÍ</span>
           )}

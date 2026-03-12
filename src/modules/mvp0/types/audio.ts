@@ -144,6 +144,26 @@ export interface SessionSettings {
   smartCueSoundSlug: string;
   smartCueSoundVariant: string | null;
 
+  // CESTA NA TRŮN — audio nastavení
+  /** Hudba na pozadí pro Trůn sessions (default: off) */
+  tronMusicEnabled: boolean;
+  /** Vybraný track slug pro Trůn */
+  tronMusicSlug: string | null;
+  /** Náhodný výběr tracku pro Trůn */
+  tronMusicRandomEnabled: boolean;
+  /** Hlasitost hudby pro Trůn — max 0.5 (uživatel slyší cues přes hudbu) */
+  tronMusicVolume: number;
+  /** Preferovaná délka Trůn session */
+  tronDurationMode: SmartDurationMode;
+  /** Signální tóny (start & end bell) pro Trůn */
+  tronBellsEnabled: boolean;
+  /** Zvukové signály rytmu pro Trůn */
+  tronCuesEnabled: boolean;
+  /** Hlasitost cues pro Trůn */
+  tronCueVolume: number;
+  /** CueSound pack pro Trůn */
+  tronCueSoundSlug: string;
+
   // Cue sound slug/variant (shared state used by non-SMART settings card)
   cueSoundSlug: string;
   cueSoundVariant: string | null;
@@ -188,6 +208,15 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   smartCueVolume: 0.6,
   smartCueSoundSlug: 'solfeggio',
   smartCueSoundVariant: null,
+  tronMusicEnabled: false,
+  tronMusicSlug: null,
+  tronMusicRandomEnabled: false,
+  tronMusicVolume: 0.35,
+  tronDurationMode: { type: 'range', preset: 'medium' },
+  tronBellsEnabled: true,
+  tronCuesEnabled: true,
+  tronCueVolume: 0.6,
+  tronCueSoundSlug: 'solfeggio',
   cueSoundSlug: 'solfeggio',
   cueSoundVariant: null,
 };

@@ -14,6 +14,8 @@ export interface VolumeSliderProps {
   value: number; // 0-1
   onChange: (value: number) => void;
   disabled?: boolean;
+  /** Max value (0-1), defaults to 1. Used e.g. for Trůn to cap at 0.5. */
+  max?: number;
 }
 
 /**
@@ -24,7 +26,9 @@ export const VolumeSlider: React.FC<VolumeSliderProps> = ({
   value,
   onChange,
   disabled = false,
+  max = 1,
 }) => {
+  const maxPercent = Math.round(max * 100);
   const percentage = Math.round(value * 100);
   
   return (
@@ -36,7 +40,7 @@ export const VolumeSlider: React.FC<VolumeSliderProps> = ({
       <input
         type="range"
         min="0"
-        max="100"
+        max={maxPercent}
         value={percentage}
         onChange={(e) => onChange(Number(e.target.value) / 100)}
         disabled={disabled}

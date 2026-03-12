@@ -60,6 +60,17 @@ interface SessionSettingsStore extends SessionSettings {
   setCueSoundSlug: (slug: string) => void;
   setCueSoundVariant: (variant: string | null) => void;
 
+  // Actions - CESTA NA TRŮN
+  setTronMusicEnabled: (enabled: boolean) => void;
+  setTronMusicSlug: (slug: string | null) => void;
+  setTronMusicRandomEnabled: (enabled: boolean) => void;
+  setTronMusicVolume: (volume: number) => void;
+  setTronDurationMode: (mode: SmartDurationMode) => void;
+  setTronBellsEnabled: (enabled: boolean) => void;
+  setTronCuesEnabled: (enabled: boolean) => void;
+  setTronCueVolume: (volume: number) => void;
+  setTronCueSoundSlug: (slug: string) => void;
+
   // Reset to defaults
   reset: () => void;
 }
@@ -113,6 +124,17 @@ export const useSessionSettings = create<SessionSettingsStore>()(
     setSmartCueSoundVariant: (variant) => set({ smartCueSoundVariant: variant }),
     setCueSoundSlug: (slug) => set({ cueSoundSlug: slug }),
     setCueSoundVariant: (variant) => set({ cueSoundVariant: variant }),
+
+    // CESTA NA TRŮN
+    setTronMusicEnabled: (enabled) => set({ tronMusicEnabled: enabled }),
+    setTronMusicSlug: (slug) => set({ tronMusicSlug: slug }),
+    setTronMusicRandomEnabled: (enabled) => set({ tronMusicRandomEnabled: enabled }),
+    setTronMusicVolume: (volume) => set({ tronMusicVolume: Math.max(0, Math.min(0.5, volume)) }),
+    setTronDurationMode: (mode) => set({ tronDurationMode: mode }),
+    setTronBellsEnabled: (enabled) => set({ tronBellsEnabled: enabled }),
+    setTronCuesEnabled: (enabled) => set({ tronCuesEnabled: enabled }),
+    setTronCueVolume: (volume) => set({ tronCueVolume: Math.max(0, Math.min(1, volume)) }),
+    setTronCueSoundSlug: (slug) => set({ tronCueSoundSlug: slug }),
 
       // Reset
       reset: () => set(DEFAULT_SESSION_SETTINGS),

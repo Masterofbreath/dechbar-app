@@ -547,3 +547,38 @@
 @keyframes smart-loading-spin {
   to { transform: rotate(360deg); }
 }
+
+/* Trůn loading overlay — tyrkysový spinner (stejná struktura, jiná barva) */
+.tron-loading-overlay__spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgb(44 190 198 / 20%);
+  border-top-color: var(--color-teal, #2CBEC6);
+  border-radius: 50%;
+  animation: smart-loading-spin 0.8s linear infinite;
+}
+
+/* ============================================================
+   TronSection Widget — Pokrok view (mirrors .smart-widget)
+   ============================================================ */
+
+/* Level bar — tyrkysový fill místo gold */
+.smart-widget__level-bar--tron .smart-widget__level-segment--tron.smart-widget__level-segment--filled {
+  background: var(--color-teal, #2CBEC6);
+}
+
+/* Rhythm hero — tyrkysová barva místo gold */
+.smart-widget__rhythm--tron {
+  color: var(--color-teal, #2CBEC6);
+  text-shadow: 0 0 20px rgb(44 190 198 / 35%);
+}
+
+/* CTA button — gold tón pro Trůn (odlišení od SMART teal CTA) */
+.smart-widget__cta--tron {
+  border-color: var(--color-teal, #2CBEC6);
+  color: var(--color-teal, #2CBEC6);
+}
+
+.smart-widget__cta--tron:hover {
+  background: rgb(44 190 198 / 10%);
+}

@@ -23,6 +23,7 @@ import { useNavigation } from '@/platform/hooks/useNavigation';
 import type { ActivityPeriod, ActivityDayData } from '@/platform/analytics';
 import { KPSection } from '@/components/pokrok/KPSection';
 import { SmartSection } from '@/components/pokrok/SmartSection';
+import { TronSection } from '@/components/pokrok/TronSection';
 import '@/styles/pages/pokrok.css';
 
 // ── Prime number milestones (in hours) ──
@@ -404,6 +405,13 @@ export function PokrokPage() {
             userId={userId}
             latestKP={currentKP}
             onMeasureKP={openKPDetail}
+          />
+        </div>
+
+        {/* 1c. Cesta na Trůn Sekce */}
+        <div className="pokrok-page__section-gap">
+          <TronSection
+            userId={userId}
           />
         </div>
 

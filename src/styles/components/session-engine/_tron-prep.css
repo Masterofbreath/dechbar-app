@@ -60,15 +60,6 @@
   text-shadow: 0 0 14px rgb(44 190 198 / 40%);
 }
 
-.tron-prep__subtitle {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: rgb(44 190 198 / 60%);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin: 0;
-}
-
 /* Recommendation card — gold accent jako smart-prep */
 .tron-prep__card {
   background: rgb(255 255 255 / 5%);
@@ -100,23 +91,6 @@
   letter-spacing: 0.04em;
   font-feature-settings: 'tnum';
   text-shadow: 0 0 16px rgb(248 202 0 / 35%);
-}
-
-/* Phase labels below rhythm — teal highlight na "cesta" (zádrž po výdechu) */
-.tron-prep__rhythm-breakdown {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.65rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: rgb(255 255 255 / 30%);
-}
-
-.tron-prep__rhythm-hold {
-  color: var(--color-teal, #2CBEC6);
-  opacity: 0.9;
 }
 
 /* Duration row */
@@ -196,16 +170,6 @@
   background: var(--color-teal, #2CBEC6);
 }
 
-/* No music notice */
-.tron-prep__silence-note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  color: rgb(255 255 255 / 35%);
-  letter-spacing: 0.03em;
-}
-
 /* Auto-start hint */
 .tron-prep__hint {
   font-size: 0.8rem;
@@ -222,4 +186,70 @@
 .tron-prep__hint-sub {
   font-size: 0.72rem;
   opacity: 0.7;
+}
+
+/* ============================================================
+   Shake-to-lock hint overlay — zobrazí se po zatřesení telefonem
+   Překryje celou session (position: fixed), klepnutím se zavře
+   ============================================================ */
+
+.tron-shake-lock-hint {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 82%);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  animation: tron-shake-fadein 0.25s ease;
+}
+
+@keyframes tron-shake-fadein {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tron-shake-lock-hint__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 0 32px;
+}
+
+.tron-shake-lock-hint__icon {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 16px rgb(44 190 198 / 60%));
+  animation: tron-shake-lock-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes tron-shake-lock-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.1); }
+}
+
+.tron-shake-lock-hint__text {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.tron-shake-lock-hint__sub {
+  font-size: 0.8rem;
+  color: rgb(44 190 198 / 80%);
+  margin: 0;
+  letter-spacing: 0.03em;
 }

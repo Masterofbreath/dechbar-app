@@ -102,18 +102,6 @@ function PlusIcon() {
   );
 }
 
-function SilenceIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="1" y1="1" x2="23" y2="23" />
-      <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" />
-      <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23" />
-      <line x1="12" y1="19" x2="12" y2="23" />
-      <line x1="8" y1="23" x2="16" y2="23" />
-    </svg>
-  );
-}
-
 // =====================================================
 // COMPONENT
 // =====================================================
@@ -231,7 +219,6 @@ export function TronPrepState({
           <WalkIcon />
         </div>
         <h2 className="tron-prep__title">CESTA NA TRŮN</h2>
-        <p className="tron-prep__subtitle">Level {config.level}</p>
       </div>
 
       {/* Recommendation card */}
@@ -239,15 +226,6 @@ export function TronPrepState({
         <div className="tron-prep__rhythm-label">Tvůj rytmus dnes</div>
         <div className="tron-prep__rhythm" aria-label={`Rytmus: ${rhythm}`}>
           {rhythm}
-        </div>
-        <div className="tron-prep__rhythm-breakdown">
-          <span>nádech</span>
-          <span aria-hidden="true">·</span>
-          <span aria-hidden="true">·</span>
-          <span aria-hidden="true">·</span>
-          <span>výdech</span>
-          <span aria-hidden="true">·</span>
-          <span className="tron-prep__rhythm-hold">cesta</span>
         </div>
         <div className="tron-prep__duration-row">
           <button
@@ -297,12 +275,6 @@ export function TronPrepState({
           </div>
         </div>
       )}
-
-      {/* No music notice */}
-      <div className="tron-prep__silence-note">
-        <SilenceIcon />
-        <span>Žádná hudba — jen signály rytmu</span>
-      </div>
 
       {/* Auto-start hint */}
       <div className="tron-prep__hint">

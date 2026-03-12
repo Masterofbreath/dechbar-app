@@ -107,6 +107,19 @@ function SmartWaveIcon() {
   );
 }
 
+function TronWalkIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <circle cx="12" cy="4" r="1.5" />
+      <path d="M9 9l1.5 5L9 18" />
+      <path d="M15 9l-1.5 5L15 18" />
+      <path d="M9 12h6" />
+    </svg>
+  );
+}
+
 function TrashIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -369,7 +382,149 @@ export function SettingsPage() {
             )}
           </SettingsCard>
 
-          {/* Card 3: Haptics — zobrazit pouze v native iOS/Android app, vibrace nefungují v browseru */}
+          {/* Card 3: CESTA NA TRŮN — audio profil pro chůzi (hned pod SMART) */}
+          <SettingsCard
+            title="CESTA NA TRŮN"
+            icon={<TronWalkIcon />}
+            locked={userTier === 'ZDARMA' && !isAdmin}
+            lockedTooltip="Prémiová funkce dostupná s tarifem SMART"
+          >
+            {(userTier !== 'ZDARMA' || isAdmin) && (
+              <>
+                {/* Duration mode */}
+                <div className="settings-card__label">Preferovaná délka cesty</div>
+
+                <div className="smart-duration-selector">
+                  <label className="smart-duration-option">
+                    <input
+                      type="radio"
+                      name="tronDurationType"
+                      value="fixed"
+                      checked={settings.tronDurationMode.type === 'fixed'}
+                      onChange={() => settings.setTronDurationMode({ type: 'fixed', seconds: 420 })}
+                    />
+                    <span>Pevný čas</span>
+                  </label>
+
+                  {settings.tronDurationMode.type === 'fixed' && (
+                    <div className="smart-duration-slider-wrap">
+                      <input
+                        type="range"
+                        min={300}
+                        max={900}
+                        step={60}
+                        value={settings.tronDurationMode.seconds}
+                        onChange={(e) =>
+                          settings.setTronDurationMode({ type: 'fixed', seconds: Number(e.target.value) })
+                        }
+                        className="smart-duration-slider"
+                        aria-label="Délka cesty v minutách"
+                      />
+                      <span className="smart-duration-value">
+                        {Math.round(settings.tronDurationMode.seconds / 60)} min
+                      </span>
+                    </div>
+                  )}
+
+                  <label className="smart-duration-option">
+                    <input
+                      type="radio"
+                      name="tronDurationType"
+                      value="range"
+                      checked={settings.tronDurationMode.type === 'range'}
+                      onChange={() => settings.setTronDurationMode({ type: 'range', preset: 'medium' })}
+                    />
+                    <span>Smart Time</span>
+                  </label>
+
+                  {settings.tronDurationMode.type === 'range' && (
+                    <div className="smart-duration-presets">
+                      {(['short', 'medium', 'long'] as const).map((preset) => {
+                        const labels = { short: 'Krátké 5–8 min', medium: 'Střední 7–10 min', long: 'Delší 10–15 min' };
+                        const isCurrent =
+                          settings.tronDurationMode.type === 'range' &&
+                          settings.tronDurationMode.preset === preset;
+                        return (
+                          <label key={preset} className={`smart-duration-preset${isCurrent ? ' smart-duration-preset--active' : ''}`}>
+                            <input
+                              type="radio"
+                              name="tronDurationPreset"
+                              value={preset}
+                              checked={isCurrent}
+                              onChange={() => settings.setTronDurationMode({ type: 'range', preset })}
+                            />
+                            <span>{labels[preset]}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="settings-card__divider" />
+
+                {/* Trůn Audio — Bells & Cues */}
+                <Toggle
+                  label="Signální tóny (start & end bell)"
+                  checked={settings.tronBellsEnabled}
+                  onChange={settings.setTronBellsEnabled}
+                />
+                <Toggle
+                  label="Zvukové signály rytmu"
+                  checked={settings.tronCuesEnabled}
+                  onChange={settings.setTronCuesEnabled}
+                />
+                {settings.tronCuesEnabled && (
+                  <>
+                    <CueSoundSelector
+                      selectedPack={settings.tronCueSoundSlug}
+                      onChange={settings.setTronCueSoundSlug}
+                      userTier={userTier}
+                    />
+                    <VolumeSlider
+                      label="Hlasitost signálů"
+                      value={settings.tronCueVolume}
+                      onChange={settings.setTronCueVolume}
+                    />
+                  </>
+                )}
+
+                <div className="settings-card__divider" />
+
+                {/* Trůn Audio — Hudba na pozadí */}
+                <Toggle
+                  label="Hudba na pozadí (Trůn)"
+                  checked={settings.tronMusicEnabled}
+                  onChange={settings.setTronMusicEnabled}
+                />
+                {settings.tronMusicEnabled && (
+                  <>
+                    <TrackSelector
+                      tracks={backgroundMusic.tracks}
+                      selectedSlug={settings.tronMusicSlug}
+                      randomEnabled={settings.tronMusicRandomEnabled}
+                      onChange={settings.setTronMusicSlug}
+                      onRandomChange={settings.setTronMusicRandomEnabled}
+                      userTier={userTier}
+                      onFetchTracks={backgroundMusic.fetchTracks}
+                      smartMode={false}
+                    />
+                    <VolumeSlider
+                      label="Hlasitost hudby"
+                      value={settings.tronMusicVolume}
+                      onChange={settings.setTronMusicVolume}
+                      max={0.5}
+                    />
+                    <p className="settings-card__info settings-card__info--indent">
+                      Max 50 % hlasitosti — zvukové signály rytmu musí být jasně slyšitelné
+                    </p>
+                  </>
+                )}
+              </>
+            )}
+          </SettingsCard>
+
+          {/* Card 4: Haptics — zobrazit pouze v native iOS/Android app, vibrace nefungují v browseru */}
           {nativeApp && (
           <SettingsCard title="Vibrace" icon={<VibrateIcon />}>
             <Toggle

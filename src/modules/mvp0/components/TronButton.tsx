@@ -52,6 +52,7 @@ export function TronButton({ onEarlyOpen, onTronStart }: TronButtonProps) {
 
   const [showLockedModal, setShowLockedModal] = useState(false);
   const [showSafetyToast, setShowSafetyToast] = useState(false);
+  const [isComputing, setIsComputing] = useState(false);
 
   // --- Determine lock reason ---
   const isPremium = plan === 'SMART' || plan === 'AI_COACH' || isAdmin;
@@ -67,6 +68,7 @@ export function TronButton({ onEarlyOpen, onTronStart }: TronButtonProps) {
   })();
 
   const isLocked = lockReason !== null;
+  const isBusy = kpLoading || isComputing;
 
   function handleClick(event: React.MouseEvent) {
     event.preventDefault();
@@ -89,11 +91,16 @@ export function TronButton({ onEarlyOpen, onTronStart }: TronButtonProps) {
       return;
     }
 
-    // Unlocked — build exercise and start session
+    // Unlocked — unlock audio synchronously, then simulate "computing" delay
     unlockSharedAudioContext();
     onEarlyOpen?.();
-    const exercise = buildTronExercise(tronConfig);
-    onTronStart?.(tronConfig, exercise);
+    setIsComputing(true);
+
+    setTimeout(() => {
+      setIsComputing(false);
+      const exercise = buildTronExercise(tronConfig);
+      onTronStart?.(tronConfig, exercise);
+    }, 2200);
   }
 
   function getLockMessage(): string {
@@ -112,17 +119,21 @@ export function TronButton({ onEarlyOpen, onTronStart }: TronButtonProps) {
   return (
     <>
       <button
-        className={`tron-button${isLocked ? ' tron-button--locked' : ''}${kpLoading ? ' tron-button--loading' : ''}`}
+        className={`tron-button${isLocked ? ' tron-button--locked' : ''}${isBusy ? ' tron-button--loading' : ''}`}
         onClick={handleClick}
         type="button"
-        disabled={kpLoading}
-        aria-busy={kpLoading}
+        disabled={isBusy}
+        aria-busy={isBusy}
       >
         <div className="tron-button__title">
-          {isLocked && (
+          {isLocked && !isComputing && (
             <NavIcon name="lock" size={16} className="tron-button__lock" />
           )}
-          <span>CESTA NA TRŮN</span>
+          {isComputing ? (
+            <span>Připravuji cestu…</span>
+          ) : (
+            <span>CESTA NA TRŮN</span>
+          )}
         </div>
       </button>
 

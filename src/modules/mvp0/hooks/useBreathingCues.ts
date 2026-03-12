@@ -83,15 +83,15 @@ export function useBreathingCues(options?: { isSmartSession?: boolean; isTronSes
     smartCuesEnabled,
     smartCueVolume,
     smartBellsEnabled,
+    tronCuesEnabled,
+    tronCueVolume,
+    tronBellsEnabled,
   } = useSessionSettings();
 
-  // Effective settings:
-  // - SMART sessions → smart toggles/volume
-  // - Trůn sessions  → smart cue settings (shared — no separate toggles; Trůn = cues always on)
-  // - Regular        → standard toggles/volume
-  const effectiveCuesEnabled  = (isSmartSession || isTronSession) ? smartCuesEnabled  : audioCuesEnabled;
-  const effectiveCueVolume    = (isSmartSession || isTronSession) ? smartCueVolume    : audioCueVolume;
-  const effectiveBellsEnabled = (isSmartSession || isTronSession) ? smartBellsEnabled : bellsEnabled;
+  // Effective settings per session type
+  const effectiveCuesEnabled  = isSmartSession ? smartCuesEnabled  : isTronSession ? tronCuesEnabled  : audioCuesEnabled;
+  const effectiveCueVolume    = isSmartSession ? smartCueVolume    : isTronSession ? tronCueVolume    : audioCueVolume;
+  const effectiveBellsEnabled = isSmartSession ? smartBellsEnabled : isTronSession ? tronBellsEnabled : bellsEnabled;
 
   const [isReady, setIsReady] = useState(false);
 

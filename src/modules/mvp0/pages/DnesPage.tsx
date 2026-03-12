@@ -53,6 +53,7 @@ export function DnesPage() {
   // Trůn session state
   const [tronExercise, setTronExercise] = useState<Exercise | null>(null);
   const [tronConfig, setTronConfig] = useState<TronSessionConfig | undefined>(undefined);
+  const [tronLoading, setTronLoading] = useState(false);
 
   // Called synchronously on SMART button click (within gesture stack) —
   // unlocks AudioContext BEFORE any await. Modal stays closed until config arrives.
@@ -67,9 +68,11 @@ export function DnesPage() {
 
   function handleTronEarlyOpen() {
     unlockSharedAudioContext();
+    setTronLoading(true);
   }
 
   function handleTronStart(config: TronSessionConfig, exercise: Exercise) {
+    setTronLoading(false);
     setTronConfig(config);
     setTronExercise(exercise);
   }
@@ -177,6 +180,16 @@ export function DnesPage() {
           <div className="smart-exercise-loading-overlay__content">
             <div className="smart-exercise-loading-overlay__spinner" />
             <p className="smart-exercise-loading-overlay__text">Připravuji cvičení…</p>
+          </div>
+        </div>
+      )}
+
+      {/* Trůn Loading overlay — shown during 2s "Vypočítáváme…" delay */}
+      {tronLoading && !tronExercise && (
+        <div className="smart-exercise-loading-overlay" aria-label="Vypočítávám Cestu na Trůn" role="status">
+          <div className="smart-exercise-loading-overlay__content">
+            <div className="tron-loading-overlay__spinner" />
+            <p className="smart-exercise-loading-overlay__text">Připravuji cestu…</p>
           </div>
         </div>
       )}

@@ -26,6 +26,7 @@ import { useAudioCues } from './hooks/useAudioCues';
 import { useIntensityControl } from './hooks/useIntensityControl';
 import { useWakeLock } from '../../hooks/useWakeLock';
 import { useHaptics } from '../../hooks/useHaptics';
+import { useShakeLock } from '../../hooks/useShakeLock';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
 import { unlockSharedAudioContext, getPlatformLabel } from '../../utils/sharedAudioContext';
@@ -164,8 +165,8 @@ export function SessionEngineModal({
   const { playBell } = useAudioCues(); // Legacy bell sound (fallback)
   const { circleRef, animateBreathingCircle, cleanup: cleanupAnimation } = useBreathingAnimation();
   const wakeLock = useWakeLock();
-  
-  const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume, backgroundMusicRandomEnabled,
+
+  const { backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume, backgroundMusicRandomEnabled,
     smartMusicEnabled, smartMusicSlug, smartMusicRandomEnabled, smartMusicVolume,
     tronMusicEnabled, tronMusicSlug, tronMusicRandomEnabled, tronMusicVolume,
     selectedTrackSlug,
@@ -173,6 +174,8 @@ export function SessionEngineModal({
 
   // NEW: Audio & Haptics system
   const haptics = useHaptics();
+  const isTronActive = sessionState === 'active' && sessionTypeRef.current === 'tron';
+  const shakeLock = useShakeLock(isTronActive);
   const breathingCues = useBreathingCues({ isSmartSession: !!smartConfig, isTronSession: !!tronConfig });
   const backgroundMusic = useBackgroundMusic({
     volumeOverride: sessionTypeRef.current === 'smart'
@@ -272,14 +275,17 @@ export function SessionEngineModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skipFlow, sessionState]);
   
-  // ✅ Wake Lock - Keep screen on during active session (respects user preference)
+  // Wake Lock — keep screen on during active session (respects user preference)
+  // Trůn sessions skip wake lock — user is expected to lock the phone manually
+  // and carry it in pocket. Audio cues continue playing regardless of screen state.
   useEffect(() => {
-    if (sessionState === 'active' && keepScreenOn) {
+    const isTronSession = sessionTypeRef.current === 'tron';
+    if (sessionState === 'active' && keepScreenOn && !isTronSession) {
       wakeLock.request();
     } else {
       wakeLock.release();
     }
-  }, [sessionState, keepScreenOn]); // eslint-disable-line react-hooks/exhaustive-deps -- wakeLock stable ref, intentionally omitted
+  }, [sessionState, keepScreenOn]); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Preload breathing cues + vocal snippets when modal opens.
   // Previously ran on mount — but SessionEngineModal is always mounted (tab carousel pre-renders
@@ -373,20 +379,6 @@ export function SessionEngineModal({
   }, [sessionState]); // only react to smart-prep state entry
   
   // Tron sessions never use background music — no pre-load needed for tron-prep.
-  
-  // ✅ NEW: Walking mode display dimming
-  useEffect(() => {
-    if (sessionState === 'active' && walkingModeEnabled) {
-      // Dim display to minimum brightness
-      document.body.style.filter = 'brightness(0.1)';
-    } else {
-      document.body.style.filter = '';
-    }
-    
-    return () => {
-      document.body.style.filter = '';
-    };
-  }, [sessionState, walkingModeEnabled]);
   
   // =====================================================
   // SESSION FLOW: State Machine
@@ -1348,6 +1340,22 @@ export function SessionEngineModal({
           cancelText="Pokračovat"
           variant="warning"
         />
+
+        {/* Shake-to-lock hint — zobrazí se po zatřesení telefonem během Trůn session */}
+        {shakeLock.showLockHint && (
+          <div
+            className="tron-shake-lock-hint"
+            role="status"
+            aria-live="polite"
+            onClick={shakeLock.dismissHint}
+          >
+            <div className="tron-shake-lock-hint__content">
+              <div className="tron-shake-lock-hint__icon">🔒</div>
+              <p className="tron-shake-lock-hint__text">Zamkni telefon a vlož do kapsy</p>
+              <p className="tron-shake-lock-hint__sub">Cues poběží dál · klepni pro zavření</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>,
     document.body

@@ -83,9 +83,12 @@ export function SessionActive({
       {/* SMART / custom exercise: phase name + special instructions above circle */}
       {!isProtocol(exercise) && currentPhase && (
         <>
-          <p className="session-active__phase-name">
-            {currentPhase.name}
-          </p>
+          {/* Trůn sessions mají jednu fázi — název fáze je zbytečný, jen matoucí */}
+          {!exercise.tags?.includes('tron') && (
+            <p className="session-active__phase-name">
+              {currentPhase.name}
+            </p>
+          )}
           {isBuzzingPhase && (
             <p className="session-active__buzzing-hint">
               Při výdechu jemně bzuč
