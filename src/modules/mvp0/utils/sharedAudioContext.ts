@@ -335,28 +335,27 @@ export function playSharedTone(
     const ctx = getSharedAudioContext();
     if (!ctx) { console.warn('[SharedAudio] playSharedTone: no context'); return; }
 
+    console.log('[SharedAudio] playSharedTone', {
+      platform: getPlatformLabel(),
+      hz, isBell, volume,
+      ctxState: ctx.state,
+      currentTime: ctx.currentTime,
+    });
+
     // If suspended, attempt resume and schedule the tone for after resume.
-    // (unlockSharedAudioContext should have been called from the gesture handler,
-    //  but the resume() Promise may not have resolved yet — race condition on Safari.)
     if (ctx.state === 'suspended') {
       console.warn(`[SharedAudio] playSharedTone: ctx suspended, resuming first (hz=${hz})`);
       void ctx.resume().then(() => {
-        // Add a small start offset so the tone doesn't get scheduled into the past.
-        // ctx.currentTime was frozen while suspended; after resume() it jumps forward.
-        // Without offset, osc.start(frozenTime) is in the past → tone never plays on Safari.
         playToneOnContext(ctx, hz, duration, volume, isBell, 0.015);
       });
       return;
     }
 
-    // iOS-specific: AudioContext can enter 'interrupted' state (phone call, lock screen, app switch).
-    // On desktop Safari this state never occurs. When interrupted, we force-recreate the context
-    // by nulling _ctx — getSharedAudioContext() will create a fresh one on next call.
-    // We then attempt to play the tone on the new context after a short delay.
+    // AudioContext can enter 'interrupted' state (phone call, lock screen, app switch).
+    // Force-recreate the context and retry after a short delay.
     if (ctx.state === ('interrupted' as AudioContextState)) {
       console.warn(`[SharedAudio] playSharedTone: ctx interrupted — recreating context for hz=${hz}`, { platform: getPlatformLabel() });
-      _ctx = null; // force recreation on next getSharedAudioContext() call
-      // Small delay to let iOS finalize the interruption before creating new context
+      _ctx = null;
       window.setTimeout(() => {
         const freshCtx = getSharedAudioContext();
         if (freshCtx && freshCtx.state === 'running') {
@@ -376,8 +375,8 @@ export function playSharedTone(
     }
 
     playToneOnContext(ctx, hz, duration, volume, isBell, 0);
-  } catch {
-    // Web Audio not supported — silent skip
+  } catch (err) {
+    console.warn('[SharedAudio] playSharedTone error:', err, { platform: getPlatformLabel(), hz });
   }
 }
 
@@ -513,6 +512,15 @@ function playToneOnContext(
     osc.type = isBell ? 'triangle' : 'sine';
 
     const now = ctx.currentTime + startOffset;
+
+    console.log('[SharedAudio] playToneOnContext', {
+      platform: getPlatformLabel(),
+      hz, isBell, volume, startOffset,
+      ctxState: ctx.state,
+      now,
+      currentTime: ctx.currentTime,
+    });
+
     if (isBell) {
       gain.gain.setValueAtTime(volume, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
@@ -525,6 +533,6 @@ function playToneOnContext(
     osc.start(now);
     osc.stop(now + duration);
   } catch (err) {
-    console.warn('[SharedAudio] playToneOnContext failed:', err);
+    console.warn('[SharedAudio] playToneOnContext failed:', err, { platform: getPlatformLabel(), hz, ctxState: ctx.state });
   }
 }
