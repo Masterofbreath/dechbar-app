@@ -36,12 +36,24 @@ export function useMarkLessonComplete(userId: string) {
   return useMutation({
     mutationFn: markLessonComplete,
     onSuccess: (_data, variables) => {
-      // Invalidate lekce pro danou sérii, aby se checkmark zobrazil okamžitě
+      // Checkmark v seznamu lekcí — okamžitá zpětná vazba
       queryClient.invalidateQueries({
         queryKey: akademieKeys.lessons(variables.seriesId),
       })
       queryClient.invalidateQueries({
         queryKey: akademieKeys.progress(userId),
+      })
+      // TodaysChallengeButton + unlock stav — přepočítá nextLesson a maxUnlockedDay
+      // BEZ tohoto uživatel vidí dokončenou lekci jako "Přehrát" až do příštího refreshe (2 min stale)
+      queryClient.invalidateQueries({
+        queryKey: akademieKeys.activeProgram(userId),
+      })
+      queryClient.invalidateQueries({
+        queryKey: akademieKeys.featuredProgram(),
+      })
+      // Akademie detail view — zamčené/odemčené dny
+      queryClient.invalidateQueries({
+        queryKey: [...akademieKeys.all, 'programUnlockState', userId],
       })
     },
   })

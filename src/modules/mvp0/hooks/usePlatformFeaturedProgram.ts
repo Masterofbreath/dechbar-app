@@ -109,6 +109,7 @@ async function fetchFeaturedProgram(
   userId?: string,
   userCreatedAt?: string,
 ): Promise<FeaturedProgramData | null> {
+  void userCreatedAt; // per-user start date — reserved for future use
   const now = new Date().toISOString();
 
   // 1. Načti aktivní featured záznam (včetně early_access_until)
@@ -170,18 +171,31 @@ async function fetchFeaturedProgram(
   // Pravidlo: Den N se odemkne ve 4:00 ráno po dni, kdy byl D(N-1) splněn.
   //   - D1 je vždy dostupný (bez podmínky)
   //   - Program bez launch_date → vše odemčeno (admin/CEO)
+  //   - challenge_reset_at: lekce splněné před resetem se ignorují
   let nextLesson: AkademieLesson | null = null;
   let isAllCompleted = false;
 
   if (userId) {
-    const { data: lessonsRaw } = await supabase
-      .from('akademie_lessons')
-      .select('id, series_id, module_id, title, audio_url, duration_seconds, day_number, sort_order')
-      .eq('module_id', featuredRec.module_id)
-      .order('day_number', { ascending: true })
-      .order('sort_order', { ascending: true });
+    // Načti lekce + challenge_reset_at paralelně
+    const [lessonsRes, activeRes] = await Promise.all([
+      supabase
+        .from('akademie_lessons')
+        .select('id, series_id, module_id, title, audio_url, duration_seconds, day_number, sort_order')
+        .eq('module_id', featuredRec.module_id)
+        .order('day_number', { ascending: true })
+        .order('sort_order', { ascending: true }),
+      supabase
+        .from('user_active_program')
+        .select('challenge_reset_at')
+        .eq('user_id', userId)
+        .eq('module_id', featuredRec.module_id)
+        .maybeSingle(),
+    ]);
 
-    const lessons = (lessonsRaw ?? []) as RawLesson[];
+    const lessons = (lessonsRes.data ?? []) as RawLesson[];
+    const challengeResetAtDate = activeRes.data?.challenge_reset_at
+      ? new Date(activeRes.data.challenge_reset_at)
+      : null;
 
     const completedIds = new Set<string>();
     const completedAt = new Map<string, Date>(); // lesson_id → datum dokončení
@@ -197,6 +211,13 @@ async function fetchFeaturedProgram(
           completedAt.set(row.lesson_id, new Date(row.completed_at));
         }
       });
+    }
+
+    // Lekce splněné před resetem se ignorují pro účely gating řetězce
+    function isValidAfterReset(lessonId: string): boolean {
+      if (!challengeResetAtDate) return true;
+      const doneAt = completedAt.get(lessonId);
+      return doneAt !== undefined && doneAt >= challengeResetAtDate;
     }
 
     // Seskup lekce podle day_number
@@ -219,7 +240,9 @@ async function fetchFeaturedProgram(
         if (day === 1) { maxDay = 1; continue; }
         const prevDayLessons = lessonsByDay.get(day - 1) ?? [];
         if (prevDayLessons.length === 0) break;
-        const prevDayAllDone = prevDayLessons.every((l) => completedIds.has(l.id));
+        const prevDayAllDone = prevDayLessons.every(
+          (l) => completedIds.has(l.id) && isValidAfterReset(l.id),
+        );
         if (!prevDayAllDone) break;
         const lastCompletedAt = prevDayLessons.reduce<Date | null>((latest, l) => {
           const done = completedAt.get(l.id);
@@ -234,7 +257,9 @@ async function fetchFeaturedProgram(
         );
         // Pokud D(N) je již splněno → unlock time ignorujeme
         const currentDayLessons = lessonsByDay.get(day) ?? [];
-        const currentDayAllDone = currentDayLessons.every((l) => completedIds.has(l.id));
+        const currentDayAllDone = currentDayLessons.every(
+          (l) => completedIds.has(l.id) && isValidAfterReset(l.id),
+        );
         if (!currentDayAllDone && nowDate < unlockTime) break;
         maxDay = day;
       }
@@ -248,7 +273,8 @@ async function fetchFeaturedProgram(
 
     nextLesson = availableLessons.find((l) => !completedIds.has(l.id)) ?? null;
     isAllCompleted =
-      availableLessons.length > 0 && availableLessons.every((l) => completedIds.has(l.id));
+      availableLessons.length > 0 &&
+      availableLessons.every((l) => completedIds.has(l.id) && isValidAfterReset(l.id));
   }
 
   const programInfo: ActiveDailyProgramInfo = {
