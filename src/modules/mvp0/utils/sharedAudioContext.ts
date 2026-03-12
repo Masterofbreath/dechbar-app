@@ -37,6 +37,16 @@ export function getPlatformLabel(): string {
   return 'other';
 }
 
+/**
+ * Returns true only on iOS (Safari browser or PWA).
+ * Used to gate iOS-specific workarounds (pre-schedule, interrupted state handling)
+ * that should NOT run on desktop where JS timers work normally.
+ */
+export function isIOSPlatform(): boolean {
+  const ua = navigator.userAgent;
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 let _ctx: AudioContext | null = null;
 
 // Module-level playback guard — only ONE useBackgroundMusic instance may play at a time.
@@ -410,13 +420,17 @@ export function scheduleSharedTone(
     }
 
     if (ctx.state !== 'running') {
-      console.warn(`[SharedAudio] scheduleSharedTone: ctx state=${ctx.state} — not running, cannot schedule hz=${hz}`, { platform: getPlatformLabel(), currentTime: ctx.currentTime, delaySeconds });
-      // Attempt resume and schedule after — best-effort fallback for unexpected suspension.
+      console.warn(`[SharedAudio] scheduleSharedTone: ctx state=${ctx.state} — not running for hz=${hz}`, {
+        platform: getPlatformLabel(), currentTime: ctx.currentTime, delaySeconds,
+      });
+      // Fallback: attempt resume and play after — covers race conditions on desktop Safari
+      // where unlockSharedAudioContext() resume() hasn't resolved yet when first cue fires.
       if (ctx.state === 'suspended') {
         void ctx.resume().then(() => {
-          playToneOnContext(ctx, hz, duration, volume, isBell, delaySeconds + 0.015);
+          playToneOnContext(ctx, hz, duration, volume, isBell, Math.max(0.015, delaySeconds));
         });
       }
+      // For interrupted state — playSharedTone() handles recreation, don't drop silently
       return null;
     }
 

@@ -29,7 +29,7 @@ import { useHaptics } from '../../hooks/useHaptics';
 import { useShakeLock } from '../../hooks/useShakeLock';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
-import { unlockSharedAudioContext, getPlatformLabel, resumeSharedAudioContext, cancelAllScheduledCueNodes, getScheduledCueNodeCount } from '../../utils/sharedAudioContext';
+import { unlockSharedAudioContext, getPlatformLabel, resumeSharedAudioContext, cancelAllScheduledCueNodes, getScheduledCueNodeCount, isIOSPlatform } from '../../utils/sharedAudioContext';
 import { useBackgroundMusic, FADE_OUT_DURATION_MS } from '../../hooks/useBackgroundMusic';
 import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
@@ -399,6 +399,7 @@ export function SessionEngineModal({
   useEffect(() => {
     if (sessionState !== 'active') return;
     if (!continueWhenLocked) return;
+    if (!isIOSPlatform()) return; // desktop: JS timers work — pre-schedule not needed
 
     const phase = exercise.breathing_pattern.phases[currentPhaseIndex];
     if (!phase || phase.type !== 'breathing' || !phase.pattern) return;
@@ -418,6 +419,7 @@ export function SessionEngineModal({
   useEffect(() => {
     if (sessionState !== 'active') return;
     if (!continueWhenLocked) return;
+    if (!isIOSPlatform()) return; // desktop: visibilitychange doesn't freeze timers
 
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'hidden') {

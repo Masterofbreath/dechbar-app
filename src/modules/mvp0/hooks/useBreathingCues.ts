@@ -28,7 +28,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
-import { playSharedTone, scheduleSharedTone, scheduleSharedToneAsync, getSharedAudioContext } from '../utils/sharedAudioContext';
+import { playSharedTone, scheduleSharedTone, scheduleSharedToneAsync, getSharedAudioContext, isIOSPlatform } from '../utils/sharedAudioContext';
 import { getPlatformLabel } from '../utils/sharedAudioContext';
 import type { BreathingPhaseAudio } from '../types/audio';
 
@@ -430,6 +430,14 @@ export function useBreathingCues(options?: { isSmartSession?: boolean; isTronSes
   ): Promise<() => void> => {
     if (!effectiveCuesEnabled) {
       console.log('[BreathingCues] scheduleUpcomingCues skipped — cues disabled', { platform: getPlatformLabel() });
+      return () => {/* noop */};
+    }
+
+    // Pre-scheduling is only needed on iOS where JS timers are throttled when screen locks.
+    // On desktop (Safari, Chrome) timers run normally — playCue() fires at the right time.
+    // Skipping pre-schedule on desktop avoids race conditions with the regular playCue() flow.
+    if (!isIOSPlatform()) {
+      console.log('[BreathingCues] scheduleUpcomingCues skipped — not iOS (timers work normally)', { platform: getPlatformLabel() });
       return () => {/* noop */};
     }
 
