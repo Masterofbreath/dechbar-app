@@ -119,11 +119,21 @@ export function getSharedAudioContext(): AudioContext | null {
  * Resumes the shared context so subsequent audio calls (even async) work on
  * Safari / iOS / Capacitor.
  *
- * Also plays a 0-volume silent buffer on all existing HTMLAudioElements to
- * unlock the media pipeline — required for Safari autoplay policy.
+ * Handles all three non-running states:
+ *   - suspended   → ctx.resume() (standard path)
+ *   - interrupted → null _ctx, create fresh context, resume() it
+ *   - closed      → null _ctx, create fresh context (getSharedAudioContext() handles it)
  */
 export function unlockSharedAudioContext(): void {
   try {
+    // If interrupted, force-recreate the context before resuming.
+    // iOS sets 'interrupted' on lock screen / phone call — ctx.resume() alone
+    // does NOT transition it back to 'running'. A fresh context is required.
+    if (_ctx?.state === ('interrupted' as AudioContextState)) {
+      console.log('[SharedAudio] unlockSharedAudioContext: ctx interrupted — recreating', { platform: getPlatformLabel() });
+      _ctx = null; // force getSharedAudioContext() to create fresh one
+    }
+
     const ctx = getSharedAudioContext();
     if (!ctx) return;
 
@@ -135,6 +145,7 @@ export function unlockSharedAudioContext(): void {
     }
 
     // Play a 1-frame silent buffer — satisfies Safari's "audio was played" requirement
+    // Also works as a no-op heartbeat to keep the audio session alive on iOS PWA.
     const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
     const source = ctx.createBufferSource();
     source.buffer = buffer;
@@ -158,17 +169,26 @@ export function unlockSharedAudioContext(): void {
 /**
  * Force-resume the shared AudioContext after returning from background (lock screen / app switch).
  *
- * iOS suspends the AudioContext when the screen locks. When the user returns,
- * `visibilitychange` fires — call this immediately to wake the context so that
- * subsequent `playSharedTone` calls work without delay.
+ * iOS can set AudioContext to 'suspended' OR 'interrupted' on lock:
+ *   - suspended   → ctx.resume() suffices
+ *   - interrupted → must null _ctx and create a fresh context (resume() alone won't work)
  *
- * Returns a Promise that resolves when the context is running (or rejects on error).
+ * Returns a Promise that resolves when the context is running (best-effort).
  */
 export async function resumeSharedAudioContext(): Promise<void> {
   try {
+    // Handle interrupted state — same as in unlockSharedAudioContext
+    if (_ctx?.state === ('interrupted' as AudioContextState)) {
+      console.log('[SharedAudio] resumeSharedAudioContext: ctx interrupted — recreating', { platform: getPlatformLabel() });
+      _ctx = null;
+    }
+
     const ctx = getSharedAudioContext();
     if (!ctx) return;
-    if (ctx.state === 'running') return;
+    if (ctx.state === 'running') {
+      console.log('[SharedAudio] resumeSharedAudioContext: already running', { platform: getPlatformLabel() });
+      return;
+    }
 
     console.log('[SharedAudio] resumeSharedAudioContext — state was:', ctx.state, { platform: getPlatformLabel() });
     await ctx.resume();
@@ -183,6 +203,53 @@ export async function resumeSharedAudioContext(): Promise<void> {
     source.start(0);
   } catch (err) {
     console.warn('[SharedAudio] resumeSharedAudioContext failed:', err);
+  }
+}
+
+/**
+ * Like scheduleSharedTone() but async-safe — waits for ctx.resume() if context
+ * is suspended or interrupted before scheduling the tone.
+ *
+ * USE THIS for scheduling cues AFTER lock-screen recovery, where the context
+ * may still be in the process of resuming when visibilitychange fires.
+ *
+ * NOT suitable for synchronous gesture handlers — use scheduleSharedTone() there.
+ */
+export async function scheduleSharedToneAsync(
+  hz: number,
+  duration: number,
+  volume: number,
+  delaySeconds: number,
+  isBell = false,
+): Promise<(() => void) | null> {
+  try {
+    // Recreate if interrupted
+    if (_ctx?.state === ('interrupted' as AudioContextState)) {
+      _ctx = null;
+    }
+
+    const ctx = getSharedAudioContext();
+    if (!ctx) return null;
+
+    if (ctx.state !== 'running') {
+      console.log('[SharedAudio] scheduleSharedToneAsync: awaiting resume()', {
+        platform: getPlatformLabel(), ctxState: ctx.state, hz, delaySeconds,
+      });
+      await ctx.resume();
+    }
+
+    if (ctx.state !== 'running') {
+      console.warn('[SharedAudio] scheduleSharedToneAsync: ctx still not running after resume()', {
+        platform: getPlatformLabel(), ctxState: ctx.state,
+      });
+      return null;
+    }
+
+    const cancelFn = scheduleSharedTone(hz, duration, volume, Math.max(0.01, delaySeconds), isBell);
+    return cancelFn;
+  } catch (err) {
+    console.warn('[SharedAudio] scheduleSharedToneAsync failed:', err);
+    return null;
   }
 }
 

@@ -28,7 +28,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/platform/api/supabase';
 import { useSessionSettings } from '../stores/sessionSettingsStore';
 import { getCachedAudioFile, cacheAudioFile } from '../utils/audioCache';
-import { playSharedTone, scheduleSharedTone, getSharedAudioContext } from '../utils/sharedAudioContext';
+import { playSharedTone, scheduleSharedTone, scheduleSharedToneAsync, getSharedAudioContext } from '../utils/sharedAudioContext';
 import { getPlatformLabel } from '../utils/sharedAudioContext';
 import type { BreathingPhaseAudio } from '../types/audio';
 
@@ -65,15 +65,12 @@ interface BreathingCuesAPI {
    * the next N cues directly on the AudioContext timeline (which continues
    * running natively even when the screen is locked).
    *
-   * Call this:
-   *   1. At session start (schedule first ~30s of cues)
-   *   2. After returning from background (reschedule from current position)
-   *   3. Periodically to keep the horizon ahead
+   * Async-safe: awaits ctx.resume() if context is suspended/interrupted.
    *
    * @param cues  Array of { phase, delaySeconds } — relative to `Date.now()`
-   * @returns Cancel function to stop all scheduled cues (e.g. session abort)
+   * @returns Promise resolving to cancel function (aborts unplayed nodes)
    */
-  scheduleUpcomingCues: (cues: Array<{ phase: BreathingPhaseAudio; delaySeconds: number }>) => () => void;
+  scheduleUpcomingCues: (cues: Array<{ phase: BreathingPhaseAudio; delaySeconds: number }>) => Promise<() => void>;
   isReady: boolean;
 }
 
@@ -416,63 +413,66 @@ export function useBreathingCues(options?: { isSmartSession?: boolean; isTronSes
   /**
    * Pre-schedule an array of breathing cues via the Web Audio timeline.
    *
-   * Web Audio AudioNode playback is driven by the browser's native audio engine
-   * (C++ thread) — it continues even when iOS throttles/stops JS timers during
-   * screen lock or app backgrounding. This is the key fix for iOS background audio.
+   * KEY PROPERTY: Web Audio AudioNode playback is driven by the browser's native
+   * audio engine (C++ thread). Once scheduled, nodes fire regardless of whether
+   * JS timers are running — this is what makes cues work with a locked screen.
    *
-   * Each cue is scheduled at ctx.currentTime + delaySeconds. A cancel function
-   * is returned so the caller can abort all nodes if the session ends early.
+   * Async-safe: if AudioContext is suspended or interrupted (iOS lock screen),
+   * this function awaits resume() before scheduling — so calling it immediately
+   * after visibilitychange 'visible' always works even if the context isn't
+   * fully running yet.
    *
-   * Volume uses the current getVolumeScale() at scheduling time — this is a
-   * best-effort approximation since scale may change before the cue fires.
-   * For the use case (background recovery, ~30s horizon) this is acceptable.
+   * @param cues  Array of { phase, delaySeconds } — seconds from now
+   * @returns Promise resolving to a cancel function (aborts unplayed nodes)
    */
-  const scheduleUpcomingCues = useCallback((
+  const scheduleUpcomingCues = useCallback(async (
     cues: Array<{ phase: BreathingPhaseAudio; delaySeconds: number }>,
-  ): (() => void) => {
+  ): Promise<() => void> => {
     if (!effectiveCuesEnabled) {
       console.log('[BreathingCues] scheduleUpcomingCues skipped — cues disabled', { platform: getPlatformLabel() });
       return () => {/* noop */};
     }
 
-    const ctx = getSharedAudioContext();
-    if (!ctx || ctx.state !== 'running') {
-      console.warn('[BreathingCues] scheduleUpcomingCues: ctx not running, cannot pre-schedule', {
-        platform: getPlatformLabel(),
-        ctxState: ctx?.state ?? 'none',
-        count: cues.length,
-      });
-      return () => {/* noop */};
-    }
-
-    const cancelFns: Array<(() => void) | null> = [];
+    if (cues.length === 0) return () => {/* noop */};
 
     console.log('[BreathingCues] scheduleUpcomingCues', {
       platform: getPlatformLabel(),
       count: cues.length,
-      horizon: cues[cues.length - 1]?.delaySeconds ?? 0,
-      ctxCurrentTime: ctx.currentTime,
+      horizonSec: Math.round((cues[cues.length - 1]?.delaySeconds ?? 0)),
     });
 
-    for (const { phase, delaySeconds } of cues) {
-      if (delaySeconds < 0) continue; // skip past cues
+    const cancelFns: Array<(() => void)> = [];
 
-      const cueData = cueDataRef.current.get(phase);
-      if (!cueData?.generate_hz) {
-        // Only Web Audio (generate_hz) cues can be pre-scheduled — CDN cues cannot
-        continue;
-      }
+    // Use scheduleSharedToneAsync so each tone awaits ctx.resume() if needed.
+    // We schedule all cues in parallel (Promise.all) for efficiency.
+    const promises = cues
+      .filter(c => c.delaySeconds >= 0)
+      .map(async ({ phase, delaySeconds }) => {
+        const cueData = cueDataRef.current.get(phase);
+        if (!cueData?.generate_hz) return; // CDN cues cannot be pre-scheduled
 
-      const scale = getVolumeScale();
-      const volume = effectiveCueVolume * scale;
-      if (volume < 0.01) continue;
+        const scale = getVolumeScale();
+        const volume = effectiveCueVolume * scale;
+        if (volume < 0.01) return;
 
-      const cancelFn = scheduleSharedTone(cueData.generate_hz, 1.5, volume, Math.max(0.01, delaySeconds), false);
-      cancelFns.push(cancelFn);
-    }
+        const cancel = await scheduleSharedToneAsync(
+          cueData.generate_hz,
+          1.5,
+          volume,
+          delaySeconds,
+          false,
+        );
+        if (cancel) cancelFns.push(cancel);
+      });
+
+    await Promise.all(promises);
+
+    console.log('[BreathingCues] scheduleUpcomingCues done — scheduled', cancelFns.length, 'nodes', {
+      platform: getPlatformLabel(),
+    });
 
     return () => {
-      cancelFns.forEach(fn => fn?.());
+      cancelFns.forEach(fn => fn());
     };
   }, [effectiveCuesEnabled, effectiveCueVolume, getVolumeScale]);
 
