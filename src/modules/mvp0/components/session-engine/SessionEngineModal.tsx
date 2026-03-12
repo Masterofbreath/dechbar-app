@@ -29,8 +29,7 @@ import { useHaptics } from '../../hooks/useHaptics';
 import { useShakeLock } from '../../hooks/useShakeLock';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
-import { unlockSharedAudioContext, getPlatformLabel } from '../../utils/sharedAudioContext';
-import { resumeSharedAudioContext } from '../../utils/sharedAudioContext';
+import { unlockSharedAudioContext, getPlatformLabel, resumeSharedAudioContext, cancelAllScheduledCueNodes, getScheduledCueNodeCount } from '../../utils/sharedAudioContext';
 import { useBackgroundMusic, FADE_OUT_DURATION_MS } from '../../hooks/useBackgroundMusic';
 import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
@@ -296,11 +295,21 @@ export function SessionEngineModal({
   //   Web Audio timeline. AudioNodes fire from the native C++ scheduler — they
   //   continue even while iOS has suspended all JS (screen locked, app in bg).
   //
-  //   On unlock: AudioContext is resumed, cycleStartTime is corrected, and the
-  //   remaining cues for the current phase position are rescheduled as a top-up.
+  //   HOWEVER: iOS interrupts the AudioContext (state → 'interrupted') immediately
+  //   when screen locks. Nodes scheduled on an interrupted context NEVER fire.
+  //   We cannot fix this — iOS does not allow audio to play on a locked screen
+  //   without a background audio permission (only available in native apps with
+  //   Background Modes entitlement, not in Safari/PWA).
   //
-  // continueWhenLocked = false → skip pre-scheduling, no audio while locked
-  // continueWhenLocked = true  → full rolling pre-schedule (default)
+  //   WHAT WE CAN DO:
+  //     - On screen LOCK:    cancel stale nodes (they won't fire anyway)
+  //     - On screen UNLOCK:  resume context, reschedule remaining cues, correct timing
+  //
+  //   continueWhenLocked = false → skip pre-scheduling entirely
+  //   continueWhenLocked = true  → immediate reschedule on unlock (default)
+  //
+  //   NOTE for React Native (future): Capacitor with Audio Playback capability
+  //   CAN play audio in background — different code path needed there.
 
   const hiddenAtRef            = useRef<number | null>(null);
   const cancelPreScheduledRef  = useRef<(() => void) | null>(null);
@@ -345,6 +354,7 @@ export function SessionEngineModal({
     phasePattern: { inhale_seconds: number; hold_after_inhale_seconds: number; exhale_seconds: number; hold_after_exhale_seconds: number },
     remainingPhaseSec: number,
     elapsedInCycleSec: number,
+    reason: string,
   ) => {
     const patternSec = {
       inhale:  phasePattern.inhale_seconds,
@@ -356,17 +366,33 @@ export function SessionEngineModal({
     // +2s buffer so the last cue isn't cut off by timer jitter
     const schedule = buildCueSchedule(patternSec, remainingPhaseSec + 2, elapsedInCycleSec);
 
-    console.log('[BackgroundRecovery] pre-scheduling', schedule.length, 'cues for', Math.round(remainingPhaseSec), 's', {
+    console.log('[BackgroundRecovery] doRollingPreSchedule', {
       platform: getPlatformLabel(),
+      reason,
+      scheduleCount: schedule.length,
+      remainingPhaseSec: Math.round(remainingPhaseSec),
       elapsedInCycleSec: Math.round(elapsedInCycleSec * 10) / 10,
+      existingScheduledNodes: getScheduledCueNodeCount(),
     });
 
+    // Cancel any active pre-schedule — both the chain cancel fn AND global registry
     cancelPreScheduledRef.current?.();
     cancelPreScheduledRef.current = null;
+    cancelAllScheduledCueNodes();
+
+    if (schedule.length === 0) {
+      console.log('[BackgroundRecovery] doRollingPreSchedule: empty schedule — nothing to schedule', { platform: getPlatformLabel() });
+      return;
+    }
 
     const cancel = await breathingCues.scheduleUpcomingCues(schedule);
     cancelPreScheduledRef.current = cancel;
-   
+
+    console.log('[BackgroundRecovery] doRollingPreSchedule done', {
+      platform: getPlatformLabel(),
+      reason,
+      scheduledNodes: getScheduledCueNodeCount(),
+    });
   }, [breathingCues, buildCueSchedule]);
 
   // Trigger full pre-schedule when a breathing phase starts
@@ -377,11 +403,18 @@ export function SessionEngineModal({
     const phase = exercise.breathing_pattern.phases[currentPhaseIndex];
     if (!phase || phase.type !== 'breathing' || !phase.pattern) return;
 
-    void doRollingPreSchedule(phase.pattern, phase.duration_seconds, 0);
+    console.log('[BackgroundRecovery] new phase started — triggering pre-schedule', {
+      platform: getPlatformLabel(),
+      currentPhaseIndex,
+      phaseDuration: phase.duration_seconds,
+      phaseType: phase.type,
+    });
+
+    void doRollingPreSchedule(phase.pattern, phase.duration_seconds, 0, 'phase-start');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState, currentPhaseIndex, continueWhenLocked]);
 
-  // visibilitychange: on unlock, resume AudioContext + reschedule remaining cues
+  // visibilitychange: on LOCK → cancel dead nodes; on UNLOCK → reschedule from current position
   useEffect(() => {
     if (sessionState !== 'active') return;
     if (!continueWhenLocked) return;
@@ -389,38 +422,65 @@ export function SessionEngineModal({
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'hidden') {
         hiddenAtRef.current = Date.now();
-        // Don't cancel pre-scheduled nodes — they're already on the native audio timeline
-        // and will fire while the screen is locked. That's the whole point.
-        console.log('[BackgroundRecovery] screen locked — native audio timeline continues', {
+
+        // Cancel pre-scheduled nodes immediately — iOS will interrupt the AudioContext
+        // within milliseconds anyway, making these nodes dead. Cancelling now prevents
+        // them from firing with wrong timing after unlock if somehow the ctx survives.
+        cancelPreScheduledRef.current?.();
+        cancelPreScheduledRef.current = null;
+        cancelAllScheduledCueNodes();
+
+        console.log('[BackgroundRecovery] screen LOCKED — cancelled pre-scheduled nodes (iOS will interrupt ctx)', {
           platform: getPlatformLabel(),
+          remainingNodes: getScheduledCueNodeCount(),
         });
       } else if (document.visibilityState === 'visible') {
         const hiddenAt = hiddenAtRef.current;
         const elapsedMs = hiddenAt ? Date.now() - hiddenAt : 0;
         hiddenAtRef.current = null;
 
-        console.log('[BackgroundRecovery] screen unlocked — recovering', {
+        console.log('[BackgroundRecovery] screen UNLOCKED — starting recovery', {
           platform: getPlatformLabel(),
           elapsedMs,
+          sessionState,
+          currentPhaseIndex,
+          phaseTimeRemaining,
         });
 
-        // Wake AudioContext (suspended or interrupted after unlock)
+        // Step 1: Wake AudioContext (suspended or interrupted after unlock)
         await resumeSharedAudioContext();
 
-        // Advance cycleStartTime so breathing loop position is correct after unlock
+        // Step 2: Advance cycleStartTime so breathing loop position is correct after unlock
+        // (JS timers were frozen while locked — cycleStartTime is N seconds old)
         if (elapsedMs > 0) {
           cycleStartTimeRef.current = cycleStartTimeRef.current + elapsedMs;
+          console.log('[BackgroundRecovery] advanced cycleStartTime by', elapsedMs, 'ms', {
+            platform: getPlatformLabel(),
+          });
         }
 
-        // Reschedule remaining cues from current position in cycle
+        // Step 3: Reschedule remaining cues from current cycle position
         const phase = exercise.breathing_pattern.phases[currentPhaseIndex];
         if (phase?.type === 'breathing' && phase.pattern) {
           const { inhale_seconds, hold_after_inhale_seconds, exhale_seconds, hold_after_exhale_seconds } = phase.pattern;
           const cycleLen = inhale_seconds + hold_after_inhale_seconds + exhale_seconds + hold_after_exhale_seconds;
           const elapsedInCycleSec = cycleLen > 0 ? (elapsedMs / 1000) % cycleLen : 0;
-          const remainingSec = Math.max(phaseTimeRemaining, 5);
+          // Use phaseTimeRemaining if available (updated by JS loop) — fallback to 5s minimum
+          const remainingSec = Math.max(phaseTimeRemaining ?? 5, 5);
 
-          await doRollingPreSchedule(phase.pattern, remainingSec, elapsedInCycleSec);
+          console.log('[BackgroundRecovery] rescheduling cues after unlock', {
+            platform: getPlatformLabel(),
+            cycleLen,
+            elapsedInCycleSec: Math.round(elapsedInCycleSec * 10) / 10,
+            remainingSec,
+          });
+
+          await doRollingPreSchedule(phase.pattern, remainingSec, elapsedInCycleSec, 'unlock-recovery');
+        } else {
+          console.log('[BackgroundRecovery] no breathing phase at unlock — skipping reschedule', {
+            platform: getPlatformLabel(),
+            phaseType: phase?.type ?? 'none',
+          });
         }
       }
     };
@@ -430,11 +490,19 @@ export function SessionEngineModal({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionState, continueWhenLocked, exercise, currentPhaseIndex, phaseTimeRemaining]);
 
-  // Cancel all pre-scheduled nodes when session ends
+  // Cancel ALL pre-scheduled cue nodes when session ends — both chain cancel fn + global registry
   useEffect(() => {
     if (sessionState !== 'active') {
+      const nodesBefore = getScheduledCueNodeCount();
       cancelPreScheduledRef.current?.();
       cancelPreScheduledRef.current = null;
+      cancelAllScheduledCueNodes();
+      if (nodesBefore > 0) {
+        console.log('[BackgroundRecovery] session ended — cancelled', nodesBefore, 'scheduled cue nodes', {
+          platform: getPlatformLabel(),
+          sessionState,
+        });
+      }
     }
   }, [sessionState]);
   

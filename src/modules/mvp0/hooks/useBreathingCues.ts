@@ -472,6 +472,9 @@ export function useBreathingCues(options?: { isSmartSession?: boolean; isTronSes
     });
 
     return () => {
+      console.log('[BreathingCues] scheduleUpcomingCues CANCEL called —', cancelFns.length, 'nodes to stop', {
+        platform: getPlatformLabel(),
+      });
       cancelFns.forEach(fn => fn());
     };
   }, [effectiveCuesEnabled, effectiveCueVolume, getVolumeScale]);

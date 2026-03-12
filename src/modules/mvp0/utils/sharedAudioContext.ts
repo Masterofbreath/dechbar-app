@@ -54,6 +54,39 @@ export function releasePlayback(): void {
   _isAnyInstancePlaying = false;
 }
 
+// ─── Global registry of scheduled breathing cue nodes ────────────────────────
+// Every OscillatorNode created by scheduleSharedTone (for cues, not bells) is
+// registered here. cancelAllScheduledNodes() is the single reliable kill-switch
+// for all pre-scheduled cues — used when session ends or is abandoned.
+//
+// Bells (scheduleBells / scheduleSharedTone with isBell=true) are NOT registered
+// here — they have their own cancel functions via scheduleBells() return value.
+
+interface ScheduledNode {
+  osc: OscillatorNode;
+  gain: GainNode;
+  stopAt: number; // ctx.currentTime when node stops (for cleanup)
+}
+
+const _scheduledCueNodes: Set<ScheduledNode> = new Set();
+
+/** Cancel all pre-scheduled breathing cue nodes — call on session end/abandon. */
+export function cancelAllScheduledCueNodes(): void {
+  const count = _scheduledCueNodes.size;
+  console.log('[SharedAudio] cancelAllScheduledCueNodes —', count, 'nodes', { platform: getPlatformLabel() });
+  _scheduledCueNodes.forEach(({ osc, gain }) => {
+    try { osc.stop();        } catch { /* already stopped */ }
+    try { osc.disconnect();  } catch { /* already disconnected */ }
+    try { gain.disconnect(); } catch { /* already disconnected */ }
+  });
+  _scheduledCueNodes.clear();
+}
+
+/** How many cue nodes are currently scheduled (diagnostic). */
+export function getScheduledCueNodeCount(): number {
+  return _scheduledCueNodes.size;
+}
+
 // Listeners notified after each successful unlock — used by useBackgroundMusic
 // to retry play() when it was blocked by Safari autoplay policy.
 const _unlockListeners = new Set<() => void>();
@@ -90,21 +123,31 @@ export function getSharedAudioContext(): AudioContext | null {
       let _wasEverRunning = false;
       _ctx.addEventListener('statechange', () => {
         if (!_ctx) return;
-        if (_ctx.state === 'running') {
+        const newState = _ctx.state;
+        console.log('[SharedAudio] statechange →', newState, {
+          platform: getPlatformLabel(),
+          currentTime: _ctx.currentTime,
+          scheduledCueNodes: _scheduledCueNodes.size,
+        });
+        if (newState === 'running') {
           _wasEverRunning = true;
         }
         // Only auto-resume if context was already running before — this is a real interruption
         // (e.g. phone call), not the initial suspended-before-gesture state.
-        if (_ctx.state === 'suspended' && _wasEverRunning) {
+        if (newState === 'suspended' && _wasEverRunning) {
           console.log('[SharedAudio] statechange → suspended (was running) — auto-resuming', { platform: getPlatformLabel() });
           void _ctx.resume();
         }
-        // Oprava #4: Release singleton playback lock when context is interrupted/closed.
+        // Release singleton playback lock when context is interrupted/closed.
         // On iOS PWA, the context can be destroyed while music is playing.
-        // _isAnyInstancePlaying stays true → new play() is permanently blocked.
-        if (_ctx.state === 'closed' || _ctx.state === ('interrupted' as AudioContextState)) {
-          console.log('[SharedAudio] statechange → closed/interrupted — releasing playback lock', { state: _ctx.state, platform: getPlatformLabel() });
+        if (newState === 'closed' || newState === ('interrupted' as AudioContextState)) {
+          console.log('[SharedAudio] statechange → closed/interrupted — releasing playback lock + clearing scheduled nodes', {
+            state: newState, platform: getPlatformLabel(), scheduledCueNodes: _scheduledCueNodes.size,
+          });
           releasePlayback();
+          // Pre-scheduled nodes on this context are now dead — clear registry.
+          // They'll be rescheduled on new context when session resumes.
+          _scheduledCueNodes.clear();
         }
       });
     }
@@ -223,8 +266,11 @@ export async function scheduleSharedToneAsync(
   isBell = false,
 ): Promise<(() => void) | null> {
   try {
-    // Recreate if interrupted
+    // Recreate if interrupted — iOS sets 'interrupted' after lock; ctx.resume() won't work
     if (_ctx?.state === ('interrupted' as AudioContextState)) {
+      console.log('[SharedAudio] scheduleSharedToneAsync: ctx interrupted — recreating before schedule', {
+        platform: getPlatformLabel(), hz, delaySeconds,
+      });
       _ctx = null;
     }
 
@@ -234,13 +280,18 @@ export async function scheduleSharedToneAsync(
     if (ctx.state !== 'running') {
       console.log('[SharedAudio] scheduleSharedToneAsync: awaiting resume()', {
         platform: getPlatformLabel(), ctxState: ctx.state, hz, delaySeconds,
+        currentTime: ctx.currentTime,
       });
       await ctx.resume();
+      console.log('[SharedAudio] scheduleSharedToneAsync: after resume()', {
+        platform: getPlatformLabel(), ctxState: ctx.state, hz,
+        currentTime: ctx.currentTime,
+      });
     }
 
     if (ctx.state !== 'running') {
-      console.warn('[SharedAudio] scheduleSharedToneAsync: ctx still not running after resume()', {
-        platform: getPlatformLabel(), ctxState: ctx.state,
+      console.warn('[SharedAudio] scheduleSharedToneAsync: ctx still not running after resume() — DROPPING tone', {
+        platform: getPlatformLabel(), ctxState: ctx.state, hz, delaySeconds,
       });
       return null;
     }
@@ -401,9 +452,21 @@ export function scheduleSharedTone(
     osc.start(startAt);
     osc.stop(stopAt);
 
+    // Register non-bell cue nodes in global registry for cancelAllScheduledCueNodes()
+    const nodeEntry: ScheduledNode | null = !isBell ? { osc, gain, stopAt } : null;
+    if (nodeEntry) _scheduledCueNodes.add(nodeEntry);
+
+    // Auto-remove from registry when node naturally finishes
+    if (!isBell) {
+      osc.addEventListener('ended', () => {
+        if (nodeEntry) _scheduledCueNodes.delete(nodeEntry);
+      });
+    }
+
     // Return cancel function — disconnects node before it fires
     return () => {
       try {
+        if (nodeEntry) _scheduledCueNodes.delete(nodeEntry);
         osc.stop();
         osc.disconnect();
         gain.disconnect();
