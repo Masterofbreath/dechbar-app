@@ -57,6 +57,23 @@ interface BreathingCuesAPI {
   notifyCuePlayed: () => void;
   /** Call when session is entering last N cycles — triggers fade out */
   notifySessionEnding: (cyclesRemaining: number) => void;
+  /**
+   * Pre-schedule upcoming breathing cues via Web Audio timeline.
+   *
+   * iOS Safari throttles/stops setInterval when the screen locks, which prevents
+   * playCue() from being called at the right moment. This function schedules
+   * the next N cues directly on the AudioContext timeline (which continues
+   * running natively even when the screen is locked).
+   *
+   * Call this:
+   *   1. At session start (schedule first ~30s of cues)
+   *   2. After returning from background (reschedule from current position)
+   *   3. Periodically to keep the horizon ahead
+   *
+   * @param cues  Array of { phase, delaySeconds } — relative to `Date.now()`
+   * @returns Cancel function to stop all scheduled cues (e.g. session abort)
+   */
+  scheduleUpcomingCues: (cues: Array<{ phase: BreathingPhaseAudio; delaySeconds: number }>) => () => void;
   isReady: boolean;
 }
 
@@ -395,6 +412,70 @@ export function useBreathingCues(options?: { isSmartSession?: boolean; isTronSes
     };
   }, []);
 
+  // ─── scheduleUpcomingCues ─────────────────────────────────────────────────
+  /**
+   * Pre-schedule an array of breathing cues via the Web Audio timeline.
+   *
+   * Web Audio AudioNode playback is driven by the browser's native audio engine
+   * (C++ thread) — it continues even when iOS throttles/stops JS timers during
+   * screen lock or app backgrounding. This is the key fix for iOS background audio.
+   *
+   * Each cue is scheduled at ctx.currentTime + delaySeconds. A cancel function
+   * is returned so the caller can abort all nodes if the session ends early.
+   *
+   * Volume uses the current getVolumeScale() at scheduling time — this is a
+   * best-effort approximation since scale may change before the cue fires.
+   * For the use case (background recovery, ~30s horizon) this is acceptable.
+   */
+  const scheduleUpcomingCues = useCallback((
+    cues: Array<{ phase: BreathingPhaseAudio; delaySeconds: number }>,
+  ): (() => void) => {
+    if (!effectiveCuesEnabled) {
+      console.log('[BreathingCues] scheduleUpcomingCues skipped — cues disabled', { platform: getPlatformLabel() });
+      return () => {/* noop */};
+    }
+
+    const ctx = getSharedAudioContext();
+    if (!ctx || ctx.state !== 'running') {
+      console.warn('[BreathingCues] scheduleUpcomingCues: ctx not running, cannot pre-schedule', {
+        platform: getPlatformLabel(),
+        ctxState: ctx?.state ?? 'none',
+        count: cues.length,
+      });
+      return () => {/* noop */};
+    }
+
+    const cancelFns: Array<(() => void) | null> = [];
+
+    console.log('[BreathingCues] scheduleUpcomingCues', {
+      platform: getPlatformLabel(),
+      count: cues.length,
+      horizon: cues[cues.length - 1]?.delaySeconds ?? 0,
+      ctxCurrentTime: ctx.currentTime,
+    });
+
+    for (const { phase, delaySeconds } of cues) {
+      if (delaySeconds < 0) continue; // skip past cues
+
+      const cueData = cueDataRef.current.get(phase);
+      if (!cueData?.generate_hz) {
+        // Only Web Audio (generate_hz) cues can be pre-scheduled — CDN cues cannot
+        continue;
+      }
+
+      const scale = getVolumeScale();
+      const volume = effectiveCueVolume * scale;
+      if (volume < 0.01) continue;
+
+      const cancelFn = scheduleSharedTone(cueData.generate_hz, 1.5, volume, Math.max(0.01, delaySeconds), false);
+      cancelFns.push(cancelFn);
+    }
+
+    return () => {
+      cancelFns.forEach(fn => fn?.());
+    };
+  }, [effectiveCuesEnabled, effectiveCueVolume, getVolumeScale]);
+
   // ─── scheduleBells ────────────────────────────────────────────────────────
   /**
    * Pre-schedule the two SMART countdown start bells using the Web Audio timeline.
@@ -506,5 +587,5 @@ export function useBreathingCues(options?: { isSmartSession?: boolean; isTronSes
     };
   }, [effectiveBellsEnabled, effectiveCueVolume]);
 
-  return { playCue, playBell, scheduleBells, preloadAll, notifyCuePlayed, notifySessionEnding, isReady };
+  return { playCue, playBell, scheduleBells, scheduleUpcomingCues, preloadAll, notifyCuePlayed, notifySessionEnding, isReady };
 }

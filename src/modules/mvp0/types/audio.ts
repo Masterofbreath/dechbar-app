@@ -125,6 +125,9 @@ export interface SessionSettings {
   // Wake Lock
   keepScreenOn: boolean;
 
+  // Background recovery — pokračovat se zamčeným displejem
+  continueWhenLocked: boolean;
+
   // Vocal Guidance
   vocalGuidanceEnabled: boolean;
   selectedVoicePackId: string | null;
@@ -192,6 +195,8 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   walkingModeEnabled: false,
 
   keepScreenOn: true,
+
+  continueWhenLocked: true,
 
   vocalGuidanceEnabled: true,
   selectedVoicePackId: null,

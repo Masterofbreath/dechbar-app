@@ -156,6 +156,37 @@ export function unlockSharedAudioContext(): void {
 }
 
 /**
+ * Force-resume the shared AudioContext after returning from background (lock screen / app switch).
+ *
+ * iOS suspends the AudioContext when the screen locks. When the user returns,
+ * `visibilitychange` fires — call this immediately to wake the context so that
+ * subsequent `playSharedTone` calls work without delay.
+ *
+ * Returns a Promise that resolves when the context is running (or rejects on error).
+ */
+export async function resumeSharedAudioContext(): Promise<void> {
+  try {
+    const ctx = getSharedAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'running') return;
+
+    console.log('[SharedAudio] resumeSharedAudioContext — state was:', ctx.state, { platform: getPlatformLabel() });
+    await ctx.resume();
+    console.log('[SharedAudio] resumeSharedAudioContext — state now:', ctx.state, { platform: getPlatformLabel() });
+
+    // Play a silent 1-frame buffer to re-anchor the audio session to the active MediaSession
+    // (iOS resets the session association after lock-screen unlock)
+    const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0);
+  } catch (err) {
+    console.warn('[SharedAudio] resumeSharedAudioContext failed:', err);
+  }
+}
+
+/**
  * Play a generated tone using the shared AudioContext.
  * Safe to call from async contexts (setInterval, setTimeout, Promise.then)
  * AFTER unlockSharedAudioContext() was called from a user gesture.

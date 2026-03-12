@@ -552,7 +552,7 @@ export function SettingsPage() {
           </SettingsCard>
           )}
 
-          {/* Card 4: Doplňky — walking + keep screen on */}
+          {/* Card 4: Doplňky — walking + keep screen on + continue when locked */}
           <SettingsCard title="Doplňky" icon={<SlidersIcon />}>
             <Toggle
               label="Režim při chůzi"
@@ -575,6 +575,17 @@ export function SettingsPage() {
               {wakeLockSupported
                 ? 'Obrazovka zůstane zapnutá po celou dobu cvičení'
                 : 'Tato funkce není v tomto prohlížeči dostupná'}
+            </p>
+
+            <div className="settings-card__divider" />
+
+            <Toggle
+              label="Pokračovat se zamčeným displejem"
+              checked={settings.continueWhenLocked}
+              onChange={settings.setContinueWhenLocked}
+            />
+            <p className="settings-card__info settings-card__info--indent">
+              Zvukové signály a rytmus poběží dál i po zamčení telefonu. Ideální pro Cestu na trůn v kapse.
             </p>
           </SettingsCard>
 

@@ -30,6 +30,7 @@ import { useShakeLock } from '../../hooks/useShakeLock';
 import { useKPMeasurements } from '@/platform/api/useKPMeasurements';
 import { useBreathingCues } from '../../hooks/useBreathingCues';
 import { unlockSharedAudioContext, getPlatformLabel } from '../../utils/sharedAudioContext';
+import { resumeSharedAudioContext } from '../../utils/sharedAudioContext';
 import { useBackgroundMusic, FADE_OUT_DURATION_MS } from '../../hooks/useBackgroundMusic';
 import { useVocalGuidance } from '../../hooks/useVocalGuidance';
 import { useSessionSettings } from '../../stores/sessionSettingsStore';
@@ -170,6 +171,7 @@ export function SessionEngineModal({
     smartMusicEnabled, smartMusicSlug, smartMusicRandomEnabled, smartMusicVolume,
     tronMusicEnabled, tronMusicSlug, tronMusicRandomEnabled, tronMusicVolume,
     selectedTrackSlug,
+    continueWhenLocked,
   } = useSessionSettings();
 
   // NEW: Audio & Haptics system
@@ -286,6 +288,152 @@ export function SessionEngineModal({
       wakeLock.release();
     }
   }, [sessionState, keepScreenOn]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Background Recovery — iOS screen lock / app switch ──────────────────
+  //
+  // iOS Safari and PWA suspend JS timers (setInterval/setTimeout) when the
+  // screen is locked or the app is switched to background. This causes:
+  //   1. updateBreathingState (100ms interval) stops → no playCue() calls
+  //   2. AudioContext is suspended → playSharedTone() silently drops tones
+  //   3. After unlock, cycleStartTime is stale → breathing position is wrong
+  //
+  // Fix strategy:
+  //   hidden  → record hiddenAt timestamp + cancel scheduled pre-schedule
+  //   visible → resume AudioContext + compute elapsed time + advance
+  //             cycleStartTime + re-schedule next 40s of cues via Web Audio
+  //             (Web Audio timeline runs natively, unaffected by JS throttling)
+  //
+  // continueWhenLocked = false → treat hidden as session pause (no audio while locked)
+  // continueWhenLocked = true  → full recovery (default)
+
+  // Ref shared between visibilitychange handler and pre-schedule effect
+  const hiddenAtRef            = useRef<number | null>(null);
+  // Ref to cancel currently active pre-scheduled cues batch
+  const cancelPreScheduledRef  = useRef<(() => void) | null>(null);
+  // cycleStartTime ref shared with breathing loop — we need to advance it after unlock
+  const cycleStartTimeRef      = useRef<number>(0); // ms, mirrors cycleStartTime inside the loop
+
+  // Helper: build next N seconds of cues starting from relativeOffsetSec
+  const buildCueSchedule = useCallback((
+    patternSec: { inhale: number; holdIn: number; exhale: number; holdOut: number },
+    horizonSec: number,
+    offsetSec: number,
+  ): Array<{ phase: 'inhale' | 'exhale' | 'hold'; delaySeconds: number }> => {
+    const { inhale, holdIn, exhale, holdOut } = patternSec;
+    const cycle = inhale + holdIn + exhale + holdOut;
+    if (cycle <= 0) return [];
+
+    const result: Array<{ phase: 'inhale' | 'exhale' | 'hold'; delaySeconds: number }> = [];
+    const t = offsetSec; // current position within first cycle (carry-over)
+
+    // Normalize t to within one cycle
+    const cycleOffset = t % cycle;
+    let base = offsetSec - cycleOffset;
+
+    // Walk through cycles until we fill the horizon
+    while (base - offsetSec < horizonSec) {
+      const cueInhale   = base;
+      const cueHoldIn   = base + inhale;
+      const cueExhale   = base + inhale + holdIn;
+      const cueHoldOut  = base + inhale + holdIn + exhale;
+
+      if (cueInhale   >= offsetSec && cueInhale   - offsetSec < horizonSec) result.push({ phase: 'inhale',  delaySeconds: cueInhale   - offsetSec });
+      if (holdIn > 0 && cueHoldIn  >= offsetSec && cueHoldIn  - offsetSec < horizonSec) result.push({ phase: 'hold',    delaySeconds: cueHoldIn   - offsetSec });
+      if (cueExhale   >= offsetSec && cueExhale   - offsetSec < horizonSec) result.push({ phase: 'exhale',  delaySeconds: cueExhale   - offsetSec });
+      if (holdOut > 0 && cueHoldOut >= offsetSec && cueHoldOut - offsetSec < horizonSec) result.push({ phase: 'hold',    delaySeconds: cueHoldOut  - offsetSec });
+
+      base += cycle;
+    }
+
+    return result.sort((a, b) => a.delaySeconds - b.delaySeconds);
+  }, []);
+
+  useEffect(() => {
+    if (sessionState !== 'active') return;
+    if (!continueWhenLocked) return;
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAtRef.current = Date.now();
+
+        // Cancel any pending pre-scheduled cues — they'll be rescheduled on unlock
+        // with correct timing relative to the resumed position
+        cancelPreScheduledRef.current?.();
+        cancelPreScheduledRef.current = null;
+
+        console.log('[BackgroundRecovery] screen hidden — pausing pre-schedule', {
+          platform: getPlatformLabel(),
+          sessionState,
+          hiddenAt: hiddenAtRef.current,
+        });
+      } else if (document.visibilityState === 'visible') {
+        const hiddenAt = hiddenAtRef.current;
+        const elapsedMs = hiddenAt ? Date.now() - hiddenAt : 0;
+        hiddenAtRef.current = null;
+
+        console.log('[BackgroundRecovery] screen visible — recovering', {
+          platform: getPlatformLabel(),
+          elapsedMs,
+          sessionState,
+        });
+
+        // Step 1: Wake up AudioContext (iOS suspends it on lock)
+        await resumeSharedAudioContext();
+
+        // Step 2: Advance cycleStartTime to compensate for elapsed time
+        // The breathing interval uses cycleStartTime to compute `elapsed` position.
+        // After lock, cycleStartTime is N seconds old → elapsed is huge → cycle logic breaks.
+        // We advance it forward by elapsedMs so the next interval tick sees correct position.
+        if (elapsedMs > 0) {
+          cycleStartTimeRef.current = cycleStartTimeRef.current + elapsedMs;
+          console.log('[BackgroundRecovery] advanced cycleStartTime by', elapsedMs, 'ms');
+        }
+
+        // Step 3: Re-schedule next 40s of cues via Web Audio timeline
+        // This ensures cues play even if JS timers are still recovering/throttled
+        // Web Audio scheduler runs natively — unaffected by JS throttling
+        const phase = exercise.breathing_pattern.phases[currentPhaseIndex];
+        if (phase?.type === 'breathing' && phase.pattern) {
+          const { inhale_seconds, hold_after_inhale_seconds, exhale_seconds, hold_after_exhale_seconds } = phase.pattern;
+          const patternSec = {
+            inhale:   inhale_seconds,
+            holdIn:   hold_after_inhale_seconds,
+            exhale:   exhale_seconds,
+            holdOut:  hold_after_exhale_seconds,
+          };
+
+          // Offset: how far into the current cycle we are (approx — from elapsed time)
+          const cycleLen = inhale_seconds + hold_after_inhale_seconds + exhale_seconds + hold_after_exhale_seconds;
+          const cycleOffset = cycleLen > 0 ? (elapsedMs / 1000) % cycleLen : 0;
+
+          const schedule = buildCueSchedule(patternSec, 40, cycleOffset);
+
+          console.log('[BackgroundRecovery] rescheduling', schedule.length, 'cues over next 40s', {
+            platform: getPlatformLabel(),
+            patternSec,
+            cycleOffset,
+          });
+
+          const cancel = breathingCues.scheduleUpcomingCues(schedule);
+          cancelPreScheduledRef.current = cancel;
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState, continueWhenLocked, exercise, currentPhaseIndex]);
+
+  // Cleanup pre-scheduled cues when session ends
+  useEffect(() => {
+    if (sessionState !== 'active') {
+      cancelPreScheduledRef.current?.();
+      cancelPreScheduledRef.current = null;
+    }
+  }, [sessionState]);
   
   // Preload breathing cues + vocal snippets when modal opens.
   // Previously ran on mount — but SessionEngineModal is always mounted (tab carousel pre-renders
@@ -514,7 +662,7 @@ export function SessionEngineModal({
 
     // Trigger music synchronously within the gesture so Safari grants autoplay token.
     triggerMusicForSession();
-  }, [unlockAudio, intensityControl, triggerMusicForSession, smartConfigAdjusted, exercise]);
+  }, [unlockAudio, intensityControl, triggerMusicForSession, smartConfigAdjusted, exercise]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // TRON: skip countdown — bells are played inside TronPrepState. No background music.
   const startTronSession = useCallback(() => {
@@ -693,6 +841,8 @@ export function SessionEngineModal({
       // Cycle tracking: apply multiplier at cycle boundaries (not mid-cycle)
       // This avoids jarring rhythm changes while preserving smooth animation.
       let cycleStartTime = Date.now();
+      // Sync with ref so visibilitychange recovery can advance this on unlock
+      cycleStartTimeRef.current = cycleStartTime;
       let localMultiplier = intensityControl.pendingMultiplierRef.current;
       
       // TRON MODE: multiplier only affects holdExhale phase — inhale and exhale stay fixed at 3s
@@ -727,6 +877,13 @@ export function SessionEngineModal({
           ? Math.max(1, Math.round(hold_after_exhale_seconds * localMultiplier * 10) / 10)
           : hold_after_exhale_seconds * localMultiplier;
         const effCycle = effInhale + effHoldIn + effExhale + effHoldOut;
+
+        // Background recovery: if cycleStartTimeRef was advanced by visibilitychange handler
+        // (after screen unlock), apply the correction to local cycleStartTime so elapsed
+        // position is correct after returning from lock screen.
+        if (cycleStartTimeRef.current !== cycleStartTime) {
+          cycleStartTime = cycleStartTimeRef.current;
+        }
 
         const elapsed = (Date.now() - cycleStartTime) / 1000;
         const elapsedMs = elapsed * 1000;
@@ -768,6 +925,7 @@ export function SessionEngineModal({
         // Cycle boundary: promote pending multiplier and reset cycle clock
         if (elapsed >= effCycle) {
           cycleStartTime = Date.now();
+          cycleStartTimeRef.current = cycleStartTime; // keep ref in sync for background recovery
           localMultiplier = intensityControl.pendingMultiplierRef.current;
           intensityControl.multiplierRef.current = localMultiplier;
           currentCyclePosition = 0;
