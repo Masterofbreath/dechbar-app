@@ -49,6 +49,8 @@ export interface SmartRecommendationRow {
   preferred_duration_seconds: number;
   time_context: string;
   phase_profile: string;
+  /** Set by useResetSmartProgress — sessions before this timestamp are ignored for BIE */
+  reset_at: string | null;
 }
 
 export interface UseSmartExerciseReturn {
@@ -64,7 +66,8 @@ export interface UseSmartExerciseReturn {
 
 export const smartKeys = {
   recommendation: (userId: string) => ['smart-recommendation', userId] as const,
-  history: (userId: string) => ['smart-history', userId] as const,
+  // reset_at included in key — ensures history re-fetches when user resets SMART progress
+  history: (userId: string, resetAt?: string | null) => ['smart-history', userId, resetAt ?? 'none'] as const,
 };
 
 // =====================================================
@@ -99,18 +102,21 @@ export function useSmartExercise(): UseSmartExerciseReturn {
   });
 
   // Fetch SMART session history (last 7, most recent first) + real session count
-  // session_count_smart in cache can be stale/zero — always use real count from exercise_sessions
+  // session_count_smart in cache can be stale/zero — always use real count from exercise_sessions.
+  // After a soft-reset, only sessions AFTER reset_at count — history before is a previous epoch.
   const {
     data: smartHistoryData,
     isLoading: historyLoading,
     error: historyError,
   } = useQuery({
-    queryKey: smartKeys.history(user?.id ?? ''),
+    queryKey: smartKeys.history(user?.id ?? '', cachedRec?.reset_at),
     queryFn: async () => {
       if (!user) return { history: [] as SmartSessionHistory[], realCount: 0 };
 
+      const resetAt = cachedRec?.reset_at ?? null;
+
       // Fetch last 7 for BIE Tier 4 + total count in one query (limit 7 but count all)
-      const { data, count } = await supabase
+      let query = supabase
         .from('exercise_sessions')
         .select('final_intensity_multiplier, difficulty_rating, was_completed, started_at, smart_context', { count: 'exact' })
         .eq('user_id', user.id)
@@ -119,12 +125,20 @@ export function useSmartExercise(): UseSmartExerciseReturn {
         .order('started_at', { ascending: false })
         .limit(7);
 
+      // After soft-reset: ignore sessions from previous epoch
+      if (resetAt) {
+        query = query.gte('started_at', resetAt);
+      }
+
+      const { data, count } = await query;
+
       return {
         history: (data ?? []) as SmartSessionHistory[],
         realCount: count ?? 0,
       };
     },
-    enabled: !!user,
+    // Re-run when cachedRec changes (e.g. after reset) so reset_at is picked up
+    enabled: !!user && !recLoading,
   });
 
   const smartHistory = smartHistoryData?.history ?? [];
