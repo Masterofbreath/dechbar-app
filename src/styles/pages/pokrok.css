@@ -3,6 +3,10 @@
    Apple Premium Style — dark theme, BEM, no Tailwind
    ============================================================ */
 
+.pokrok-page__root {
+  display: contents;
+}
+
 .pokrok-page {
   padding: 20px 20px 120px;
   color: #f0f0f0;

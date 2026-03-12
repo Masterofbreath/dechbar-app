@@ -13,7 +13,7 @@
  * @subpackage MVP0/Pages
  */
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useUserPokrokStats, getDaysSinceRegistration, useAllTimeMinutes } from '@/platform/analytics';
 import { formatMinutes, getActivityLevel } from '@/platform/analytics';
 import { usePokrokRealtime } from '@/platform/analytics/hooks/usePokrokRealtime';
@@ -292,6 +292,18 @@ export function PokrokPage() {
   const userId = useAuthStore((s) => s.user?.id);
   const { openKPDetail } = useNavigation();
 
+  // Ref na wrapper — pro scrollování nadřazeného .tab-carousel__page při přepnutí tabu
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  const switchTab = useCallback((tab: 'prehled' | 'komunita' | 'top10') => {
+    setPokrokTab(tab);
+    // Najdeme nejbližší scrollovatelný .tab-carousel__page ancestor a scrollneme nahoru.
+    // Spolehlivější než document.querySelector('.tab-carousel__page:nth-child(4)') který
+    // může selhat při hydration race nebo pokud se pořadí stránek změní.
+    const scrollContainer = pageRef.current?.closest('.tab-carousel__page') as HTMLElement | null;
+    scrollContainer?.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   // Real-time invalidace při změně session
   usePokrokRealtime(userId);
 
@@ -341,7 +353,7 @@ export function PokrokPage() {
   }
 
   return (
-    <>
+    <div ref={pageRef} className="pokrok-page__root">
       {/* Sticky header — title + tab navigation together */}
       <div className="pokrok-page__sticky-header">
         <div className="pokrok-page__page-header">
@@ -358,10 +370,7 @@ export function PokrokPage() {
             <button
               key={tab.key}
               className={`pokrok-page__tab${pokrokTab === tab.key ? ' pokrok-page__tab--active' : ''}`}
-              onClick={() => {
-                setPokrokTab(tab.key as 'prehled' | 'komunita' | 'top10');
-                document.querySelector('.tab-carousel__page:nth-child(4)')?.scrollTo({ top: 0, behavior: 'instant' });
-              }}
+              onClick={() => switchTab(tab.key as 'prehled' | 'komunita' | 'top10')}
               role="tab"
               aria-selected={pokrokTab === tab.key}
               type="button"
@@ -537,6 +546,6 @@ export function PokrokPage() {
 
       </div>
       </div> {/* end prehled tab panel */}
-    </>
+    </div>
   );
 }
