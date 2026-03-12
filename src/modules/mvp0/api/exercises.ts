@@ -355,6 +355,7 @@ export function useCompleteSession() {
           mood_before: payload.mood_before || null,
           mood_after: payload.mood_after || null,
           quality_rating: payload.quality_rating || null,
+          difficulty_rating: payload.difficulty_rating || null,
           notes: payload.notes || null,
           final_intensity_multiplier: payload.final_intensity_multiplier ?? 1.0,
           session_type: payload.session_type ?? 'preset',

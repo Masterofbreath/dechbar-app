@@ -105,12 +105,6 @@ function getTimeContext(hour?: number): SmartTimeContext {
   return 'night';
 }
 
-function getDaysSince(isoDate: string | null): number | null {
-  if (!isoDate) return null;
-  const ms = Date.now() - new Date(isoDate).getTime();
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
-}
-
 function clampLevel(level: number, min = 1, max = 21): number {
   return Math.max(min, Math.min(max, Math.round(level)));
 }
@@ -261,27 +255,29 @@ function applyTier4SessionIntelligence(
   return { levelDelta: 0, reason: 'stable' };
 }
 
-/** TIER 5: Progression Gate — rate-limit advancement */
+/** TIER 5: Progression Gate — require 3 consecutive high-performance sessions */
 function applyTier5ProgressionGate(
   levelDelta: number,
-  lastLevelChangeAt: string | null,
-  streak: number,
+  history: SmartSessionHistory[],
 ): number {
   if (levelDelta <= 0) return levelDelta; // decreases always pass immediately
 
-  const daysSince = getDaysSince(lastLevelChangeAt);
+  // For level-up: require last 3 completed sessions to all qualify (high multiplier or easy)
+  const last3Completed = history
+    .filter((s) => s.was_completed)
+    .slice(0, 3);
 
-  // First-time or no record: allow
-  if (daysSince === null) return levelDelta;
-
-  // Minimum days between level-ups depends on training frequency
-  const minDays = streak >= 5 ? 2 : 7;
-
-  if (daysSince < minDays) {
-    return 0; // Too soon — hold at current level
+  if (last3Completed.length < 3) {
+    return 0; // Not enough sessions yet to confirm consistent performance
   }
 
-  return levelDelta; // max +1 enforced by Tier 4 returning exactly +1
+  const allStrong = last3Completed.every(
+    (s) =>
+      (s.final_intensity_multiplier !== null && s.final_intensity_multiplier >= 1.25) ||
+      s.difficulty_rating === 1,
+  );
+
+  return allStrong ? levelDelta : 0;
 }
 
 /** TIER 6: Behavioral Preference — nudge phase profile */
@@ -346,8 +342,8 @@ function computeSmartSessionUnsafe(input: BIEInput): SmartSessionConfig {
     smartHistory,
     sessionCountSmart,
     currentLevel,
-    lastLevelChangeAt,
-    streak,
+    lastLevelChangeAt: _lastLevelChangeAt,
+    streak: _streak,
     smartDurationMode,
   } = input;
 
@@ -386,7 +382,7 @@ function computeSmartSessionUnsafe(input: BIEInput): SmartSessionConfig {
   const t4 = applyTier4SessionIntelligence(smartHistory, currentLevel);
 
   // TIER 5 — Progression Gate
-  const gatedDelta = applyTier5ProgressionGate(t4.levelDelta, lastLevelChangeAt, streak);
+  const gatedDelta = applyTier5ProgressionGate(t4.levelDelta, smartHistory);
 
   // Compute target level
   const targetLevel = clampLevel(currentLevel + gatedDelta + t3.targetLevelAdjust, 1, tierMaxLevel);
@@ -428,7 +424,7 @@ function computeSmartSessionUnsafe(input: BIEInput): SmartSessionConfig {
   }
 
   // Duration
-  let totalDuration = resolveDuration(smartDurationMode, timeContext, streak);
+  let totalDuration = resolveDuration(smartDurationMode, timeContext, _streak);
   if (tierMaxDuration !== null) {
     totalDuration = Math.min(totalDuration, tierMaxDuration);
   }

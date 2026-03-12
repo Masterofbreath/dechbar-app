@@ -98,26 +98,38 @@ export function useSmartExercise(): UseSmartExerciseReturn {
     staleTime: 5 * 60 * 1000, // re-fetch every 5 min to detect TTL expiry
   });
 
-  // Fetch SMART session history (last 7, most recent first)
+  // Fetch SMART session history (last 7, most recent first) + real session count
+  // session_count_smart in cache can be stale/zero — always use real count from exercise_sessions
   const {
-    data: smartHistory,
+    data: smartHistoryData,
     isLoading: historyLoading,
     error: historyError,
   } = useQuery({
     queryKey: smartKeys.history(user?.id ?? ''),
     queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
+      if (!user) return { history: [] as SmartSessionHistory[], realCount: 0 };
+
+      // Fetch last 7 for BIE Tier 4 + total count in one query (limit 7 but count all)
+      const { data, count } = await supabase
         .from('exercise_sessions')
-        .select('final_intensity_multiplier, difficulty_rating, was_completed, started_at, smart_context')
+        .select('final_intensity_multiplier, difficulty_rating, was_completed, started_at, smart_context', { count: 'exact' })
         .eq('user_id', user.id)
         .eq('session_type', 'smart')
+        .eq('was_completed', true)
         .order('started_at', { ascending: false })
         .limit(7);
-      return (data ?? []) as SmartSessionHistory[];
+
+      return {
+        history: (data ?? []) as SmartSessionHistory[],
+        realCount: count ?? 0,
+      };
     },
     enabled: !!user,
   });
+
+  const smartHistory = smartHistoryData?.history ?? [];
+  // Real session count — source of truth for BIE calibration phase and SmartPrepState dots
+  const realSessionCount = smartHistoryData?.realCount ?? 0;
 
   // Fetch current streak — needed for Tier 5 Progression Gate (daily users get 2-day gate, others 7)
   const { data: currentStreak } = useQuery({
@@ -150,51 +162,51 @@ export function useSmartExercise(): UseSmartExerciseReturn {
       throw new Error('Authentication required');
     }
 
+    // Use real session count from exercise_sessions — cache counter can be stale/zero.
+    // This ensures BIE always knows the actual calibration progress.
+    const sessionCount = realSessionCount;
+    const prevLevel = cachedRec?.current_level ?? 3;
+
     // Check cache validity:
     // - recalculate_after > now (TTL not expired)
-    // - session_count_smart > 0 (not a fresh reset — after soft-reset this is 0)
-    // After a soft-reset, cachedRec exists but session_count_smart=0 and
-    // recalculate_after=now (expired), so we always fall through to fresh compute → cold start.
+    // - real session count > 0 (not a fresh start)
     const now = new Date().toISOString();
     const cacheHit =
       cachedRec !== null &&
       cachedRec !== undefined &&
       cachedRec.recalculate_after !== null &&
       cachedRec.recalculate_after > now &&
-      (cachedRec.session_count_smart ?? 0) > 0;
+      sessionCount > 0;
 
     let config: SmartSessionConfig;
 
     if (cacheHit && cachedRec) {
-      // Level + session count from cache — but always recompute basePattern via BIE
-      // because time context (night/day) changes dynamically throughout the day.
+      // Cache valid — recompute only time-sensitive parts (time context changes during the day)
       const input: BIEInput = {
         safetyFlags: safetyFlags ?? null,
         latestKP: currentKP ?? null,
         smartHistory: smartHistory ?? [],
-        sessionCountSmart: cachedRec.session_count_smart ?? 0,
+        sessionCountSmart: sessionCount,
         currentLevel: cachedRec.current_level ?? 3,
         lastLevelChangeAt: cachedRec.last_level_change_at ?? null,
         streak: currentStreak ?? 0,
         smartDurationMode,
       };
       const freshConfig = computeSmartSession(input);
-      // Override level back to cached value — only pattern + context gets refreshed
+      // Level stays from cache — only pattern + context refreshed
       config = {
         ...freshConfig,
         level: cachedRec.current_level ?? freshConfig.level,
+        sessionCountSmart: sessionCount,
         cacheValid: true,
       };
     } else {
-      // Compute fresh — either cache expired, first run, or after soft-reset (session_count=0)
-      // After soft-reset: cachedRec.current_level=3 and session_count_smart=0 → BIE cold start
-      const prevLevel = cachedRec?.current_level ?? 3;
-      const prevSessionCount = cachedRec?.session_count_smart ?? 0;
+      // Cache expired or first run — full BIE computation with real session count
       const input: BIEInput = {
         safetyFlags: safetyFlags ?? null,
         latestKP: currentKP ?? null,
         smartHistory: smartHistory ?? [],
-        sessionCountSmart: prevSessionCount,
+        sessionCountSmart: sessionCount,
         currentLevel: prevLevel,
         lastLevelChangeAt: cachedRec?.last_level_change_at ?? null,
         streak: currentStreak ?? 0,
@@ -203,12 +215,8 @@ export function useSmartExercise(): UseSmartExerciseReturn {
 
       config = computeSmartSession(input);
 
-      // Persist computed config to cache (upsert)
-      // IMPORTANT: current_level is NOT updated here — level changes only after a completed session.
-      // This prevents level from jumping just by opening the SMART exercise screen.
-      // Level is applied in DB by updateSmartLevelAfterSession() called from SessionEngineModal.
+      // Persist to cache — current_level is NOT updated here (only after completed session)
       try {
-        // Always persist base rhythm from BREATH_LEVELS for the *current* (unchanged) level.
         const baseLevelData = getBreathLevel(prevLevel);
 
         const { error: upsertError } = await supabase.from('smart_exercise_recommendations').upsert({
@@ -218,19 +226,19 @@ export function useSmartExercise(): UseSmartExerciseReturn {
           recommended_exhale_s: baseLevelData.exhale,
           recommended_hold_after_exhale_s: baseLevelData.holdExhale,
           confidence_score: config.confidenceScore,
-          data_points_count: config.sessionCountSmart,
+          data_points_count: sessionCount,
           is_ready: config.confidenceScore >= 0.7,
           recalculate_after: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           last_calculated_at: now,
           current_level: prevLevel,
-          session_count_smart: config.sessionCountSmart,          preferred_duration_seconds: config.totalDurationSeconds,
+          session_count_smart: sessionCount,
+          preferred_duration_seconds: config.totalDurationSeconds,
           time_context: config.timeContext,
           phase_profile: config.phaseProfile,
         }, { onConflict: 'user_id' });
 
         if (upsertError) throw upsertError;
 
-        // Invalidate cache queries to reflect new data
         await queryClient.invalidateQueries({
           queryKey: smartKeys.recommendation(user.id),
         });
@@ -241,12 +249,13 @@ export function useSmartExercise(): UseSmartExerciseReturn {
 
     const exercise = buildSmartExercise(config);
     return { config, exercise };
-  }, [user, cachedRec, safetyFlags, currentKP, smartHistory, currentStreak, smartDurationMode, queryClient]);
+  }, [user, cachedRec, realSessionCount, safetyFlags, currentKP, smartHistory, currentStreak, smartDurationMode, queryClient]);
 
   return {
     computeAndBuild,
     isLoading,
     error: error as Error | null,
+    realSessionCount,
   };
 }
 

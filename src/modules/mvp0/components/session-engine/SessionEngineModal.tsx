@@ -167,6 +167,7 @@ export function SessionEngineModal({
   
   const { walkingModeEnabled, backgroundMusicEnabled, keepScreenOn, vocalGuidanceEnabled, selectedVoicePackId, vocalVolume, backgroundMusicRandomEnabled,
     smartMusicEnabled, smartMusicSlug, smartMusicRandomEnabled, smartMusicVolume,
+    tronMusicEnabled, tronMusicSlug, tronMusicRandomEnabled, tronMusicVolume,
     selectedTrackSlug,
   } = useSessionSettings();
 
@@ -174,7 +175,11 @@ export function SessionEngineModal({
   const haptics = useHaptics();
   const breathingCues = useBreathingCues({ isSmartSession: !!smartConfig, isTronSession: !!tronConfig });
   const backgroundMusic = useBackgroundMusic({
-    volumeOverride: sessionTypeRef.current === 'smart' ? smartMusicVolume : undefined,
+    volumeOverride: sessionTypeRef.current === 'smart'
+      ? smartMusicVolume
+      : sessionTypeRef.current === 'tron'
+        ? tronMusicVolume
+        : undefined,
     isActive: isOpen,
   });
 
@@ -301,6 +306,9 @@ export function SessionEngineModal({
     const isSmartSession = sessionTypeRef.current === 'smart';
     if (isSmartSession) return; // SMART handled by startSmartSession()
 
+    const isTronSession = sessionTypeRef.current === 'tron';
+    if (isTronSession) return; // Trůn handled by startTronSession() — uses tronMusicEnabled, not backgroundMusicEnabled
+
     const musicEnabled = backgroundMusicEnabled;
     const randomEnabled = backgroundMusicRandomEnabled;
     const fixedSlug = selectedTrackSlug;
@@ -399,24 +407,26 @@ export function SessionEngineModal({
     const isSmartSession = sessionTypeRef.current === 'smart';
     const isTronSession = sessionTypeRef.current === 'tron';
 
-    // Trůn never plays music — cues only (maximum attention on breathing rhythm)
-    if (isTronSession) return;
-
-    const musicEnabled = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
+    const musicEnabled = isSmartSession
+      ? smartMusicEnabled
+      : isTronSession
+        ? tronMusicEnabled
+        : backgroundMusicEnabled;
 
     console.log('[Session] triggerMusicForSession', {
       platform: getPlatformLabel(),
       isSmartSession,
+      isTronSession,
       musicEnabled,
-      randomEnabled: isSmartSession ? smartMusicRandomEnabled : backgroundMusicRandomEnabled,
-      fixedSlug: isSmartSession ? smartMusicSlug : selectedTrackSlug,
+      randomEnabled: isSmartSession ? smartMusicRandomEnabled : isTronSession ? tronMusicRandomEnabled : backgroundMusicRandomEnabled,
+      fixedSlug: isSmartSession ? smartMusicSlug : isTronSession ? tronMusicSlug : selectedTrackSlug,
       tracksLoaded: backgroundMusic.tracks.length,
     });
 
     if (!musicEnabled) return;
 
-    const randomEnabled = isSmartSession ? smartMusicRandomEnabled : backgroundMusicRandomEnabled;
-    const fixedSlug = isSmartSession ? smartMusicSlug : selectedTrackSlug;
+    const randomEnabled = isSmartSession ? smartMusicRandomEnabled : isTronSession ? tronMusicRandomEnabled : backgroundMusicRandomEnabled;
+    const fixedSlug = isSmartSession ? smartMusicSlug : isTronSession ? tronMusicSlug : selectedTrackSlug;
 
     const TIER_LEVEL: Record<string, number> = { ZDARMA: 0, SMART: 1, AI_COACH: 2 };
     const userLevel = TIER_LEVEL[userTier] ?? 0;
@@ -439,10 +449,10 @@ export function SessionEngineModal({
       return;
     }
 
-    // Fallback: play without setTrack (uses whatever track was preloaded)
-    void backgroundMusic.play();
+    // fixedSlug === null && !randomEnabled = "Bez hudby" — uživatel záměrně nevybral žádný track.
+    // Fallback play() se nespouští — bylo by to přehrání náhodného/předchozího tracku bez souhlasu.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smartMusicEnabled, backgroundMusicEnabled, smartMusicRandomEnabled, backgroundMusicRandomEnabled, smartMusicSlug, selectedTrackSlug, userTier]);
+  }, [smartMusicEnabled, tronMusicEnabled, backgroundMusicEnabled, smartMusicRandomEnabled, tronMusicRandomEnabled, backgroundMusicRandomEnabled, smartMusicSlug, tronMusicSlug, selectedTrackSlug, userTier]);
 
   const startCountdown = useCallback(() => {
     unlockAudio();
@@ -537,8 +547,11 @@ export function SessionEngineModal({
       ?? exercise.breathing_pattern.phases.reduce((sum, p) => sum + p.duration_seconds, 0);
     sessionDurationSnapshotRef.current = { totalSec, silenceSec: 0 };
 
-    // Trůn never plays music — intentionally no triggerMusicForSession() call
-  }, [unlockAudio, intensityControl, tronConfigAdjusted, exercise]);
+    // Hudba pro Trůn — přehraje se pouze pokud uživatel zapnul v nastavení (max 0.5 hlasitosti)
+    if (tronMusicEnabled) {
+      triggerMusicForSession();
+    }
+  }, [unlockAudio, intensityControl, tronConfigAdjusted, exercise, tronMusicEnabled, triggerMusicForSession]);
   
   // Complete exercise
   const completeExercise = useCallback(() => {
@@ -637,7 +650,11 @@ export function SessionEngineModal({
   const isSecondToLastPhase = currentPhaseIndex === totalPhases - 2;
   const lastPhaseIsSilence  = phases[totalPhases - 1]?.type === 'silence';
   const isSmartSession      = sessionTypeRef.current === 'smart';
-  const isMusicEnabledForFO = isSmartSession ? smartMusicEnabled : backgroundMusicEnabled;
+  const isMusicEnabledForFO = isSmartSession
+    ? smartMusicEnabled
+    : sessionTypeRef.current === 'tron'
+      ? tronMusicEnabled
+      : backgroundMusicEnabled;
 
   useEffect(() => {
     if (
@@ -1005,6 +1022,7 @@ export function SessionEngineModal({
         was_completed: sessionState === 'completed',
         mood_before: moodBefore || undefined,
         mood_after: moodAfter || undefined,
+        difficulty_rating: difficultyRating || undefined,
         quality_rating: qualityRating,
         notes: notes.trim() || undefined,
         final_intensity_multiplier: intensityControl.multiplierRef.current,
