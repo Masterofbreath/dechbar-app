@@ -297,11 +297,13 @@ export function PokrokPage() {
 
   const switchTab = useCallback((tab: 'prehled' | 'komunita' | 'top10') => {
     setPokrokTab(tab);
-    // Najdeme nejbližší scrollovatelný .tab-carousel__page ancestor a scrollneme nahoru.
-    // Spolehlivější než document.querySelector('.tab-carousel__page:nth-child(4)') který
-    // může selhat při hydration race nebo pokud se pořadí stránek změní.
+    // scrollTop = 0 je synchronní a Safari ho respektuje ihned — lepší než scrollTo()
+    // RAF pojistka: Safari někdy přeskočí první frame při position:sticky reflow
     const scrollContainer = pageRef.current?.closest('.tab-carousel__page') as HTMLElement | null;
-    scrollContainer?.scrollTo({ top: 0, behavior: 'instant' });
+    if (scrollContainer) {
+      scrollContainer.scrollTop = 0;
+      requestAnimationFrame(() => { scrollContainer.scrollTop = 0; });
+    }
   }, []);
 
   // Real-time invalidace při změně session

@@ -677,8 +677,11 @@
 /* Sticky wrapper */
 .pokrok-page__sticky-header {
   width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 
-  /* Záměrně bez sticky — header scrolluje spolu se stránkou */
+  /* Solid background — záměrně BEZ backdrop-filter (Safari GPU compositing bug) */
   background: var(--color-background, #121212);
 }
 
