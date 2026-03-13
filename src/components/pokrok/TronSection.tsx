@@ -124,7 +124,7 @@ export function TronSection({ userId, onStartTron }: TronSectionProps) {
       if (!userId) return null;
       const { data } = await supabase
         .from('tron_recommendations')
-        .select('current_level, session_count, last_calculated_at')
+        .select('current_level, session_count')
         .eq('user_id', userId)
         .maybeSingle();
       return data;

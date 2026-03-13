@@ -132,7 +132,6 @@ export function useCompleteTronSession() {
             user_id: user.id,
             session_count: nextCount,
             current_level: nextLevel,
-            last_calculated_at: now,
             ...(levelChanged ? { last_level_change_at: now } : {}),
           },
           { onConflict: 'user_id' }
