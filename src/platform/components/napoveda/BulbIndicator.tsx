@@ -4,7 +4,7 @@
  * 3 stavy (z user_tour_state.bulb_state):
  * - lit    → zlatá, pulzující animace (3s cyklus) — kapitola na aktuální route NEBYLA projita
  * - dim    → šedá, bez animace, kliknutelná — projito, ale Tour nedokončena
- * - hidden → display: none (zachovává layout prostor přes visibility: hidden)
+ * - hidden → visibility: hidden (zachovává layout prostor)
  *
  * Klik → startTour() (otevře Tour od aktuálního/prvního neprojitého kroku)
  */
@@ -12,8 +12,9 @@
 import { useNapoveda } from './hooks/useNapoveda';
 
 /**
- * SVG ikona žárovičky — custom, 2px stroke, currentColor
- * Outline styl, viewBox 24x24 (projektový standard)
+ * SVG žárovička — detailní outline design, 2px stroke, currentColor
+ * Základ: klasická Edison žárovička se závojovým vláknem a základnou
+ * viewBox 24x24, projektový standard
  */
 function BulbIcon({ className }: { className?: string }) {
   return (
@@ -24,15 +25,23 @@ function BulbIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.75"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {/* Žárovička — tělo */}
-      <path d="M9 21h6" />
-      <path d="M10 21v-2a4 4 0 0 1-2.46-3.64A5 5 0 1 1 16 12a4 4 0 0 1-2 3.36V21" />
-      {/* Vlnky záření — jen pro lit stav (vždy v DOM, opacity řízena CSS) */}
+      {/* Horní část žárovičky — kulatá baňka */}
+      <path d="M9 18h6" />
+      <path d="M10 21h4" />
+      {/* Spodní základna (krk) */}
+      <path d="M10 18v-2.5c0-.8-.4-1.5-1-2A6 6 0 1 1 15 13.5c-.6.5-1 1.2-1 2V18" />
+      {/* Vlákno uvnitř — záře */}
+      <path
+        className="bulb-indicator__filament"
+        d="M12 8v3M10.5 9.5l3 3"
+        strokeWidth="1.25"
+        strokeOpacity="0.6"
+      />
     </svg>
   );
 }
@@ -40,7 +49,6 @@ function BulbIcon({ className }: { className?: string }) {
 export function BulbIndicator() {
   const { bulbState, startTour } = useNapoveda();
 
-  // hidden → element je v DOM ale neviditelný (layout neposkočí)
   const isHidden = bulbState === 'hidden';
   const isLit = bulbState === 'lit';
   const isDim = bulbState === 'dim';
@@ -63,7 +71,6 @@ export function BulbIndicator() {
         .join(' ')}
       onClick={isHidden ? undefined : startTour}
       aria-label={label}
-      aria-pressed={false}
       type="button"
       tabIndex={isHidden ? -1 : 0}
     >

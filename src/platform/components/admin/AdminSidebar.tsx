@@ -48,6 +48,7 @@ const ADMIN_MENU_GROUPS: MenuGroup[] = [
       { path: '/app/admin/notifications', icon: 'bell',           label: 'Notifikace'          },
       { path: '/app/admin/feedback',      icon: 'message-square', label: 'Feedback'            },
       { path: '/app/admin/users',         icon: 'users',          label: 'Uživatelé'           },
+      { path: '/app/admin/napoveda',      icon: 'help-circle',    label: 'Nápověda'            },
     ],
   },
   {

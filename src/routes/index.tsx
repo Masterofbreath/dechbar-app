@@ -87,6 +87,7 @@ const ExercisesAdmin = lazy(() => import('@/platform/pages/admin/ExercisesAdmin/
 const BusinessAdmin  = lazy(() => import('@/platform/pages/admin/BusinessAdmin/BusinessAdmin'));
 const EconomicsAdmin = lazy(() => import('@/platform/pages/admin/EconomicsAdmin/EconomicsAdmin'));
 const PaymentsAdmin  = lazy(() => import('@/platform/pages/admin/PaymentsAdmin/PaymentsAdmin'));
+const NapovedaAdmin  = lazy(() => import('@/platform/pages/admin/NapovedaAdmin/NapovedaAdmin').then((m) => ({ default: m.NapovedaAdmin })));
 
 /**
  * TabCarousel - Apple-style carousel tab switcher
@@ -471,6 +472,10 @@ export const router = createBrowserRouter([
               {
                 path: 'payments',
                 element: <PaymentsAdmin />,
+              },
+              {
+                path: 'napoveda',
+                element: <NapovedaAdmin />,
               },
               {
                 path: 'gamification',

@@ -176,25 +176,33 @@
 
 /* ===================================== */
 
+/*
+ * Rozměry stejné jako .top-nav__bell-button / .top-nav__settings-button:
+ * padding: 7px, min-width/height: 38px → ikona 24x24 sedí perfektně v pill.
+ */
 .bulb-indicator {
+  padding: 7px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  min-width: 38px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-full);
-  cursor: pointer;
   position: relative;
-  transition: opacity 0.2s;
-
-  /* Zachováme šířku i ve stavu hidden aby layout neposkočil */
+  transition: color 0.2s ease, transform 0.2s ease;
+  border-radius: var(--radius-full);
 }
 
 .bulb-indicator:focus-visible {
   outline: 2px solid var(--color-border-focus);
   outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.bulb-indicator:active {
+  transform: scale(0.95);
 }
 
 .bulb-indicator--hidden {
@@ -206,31 +214,46 @@
   width: 24px;
   height: 24px;
   flex-shrink: 0;
+  transition: color 0.2s ease;
 }
 
-/* LIT — svítí zlatě, pulzující animace */
+/* LIT — svítí zlatě, pulzující animace + glow */
 .bulb-indicator--lit .bulb-indicator__icon {
   color: var(--color-accent, var(--color-gold, #D6A23A));
   animation: bulb-pulse 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent, #D6A23A) 60%, transparent));
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--color-accent, #D6A23A) 55%, transparent));
 }
 
 /* DIM — zhasnuto, tlumená barva, bez animace */
 .bulb-indicator--dim .bulb-indicator__icon {
   color: var(--color-text-tertiary);
   animation: none;
+  filter: none;
 }
 
-/* Pulzující animace žárovičky — 3s cyklus, jemná */
+/* Hover efekty — jen na desktop */
+@media (hover: hover) {
+  .bulb-indicator--lit:hover .bulb-indicator__icon {
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-accent, #D6A23A) 80%, transparent));
+  }
+
+  .bulb-indicator--dim:hover .bulb-indicator__icon {
+    color: var(--color-text-secondary);
+  }
+}
+
+/* Pulzující animace žárovičky — 3s cyklus, "breathing" efekt */
 @keyframes bulb-pulse {
   0%, 100% {
     opacity: 1;
     transform: scale(1);
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--color-accent, #D6A23A) 55%, transparent));
   }
 
   50% {
-    opacity: 0.7;
-    transform: scale(1.1);
+    opacity: 0.75;
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent, #D6A23A) 80%, transparent));
   }
 }
 

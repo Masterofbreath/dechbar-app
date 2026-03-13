@@ -102,29 +102,43 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
   const [progressPercent, setProgressPercent] = useState(0);
   const [steps, setSteps] = useState<OnboardingStep[]>(EMPTY_STEPS);
 
-  // Načtení user_tour_state z Supabase
+  // Načtení user_tour_state z Supabase + globální is_enabled přepínač
   useEffect(() => {
     if (!userId) return;
 
     let cancelled = false;
 
     async function loadTourState() {
-      const { data } = await supabase
-        .from('user_tour_state')
-        .select('bulb_state, show_bulb_preference')
-        .eq('user_id', userId)
-        .single();
+      // Načteme obojí paralelně
+      const [{ data: settings }, { data: tourState }] = await Promise.all([
+        supabase
+          .from('napoveda_settings')
+          .select('is_enabled')
+          .eq('id', 1)
+          .single(),
+        supabase
+          .from('user_tour_state')
+          .select('bulb_state, show_bulb_preference')
+          .eq('user_id', userId)
+          .single(),
+      ]);
 
       if (cancelled) return;
 
-      if (data) {
-        const state = data as { bulb_state: BulbState; show_bulb_preference: boolean };
-        // Pokud uživatel vypnul žárovičku v Settings → hidden
+      // Globálně vypnuto adminem → vždy hidden
+      const globalEnabled =
+        (settings as { is_enabled?: boolean } | null)?.is_enabled ?? true;
+      if (!globalEnabled) {
+        setBulbState('hidden');
+        return;
+      }
+
+      if (tourState) {
+        const state = tourState as { bulb_state: BulbState; show_bulb_preference: boolean };
         const effectiveBulb: BulbState =
           !state.show_bulb_preference ? 'hidden' : state.bulb_state;
         setBulbState(effectiveBulb);
       }
-      // Pokud user_tour_state neexistuje → nový uživatel, bulb_state = 'lit' (default)
     }
 
     void loadTourState();
