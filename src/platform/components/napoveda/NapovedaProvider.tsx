@@ -102,9 +102,14 @@ const PLACEHOLDER_STEPS: OnboardingStep[] = [
 export function NapovedaProvider({ children }: NapovedaProviderProps) {
   const userId = useAuthStore((s) => s.user?.id);
 
+  // Dev preview: ?preview_welcome=1 → zobraz WelcomeSlide okamžitě (neovlivní DB)
+  const isDevPreview =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('preview_welcome') === '1';
+
   const [isActive, setIsActive] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [bulbState, setBulbState] = useState<BulbState>('lit');
+  const [showWelcome, setShowWelcome] = useState(isDevPreview);
+  const [bulbState, setBulbState] = useState<BulbState>(isDevPreview ? 'lit' : 'lit');
   const [currentStep, setCurrentStep] = useState<TourStep | null>(null);
   const [progressPercent, setProgressPercent] = useState(0);
   const [steps, setSteps] = useState<OnboardingStep[]>(PLACEHOLDER_STEPS);
@@ -114,6 +119,9 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
   // ===================================================
   useEffect(() => {
     if (!userId) return;
+
+    // Dev preview: stav je nastaven při inicializaci (useState), přeskočíme DB fetch
+    if (isDevPreview) return;
 
     let cancelled = false;
 
@@ -170,7 +178,7 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, isDevPreview]);
 
   // ===================================================
   // 2. Načtení kroků z DB pro OnboardingProvider

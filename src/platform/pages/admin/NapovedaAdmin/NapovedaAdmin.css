@@ -673,3 +673,56 @@
   color: var(--color-primary, #2CBEC6);
   margin: 0;
 }
+
+/* ===== DEV NÁSTROJE ===== */
+
+.napoveda-admin__dev-card {
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-warning, #f59e0b) 25%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-4) var(--spacing-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.napoveda-admin__dev-info strong {
+  font-size: var(--text-sm, 14px);
+  color: var(--color-text-primary);
+  display: block;
+  margin-bottom: var(--spacing-1);
+}
+
+.napoveda-admin__dev-info p {
+  font-size: var(--text-xs, 12px);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.napoveda-admin__dev-info code {
+  font-family: monospace;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.napoveda-admin__dev-form {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.napoveda-admin__dev-hint {
+  font-size: var(--text-xs, 12px);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.napoveda-admin__dev-hint strong {
+  color: var(--color-text-secondary);
+  font-family: monospace;
+  font-size: 11px;
+}

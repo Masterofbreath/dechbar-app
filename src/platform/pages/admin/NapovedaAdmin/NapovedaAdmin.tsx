@@ -386,6 +386,8 @@ export function NapovedaAdmin() {
   const [showReasonInput, setShowReasonInput] = useState(false);
   const [savingStepId, setSavingStepId] = useState<string | null>(null);
   const [savingChapterId, setSavingChapterId] = useState<string | null>(null);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetStatus, setResetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const { data: settings, isLoading: settingsLoading } = useQuery({
     queryKey: ['napoveda-settings'],
@@ -396,6 +398,38 @@ export function NapovedaAdmin() {
     queryKey: ['tour-levels-admin'],
     queryFn: fetchTourLevels,
   });
+
+  // Reset WelcomeSlide pro konkrétního uživatele (pro testování)
+  const handleResetWelcome = useCallback(async () => {
+    if (!resetEmail.trim()) return;
+    setResetStatus('loading');
+    try {
+      // Najdi user_id podle emailu přes auth.users view (admin only)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', resetEmail.trim().toLowerCase())
+        .single();
+
+      if (!profile) {
+        setResetStatus('error');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('user_tour_state')
+        .delete()
+        .eq('user_id', (profile as { id: string }).id);
+
+      if (error) throw error;
+      setResetStatus('success');
+      setResetEmail('');
+      setTimeout(() => setResetStatus('idle'), 3000);
+    } catch {
+      setResetStatus('error');
+      setTimeout(() => setResetStatus('idle'), 3000);
+    }
+  }, [resetEmail]);
 
   // Globální přepínač
   const toggleMutation = useMutation({
@@ -587,6 +621,54 @@ export function NapovedaAdmin() {
               : 'Neznámá chyba'}
           </p>
         )}
+      </section>
+
+      {/* ===== DEV NÁSTROJE ===== */}
+      <section className="napoveda-admin__section">
+        <h2 className="napoveda-admin__section-title">Dev nástroje</h2>
+        <p className="napoveda-admin__section-note">
+          Nástroje pro testování — pouze admin.
+        </p>
+
+        <div className="napoveda-admin__dev-card">
+          <div className="napoveda-admin__dev-info">
+            <strong>Reset WelcomeSlide pro uživatele</strong>
+            <p>
+              Smaže <code>user_tour_state</code> řádek → uživatel uvidí WelcomeSlide znovu při příštím přihlášení.
+              Nebo otevři <code>/app?preview_welcome=1</code> pro okamžitý náhled.
+            </p>
+          </div>
+
+          <div className="napoveda-admin__dev-form">
+            <input
+              className="napoveda-admin__reason-input"
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="Email uživatele (např. martin@dechbar.cz)"
+            />
+            <button
+              className="napoveda-admin__reason-confirm"
+              onClick={() => void handleResetWelcome()}
+              disabled={resetStatus === 'loading' || !resetEmail.trim()}
+              type="button"
+            >
+              {resetStatus === 'loading'
+                ? 'Resetuji…'
+                : resetStatus === 'success'
+                  ? '✓ Hotovo'
+                  : resetStatus === 'error'
+                    ? '✗ Chyba'
+                    : 'Resetovat'}
+            </button>
+          </div>
+
+          <p className="napoveda-admin__dev-hint">
+            Tip: Na telefonu použij{' '}
+            <strong>test.dechbar.cz/app?preview_welcome=1</strong>{' '}
+            pro okamžitý náhled bez resetu DB.
+          </p>
+        </div>
       </section>
 
       {/* ===== EDITOR ÚROVNÍ A KROKŮ (Sprint 4) ===== */}
