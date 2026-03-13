@@ -400,6 +400,10 @@ export function SessionEngineModal({
     if (sessionState !== 'active') return;
     if (!continueWhenLocked) return;
     if (!isIOSPlatform()) return; // desktop: JS timers work — pre-schedule not needed
+    // Trůn sessions are designed for pocket use — AudioContext interrupts on iOS screen lock.
+    // Pre-scheduling causes double-fire: Web Audio timeline + synchronous playCue() both play.
+    // Trůn cues intentionally stop on screen lock (same as documented in wake lock section).
+    if (sessionTypeRef.current === 'tron') return;
 
     const phase = exercise.breathing_pattern.phases[currentPhaseIndex];
     if (!phase || phase.type !== 'breathing' || !phase.pattern) return;
@@ -420,6 +424,8 @@ export function SessionEngineModal({
     if (sessionState !== 'active') return;
     if (!continueWhenLocked) return;
     if (!isIOSPlatform()) return; // desktop: visibilitychange doesn't freeze timers
+    // Trůn: no pre-schedule (see phase-start useEffect above for reasoning)
+    if (sessionTypeRef.current === 'tron') return;
 
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'hidden') {
@@ -995,9 +1001,14 @@ export function SessionEngineModal({
           try { breathingCues.playCue('hold'); haptics.trigger('hold'); } catch { /* ignore */ }
         }
 
-        // Cycle boundary: promote pending multiplier and reset cycle clock
+        // Cycle boundary: promote pending multiplier and reset cycle clock.
+        // Subtract overshoot: if elapsed = effCycle + 0.05s, new cycleStartTime is set 0.05s
+        // into the past so the next tick reads elapsed ≈ 0.05s instead of 0. This prevents
+        // cumulative drift where each boundary adds the setInterval jitter (~10–50ms) to the
+        // next cycle start, causing audio cues to shift later and later over many minutes.
         if (elapsed >= effCycle) {
-          cycleStartTime = Date.now();
+          const overshootMs = (elapsed - effCycle) * 1000;
+          cycleStartTime = Date.now() - overshootMs;
           cycleStartTimeRef.current = cycleStartTime; // keep ref in sync for background recovery
           localMultiplier = intensityControl.pendingMultiplierRef.current;
           intensityControl.multiplierRef.current = localMultiplier;

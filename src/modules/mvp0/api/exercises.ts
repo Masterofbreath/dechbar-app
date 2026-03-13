@@ -360,6 +360,7 @@ export function useCompleteSession() {
           final_intensity_multiplier: payload.final_intensity_multiplier ?? 1.0,
           session_type: payload.session_type ?? 'preset',
           smart_context: payload.smart_context ?? null,
+          tron_context: payload.tron_context ?? null,
         })
         .select()
         .single();

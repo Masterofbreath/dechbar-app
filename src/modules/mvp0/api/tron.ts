@@ -40,6 +40,8 @@ export interface CompleteTronSessionPayload {
   started_at: Date;
   /** ISO timestamp of session end */
   completed_at: Date;
+  /** Whether the session was completed (not abandoned) */
+  was_completed: boolean;
 }
 
 // =====================================================
@@ -82,8 +84,11 @@ export function useTronRecommendation() {
 }
 
 /**
- * Save completed Trůn session — updates tron_recommendations and inserts
- * into exercise_sessions (session_type = 'tron').
+ * Update Trůn recommendation after a completed session.
+ *
+ * ARCHITECTURE NOTE: exercise_sessions INSERT is handled by useCompleteSession()
+ * in exercises.ts (same as SMART). This hook only manages tron_recommendations —
+ * it updates session_count and applies the level change algorithm.
  *
  * Algorithm (first 10 sessions = calibration phase):
  * - If multiplier > 1.0 for last 2 sessions: level up (max 21)
@@ -97,14 +102,12 @@ export function useCompleteTronSession() {
   return useMutation({
     mutationFn: async (payload: CompleteTronSessionPayload) => {
       if (!user?.id) throw new Error('User not authenticated');
+      if (!payload.was_completed) return;
 
       const {
         level,
         final_multiplier,
-        duration_seconds,
         new_level,
-        started_at,
-        completed_at,
       } = payload;
 
       // 1. Get current recommendation
@@ -115,13 +118,13 @@ export function useCompleteTronSession() {
         .maybeSingle();
 
       const prevCount = existing?.session_count ?? 0;
-      const prevLevel = existing?.current_level ?? 1;
+      const prevLevel = existing?.current_level ?? level;
       const nextCount = prevCount + 1;
       const nextLevel = new_level ?? prevLevel;
       const levelChanged = nextLevel !== prevLevel;
       const now = new Date().toISOString();
 
-      // 2. Upsert tron_recommendations
+      // 2. Upsert tron_recommendations only
       const { error: recError } = await supabase
         .from('tron_recommendations')
         .upsert(
@@ -129,6 +132,7 @@ export function useCompleteTronSession() {
             user_id: user.id,
             session_count: nextCount,
             current_level: nextLevel,
+            last_calculated_at: now,
             ...(levelChanged ? { last_level_change_at: now } : {}),
           },
           { onConflict: 'user_id' }
@@ -136,29 +140,7 @@ export function useCompleteTronSession() {
 
       if (recError) throw recError;
 
-      // 3. Insert into exercise_sessions
-      const { error: sessionError } = await supabase
-        .from('exercise_sessions')
-        .insert({
-          user_id: user.id,
-          exercise_id: null,
-          started_at: started_at.toISOString(),
-          completed_at: completed_at.toISOString(),
-          was_completed: true,
-          session_type: 'tron',
-          final_intensity_multiplier: final_multiplier,
-          tron_context: {
-            level,
-            hold_exhale_base: level + 2,
-            final_multiplier,
-            duration_seconds,
-            session_count_at_start: prevCount,
-          },
-        });
-
-      if (sessionError) throw sessionError;
-
-      return { nextLevel, nextCount };
+      return { nextLevel, nextCount, final_multiplier };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tronKeys.recommendation(user?.id ?? '') });
