@@ -1,14 +1,9 @@
 /**
  * TourOverlay — Driver.js wrapper pro Spotlight efekt
  *
- * Zodpovídá za:
- * - Start OnboardJS flow při mountu (useOnboarding().start())
- * - Inicializaci driver.js instance
- * - Mapování kroků z NapovedaContext na DriveStep[]
- * - iOS touch fix (povinný — blokuje touch průchod skrz overlay)
- * - Sync stavu s Supabase (completed, deferred) přes NapovedaContext
- *
- * POVINNÝ iOS FIX: touchstart capture listener — testovat na fyzickém iPhone!
+ * FIX: tourStep čten přímo z state.currentStep (OnboardJS state),
+ * ne z napovedaCtx.currentStep (které je null při prvním kroku —
+ * onStepChange se nevolá pro inicializaci, jen pro změny).
  */
 
 import { useEffect, useRef, useCallback, useContext } from 'react';
@@ -16,10 +11,34 @@ import { driver as createDriver, type Driver, type DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { useOnboarding } from '@onboardjs/react';
 import { NapovedaContext } from './NapovedaProvider';
+import type { TourStep } from './NapovedaProvider';
 import { TourTooltip } from './TourTooltip';
 import { tourEventBus, type TourEventType } from './TourEventBus';
 import { supabase } from '@/platform/api/supabase';
 import { useAuthStore } from '@/platform/auth';
+
+/** Extrahuje TourStep z OnboardJS OnboardingStep.payload */
+function extractTourStep(state: ReturnType<typeof useOnboarding>['state']): TourStep | null {
+  const current = state?.currentStep;
+  if (!current) return null;
+
+  const p = current.payload as Record<string, unknown> | undefined;
+  if (!p) return null;
+
+  return {
+    id: String(current.id),
+    title: (p.title as Record<string, string>) ?? {},
+    description: (p.description as Record<string, string>) ?? {},
+    domSelector: (p.domSelector as string | null) ?? null,
+    stepType: ((p.stepType ?? current.type ?? 'highlight') as TourStep['stepType']),
+    interactiveAction: (p.interactiveAction as string | null) ?? null,
+    isRequiredForReward: (p.isRequiredForReward as boolean) ?? false,
+    orderIndex: (p.orderIndex as number) ?? 0,
+    chapterSlug: (p.chapterSlug as string) ?? '',
+    chapterTitle: (p.chapterTitle as Record<string, string>) ?? {},
+    totalInChapter: (p.totalInChapter as number) ?? 0,
+  };
+}
 
 export function TourOverlay() {
   const driverRef = useRef<Driver | null>(null);
@@ -27,25 +46,24 @@ export function TourOverlay() {
   const userId = useAuthStore((s) => s.user?.id);
   const napovedaCtx = useContext(NapovedaContext);
 
-  // start je potřeba explicitně zavolat — OnboardJS samo od sebe neběží
-  const { state, next, previous, skip, start } = useOnboarding() as ReturnType<typeof useOnboarding> & { start?: () => void };
+  const onboarding = useOnboarding() as ReturnType<typeof useOnboarding> & { start?: () => void };
+  const { state, next, previous, skip } = onboarding;
 
   // ===================================================
   // KRITICKÝ FIX: Spustit OnboardJS flow při mountu
+  // (start = přejde na první aktivní krok)
   // ===================================================
   useEffect(() => {
     if (hasStartedRef.current) return;
-    if (typeof start === 'function') {
+    if (typeof onboarding.start === 'function') {
       hasStartedRef.current = true;
-      start();
+      onboarding.start();
     }
-  // start se nemění — spustíme pouze jednou při mountu
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ===================================================
-  // iOS TOUCH FIX — POVINNÁ SOUČÁST (viz SPEC)
-  // Blokuje touch průchod skrz overlay na non-tooltip elementy.
+  // iOS TOUCH FIX
   // ===================================================
   useEffect(() => {
     const iosDriverFix = (e: TouchEvent) => {
@@ -59,27 +77,20 @@ export function TourOverlay() {
         e.stopImmediatePropagation();
       }
     };
-    document.addEventListener('touchstart', iosDriverFix, {
-      capture: true,
-      passive: false,
-    });
-    return () =>
-      document.removeEventListener('touchstart', iosDriverFix, true);
+    document.addEventListener('touchstart', iosDriverFix, { capture: true, passive: false });
+    return () => document.removeEventListener('touchstart', iosDriverFix, true);
   }, []);
 
   // Uložení completed stepu do Supabase
   const markStepCompleted = useCallback(
     async (stepId: string, chapterSlug: string) => {
-      if (!userId || !napovedaCtx) return;
-
+      if (!userId) return;
       const { data: chapter } = await supabase
         .from('tour_chapters')
         .select('id, level_id')
         .eq('slug', chapterSlug)
         .single();
-
       if (!chapter) return;
-
       await supabase.from('user_tour_progress').upsert(
         {
           user_id: userId,
@@ -93,60 +104,37 @@ export function TourOverlay() {
         { onConflict: 'user_id,step_id' }
       );
     },
-    [userId, napovedaCtx]
+    [userId]
   );
 
   // ===================================================
-  // TourEventBus — automatický posun pro interaktivní kroky
+  // TourEventBus — interaktivní kroky
   // ===================================================
   useEffect(() => {
     const currentStep = state?.currentStep;
     if (!currentStep) return;
-
-    const payload = currentStep.payload as {
-      stepType?: string;
-      interactiveAction?: string | null;
-      chapterSlug?: string;
-    } | undefined;
-
+    const payload = currentStep.payload as { stepType?: string; interactiveAction?: string | null; chapterSlug?: string } | undefined;
     if (payload?.stepType !== 'interactive' || !payload.interactiveAction) return;
-
     const expectedAction = payload.interactiveAction as TourEventType;
-
     const unsubscribe = tourEventBus.onAction((event) => {
       if (event.type === expectedAction) {
-        void markStepCompleted(
-          String(currentStep.id),
-          payload.chapterSlug ?? ''
-        );
+        void markStepCompleted(String(currentStep.id), payload.chapterSlug ?? '');
         void next();
       }
     });
-
     return unsubscribe;
   }, [state?.currentStep, next, markStepCompleted]);
 
-  // Sestavení driver.js kroků z OnboardJS stavu
+  // Driver.js — sestavení kroků z aktuálního stavu
   const buildDriveSteps = useCallback((): DriveStep[] => {
-    // FIX: odstraněna závislost na state.context (neexistuje v OnboardJS API)
-    const currentStep = state?.currentStep;
-    if (!currentStep) return [];
-
-    const payload = currentStep.payload as {
-      domSelector?: string | null;
-      title?: Record<string, string>;
-      description?: Record<string, string>;
-      stepType?: string;
-    } | undefined;
-
+    const current = state?.currentStep;
+    if (!current) return [];
+    const payload = current.payload as { domSelector?: string | null; stepType?: string } | undefined;
     if (!payload) return [];
-
     return [
       {
         element: payload.domSelector ?? undefined,
         popover: {
-          // Nativní popover skryt přes CSS (.driver-popover { display: none })
-          // Zobrazujeme vlastní TourBar (position: fixed; bottom: 72px)
           title: '',
           description: '',
           showButtons: [],
@@ -155,17 +143,13 @@ export function TourOverlay() {
         disableActiveInteraction: payload.stepType !== 'interactive',
       },
     ];
-  }, [state]);
+  }, [state?.currentStep]);
 
-  // Inicializace / aktualizace driver.js při změně kroku
+  // Inicializace / update driver.js při každé změně kroku
   useEffect(() => {
     const steps = buildDriveSteps();
-
-    // Žádný krok → zavřít driver pokud je aktivní
     if (steps.length === 0) {
-      if (driverRef.current?.isActive()) {
-        driverRef.current.destroy();
-      }
+      if (driverRef.current?.isActive()) driverRef.current.destroy();
       return;
     }
 
@@ -187,68 +171,58 @@ export function TourOverlay() {
     driverInstance.drive(0);
 
     return () => {
-      if (driverInstance.isActive()) {
-        driverInstance.destroy();
-      }
+      if (driverInstance.isActive()) driverInstance.destroy();
     };
   }, [buildDriveSteps]);
 
-  // Destroy driver při unmount (Tour zavřena)
   useEffect(() => {
     return () => {
-      if (driverRef.current?.isActive()) {
-        driverRef.current.destroy();
-      }
+      if (driverRef.current?.isActive()) driverRef.current.destroy();
       driverRef.current = null;
     };
   }, []);
 
-  // Handlery pro tlačítka v TourBar
+  // Handlery — čteme ze state.currentStep přímo
   const handleNext = useCallback(async () => {
-    const currentStep = state?.currentStep;
-    if (currentStep && napovedaCtx?.currentStep) {
-      await markStepCompleted(
-        String(currentStep.id),
-        napovedaCtx.currentStep.chapterSlug
-      );
+    const current = state?.currentStep;
+    if (current) {
+      const p = current.payload as { chapterSlug?: string } | undefined;
+      await markStepCompleted(String(current.id), p?.chapterSlug ?? '');
     }
-
     if (state?.isLastStep) {
       napovedaCtx?.completeTour();
-      if (driverRef.current?.isActive()) {
-        driverRef.current.destroy();
-      }
+      driverRef.current?.destroy();
     } else {
       await next();
     }
   }, [state, napovedaCtx, markStepCompleted, next]);
 
-  const handlePrev = useCallback(async () => {
-    await previous();
-  }, [previous]);
+  const handlePrev = useCallback(async () => { await previous(); }, [previous]);
 
   const handleDefer = useCallback(async () => {
     await skip();
     napovedaCtx?.pauseTour();
-    if (driverRef.current?.isActive()) {
-      driverRef.current.destroy();
-    }
+    driverRef.current?.destroy();
   }, [skip, napovedaCtx]);
 
-  // TourOverlay renderuje TourBar přes portal
-  const currentStepData = napovedaCtx?.currentStep;
+  // ===================================================
+  // FIX: tourStep pochází přímo z state.currentStep
+  // (ne z napovedaCtx.currentStep — ten je null pro první krok)
+  // ===================================================
+  const tourStep = extractTourStep(state);
+
   const isLastStep = state?.isLastStep ?? false;
   const isFirstStep = state?.isFirstStep ?? true;
   const progress = state?.progressPercentage ?? 0;
   const currentStepNum = state?.currentStepNumber ?? 1;
   const totalSteps = state?.totalSteps ?? 1;
 
-  // Čekáme až OnboardJS načte první krok
-  if (!currentStepData) return null;
+  // Čekáme až OnboardJS inicializuje první krok (async Supabase plugin)
+  if (!tourStep) return null;
 
   return (
     <TourTooltip
-      step={currentStepData}
+      step={tourStep}
       stepNumber={currentStepNum}
       totalSteps={totalSteps}
       progress={progress}

@@ -249,6 +249,13 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
         }
       }
 
+      // Přidat nextStepId chain — potlačí StepValidator "unreachable" warnings
+      // a zajistí správnou navigaci v OnboardJS pro lineární průběh.
+      for (let i = 0; i < onboardingSteps.length - 1; i++) {
+        (onboardingSteps[i] as OnboardingStep & { nextStepId?: unknown }).nextStepId =
+          onboardingSteps[i + 1].id;
+      }
+
       if (onboardingSteps.length > 0) {
         setSteps(onboardingSteps);
       }

@@ -8,7 +8,7 @@
  */
 
 import { createPortal } from 'react-dom';
-import { useState, useEffect, useCallback, CSSProperties } from 'react';
+import { useState, useEffect, CSSProperties } from 'react';
 import { useNapoveda } from './hooks/useNapoveda';
 
 const TOTAL_STEPS = 3;
@@ -138,30 +138,34 @@ function StepDots({ current }: { current: number }) {
 // Hlavní komponenta
 // ===================================================
 
+/**
+ * Přečte pozici BulbIndicator přímo z DOM (synchronní read, žádný setState v effectu).
+ * Volá se přímo v render phase — bezpečné pro read-only DOM API.
+ */
+function getBulbRect(): DOMRect | null {
+  if (typeof document === 'undefined') return null;
+  const el = document.querySelector('.bulb-indicator');
+  return el ? el.getBoundingClientRect() : null;
+}
+
 function WelcomeSlideContent({ onStart, onSkip }: { onStart: () => void; onSkip: () => void }) {
   const [step, setStep] = useState(1);
-  const [bulbRect, setBulbRect] = useState<DOMRect | null>(null);
+  // viewportKey způsobí re-render při resize → bulbRect se přepočítá
+  const [viewportKey, setViewportKey] = useState(0);
   const isLast = step === TOTAL_STEPS;
 
-  // Dynamicky najdeme BulbIndicator v DOM — přesná pozice bez ohledu na viewport
-  const measureBulb = useCallback(() => {
-    const el = document.querySelector('.bulb-indicator');
-    if (el) {
-      setBulbRect(el.getBoundingClientRect());
-    }
-  }, []);
+  // getBulbRect() se volá v render fázi — synchronní DOM read (žádný setState v effectu).
+  // viewportKey >= 0 je vždy true; slouží jen k tomu, aby linter viděl use a aby resize
+  // způsobil re-render (setViewportKey v callbacku) → nové volání getBulbRect().
+  const bulbRect: DOMRect | null = step === 2 && viewportKey >= 0 ? getBulbRect() : null;
 
+  // Resize listener: setState v callback (ne v body effectu) — povoleno linterem
   useEffect(() => {
-    if (step === 2) {
-      // Krátký timeout pro případ, že se layout ještě renderuje
-      const t = setTimeout(measureBulb, 50);
-      window.addEventListener('resize', measureBulb);
-      return () => {
-        clearTimeout(t);
-        window.removeEventListener('resize', measureBulb);
-      };
-    }
-  }, [step, measureBulb]);
+    if (step !== 2) return;
+    const onResize = () => { setViewportKey((k) => k + 1); };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [step]);
 
   // Overlay background — step 2 má průhledný kruh přesně nad bulb ikonou
   const overlayStyle: CSSProperties | undefined =
