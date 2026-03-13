@@ -404,10 +404,10 @@ export function NapovedaAdmin() {
     if (!resetEmail.trim()) return;
     setResetStatus('loading');
     try {
-      // Najdi user_id podle emailu přes auth.users view (admin only)
+      // Najdi user_id podle emailu z profiles tabulky
       const { data: profile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('user_id')
         .eq('email', resetEmail.trim().toLowerCase())
         .single();
 
@@ -419,7 +419,7 @@ export function NapovedaAdmin() {
       const { error } = await supabase
         .from('user_tour_state')
         .delete()
-        .eq('user_id', (profile as { id: string }).id);
+        .eq('user_id', (profile as { user_id: string }).user_id);
 
       if (error) throw error;
       setResetStatus('success');
