@@ -2,7 +2,9 @@
  * NapovedaProvider — Context + OnboardJS + Supabase persistence
  *
  * Zodpovídá za:
- * - Načtení user_tour_state z Supabase (bulb_state, aktuální krok)
+ * - Detekci nového uživatele → zobrazení WelcomeSlide
+ * - Inicializaci user_tour_state při prvním přihlášení
+ * - Načtení bulb_state + globálního is_enabled přepínače
  * - Inicializaci OnboardingProvider s Supabase pluginem
  * - Poskytnutí NapovedaContext všem children komponentám
  * - Řízení TourOverlay (startTour, pauseTour)
@@ -23,6 +25,7 @@ import type { OnboardingStep } from '@onboardjs/react';
 import { supabase } from '@/platform/api/supabase';
 import { useAuthStore } from '@/platform/auth';
 import { TourOverlay } from './TourOverlay';
+import { WelcomeSlide } from './WelcomeSlide';
 
 /** Stav žárovičky v TopNav */
 export type BulbState = 'lit' | 'dim' | 'hidden';
@@ -47,6 +50,8 @@ export interface NapovedaContextValue {
   bulbState: BulbState;
   /** Je Tour právě spuštěna? */
   isActive: boolean;
+  /** Zobrazit WelcomeSlide? (nový uživatel, první přihlášení) */
+  showWelcome: boolean;
   /** Aktuální krok (null pokud Tour neběží) */
   currentStep: TourStep | null;
   /** % dokončení aktuální úrovně (0–100) */
@@ -54,9 +59,13 @@ export interface NapovedaContextValue {
   /** Spustí Tour od aktuálního nebo prvního kroku */
   startTour: () => void;
   /** Pozastaví Tour (deferred) */
-  pauseTour: () => void;
+  pauseTour: () => Promise<void>;
   /** Ukončí Tour (completed / hidden) */
-  completeTour: () => void;
+  completeTour: () => Promise<void>;
+  /** WelcomeSlide: "Jdeme na to" */
+  handleWelcomeStart: () => Promise<void>;
+  /** WelcomeSlide: "Přeskočit vše" */
+  handleWelcomeSkip: () => Promise<void>;
 }
 
 export const NapovedaContext = createContext<NapovedaContextValue | undefined>(
@@ -68,8 +77,7 @@ interface NapovedaProviderProps {
 }
 
 /**
- * Vytvoří Supabase plugin pro OnboardJS persistence.
- * Singleton — vytváříme mimo komponentu aby nedocházelo k re-vytváření.
+ * Singleton Supabase plugin — mimo komponentu aby se nevytvářel při každém re-renderu.
  */
 const supabasePlugin = createSupabasePlugin({
   client: supabase,
@@ -82,34 +90,34 @@ const supabasePlugin = createSupabasePlugin({
   },
 });
 
-/**
- * Prázdný fallback kroky-seznam — dokud se kroky z DB nenačtou.
- * OnboardingProvider vyžaduje neprázdné steps, takže použijeme placeholder.
- */
-const EMPTY_STEPS: OnboardingStep[] = [
+/** Placeholder kroky dokud se kroky z DB nenačtou */
+const PLACEHOLDER_STEPS: OnboardingStep[] = [
   {
     id: '__loading__',
     type: 'info',
-    payload: { title: 'Načítám...', description: '' },
+    payload: { title: { cs: 'Načítám…' }, description: { cs: '' } },
   },
 ];
 
 export function NapovedaProvider({ children }: NapovedaProviderProps) {
   const userId = useAuthStore((s) => s.user?.id);
+
   const [isActive, setIsActive] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [bulbState, setBulbState] = useState<BulbState>('lit');
   const [currentStep, setCurrentStep] = useState<TourStep | null>(null);
   const [progressPercent, setProgressPercent] = useState(0);
-  const [steps, setSteps] = useState<OnboardingStep[]>(EMPTY_STEPS);
+  const [steps, setSteps] = useState<OnboardingStep[]>(PLACEHOLDER_STEPS);
 
-  // Načtení user_tour_state z Supabase + globální is_enabled přepínač
+  // ===================================================
+  // 1. Načtení stavu — globální přepínač + user_tour_state
+  // ===================================================
   useEffect(() => {
     if (!userId) return;
 
     let cancelled = false;
 
-    async function loadTourState() {
-      // Načteme obojí paralelně
+    async function loadState() {
       const [{ data: settings }, { data: tourState }] = await Promise.all([
         supabase
           .from('napoveda_settings')
@@ -118,44 +126,61 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
           .single(),
         supabase
           .from('user_tour_state')
-          .select('bulb_state, show_bulb_preference')
-          .eq('user_id', userId)
+          .select('bulb_state, show_bulb_preference, onboarding_shown_at')
+          .eq('user_id', userId!)
           .single(),
       ]);
 
       if (cancelled) return;
 
-      // Globálně vypnuto adminem → vždy hidden
+      // Globálně vypnuto adminem → vždy hidden, žádný WelcomeSlide
       const globalEnabled =
         (settings as { is_enabled?: boolean } | null)?.is_enabled ?? true;
       if (!globalEnabled) {
         setBulbState('hidden');
+        setShowWelcome(false);
         return;
       }
 
-      if (tourState) {
-        const state = tourState as { bulb_state: BulbState; show_bulb_preference: boolean };
-        const effectiveBulb: BulbState =
-          !state.show_bulb_preference ? 'hidden' : state.bulb_state;
-        setBulbState(effectiveBulb);
+      if (!tourState) {
+        // Nový uživatel — žádný user_tour_state → zobraz WelcomeSlide
+        setShowWelcome(true);
+        setBulbState('lit');
+        return;
       }
+
+      const state = tourState as {
+        bulb_state: BulbState;
+        show_bulb_preference: boolean;
+        onboarding_shown_at: string | null;
+      };
+
+      // Uživatel existuje, ale WelcomeSlide ještě neviděl (edge case: stav vytvořen jinak)
+      if (!state.onboarding_shown_at) {
+        setShowWelcome(true);
+      }
+
+      const effectiveBulb: BulbState =
+        !state.show_bulb_preference ? 'hidden' : state.bulb_state;
+      setBulbState(effectiveBulb);
     }
 
-    void loadTourState();
+    void loadState();
 
     return () => {
       cancelled = true;
     };
   }, [userId]);
 
-  // Načtení kroků z Supabase pro OnboardingProvider
+  // ===================================================
+  // 2. Načtení kroků z DB pro OnboardingProvider
+  // ===================================================
   useEffect(() => {
     if (!userId) return;
 
     let cancelled = false;
 
     async function loadSteps() {
-      // Načteme kroky Úrovně 1 (basic) — aktivní, seřazené
       const { data: chapters } = await supabase
         .from('tour_chapters')
         .select(`
@@ -172,7 +197,6 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
 
       if (cancelled || !chapters) return;
 
-      // Převod na OnboardingProvider steps formát
       const onboardingSteps: OnboardingStep[] = [];
 
       for (const chapter of chapters) {
@@ -229,52 +253,95 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
     };
   }, [userId]);
 
-  const startTour = useCallback(() => {
+  // ===================================================
+  // 3. Inicializace user_tour_state (nový uživatel)
+  // ===================================================
+  const initTourState = useCallback(
+    async (onboardingShownAt: string) => {
+      if (!userId) return;
+      await supabase.from('user_tour_state').upsert(
+        {
+          user_id: userId,
+          onboarding_shown_at: onboardingShownAt,
+          bulb_state: 'lit',
+          show_bulb_preference: true,
+          sessions_count: 1,
+          last_session_at: onboardingShownAt,
+          created_at: onboardingShownAt,
+          updated_at: onboardingShownAt,
+        },
+        { onConflict: 'user_id' }
+      );
+    },
+    [userId]
+  );
+
+  // ===================================================
+  // 4. WelcomeSlide handlers
+  // ===================================================
+  const handleWelcomeStart = useCallback(async () => {
+    const now = new Date().toISOString();
+    await initTourState(now);
+    setShowWelcome(false);
+    setBulbState('lit');
     setIsActive(true);
-  }, []);
+  }, [initTourState]);
+
+  const handleWelcomeSkip = useCallback(async () => {
+    const now = new Date().toISOString();
+    await initTourState(now);
+    setShowWelcome(false);
+    setBulbState('lit');
+    // Toast info — žárovička zůstává aktivní
+    // (toast systém přes useToast není dostupný mimo Toast Provider — skip info se zobrazí jinak)
+  }, [initTourState]);
+
+  // ===================================================
+  // 5. Tour ovládání
+  // ===================================================
+  const startTour = useCallback(() => {
+    if (!userId) return;
+    setIsActive(true);
+    // Increment sessions_count
+    void supabase
+      .from('user_tour_state')
+      .update({
+        sessions_count: 999, // bude přepsáno DB triggerem nebo edge function v Sprint 5
+        last_session_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
+  }, [userId]);
 
   const pauseTour = useCallback(async () => {
     setIsActive(false);
-    // Uložit deferred_until = now + 24h
-    if (userId) {
-      await supabase
-        .from('user_tour_state')
-        .upsert({
-          user_id: userId,
-          deferred_until: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId);
-    }
+    if (!userId) return;
+    await supabase
+      .from('user_tour_state')
+      .update({
+        deferred_until: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
   }, [userId]);
 
   const completeTour = useCallback(async () => {
     setIsActive(false);
     setBulbState('hidden');
-    if (userId) {
-      await supabase
-        .from('user_tour_state')
-        .upsert({
-          user_id: userId,
-          bulb_state: 'hidden',
-          tour_completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId);
-    }
+    if (!userId) return;
+    await supabase
+      .from('user_tour_state')
+      .update({
+        bulb_state: 'hidden',
+        tour_completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
   }, [userId]);
 
-  const contextValue: NapovedaContextValue = {
-    bulbState,
-    isActive,
-    currentStep,
-    progressPercent,
-    startTour,
-    pauseTour,
-    completeTour,
-  };
-
-  // Callback pro OnboardingProvider — aktualizuje currentStep a progress
+  // ===================================================
+  // 6. OnboardJS step change callback
+  // ===================================================
   const handleStepChange = useCallback(
     (step: OnboardingStep | null | undefined, state: { progressPercentage?: number }) => {
       if (!step) {
@@ -304,6 +371,19 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
     []
   );
 
+  const contextValue: NapovedaContextValue = {
+    bulbState,
+    isActive,
+    showWelcome,
+    currentStep,
+    progressPercent,
+    startTour,
+    pauseTour,
+    completeTour,
+    handleWelcomeStart,
+    handleWelcomeSkip,
+  };
+
   return (
     <NapovedaContext.Provider value={contextValue}>
       <OnboardingProvider
@@ -315,6 +395,9 @@ export function NapovedaProvider({ children }: NapovedaProviderProps) {
         onFlowComplete={completeTour}
       >
         {children}
+        {/* WelcomeSlide — fullscreen, nový uživatel */}
+        <WelcomeSlide />
+        {/* TourOverlay — driver.js spotlight */}
         {isActive && <TourOverlay />}
       </OnboardingProvider>
     </NapovedaContext.Provider>

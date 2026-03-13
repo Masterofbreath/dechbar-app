@@ -151,7 +151,7 @@ Před použitím: ověř autentizaci přes mcp_auth tool
 ```
 browser_navigate, browser_click, browser_fill — automatizace prohlížeče
 browser_snapshot — screenshot/stav stránky
-Použití: vizuální testování UI na dev.dechbar.cz
+Použití: vizuální testování UI na test.dechbar.cz
 ```
 
 ### Vercel (Cursor plugin)
@@ -178,7 +178,7 @@ Přes API volání nebo browser MCP
 ```
 LOCAL (dev) → git push origin dev → Vercel DEV (automaticky)
                                      ↓
-                              dev.dechbar.cz
+                              test.dechbar.cz
 
 PROD (dechbar.cz) ← VÝHRADNĚ MANUÁLNĚ UŽIVATELEM
 ```

@@ -88,6 +88,7 @@ const BusinessAdmin  = lazy(() => import('@/platform/pages/admin/BusinessAdmin/B
 const EconomicsAdmin = lazy(() => import('@/platform/pages/admin/EconomicsAdmin/EconomicsAdmin'));
 const PaymentsAdmin  = lazy(() => import('@/platform/pages/admin/PaymentsAdmin/PaymentsAdmin'));
 const NapovedaAdmin  = lazy(() => import('@/platform/pages/admin/NapovedaAdmin/NapovedaAdmin').then((m) => ({ default: m.NapovedaAdmin })));
+const NapovedaCentrum = lazy(() => import('@/platform/pages/NapovedaCentrum/NapovedaCentrum').then((m) => ({ default: m.NapovedaCentrum })));
 
 /**
  * TabCarousel - Apple-style carousel tab switcher
@@ -423,6 +424,16 @@ export const router = createBrowserRouter([
           {
             path: 'privacy',
             element: <AppPrivacyPage />,
+          },
+
+          // Centrum nápovědy — přehled kapitol, progress, možnost spustit znovu
+          {
+            path: 'napoveda',
+            element: (
+              <Suspense fallback={<Loader />}>
+                <NapovedaCentrum />
+              </Suspense>
+            ),
           },
           
           // ============================================================

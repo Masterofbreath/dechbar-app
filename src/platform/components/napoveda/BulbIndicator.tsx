@@ -6,10 +6,16 @@
  * - dim    → šedá, bez animace, kliknutelná — projito, ale Tour nedokončena
  * - hidden → visibility: hidden (zachovává layout prostor)
  *
- * Klik → startTour() (otevře Tour od aktuálního/prvního neprojitého kroku)
+ * Kontextová logika:
+ * - Klik spustí Tour KAPITOLY pro aktuální route (ne vždy od začátku)
+ * - Pokud žádná kapitola neodpovídá route → standardní startTour()
  */
 
+import { useCallback } from 'react';
 import { useNapoveda } from './hooks/useNapoveda';
+import { useContextualChapter } from './hooks/useContextualChapter';
+import { supabase } from '@/platform/api/supabase';
+import { useAuthStore } from '@/platform/auth';
 
 /**
  * SVG žárovička — detailní outline design, 2px stroke, currentColor
@@ -48,13 +54,36 @@ function BulbIcon({ className }: { className?: string }) {
 
 export function BulbIndicator() {
   const { bulbState, startTour } = useNapoveda();
+  const contextualChapter = useContextualChapter();
+  const userId = useAuthStore((s) => s.user?.id);
 
   const isHidden = bulbState === 'hidden';
   const isLit = bulbState === 'lit';
   const isDim = bulbState === 'dim';
 
+  // Kontextový klik — nastaví current_chapter_id a spustí Tour
+  const handleClick = useCallback(async () => {
+    if (isHidden) return;
+
+    if (contextualChapter && userId) {
+      // Navigujeme uživatele ke kapitole pro aktuální route
+      await supabase
+        .from('user_tour_state')
+        .update({
+          current_chapter_id: contextualChapter.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId);
+    }
+
+    startTour();
+  }, [isHidden, contextualChapter, userId, startTour]);
+
+  const contextualLabel = contextualChapter?.title?.cs;
   const label = isLit
-    ? 'Nápověda — klikni pro spuštění průvodce'
+    ? contextualLabel
+      ? `Nápověda — spustit průvodce pro ${contextualLabel}`
+      : 'Nápověda — klikni pro spuštění průvodce'
     : isDim
       ? 'Nápověda — klikni pro pokračování v průvodci'
       : 'Nápověda dokončena';
@@ -69,7 +98,7 @@ export function BulbIndicator() {
       ]
         .filter(Boolean)
         .join(' ')}
-      onClick={isHidden ? undefined : startTour}
+      onClick={() => void handleClick()}
       aria-label={label}
       type="button"
       tabIndex={isHidden ? -1 : 0}

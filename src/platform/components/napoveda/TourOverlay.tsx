@@ -16,6 +16,7 @@ import 'driver.js/dist/driver.css';
 import { useOnboarding } from '@onboardjs/react';
 import { NapovedaContext } from './NapovedaProvider';
 import { TourTooltip } from './TourTooltip';
+import { tourEventBus, type TourEventType } from './TourEventBus';
 import { supabase } from '@/platform/api/supabase';
 import { useAuthStore } from '@/platform/auth';
 
@@ -55,7 +56,6 @@ export function TourOverlay() {
     async (stepId: string, chapterSlug: string) => {
       if (!userId || !napovedaCtx) return;
 
-      // Najdeme level_id a chapter_id pro uložení
       const { data: chapter } = await supabase
         .from('tour_chapters')
         .select('id, level_id')
@@ -77,13 +77,42 @@ export function TourOverlay() {
         { onConflict: 'user_id,step_id' }
       );
 
-      // Aktualizuj sessions_count a last_session_at v user_tour_state
       await supabase.rpc('update_tour_session_count' as never, {
         p_user_id: userId,
       } as never);
     },
     [userId, napovedaCtx]
   );
+
+  // ===================================================
+  // TourEventBus — automatický posun pro interaktivní kroky
+  // ===================================================
+  useEffect(() => {
+    const currentStep = state?.currentStep;
+    if (!currentStep) return;
+
+    const payload = currentStep.payload as {
+      stepType?: string;
+      interactiveAction?: string | null;
+      chapterSlug?: string;
+    } | undefined;
+
+    if (payload?.stepType !== 'interactive' || !payload.interactiveAction) return;
+
+    const expectedAction = payload.interactiveAction as TourEventType;
+
+    const unsubscribe = tourEventBus.onAction((event) => {
+      if (event.type === expectedAction) {
+        void markStepCompleted(
+          String(currentStep.id),
+          payload.chapterSlug ?? ''
+        );
+        void next();
+      }
+    });
+
+    return unsubscribe;
+  }, [state?.currentStep, next, markStepCompleted]);
 
   // Sestavení driver.js kroků z OnboardJS stavu
   const buildDriveSteps = useCallback((): DriveStep[] => {

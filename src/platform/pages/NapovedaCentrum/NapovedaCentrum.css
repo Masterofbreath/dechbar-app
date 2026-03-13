@@ -1,0 +1,193 @@
+/**
+ * NapovedaCentrum — CSS
+ * Design tokeny, dark-first, konzistentní s Settings
+ */
+
+.napoveda-centrum {
+  padding: var(--spacing-4) var(--spacing-4) env(safe-area-inset-bottom, var(--spacing-8));
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Overall progress card */
+.napoveda-centrum__overall {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4) var(--spacing-5);
+}
+
+.napoveda-centrum__overall-ring {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.napoveda-centrum__overall-percent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary, #2CBEC6);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.napoveda-centrum__overall-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.napoveda-centrum__overall-title {
+  font-size: var(--text-base, 15px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.napoveda-centrum__overall-sub {
+  font-size: var(--text-sm, 13px);
+  color: var(--color-text-secondary);
+}
+
+.napoveda-centrum__loading {
+  text-align: center;
+  padding: var(--spacing-8);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm, 14px);
+}
+
+/* Level section */
+.napoveda-centrum__level-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.napoveda-centrum__level-title {
+  font-size: var(--text-xs, 12px);
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+  padding: 0 var(--spacing-1);
+}
+
+/* Chapters list */
+.napoveda-centrum__chapters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.napoveda-centrum__chapter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-3) var(--spacing-4);
+  transition: border-color 0.15s;
+}
+
+.napoveda-centrum__chapter--done {
+  border-color: color-mix(in srgb, var(--color-success, #22c55e) 30%, transparent);
+}
+
+.napoveda-centrum__chapter--locked {
+  opacity: 0.5;
+}
+
+.napoveda-centrum__chapter-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.napoveda-centrum__chapter-title {
+  font-size: var(--text-sm, 14px);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.napoveda-centrum__chapter-meta {
+  font-size: var(--text-xs, 12px);
+  color: var(--color-text-tertiary);
+}
+
+.napoveda-centrum__chapter-route {
+  font-family: monospace;
+}
+
+/* Action buttons */
+.napoveda-centrum__chapter-btn {
+  border: 1px solid var(--color-primary, #2CBEC6);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--text-xs, 12px);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 34px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.napoveda-centrum__chapter-btn--start {
+  background: var(--color-primary, #2CBEC6);
+  color: #fff;
+}
+
+.napoveda-centrum__chapter-btn--redo {
+  background: transparent;
+  color: var(--color-primary, #2CBEC6);
+}
+
+.napoveda-centrum__chapter-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .napoveda-centrum__chapter-btn--start:hover {
+    opacity: 0.88;
+  }
+
+  .napoveda-centrum__chapter-btn--redo:hover {
+    background: color-mix(in srgb, var(--color-primary, #2CBEC6) 10%, transparent);
+  }
+}
+
+.napoveda-centrum__chapter-locked-badge {
+  font-size: var(--text-xs, 12px);
+  color: var(--color-text-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-2) var(--spacing-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.napoveda-centrum__empty {
+  text-align: center;
+  padding: var(--spacing-10);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm, 14px);
+}
