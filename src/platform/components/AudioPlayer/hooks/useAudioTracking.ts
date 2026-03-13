@@ -137,6 +137,11 @@ export const useAudioTracking = ({
   }, [listenedSegments]);
 
   // Write completion to user_lesson_progress (silent, background)
+  //
+  // Používáme RPC record_lesson_completion místo přímého upsert — RPC zachovává
+  // původní completed_at při opakovaném přehrání (ON CONFLICT aktualizuje jen
+  // play_duration_seconds). Přímý upsert by completed_at přepsal na NOW(), což
+  // by posunulo unlock datum dalšího dne pro uživatele kteří si lekci pustí znovu.
   const markAsCompleted = useCallback(async (
     lessonId: string,
     seriesId: string | null,
@@ -144,17 +149,12 @@ export const useAudioTracking = ({
   ) => {
     if (!userId || !lessonId) return;
 
-    const { error } = await supabase
-      .from('user_lesson_progress')
-      .upsert(
-        {
-          user_id: userId,
-          lesson_id: lessonId,
-          completed_at: new Date().toISOString(),
-          play_duration_seconds: Math.floor(listenTime),
-        },
-        { onConflict: 'user_id,lesson_id' },
-      );
+    const { error } = await supabase.rpc('record_lesson_completion', {
+      p_user_id: userId,
+      p_lesson_id: lessonId,
+      p_series_id: seriesId ?? '',
+      p_duration: Math.floor(listenTime),
+    });
 
     if (error) {
       console.error('[useAudioTracking] Failed to save completion:', error.message);
