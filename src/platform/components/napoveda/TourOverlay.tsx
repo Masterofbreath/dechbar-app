@@ -2,6 +2,7 @@
  * TourOverlay — Driver.js wrapper pro Spotlight efekt
  *
  * Zodpovídá za:
+ * - Start OnboardJS flow při mountu (useOnboarding().start())
  * - Inicializaci driver.js instance
  * - Mapování kroků z NapovedaContext na DriveStep[]
  * - iOS touch fix (povinný — blokuje touch průchod skrz overlay)
@@ -22,14 +23,29 @@ import { useAuthStore } from '@/platform/auth';
 
 export function TourOverlay() {
   const driverRef = useRef<Driver | null>(null);
+  const hasStartedRef = useRef(false);
   const userId = useAuthStore((s) => s.user?.id);
   const napovedaCtx = useContext(NapovedaContext);
-  const { state, next, previous, skip } = useOnboarding();
+
+  // start je potřeba explicitně zavolat — OnboardJS samo od sebe neběží
+  const { state, next, previous, skip, start } = useOnboarding() as ReturnType<typeof useOnboarding> & { start?: () => void };
+
+  // ===================================================
+  // KRITICKÝ FIX: Spustit OnboardJS flow při mountu
+  // ===================================================
+  useEffect(() => {
+    if (hasStartedRef.current) return;
+    if (typeof start === 'function') {
+      hasStartedRef.current = true;
+      start();
+    }
+  // start se nemění — spustíme pouze jednou při mountu
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ===================================================
   // iOS TOUCH FIX — POVINNÁ SOUČÁST (viz SPEC)
   // Blokuje touch průchod skrz overlay na non-tooltip elementy.
-  // Testovat na fyzickém iPhone — ne simulátor, ne Chrome DevTools.
   // ===================================================
   useEffect(() => {
     const iosDriverFix = (e: TouchEvent) => {
@@ -76,10 +92,6 @@ export function TourOverlay() {
         },
         { onConflict: 'user_id,step_id' }
       );
-
-      await supabase.rpc('update_tour_session_count' as never, {
-        p_user_id: userId,
-      } as never);
     },
     [userId, napovedaCtx]
   );
@@ -116,9 +128,8 @@ export function TourOverlay() {
 
   // Sestavení driver.js kroků z OnboardJS stavu
   const buildDriveSteps = useCallback((): DriveStep[] => {
-    if (!state?.context) return [];
-
-    const currentStep = state.currentStep;
+    // FIX: odstraněna závislost na state.context (neexistuje v OnboardJS API)
+    const currentStep = state?.currentStep;
     if (!currentStep) return [];
 
     const payload = currentStep.payload as {
@@ -126,20 +137,18 @@ export function TourOverlay() {
       title?: Record<string, string>;
       description?: Record<string, string>;
       stepType?: string;
-      chapterSlug?: string;
     } | undefined;
 
     if (!payload) return [];
-
-    const titleText = payload.title?.cs ?? payload.title?.en ?? '';
-    const descText = payload.description?.cs ?? payload.description?.en ?? '';
 
     return [
       {
         element: payload.domSelector ?? undefined,
         popover: {
-          title: titleText,
-          description: descText,
+          // Nativní popover skryt přes CSS (.driver-popover { display: none })
+          // Zobrazujeme vlastní TourBar (position: fixed; bottom: 72px)
+          title: '',
+          description: '',
           showButtons: [],
           showProgress: false,
         },
@@ -151,18 +160,25 @@ export function TourOverlay() {
   // Inicializace / aktualizace driver.js při změně kroku
   useEffect(() => {
     const steps = buildDriveSteps();
-    if (steps.length === 0) return;
+
+    // Žádný krok → zavřít driver pokud je aktivní
+    if (steps.length === 0) {
+      if (driverRef.current?.isActive()) {
+        driverRef.current.destroy();
+      }
+      return;
+    }
 
     if (!driverRef.current) {
       driverRef.current = createDriver({
         animate: true,
-        overlayOpacity: 0.75,
+        overlayOpacity: 0.78,
         allowClose: false,
         allowKeyboardControl: false,
         showButtons: [],
         showProgress: false,
-        stagePadding: 8,
-        stageRadius: 12,
+        stagePadding: 10,
+        stageRadius: 8,
       });
     }
 
@@ -187,7 +203,7 @@ export function TourOverlay() {
     };
   }, []);
 
-  // Handlery pro tlačítka v TourTooltip
+  // Handlery pro tlačítka v TourBar
   const handleNext = useCallback(async () => {
     const currentStep = state?.currentStep;
     if (currentStep && napovedaCtx?.currentStep) {
@@ -219,9 +235,7 @@ export function TourOverlay() {
     }
   }, [skip, napovedaCtx]);
 
-  // TourOverlay renderuje TourTooltip přes portal — overlay samotný je driver.js
-  // Tooltip se zobrazuje přes driver.js onPopoverRender nebo jako vlastní UI vedle overlay
-  // Pro custom design renderujeme vlastní komponentu vedle driver.js overlay
+  // TourOverlay renderuje TourBar přes portal
   const currentStepData = napovedaCtx?.currentStep;
   const isLastStep = state?.isLastStep ?? false;
   const isFirstStep = state?.isFirstStep ?? true;
@@ -229,6 +243,7 @@ export function TourOverlay() {
   const currentStepNum = state?.currentStepNumber ?? 1;
   const totalSteps = state?.totalSteps ?? 1;
 
+  // Čekáme až OnboardJS načte první krok
   if (!currentStepData) return null;
 
   return (

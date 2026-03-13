@@ -379,19 +379,22 @@
   to   { opacity: 1; }
 }
 
-/* Pevná šířka cardu — obsah se mění, modal neskáče */
+/*
+ * Card — fixní šířka i výška, modal NIKDY neskáče.
+ * Struktura: icon-area (fixní) + text-area (fixní) + dots + actions
+ */
 .ws-card {
   background: var(--color-surface);
   border: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 20%, transparent);
   border-radius: var(--radius-xl, 20px);
-  padding: var(--spacing-8) var(--spacing-7) var(--spacing-6);
+  padding: var(--spacing-6) var(--spacing-7) var(--spacing-6);
   width: 320px;
   max-width: calc(100vw - var(--spacing-8));
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-5);
+  gap: var(--spacing-4);
   box-shadow: 0 32px 80px rgb(0 0 0 / 50%),
               0 0 0 1px color-mix(in srgb, var(--color-accent, #D6A23A) 12%, transparent);
   animation: ws-card-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -409,17 +412,27 @@
   }
 }
 
-/* Pevná výška oblasti obsahu — zabraňuje skákání.
- * Nastaveno dle nejdelšího kroku (Step 3 s badge + textem). */
-.ws-content {
+/* Icon area — vždy na vrcholu cardu, stejná výška, nikdy se nepohne */
+.ws-icon-area {
   width: 100%;
-  height: 260px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Text area — fixní výška, obsah se centruje vertikálně */
+.ws-text-area {
+  width: 100%;
+  height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
+/* Legacy — zachováno pro kompatibilitu */
 .ws-step {
   display: flex;
   flex-direction: column;
@@ -644,36 +657,25 @@
 /* ---- Krok 2: cutout ve tmavém overlaji nad nav žárovičkou ---- */
 
 /*
- * Overlay Krok 2: průhledný kruh přesně nad BulbIndicator v TopNav.
- *
- * BulbIndicator DOM: top=14px, left=936px, width=37px (na 1024px viewportu)
- * → Center od pravého okraje: 1024 - 936 - 37/2 = 69.5px ≈ 70px
- * → Center od vrcholu: 14 + 37/2 = 32.5px ≈ 33px
- *
- * Na mobilní viewportu je BulbIndicator vždy ~70px od pravého okraje (TopNav layout).
- * Průhledný kruh 28px poloměr (prvek je 37px → malý přesah je ok).
- * Fade: transparent → dark začíná na 46px (≈ prvek + 9px mezera).
+ * ws-overlay--step2 — background je nastaven inline z JS (dynamická pozice bulb).
+ * Fallback pokud getBoundingClientRect() ještě neprobíhá:
  */
 .ws-overlay--step2 {
   background:
     radial-gradient(
       circle at calc(100% - 70px) 33px,
       transparent 26px,
-      rgb(0 0 0 / 75%) 50px
+      rgb(0 0 0 / 78%) 50px
     );
 }
 
-/* Gold pulzující ring přesně nad BulbIndicator (z-index nad overlayem) */
+/*
+ * Gold pulzující ring nad BulbIndicator.
+ * Pozice (top/left) se nastavuje inline z JS přes getBoundingClientRect() —
+ * zajišťuje přesné umístění na jakémkoli viewportu.
+ * Zde jen animace, border a z-index.
+ */
 .ws-nav-bulb-ring {
-  position: fixed;
-
-  /* Centrování 52px ringu nad 37px button: top = 14 - (52-37)/2 = 14-7.5 = 6px */
-  top: 6px;
-
-  /* Right = screenRight - buttonLeft - buttonWidth - (ring-button)/2 = 51 - 7.5 ≈ 44px */
-  right: 44px;
-  width: 52px;
-  height: 52px;
   border-radius: 50%;
   border: 2.5px solid var(--color-accent, #D6A23A);
   box-shadow:
