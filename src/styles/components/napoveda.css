@@ -217,6 +217,14 @@
               0 0 0 9999px rgb(0 0 0 / 75%) !important;
 }
 
+/*
+ * Skryjeme nativní driver.js popover — používáme vlastní TourBar dole.
+ * TourBar je v tour-bar (position: fixed; bottom: 0) nad driver overlayem.
+ */
+.driver-popover {
+  display: none !important;
+}
+
 /* ===================================== */
 
 /* BULB INDICATOR                        */
@@ -401,10 +409,11 @@
 /* Pevná výška oblasti obsahu — zabraňuje skákání */
 .ws-content {
   width: 100%;
-  min-height: 200px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .ws-step {
@@ -618,10 +627,67 @@
   }
 }
 
+/* Odstranit teal/modrý focus outline — nahradit gold */
+.ws-btn:focus {
+  outline: none;
+}
+
+.ws-btn:focus-visible {
+  outline: 2px solid var(--color-accent, #D6A23A);
+  outline-offset: 2px;
+}
+
+/* ---- Krok 2: cutout ve tmavém overlaji nad nav žárovičkou ---- */
+
+/*
+ * Vytváří průhledný kruh na pozici žárovičky v TopNav (vpravo nahoře)
+ * tak, aby byl vidět skutečný DOM element pod overlayem.
+ * Hodnoty: pravý okraj ~28px od pravého okraje, ~26px od vrcholu.
+ */
+.ws-overlay--step2 {
+  background:
+    radial-gradient(
+      circle at calc(100% - 28px) 26px,
+      transparent 22px,
+      rgb(0 0 0 / 75%) 48px
+    );
+}
+
+/* Gold pulzující ring nad skutečnou žárovičkou v nav (nad overlayem) */
+.ws-nav-bulb-ring {
+  position: fixed;
+  top: 4px;
+  right: 4px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent, #D6A23A);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--color-accent, #D6A23A) 20%, transparent),
+    0 0 20px var(--color-accent, #D6A23A);
+  animation: ws-bulb-ring-pulse 1.6s ease-in-out infinite;
+  z-index: 9001;
+  pointer-events: none;
+}
+
+@keyframes ws-bulb-ring-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.12);
+    opacity: 0.75;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ws-overlay,
   .ws-card,
-  .ws-glow__ring {
+  .ws-glow__ring,
+  .ws-nav-bulb-ring {
     animation: none;
   }
 }
