@@ -376,6 +376,233 @@ function AddStepForm({ chapterId, nextOrderIndex, onAdded }: AddStepFormProps) {
 }
 
 // ===================================================
+// AddChapterForm — přidání nové kapitoly do úrovně
+// ===================================================
+
+interface AddChapterFormProps {
+  levelId: string;
+  nextOrderIndex: number;
+  onAdded: () => void;
+}
+
+function AddChapterForm({ levelId, nextOrderIndex, onAdded }: AddChapterFormProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [titleCs, setTitleCs] = useState('');
+  const [slug, setSlug] = useState('');
+  const [routePath, setRoutePath] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function handleAdd() {
+    if (!titleCs.trim() || !slug.trim()) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.from('tour_chapters').insert({
+        level_id: levelId,
+        order_index: nextOrderIndex,
+        title: { cs: titleCs.trim(), en: '' },
+        slug: slug.trim().toLowerCase().replace(/\s+/g, '-'),
+        route_path: routePath.trim() || null,
+        is_active: true,
+      });
+      if (error) throw error;
+      setTitleCs('');
+      setSlug('');
+      setRoutePath('');
+      setIsOpen(false);
+      onAdded();
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  if (!isOpen) {
+    return (
+      <button className="add-step-btn" onClick={() => setIsOpen(true)} type="button">
+        + Přidat kapitolu
+      </button>
+    );
+  }
+
+  return (
+    <div className="add-step-form">
+      <h4 className="add-step-form__title">Nová kapitola #{nextOrderIndex}</h4>
+
+      <div className="step-editor__row">
+        <div className="step-editor__field">
+          <label className="step-editor__label">Název (CS) *</label>
+          <input
+            className="step-editor__input"
+            value={titleCs}
+            onChange={(e) => setTitleCs(e.target.value)}
+            placeholder="Např. Kontrolní pauza"
+            autoFocus
+          />
+        </div>
+        <div className="step-editor__field">
+          <label className="step-editor__label">Slug * (URL-safe)</label>
+          <input
+            className="step-editor__input step-editor__input--mono"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="kontrolni-pauza"
+          />
+        </div>
+      </div>
+
+      <div className="step-editor__field">
+        <label className="step-editor__label">Route path (volitelné)</label>
+        <input
+          className="step-editor__input step-editor__input--mono"
+          value={routePath}
+          onChange={(e) => setRoutePath(e.target.value)}
+          placeholder="/app nebo /app/cvicit"
+        />
+      </div>
+
+      <div className="step-editor__form-actions">
+        <button
+          className="step-editor__btn-save"
+          onClick={() => void handleAdd()}
+          disabled={isSaving || !titleCs.trim() || !slug.trim()}
+          type="button"
+        >
+          {isSaving ? 'Přidávám…' : 'Přidat kapitolu'}
+        </button>
+        <button
+          className="step-editor__btn-cancel"
+          onClick={() => setIsOpen(false)}
+          type="button"
+        >
+          Zrušit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ===================================================
+// AddLevelForm — přidání nové úrovně
+// ===================================================
+
+interface AddLevelFormProps {
+  nextOrderIndex: number;
+  onAdded: () => void;
+}
+
+function AddLevelForm({ nextOrderIndex, onAdded }: AddLevelFormProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [titleCs, setTitleCs] = useState('');
+  const [slug, setSlug] = useState('');
+  const [requiresPlan, setRequiresPlan] = useState('');
+  const [rewardDays, setRewardDays] = useState('1');
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function handleAdd() {
+    if (!titleCs.trim() || !slug.trim()) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.from('tour_levels').insert({
+        order_index: nextOrderIndex,
+        title: { cs: titleCs.trim(), en: '' },
+        slug: slug.trim().toLowerCase().replace(/\s+/g, '-'),
+        requires_plan: requiresPlan.trim() || null,
+        reward_days: parseInt(rewardDays, 10) || 1,
+        is_active: true,
+      });
+      if (error) throw error;
+      setTitleCs('');
+      setSlug('');
+      setRequiresPlan('');
+      setRewardDays('1');
+      setIsOpen(false);
+      onAdded();
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  if (!isOpen) {
+    return (
+      <button className="add-level-btn" onClick={() => setIsOpen(true)} type="button">
+        + Přidat novou úroveň
+      </button>
+    );
+  }
+
+  return (
+    <div className="add-step-form add-level-form">
+      <h4 className="add-step-form__title">Nová úroveň #{nextOrderIndex}</h4>
+
+      <div className="step-editor__row">
+        <div className="step-editor__field">
+          <label className="step-editor__label">Název (CS) *</label>
+          <input
+            className="step-editor__input"
+            value={titleCs}
+            onChange={(e) => setTitleCs(e.target.value)}
+            placeholder="Např. Pokročilá úroveň"
+            autoFocus
+          />
+        </div>
+        <div className="step-editor__field">
+          <label className="step-editor__label">Slug * (URL-safe)</label>
+          <input
+            className="step-editor__input step-editor__input--mono"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="pokrocila"
+          />
+        </div>
+      </div>
+
+      <div className="step-editor__row">
+        <div className="step-editor__field">
+          <label className="step-editor__label">Vyžaduje plán (volitelné)</label>
+          <select
+            className="step-editor__select"
+            value={requiresPlan}
+            onChange={(e) => setRequiresPlan(e.target.value)}
+          >
+            <option value="">Žádný (ZDARMA)</option>
+            <option value="SMART">SMART</option>
+            <option value="AI_COACH">AI_COACH</option>
+          </select>
+        </div>
+        <div className="step-editor__field">
+          <label className="step-editor__label">Odměna (dnů SMART)</label>
+          <input
+            className="step-editor__input"
+            type="number"
+            min="0"
+            max="30"
+            value={rewardDays}
+            onChange={(e) => setRewardDays(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="step-editor__form-actions">
+        <button
+          className="step-editor__btn-save"
+          onClick={() => void handleAdd()}
+          disabled={isSaving || !titleCs.trim() || !slug.trim()}
+          type="button"
+        >
+          {isSaving ? 'Přidávám…' : 'Přidat úroveň'}
+        </button>
+        <button
+          className="step-editor__btn-cancel"
+          onClick={() => setIsOpen(false)}
+          type="button"
+        >
+          Zrušit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ===================================================
 // Main Component
 // ===================================================
 
@@ -769,9 +996,30 @@ export function NapovedaAdmin() {
                         </div>
                       );
                     })}
+
+                  {/* Přidat kapitolu do této úrovně */}
+                  <div className="napoveda-admin__add-chapter">
+                    <AddChapterForm
+                      levelId={level.id}
+                      nextOrderIndex={(level.tour_chapters?.length ?? 0) + 1}
+                      onAdded={() => {
+                        void queryClient.invalidateQueries({ queryKey: ['tour-levels-admin'] });
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
+
+            {/* Přidat novou úroveň */}
+            <div className="napoveda-admin__add-level">
+              <AddLevelForm
+                nextOrderIndex={levels.length + 1}
+                onAdded={() => {
+                  void queryClient.invalidateQueries({ queryKey: ['tour-levels-admin'] });
+                }}
+              />
+            </div>
           </div>
         )}
       </section>

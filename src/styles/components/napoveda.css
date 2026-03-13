@@ -20,154 +20,201 @@
 
 /* ===================================== */
 
-/* TOUR TOOLTIP                          */
+/* TOUR BAR (fixní navigační lišta)      */
 
 /* ===================================== */
 
-.tour-tooltip {
-  background: var(--color-surface-elevated);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  padding: var(--spacing-5) var(--spacing-5);
-  max-width: calc(100vw - var(--spacing-8));
-  width: 340px;
-  position: relative;
-}
-
-.tour-tooltip__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-3);
-}
-
-.tour-tooltip__progress-label {
-  font-size: var(--text-xs, 11px);
-  font-weight: 500;
-  color: var(--color-text-tertiary);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.tour-tooltip__chapter-label {
-  font-size: var(--text-xs, 11px);
-  color: var(--color-text-tertiary);
+/* Fixní bottom bar — viditelný vždy během Tour */
+.tour-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10001; /* nad driver.js overlayem */
   background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: 2px var(--spacing-2);
+  border-top: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 30%, transparent);
+  box-shadow: 0 -8px 32px rgb(0 0 0 / 30%);
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-.tour-tooltip__progress-bar {
+/* Tenký gold progress bar přes celou šířku */
+.tour-bar__progress {
   width: 100%;
   height: 3px;
-  background: var(--color-border);
-  border-radius: var(--radius-full);
-  margin-bottom: var(--spacing-4);
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 20%, transparent);
   overflow: hidden;
 }
 
-.tour-tooltip__progress-bar-fill {
+.tour-bar__progress-fill {
   height: 100%;
-  background: var(--color-accent, var(--color-gold, #D6A23A));
-  border-radius: var(--radius-full);
-  transition: width 0.3s ease;
+  background: var(--color-accent, #D6A23A);
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  transition: width 0.4s ease;
 }
 
-.tour-tooltip__title {
-  font-size: var(--text-base, 16px);
-  font-weight: 600;
+.tour-bar__inner {
+  padding: var(--spacing-3) var(--spacing-4) var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* Meta: kapitola + krok X/N */
+.tour-bar__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tour-bar__chapter {
+  font-size: var(--text-xs, 11px);
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tour-bar__step-count {
+  font-size: var(--text-xs, 12px);
+  font-weight: 700;
+  color: var(--color-accent, #D6A23A);
+  letter-spacing: 0.04em;
+}
+
+/* Obsah */
+.tour-bar__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.tour-bar__title {
+  font-size: var(--text-base, 15px);
+  font-weight: 700;
   color: var(--color-text-primary);
-  margin-bottom: var(--spacing-2);
-  line-height: 1.4;
+  margin: 0;
+  line-height: 1.3;
 }
 
-.tour-tooltip__description {
-  font-size: var(--text-sm, 14px);
+.tour-bar__description {
+  font-size: var(--text-sm, 13px);
   color: var(--color-text-secondary);
-  line-height: 1.6;
-  margin-bottom: var(--spacing-5);
+  line-height: 1.5;
+  margin: 0;
 }
 
-.tour-tooltip__reward-hint {
+.tour-bar__hint {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
   font-size: var(--text-xs, 11px);
-  color: var(--color-accent, var(--color-gold, #D6A23A));
-  background: color-mix(in srgb, var(--color-accent, #D6A23A) 10%, transparent);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-2) var(--spacing-3);
-  margin-bottom: var(--spacing-4);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-1);
 }
 
-.tour-tooltip__actions {
+.tour-bar__hint--reward {
+  color: var(--color-accent, #D6A23A);
+}
+
+/* Navigační tlačítka */
+.tour-bar__actions {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  margin-top: var(--spacing-1);
 }
 
-.tour-tooltip__btn-back {
-  flex: 0 0 auto;
+.tour-bar__btn-back {
   background: transparent;
-  color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--spacing-2) var(--spacing-4);
-  font-size: var(--text-sm, 14px);
+  font-size: var(--text-sm, 13px);
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
   min-height: 44px;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
 }
 
-.tour-tooltip__btn-back:hover {
-  color: var(--color-text-primary);
-  border-color: var(--color-text-secondary);
+.tour-bar__btn-back:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
-.tour-tooltip__btn-defer {
-  flex: 1 1 auto;
+@media (hover: hover) {
+  .tour-bar__btn-back:not(:disabled):hover {
+    border-color: var(--color-text-secondary);
+    color: var(--color-text-primary);
+  }
+}
+
+.tour-bar__btn-defer {
+  flex: 1;
   background: transparent;
-  color: var(--color-text-tertiary);
   border: none;
-  font-size: var(--text-sm, 14px);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm, 13px);
   cursor: pointer;
   text-align: center;
   min-height: 44px;
   transition: color 0.15s;
 }
 
-.tour-tooltip__btn-defer:hover {
-  color: var(--color-text-secondary);
+@media (hover: hover) {
+  .tour-bar__btn-defer:hover {
+    color: var(--color-text-secondary);
+  }
 }
 
-.tour-tooltip__btn-next {
-  flex: 0 0 auto;
-  background: var(--color-primary, var(--color-teal, #2CBEC6));
+.tour-bar__btn-next {
+  background: var(--color-accent, #D6A23A);
   color: #fff;
   border: none;
   border-radius: var(--radius-md);
   padding: var(--spacing-2) var(--spacing-5);
   font-size: var(--text-sm, 14px);
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.15s;
   min-height: 44px;
+  white-space: nowrap;
+  transition: opacity 0.15s, transform 0.1s;
 }
 
-.tour-tooltip__btn-next:hover {
-  opacity: 0.9;
+.tour-bar__btn-next:active {
+  transform: scale(0.97);
 }
 
-.tour-tooltip__btn-next:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+@media (hover: hover) {
+  .tour-bar__btn-next:hover {
+    opacity: 0.88;
+  }
 }
 
-/* Finish button variant */
-.tour-tooltip__btn-next--finish {
-  background: var(--color-accent, var(--color-gold, #D6A23A));
+.tour-bar__btn-next--finish {
+  background: var(--color-success, #22c55e);
+}
+
+/* ===================================== */
+
+/* DRIVER.JS — gold spotlight            */
+
+/* ===================================== */
+
+/* Gold border kolem zvýrazněného prvku */
+.driver-active-element,
+.driver-highlighted-element {
+  outline: 2px solid var(--color-accent, #D6A23A) !important;
+  outline-offset: 4px;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Stage (světlé okno) — tenký gold rámeček */
+.driver-stage-wrap > div {
+  box-shadow: 0 0 0 2px var(--color-accent, #D6A23A),
+              0 0 0 9999px rgb(0 0 0 / 75%) !important;
 }
 
 /* ===================================== */
@@ -304,50 +351,45 @@
 
 /* ===================================== */
 
-/* ---- Overlay (driver.js styl) ---- */
 .ws-overlay {
   position: fixed;
   inset: 0;
   z-index: 9000;
-  background: rgb(0 0 0 / 72%);
+  background: rgb(0 0 0 / 75%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: env(safe-area-inset-top, var(--spacing-6)) var(--spacing-6) env(safe-area-inset-bottom, var(--spacing-6));
-  animation: ws-fade-in 0.3s ease;
+  animation: ws-fade-in 0.25s ease;
 }
 
 @keyframes ws-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-/* ---- Card ---- */
+/* Pevná šířka cardu — obsah se mění, modal neskáče */
 .ws-card {
   background: var(--color-surface);
-  border: 1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 20%, transparent);
   border-radius: var(--radius-xl, 20px);
-  padding: var(--spacing-8) var(--spacing-7);
-  max-width: 320px;
-  width: 100%;
+  padding: var(--spacing-8) var(--spacing-7) var(--spacing-6);
+  width: 320px;
+  max-width: calc(100vw - var(--spacing-8));
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-5);
-  box-shadow: 0 32px 80px rgb(0 0 0 / 40%);
+  box-shadow: 0 32px 80px rgb(0 0 0 / 50%),
+              0 0 0 1px color-mix(in srgb, var(--color-accent, #D6A23A) 12%, transparent);
   animation: ws-card-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes ws-card-in {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.96);
+    transform: translateY(12px) scale(0.97);
   }
 
   to {
@@ -356,15 +398,28 @@
   }
 }
 
-/* ---- Step content ---- */
+/* Pevná výška oblasti obsahu — zabraňuje skákání */
+.ws-content {
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .ws-step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-3);
+  gap: var(--spacing-4);
   width: 100%;
-  min-height: 180px;
-  justify-content: center;
+}
+
+.ws-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  align-items: center;
 }
 
 .ws-title {
@@ -372,7 +427,7 @@
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .ws-text {
@@ -382,50 +437,53 @@
   line-height: 1.6;
 }
 
-.ws-text--small {
+.ws-text--muted {
   font-size: var(--text-xs, 13px);
+  color: var(--color-text-tertiary);
 }
 
-/* ---- Krok 1: Breath circle ---- */
-.ws-breath {
+/* ---- Sdílená glow komponenta (gold na všech krocích) ---- */
+.ws-glow-wrap {
   position: relative;
   width: 88px;
   height: 88px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--spacing-1);
+  flex-shrink: 0;
 }
 
-.ws-breath__ring {
+.ws-glow__ring {
   position: absolute;
   border-radius: 50%;
-  border: 1.5px solid var(--color-primary, #2CBEC6);
-  animation: ws-breath-pulse 3.5s ease-in-out infinite;
+  animation: ws-glow-pulse 3s ease-in-out infinite;
 }
 
-.ws-breath__ring--1 {
+.ws-glow-wrap--gold .ws-glow__ring--1 {
   width: 88px;
   height: 88px;
-  opacity: 0.12;
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 25%, transparent);
   animation-delay: 0s;
 }
 
-.ws-breath__ring--2 {
+.ws-glow-wrap--gold .ws-glow__ring--2 {
   width: 66px;
   height: 66px;
-  opacity: 0.22;
-  animation-delay: 0.35s;
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 35%, transparent);
+  animation-delay: 0.3s;
 }
 
-.ws-breath__ring--3 {
+.ws-glow-wrap--gold .ws-glow__ring--3 {
   width: 48px;
   height: 48px;
-  opacity: 0.38;
-  animation-delay: 0.7s;
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 45%, transparent);
+  animation-delay: 0.6s;
 }
 
-@keyframes ws-breath-pulse {
+@keyframes ws-glow-pulse {
   0%,
   100% {
     transform: scale(1);
@@ -433,109 +491,40 @@
 
   50% {
     transform: scale(1.07);
-    opacity: 0.55;
   }
 }
 
-.ws-breath__core {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-primary, #2CBEC6) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-primary, #2CBEC6) 28%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primary, #2CBEC6);
-  z-index: 1;
+/* Pulzující varianta pro krok 2 (intenzivnější) */
+.ws-glow__ring--pulse {
+  animation-duration: 2s;
 }
 
-/* ---- Krok 2: Spotlight kolem žárovičky ---- */
-.ws-spotlight {
-  position: relative;
-  width: 88px;
-  height: 88px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--spacing-1);
-}
-
-.ws-spotlight__ring {
-  position: absolute;
-  border-radius: 50%;
-  animation: ws-spotlight-glow 2.5s ease-in-out infinite;
-}
-
-.ws-spotlight__ring--1 {
-  width: 88px;
-  height: 88px;
-  background: color-mix(in srgb, var(--color-accent, #D6A23A) 18%, transparent);
-}
-
-.ws-spotlight__ring--2 {
-  width: 62px;
-  height: 62px;
-  background: color-mix(in srgb, var(--color-accent, #D6A23A) 28%, transparent);
-  animation-delay: 0.2s;
-}
-
-@keyframes ws-spotlight-glow {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.1);
-    opacity: 0.7;
-  }
-}
-
-.ws-spotlight__icon {
+.ws-glow__core {
   position: relative;
   z-index: 1;
   width: 40px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-accent, #D6A23A);
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-accent, #D6A23A) 80%, transparent));
-}
-
-/* Šipka hint */
-.ws-arrow-hint {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-1);
-  color: var(--color-text-tertiary);
-  font-size: var(--text-xs, 12px);
-  margin-top: var(--spacing-1);
-}
-
-/* ---- Krok 3: Odměna ---- */
-.ws-reward-icon {
-  width: 64px;
-  height: 64px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--color-accent, #D6A23A) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 28%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-accent, #D6A23A);
-  margin-bottom: var(--spacing-1);
 }
 
+.ws-glow__core--gold {
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 20%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--color-accent, #D6A23A) 50%, transparent);
+  color: var(--color-accent, #D6A23A);
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent, #D6A23A) 60%, transparent));
+}
+
+/* ---- Odměna (krok 3) ---- */
 .ws-reward-badge {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   background: color-mix(in srgb, var(--color-accent, #D6A23A) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 30%, transparent);
   border-radius: var(--radius-lg);
   padding: var(--spacing-3) var(--spacing-6);
 }
@@ -548,7 +537,7 @@
 }
 
 .ws-reward-label {
-  font-size: var(--text-sm, 14px);
+  font-size: var(--text-sm, 13px);
   font-weight: 600;
   color: var(--color-accent, #D6A23A);
 }
@@ -561,16 +550,20 @@
 }
 
 .ws-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--color-border);
-  transition: background 0.2s, transform 0.2s;
+  transition: background 0.25s, transform 0.25s;
 }
 
 .ws-dot--active {
-  background: var(--color-primary, #2CBEC6);
-  transform: scale(1.3);
+  background: var(--color-accent, #D6A23A);
+  transform: scale(1.35);
+}
+
+.ws-dot--done {
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 45%, transparent);
 }
 
 /* ---- Akce ---- */
@@ -595,7 +588,7 @@
 }
 
 .ws-btn--primary {
-  background: var(--color-primary, #2CBEC6);
+  background: var(--color-accent, #D6A23A);
   color: #fff;
 }
 
@@ -628,8 +621,7 @@
 @media (prefers-reduced-motion: reduce) {
   .ws-overlay,
   .ws-card,
-  .ws-breath__ring,
-  .ws-spotlight__ring {
+  .ws-glow__ring {
     animation: none;
   }
 }

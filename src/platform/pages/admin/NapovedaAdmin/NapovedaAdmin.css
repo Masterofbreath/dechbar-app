@@ -674,6 +674,47 @@
   margin: 0;
 }
 
+/* Přidat kapitolu */
+.napoveda-admin__add-chapter {
+  padding: var(--spacing-3) var(--spacing-3) 0;
+  border-top: 1px dashed var(--color-border);
+  margin-top: var(--spacing-2);
+}
+
+/* Přidat úroveň */
+.napoveda-admin__add-level {
+  margin-top: var(--spacing-4);
+}
+
+.add-level-btn {
+  width: 100%;
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 8%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--color-accent, #D6A23A) 40%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--text-sm, 14px);
+  color: var(--color-accent, #D6A23A);
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+  min-height: 44px;
+}
+
+.add-level-btn:hover {
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 14%, transparent);
+  border-color: var(--color-accent, #D6A23A);
+}
+
+.add-level-form {
+  border-color: var(--color-accent, #D6A23A) !important;
+  background: color-mix(in srgb, var(--color-accent, #D6A23A) 4%, transparent) !important;
+}
+
+.add-level-form .add-step-form__title {
+  color: var(--color-accent, #D6A23A);
+}
+
 /* ===== DEV NÁSTROJE ===== */
 
 .napoveda-admin__dev-card {
