@@ -14,6 +14,7 @@
 import { useNavigate } from 'react-router-dom';
 import { NavIcon } from '../NavIcon';
 import { KPDisplay } from '../KPDisplay';
+import { BulbIndicator } from '../napoveda';
 import { useNavigation } from '@/platform/hooks';
 import { useAuth } from '@/platform/auth';
 
@@ -85,8 +86,11 @@ export function TopNav({ transparent = false, showKP = true, className = '' }: T
         {showKP && <KPDisplay />}
       </div>
       
-      {/* Right: Bell + Settings */}
+      {/* Right: Bulb + Bell + Settings */}
       <div className="top-nav__right">
+        {/* Nápověda žárovička — vlevo od Bell */}
+        <BulbIndicator />
+
         <button
           className="top-nav__bell-button"
           onClick={openNotifications}

@@ -21,10 +21,12 @@ import { TopNav } from '../components/navigation/TopNav';
 import { BottomNav } from '../components/navigation/BottomNav';
 import { StickyAudioPlayer } from '../components/AudioPlayer';
 import { TrialExpiryModal } from '../components/TrialExpiryModal/TrialExpiryModal';
+import { NapovedaProvider } from '../components/napoveda';
 import { useAudioPlayerStore } from '../components/AudioPlayer/store';
 import { usePlayerBroadcast } from '../components/AudioPlayer/usePlayerBroadcast';
 import { useAuthStore } from '@/platform/auth';
 import { useAppSession } from '@/platform/analytics';
+import '@/styles/components/napoveda.css';
 
 export interface AppLayoutProps {
   /**
@@ -73,20 +75,22 @@ export function AppLayout({
   // Viz src/styles/layouts/app-layout.css.
 
   return (
-    <div className={`app-layout${hasPlayer ? ' app-layout--has-player' : ''}`}>
-      <TopNav transparent={transparentTopNav} />
-      
-      <main className="app-layout__content" role="main">
-        {children}
-      </main>
-      
-      {!hideBottomNav && createPortal(<BottomNav />, document.body)}
-      
-      {/* Sticky Audio Player (global, shows when track playing) */}
-      <StickyAudioPlayer />
+    <NapovedaProvider>
+      <div className={`app-layout${hasPlayer ? ' app-layout--has-player' : ''}`}>
+        <TopNav transparent={transparentTopNav} />
+        
+        <main className="app-layout__content" role="main">
+          {children}
+        </main>
+        
+        {!hideBottomNav && createPortal(<BottomNav />, document.body)}
+        
+        {/* Sticky Audio Player (global, shows when track playing) */}
+        <StickyAudioPlayer />
 
-      {/* Trial expiry modal — poslední dny trialu / po expiraci */}
-      <TrialExpiryModal />
-    </div>
+        {/* Trial expiry modal — poslední dny trialu / po expiraci */}
+        <TrialExpiryModal />
+      </div>
+    </NapovedaProvider>
   );
 }
