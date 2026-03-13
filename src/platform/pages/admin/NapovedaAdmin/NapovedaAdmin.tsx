@@ -17,6 +17,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/platform/api/supabase';
 import { useAuthStore } from '@/platform/auth';
+import { SELECTOR_REGISTRY } from './selectorRegistry';
+import type { SelectorSection } from './selectorRegistry';
 import './NapovedaAdmin.css';
 
 // ===================================================
@@ -218,12 +220,15 @@ function StepEditor({ step, onSave, onToggle, isSaving }: StepEditorProps) {
 
           <div className="step-editor__field">
             <label className="step-editor__label">DOM Selektor (volitelné)</label>
-            <input
-              className="step-editor__input step-editor__input--mono"
-              value={domSelector}
-              onChange={(e) => setDomSelector(e.target.value)}
-              placeholder="Např. #kp-center-btn nebo .top-nav__bell-button"
-            />
+            <div className="selector-field">
+              <input
+                className="step-editor__input step-editor__input--mono"
+                value={domSelector}
+                onChange={(e) => setDomSelector(e.target.value)}
+                placeholder="Např. #kp-center-btn nebo .top-nav__bell-button"
+              />
+              <SelectorPicker onSelect={(sel) => setDomSelector(sel)} />
+            </div>
           </div>
 
           <div className="step-editor__form-actions">
@@ -252,6 +257,138 @@ function StepEditor({ step, onSave, onToggle, isSaving }: StepEditorProps) {
 // ===================================================
 // AddStepForm — přidání nového kroku do kapitoly
 // ===================================================
+
+// ===================================================
+// SelectorPicker — klikací strom DOM selektorů
+// ===================================================
+
+interface SelectorPickerProps {
+  onSelect: (selector: string) => void;
+}
+
+function SelectorPicker({ onSelect }: SelectorPickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeView, setActiveView] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+
+  const viewKeys = Object.keys(SELECTOR_REGISTRY);
+  const currentView = activeView ? SELECTOR_REGISTRY[activeView] : null;
+
+  function handleViewClick(viewKey: string) {
+    setActiveView(activeView === viewKey ? null : viewKey);
+    setActiveSection(null);
+  }
+
+  function handleSectionClick(sectionKey: string) {
+    setActiveSection(activeSection === sectionKey ? null : sectionKey);
+  }
+
+  function handleItemClick(selector: string) {
+    onSelect(selector);
+    setIsOpen(false);
+    setActiveView(null);
+    setActiveSection(null);
+  }
+
+  const currentSection: SelectorSection | null =
+    currentView && activeSection ? currentView.sections[activeSection] : null;
+
+  if (!isOpen) {
+    return (
+      <button
+        className="selector-picker__trigger"
+        onClick={() => setIsOpen(true)}
+        type="button"
+        title="Otevřít průzkumník prvků"
+      >
+        🗺️ Vybrat z mapy prvků
+      </button>
+    );
+  }
+
+  return (
+    <div className="selector-picker">
+      <div className="selector-picker__header">
+        <span className="selector-picker__title">Mapa prvků aplikace</span>
+        <button
+          className="selector-picker__close"
+          onClick={() => setIsOpen(false)}
+          type="button"
+          aria-label="Zavřít"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="selector-picker__body">
+        {/* Sloupec 1: Views */}
+        <div className="selector-picker__col">
+          <div className="selector-picker__col-label">View / Sekce</div>
+          {viewKeys.map((key) => {
+            const view = SELECTOR_REGISTRY[key];
+            return (
+              <button
+                key={key}
+                className={`selector-picker__item ${activeView === key ? 'selector-picker__item--active' : ''}`}
+                onClick={() => handleViewClick(key)}
+                type="button"
+              >
+                {view.icon && <span>{view.icon}</span>}
+                {view.label}
+                {view.route && (
+                  <span className="selector-picker__route">{view.route}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Sloupec 2: Sekce */}
+        {currentView && (
+          <div className="selector-picker__col">
+            <div className="selector-picker__col-label">Sekce</div>
+            {Object.entries(currentView.sections).map(([sKey, section]) => (
+              <button
+                key={sKey}
+                className={`selector-picker__item ${activeSection === sKey ? 'selector-picker__item--active' : ''}`}
+                onClick={() => handleSectionClick(sKey)}
+                type="button"
+              >
+                {section.label}
+                <span className="selector-picker__count">{section.items.length}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Sloupec 3: Prvky */}
+        {currentSection && (
+          <div className="selector-picker__col">
+            <div className="selector-picker__col-label">Prvek → klikni = vybere</div>
+            {currentSection.items.map((item) => (
+              <button
+                key={item.selector}
+                className="selector-picker__item selector-picker__item--selectable"
+                onClick={() => handleItemClick(item.selector)}
+                type="button"
+                title={item.hint ?? item.selector}
+              >
+                <span className="selector-picker__item-label">{item.label}</span>
+                <code className="selector-picker__selector">{item.selector}</code>
+                {item.hint && (
+                  <span className="selector-picker__hint">{item.hint}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ===================================================
+// AddStepFormProps
 
 interface AddStepFormProps {
   chapterId: string;
@@ -345,12 +482,15 @@ function AddStepForm({ chapterId, nextOrderIndex, onAdded }: AddStepFormProps) {
         </div>
         <div className="step-editor__field">
           <label className="step-editor__label">DOM Selektor</label>
-          <input
-            className="step-editor__input step-editor__input--mono"
-            value={domSelector}
-            onChange={(e) => setDomSelector(e.target.value)}
-            placeholder="#element nebo .class"
-          />
+          <div className="selector-field">
+            <input
+              className="step-editor__input step-editor__input--mono"
+              value={domSelector}
+              onChange={(e) => setDomSelector(e.target.value)}
+              placeholder="#element nebo .class"
+            />
+            <SelectorPicker onSelect={(sel) => setDomSelector(sel)} />
+          </div>
         </div>
       </div>
 

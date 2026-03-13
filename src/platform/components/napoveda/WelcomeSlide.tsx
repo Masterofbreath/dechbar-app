@@ -49,7 +49,8 @@ function Step1() {
       <div className="ws-text-block">
         <h1 className="ws-title">Vítej v DechBaru</h1>
         <p className="ws-text">
-          Umění dechu v kapse.
+          Aplikace, která tě naučí pracovat<br />
+          s dechem. Tvé umění dechu v kapse.
         </p>
       </div>
     </div>
@@ -81,7 +82,7 @@ function Step2() {
       <div className="ws-text-block">
         <h2 className="ws-title">Tvůj průvodce aplikací</h2>
         <p className="ws-text">
-          Ikonka žárovičky vpravo nahoře<br />
+          Žárovička vpravo nahoře<br />
           tě provede celou aplikací<br />
           a naučí tě s ní pracovat.
         </p>
@@ -157,7 +158,6 @@ function WelcomeSlideContent({ onStart, onSkip }: { onStart: () => void; onSkip:
               className="ws-btn ws-btn--primary"
               onClick={() => setStep((s) => s + 1)}
               type="button"
-              autoFocus
             >
               Další
             </button>
@@ -167,7 +167,6 @@ function WelcomeSlideContent({ onStart, onSkip }: { onStart: () => void; onSkip:
                 className="ws-btn ws-btn--primary"
                 onClick={onStart}
                 type="button"
-                autoFocus
               >
                 Spustit průvodce
               </button>

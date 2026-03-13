@@ -24,17 +24,20 @@
 
 /* ===================================== */
 
-/* Fixní bottom bar — viditelný vždy během Tour */
+/* Fixní bottom bar — viditelný vždy během Tour.
+ * Pozice: nad BottomNav (height: 72px + safe-area-inset-bottom).
+ * Z-index: 10001 — nad driver.js overlayem (z-index ~10000) i BottomNav (z-index 1000).
+ */
 .tour-bar {
   position: fixed;
-  bottom: 0;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
-  z-index: 10001; /* nad driver.js overlayem */
+  z-index: 10001;
   background: var(--color-surface);
-  border-top: 1px solid color-mix(in srgb, var(--color-accent, #D6A23A) 30%, transparent);
-  box-shadow: 0 -8px 32px rgb(0 0 0 / 30%);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  border-top: 2px solid color-mix(in srgb, var(--color-accent, #D6A23A) 35%, transparent);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: 0 -8px 32px rgb(0 0 0 / 35%);
 }
 
 /* Tenký gold progress bar přes celou šířku */
@@ -406,10 +409,11 @@
   }
 }
 
-/* Pevná výška oblasti obsahu — zabraňuje skákání */
+/* Pevná výška oblasti obsahu — zabraňuje skákání.
+ * Nastaveno dle nejdelšího kroku (Step 3 s badge + textem). */
 .ws-content {
   width: 100%;
-  height: 220px;
+  height: 260px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -640,32 +644,42 @@
 /* ---- Krok 2: cutout ve tmavém overlaji nad nav žárovičkou ---- */
 
 /*
- * Vytváří průhledný kruh na pozici žárovičky v TopNav (vpravo nahoře)
- * tak, aby byl vidět skutečný DOM element pod overlayem.
- * Hodnoty: pravý okraj ~28px od pravého okraje, ~26px od vrcholu.
+ * Overlay Krok 2: průhledný kruh přesně nad BulbIndicator v TopNav.
+ *
+ * BulbIndicator DOM: top=14px, left=936px, width=37px (na 1024px viewportu)
+ * → Center od pravého okraje: 1024 - 936 - 37/2 = 69.5px ≈ 70px
+ * → Center od vrcholu: 14 + 37/2 = 32.5px ≈ 33px
+ *
+ * Na mobilní viewportu je BulbIndicator vždy ~70px od pravého okraje (TopNav layout).
+ * Průhledný kruh 28px poloměr (prvek je 37px → malý přesah je ok).
+ * Fade: transparent → dark začíná na 46px (≈ prvek + 9px mezera).
  */
 .ws-overlay--step2 {
   background:
     radial-gradient(
-      circle at calc(100% - 28px) 26px,
-      transparent 22px,
-      rgb(0 0 0 / 75%) 48px
+      circle at calc(100% - 70px) 33px,
+      transparent 26px,
+      rgb(0 0 0 / 75%) 50px
     );
 }
 
-/* Gold pulzující ring nad skutečnou žárovičkou v nav (nad overlayem) */
+/* Gold pulzující ring přesně nad BulbIndicator (z-index nad overlayem) */
 .ws-nav-bulb-ring {
   position: fixed;
-  top: 4px;
-  right: 4px;
-  width: 48px;
-  height: 48px;
+
+  /* Centrování 52px ringu nad 37px button: top = 14 - (52-37)/2 = 14-7.5 = 6px */
+  top: 6px;
+
+  /* Right = screenRight - buttonLeft - buttonWidth - (ring-button)/2 = 51 - 7.5 ≈ 44px */
+  right: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  border: 2px solid var(--color-accent, #D6A23A);
+  border: 2.5px solid var(--color-accent, #D6A23A);
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--color-accent, #D6A23A) 20%, transparent),
-    0 0 20px var(--color-accent, #D6A23A);
-  animation: ws-bulb-ring-pulse 1.6s ease-in-out infinite;
+    0 0 0 5px color-mix(in srgb, var(--color-accent, #D6A23A) 18%, transparent),
+    0 0 24px color-mix(in srgb, var(--color-accent, #D6A23A) 70%, transparent);
+  animation: ws-bulb-ring-pulse 1.5s ease-in-out infinite;
   z-index: 9001;
   pointer-events: none;
 }
